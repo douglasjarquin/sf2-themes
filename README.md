@@ -14,7 +14,7 @@ cd street-fighter-2-theme
 install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"
 ```
 
-The CLI has no package dependencies.
+The CLI has no package dependencies, but needs Python 3.11 or newer (it uses the standard library `tomllib` module).
 
 ## Usage
 
