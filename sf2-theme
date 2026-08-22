@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""Install the Street Fighter II theme into supported applications."""
+
+from dataclasses import dataclass
+from pathlib import Path
+import os
+import re
+import sys
+import tempfile
+import tomllib
+from typing import Final
+
+
+APP_NAMES: Final[tuple[str, str]] = ("wezterm", "herdr")
+CONFIG_DIR_OPTION: Final[str] = "--config-dir"
+PALETTE_PATH: Final[Path] = Path(__file__).with_name("palette.toml")
+HELP_TEXT: Final[str] = """Street Fighter II theme installer
+
+Usage:
+  sf2-theme apps
+  sf2-theme install <app> [--config-dir PATH]
+  sf2-theme apply <app> [--config-dir PATH]
+
+Supported apps: wezterm, herdr
+
+install and apply are equivalent. Both write the app's native theme format.
+"""
+
+
+@dataclass(frozen=True, slots=True)
+class Palette:
+    """The shared Street Fighter II color palette."""
+
+    deep_navy: str
+    arcade_red: str
+    gold: str
+    teal: str
+    cream: str
+
+
+@dataclass(frozen=True, slots=True)
+class CliError(Exception):
+    """An expected command-line or theme-data error."""
+
+    message: str
+
+    def __str__(self) -> str:
+        return self.message
+
+
+def load_palette(path: Path) -> Palette:
+    """Parse the palette data file into a typed value object."""
+    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    values = data.get("palette")
+    if not isinstance(values, dict):
+        raise CliError("palette.toml must contain a [palette] table")
+    colors = tuple(values.get(name) for name in Palette.__annotations__)
+    if not all(isinstance(color, str) for color in colors):
+        raise CliError("palette.toml is missing a required color")
+    return Palette(
+        deep_navy=colors[0],
+        arcade_red=colors[1],
+        gold=colors[2],
+        teal=colors[3],
+        cream=colors[4],
+    )
+
+
+def config_root() -> Path:
+    """Return the platform-neutral XDG-style configuration root."""
+    configured = os.environ.get("XDG_CONFIG_HOME")
+    return Path(configured).expanduser() if configured else Path.home() / ".config"
+
+
+def parse_config_dir(arguments: list[str]) -> Path | None:
+    """Parse the optional config directory shared by both adapters."""
+    if not arguments:
+        return None
+    if len(arguments) == 2 and arguments[0] == CONFIG_DIR_OPTION:
+        return Path(arguments[1]).expanduser()
+    raise CliError(f"expected {CONFIG_DIR_OPTION} PATH")
+
+
+def atomic_write(path: Path, content: str) -> None:
+    """Write a configuration artifact without exposing a partial file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(
+        prefix=f".{path.name}.",
+        dir=path.parent,
+        text=True,
+    )
+    temporary_path = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(content)
+        os.replace(temporary_path, path)
+    except OSError:
+        temporary_path.unlink(missing_ok=True)
+        raise
+
+
+def toml_array(values: tuple[str, ...]) -> str:
+    """Render a TOML string array."""
+    return "[" + ", ".join(f'"{value}"' for value in values) + "]"
+
+
+def render_wezterm(palette: Palette) -> str:
+    """Render a loadable WezTerm color-scheme file."""
+    ansi = (
+        palette.deep_navy,
+        palette.arcade_red,
+        palette.gold,
+        palette.teal,
+        palette.cream,
+        palette.arcade_red,
+        palette.teal,
+        palette.cream,
+    )
+    brights = (
+        palette.deep_navy,
+        palette.arcade_red,
+        palette.gold,
+        palette.teal,
+        palette.cream,
+        palette.arcade_red,
+        palette.teal,
+        palette.cream,
+    )
+    return "\n".join(
+        (
+            "[colors]",
+            f'foreground = "{palette.cream}"',
+            f'background = "{palette.deep_navy}"',
+            f'cursor_bg = "{palette.gold}"',
+            f'cursor_fg = "{palette.deep_navy}"',
+            f'selection_bg = "{palette.teal}"',
+            f'selection_fg = "{palette.cream}"',
+            f"ansi = {toml_array(ansi)}",
+            f"brights = {toml_array(brights)}",
+            "",
+        ),
+    )
+
+
+def without_theme_sections(content: str) -> str:
+    """Remove existing Herdr theme tables while preserving other settings."""
+    kept: list[str] = []
+    current_section = ""
+    skip_section = False
+    for line in content.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("[") and stripped.endswith("]"):
+            header = stripped.strip("[]").strip()
+            current_section = header
+            skip_section = header == "theme" or header.startswith("theme.")
+        top_level_theme = current_section == "" and re.match(r"^theme\s*=", stripped)
+        if skip_section or top_level_theme:
+            continue
+        kept.append(line)
+    return "\n".join(kept).rstrip()
+
+
+def render_herdr(palette: Palette, existing: str) -> str:
+    """Render Herdr's documented inline theme configuration."""
+    preserved = without_theme_sections(existing)
+    lines = (
+        "[theme]",
+        'name = "catppuccin"',
+        "",
+        "[theme.custom]",
+        f'sidebar_bg = "{palette.deep_navy}"',
+        f'active_row_bg = "{palette.teal}"',
+        f'selection_bg = "{palette.gold}"',
+        f'panel_bg = "{palette.deep_navy}"',
+        f'accent = "{palette.gold}"',
+        f'green = "{palette.teal}"',
+        f'blue = "{palette.teal}"',
+        f'red = "{palette.arcade_red}"',
+        f'yellow = "{palette.gold}"',
+        f'text = "{palette.cream}"',
+        f'subtext0 = "{palette.cream}"',
+        "",
+    )
+    return "\n".join((preserved, "\n".join(lines))) if preserved else "\n".join(lines)
+
+
+def wezterm_path(config_dir: Path | None) -> Path:
+    """Return the target WezTerm color-scheme path."""
+    root = config_dir or Path(os.environ.get("WEZTERM_CONFIG_DIR", config_root() / "wezterm"))
+    return root / "colors" / "street-fighter-2.toml"
+
+
+def herdr_path(config_dir: Path | None) -> Path:
+    """Return the target Herdr config path."""
+    if config_dir:
+        return config_dir / "config.toml"
+    configured = os.environ.get("HERDR_CONFIG_PATH")
+    return Path(configured).expanduser() if configured else config_root() / "herdr" / "config.toml"
+
+
+def install(app: str, config_dir: Path | None, palette: Palette) -> Path:
+    """Render and atomically install one supported application theme."""
+    match app:
+        case "wezterm":
+            path = wezterm_path(config_dir)
+            atomic_write(path, render_wezterm(palette))
+        case "herdr":
+            path = herdr_path(config_dir)
+            existing = path.read_text(encoding="utf-8") if path.exists() else ""
+            if existing:
+                tomllib.loads(existing)
+            atomic_write(path, render_herdr(palette, existing))
+        case _:
+            raise CliError(f"unsupported app: {app}; choose wezterm or herdr")
+    return path
+
+
+def main(arguments: list[str]) -> int:
+    """Run the sf2-theme command-line interface."""
+    if not arguments or arguments in (["--help"], ["-h"]):
+        print(HELP_TEXT, end="")
+        return 0
+    command = arguments[0]
+    try:
+        match command:
+            case "apps":
+                if len(arguments) != 1:
+                    raise CliError("apps does not take options")
+                print("\n".join(APP_NAMES))
+            case "install" | "apply":
+                if len(arguments) < 2:
+                    raise CliError("choose an app: wezterm or herdr")
+                app = arguments[1]
+                config_dir = parse_config_dir(arguments[2:])
+                path = install(app, config_dir, load_palette(PALETTE_PATH))
+                verb = "installed" if command == "install" else "applied"
+                print(f"{verb} {app} theme: {path}")
+            case _:
+                raise CliError(f"unknown command: {command}; run sf2-theme --help")
+    except (CliError, OSError, tomllib.TOMLDecodeError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv[1:]))
