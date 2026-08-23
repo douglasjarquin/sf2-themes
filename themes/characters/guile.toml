@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "guile"
+display_name = "Street Fighter II - Guile"
+kind = "character"
+introduced_in = "world-warrior"
+character = "Guile"
+aliases = []
+
+[ui]
+background = "#101820"
+foreground = "#fff4d6"
+cursor_bg = "#f2b134"
+cursor_fg = "#101820"
+selection_bg = "#4aa5ff"
+selection_fg = "#101820"
+panel_bg = "#1a2127"
+sidebar_bg = "#101820"
+active_row_bg = "#1a484d"
+navigate_row_bg = "#423a24"
+surface_dim = "#101820"
+surface0 = "#282e32"
+surface1 = "#363b3d"
+overlay0 = "#74746c"
+overlay1 = "#939184"
+subtext = "#b7b29f"
+accent = "#537244"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4e91b4"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#101820"
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4e91b4"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+white = "#e2dac0"
+
+[ansi.bright]
+black = "#6b6c65"
+red = "#ec747c"
+green = "#88d490"
+yellow = "#f4bf59"
+blue = "#6ea5c2"
+magenta = "#d199e0"
+cyan = "#59cfcd"
+white = "#fffaf0"

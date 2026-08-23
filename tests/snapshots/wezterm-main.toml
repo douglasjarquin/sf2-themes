@@ -1,0 +1,16 @@
+[colors]
+foreground = "#fff4d6"
+background = "#101a3a"
+cursor_bg = "#f2b134"
+cursor_fg = "#101a3a"
+cursor_border = "#f2b134"
+selection_bg = "#f2b134"
+selection_fg = "#101a3a"
+split = "#363d53"
+scrollbar_thumb = "#7f89aa"
+ansi = ["#101a3a", "#e8565f", "#6ecb78", "#f2b134", "#4aa5ff", "#c783d9", "#35c4c2", "#e7dfc8"]
+brights = ["#7f89aa", "#ff7880", "#8ee695", "#ffd166", "#74bdff", "#e1a5ef", "#62dedb", "#fffaf0"]
+
+[metadata]
+name = "Street Fighter II - Main"
+aliases = ["street-fighter-2", "street-fighter-ii-main"]

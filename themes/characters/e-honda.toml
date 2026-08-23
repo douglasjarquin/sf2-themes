@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "e-honda"
+display_name = "Street Fighter II - E. Honda"
+kind = "character"
+introduced_in = "world-warrior"
+character = "E. Honda"
+aliases = []
+
+[ui]
+background = "#16182a"
+foreground = "#fff4d6"
+cursor_bg = "#f2b134"
+cursor_fg = "#16182a"
+selection_bg = "#f2b134"
+selection_fg = "#16182a"
+panel_bg = "#1f2131"
+sidebar_bg = "#16182a"
+active_row_bg = "#1f4855"
+navigate_row_bg = "#463a2c"
+surface_dim = "#16182a"
+surface0 = "#2d2e3b"
+surface1 = "#3b3b46"
+overlay0 = "#787472"
+overlay1 = "#969189"
+subtext = "#b9b2a2"
+accent = "#d63c2e"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#16182a"
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+white = "#e3dac1"
+
+[ansi.bright]
+black = "#6f6c6b"
+red = "#ec747c"
+green = "#88d490"
+yellow = "#f4bf59"
+blue = "#6bb5ff"
+magenta = "#d199e0"
+cyan = "#59cfcd"
+white = "#fffaf0"

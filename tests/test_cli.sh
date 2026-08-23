@@ -6,10 +6,11 @@ repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 test_dir=$(mktemp -d -t sf2-theme-test.XXXXXX)
 trap 'find "$test_dir" -depth -type f -delete; find "$test_dir" -depth -type d -empty -delete' EXIT
 
-mkdir -p "$test_dir/herdr"
+export XDG_CONFIG_HOME="$test_dir/xdg"
+mkdir -p "$test_dir/herdr" "$test_dir/bin"
 printf '%s\n' '[ui]' 'theme = "follow-system"' >"$test_dir/herdr/config.toml"
 
-"$repo_dir/sf2-theme" install herdr --config-dir "$test_dir/herdr"
+"$repo_dir/sf2-theme" setup herdr --config-dir "$test_dir/herdr"
 
 python3 - "$test_dir/herdr/config.toml" <<'PY'
 from pathlib import Path
@@ -23,22 +24,28 @@ assert custom["accent"] == "#f2b134"
 assert custom["text"] == "#fff4d6"
 assert custom["active_row_bg"] == "#124158"
 assert custom["selection_bg"] == "#423b39"
-assert custom["surface0"] == "#28304a"
+assert custom["overlay0"] == "#7f89aa"
+assert custom["mauve"]
+assert custom["peach"]
+assert config["theme"]["name"] == "terminal"
 print("Herdr merge preservation: PASS")
 PY
 
-mkdir -p "$test_dir/bin"
 install -m 755 "$repo_dir/sf2-theme" "$test_dir/bin/sf2-theme"
 test ! -e "$test_dir/bin/palette.toml"
+test ! -e "$test_dir/bin/themes"
 
-(cd "$test_dir" && "$test_dir/bin/sf2-theme" install wezterm --config-dir "$test_dir/wezterm")
-(cd "$test_dir" && "$test_dir/bin/sf2-theme" install herdr --config-dir "$test_dir/installed-herdr")
-test -f "$test_dir/wezterm/colors/street-fighter-2.toml"
+(cd "$test_dir" && "$test_dir/bin/sf2-theme" apply wezterm --config-dir "$test_dir/wezterm")
+(cd "$test_dir" && "$test_dir/bin/sf2-theme" apply herdr --config-dir "$test_dir/installed-herdr")
+test -f "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
 test -f "$test_dir/installed-herdr/config.toml"
-grep -q 'background = "#101a3a"' "$test_dir/wezterm/colors/street-fighter-2.toml"
-grep -q 'name = "street-fighter-2"' "$test_dir/wezterm/colors/street-fighter-2.toml"
+grep -q 'background = "#101a3a"' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
+grep -q 'name = "Street Fighter II - Main"' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
+grep -q 'street-fighter-2' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
+grep -q 'ansi = \["#101a3a", "#e8565f", "#6ecb78", "#f2b134", "#4aa5ff"' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
 grep -q 'accent = "#f2b134"' "$test_dir/installed-herdr/config.toml"
-grep -q 'config.color_scheme = "street-fighter-2"' "$test_dir/wezterm/wezterm.lua"
+test -f "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
+grep -q 'sf2-theme: main' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 printf '%s\n' 'Copy-only installed CLI: PASS'
 
 mkdir -p "$test_dir/wezterm-existing"
@@ -50,24 +57,21 @@ config.font_size = 16
 return config
 LUA
 
-"$repo_dir/sf2-theme" apply wezterm --config-dir "$test_dir/wezterm-existing"
-
-grep -q 'config.color_scheme = "street-fighter-2"' "$test_dir/wezterm-existing/wezterm.lua"
+"$repo_dir/sf2-theme" setup wezterm --config-dir "$test_dir/wezterm-existing" >"$test_dir/setup-out.txt"
+grep -q 'scheme_for_appearance' "$test_dir/wezterm-existing/wezterm.lua"
 grep -q 'config.font_size = 16' "$test_dir/wezterm-existing/wezterm.lua"
-grep -q 'scheme_for_appearance' "$test_dir/wezterm-existing/wezterm.lua" && exit 1
-test -f "$test_dir/wezterm-existing/colors/street-fighter-2.toml"
-printf '%s\n' 'WezTerm lua scheme selection: PASS'
+grep -q 'WezTerm config was left unchanged' "$test_dir/setup-out.txt"
+test -f "$test_dir/wezterm-existing/colors/street-fighter-ii-main.toml"
+printf '%s\n' 'WezTerm unknown lua left unchanged: PASS'
 
-mkdir -p "$test_dir/wezterm-table"
-cat >"$test_dir/wezterm-table/wezterm.lua" <<'LUA'
-return {
-  color_scheme = "Catppuccin Mocha",
-  font_size = 16,
-}
+mkdir -p "$test_dir/wezterm-safe"
+cat >"$test_dir/wezterm-safe/wezterm.lua" <<'LUA'
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+return config
 LUA
 
-"$repo_dir/sf2-theme" apply wezterm --config-dir "$test_dir/wezterm-table"
-
-grep -q 'color_scheme = "street-fighter-2",' "$test_dir/wezterm-table/wezterm.lua"
-grep -q 'font_size = 16,' "$test_dir/wezterm-table/wezterm.lua"
-printf '%s\n' 'WezTerm table-style scheme selection: PASS'
+"$repo_dir/sf2-theme" setup wezterm --config-dir "$test_dir/wezterm-safe"
+grep -q 'config.color_scheme = dofile(sf2_current)' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'return config' "$test_dir/wezterm-safe/wezterm.lua"
+printf '%s\n' 'WezTerm safe builder integration: PASS'
