@@ -31,5 +31,38 @@ test ! -e "$test_dir/bin/palette.toml"
 test -f "$test_dir/wezterm/colors/street-fighter-2.toml"
 test -f "$test_dir/installed-herdr/config.toml"
 grep -q 'background = "#101a3a"' "$test_dir/wezterm/colors/street-fighter-2.toml"
+grep -q 'name = "street-fighter-2"' "$test_dir/wezterm/colors/street-fighter-2.toml"
 grep -q 'accent = "#f2b134"' "$test_dir/installed-herdr/config.toml"
+grep -q 'config.color_scheme = "street-fighter-2"' "$test_dir/wezterm/wezterm.lua"
 printf '%s\n' 'Copy-only installed CLI: PASS'
+
+mkdir -p "$test_dir/wezterm-existing"
+cat >"$test_dir/wezterm-existing/wezterm.lua" <<'LUA'
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())
+config.font_size = 16
+return config
+LUA
+
+"$repo_dir/sf2-theme" apply wezterm --config-dir "$test_dir/wezterm-existing"
+
+grep -q 'config.color_scheme = "street-fighter-2"' "$test_dir/wezterm-existing/wezterm.lua"
+grep -q 'config.font_size = 16' "$test_dir/wezterm-existing/wezterm.lua"
+grep -q 'scheme_for_appearance' "$test_dir/wezterm-existing/wezterm.lua" && exit 1
+test -f "$test_dir/wezterm-existing/colors/street-fighter-2.toml"
+printf '%s\n' 'WezTerm lua scheme selection: PASS'
+
+mkdir -p "$test_dir/wezterm-table"
+cat >"$test_dir/wezterm-table/wezterm.lua" <<'LUA'
+return {
+  color_scheme = "Catppuccin Mocha",
+  font_size = 16,
+}
+LUA
+
+"$repo_dir/sf2-theme" apply wezterm --config-dir "$test_dir/wezterm-table"
+
+grep -q 'color_scheme = "street-fighter-2",' "$test_dir/wezterm-table/wezterm.lua"
+grep -q 'font_size = 16,' "$test_dir/wezterm-table/wezterm.lua"
+printf '%s\n' 'WezTerm table-style scheme selection: PASS'
