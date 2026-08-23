@@ -194,7 +194,9 @@ def render_herdr(palette: Palette, existing: str) -> str:
 
 def wezterm_path(config_dir: Path | None) -> Path:
     """Return the target WezTerm color-scheme path."""
-    root = config_dir or Path(os.environ.get("WEZTERM_CONFIG_DIR", config_root() / "wezterm"))
+    root = config_dir or Path(
+        os.environ.get("WEZTERM_CONFIG_DIR", config_root() / "wezterm")
+    )
     return root / "colors" / "street-fighter-2.toml"
 
 
@@ -203,7 +205,11 @@ def herdr_path(config_dir: Path | None) -> Path:
     if config_dir:
         return config_dir / "config.toml"
     configured = os.environ.get("HERDR_CONFIG_PATH")
-    return Path(configured).expanduser() if configured else config_root() / "herdr" / "config.toml"
+    return (
+        Path(configured).expanduser()
+        if configured
+        else config_root() / "herdr" / "config.toml"
+    )
 
 
 def install(app: str, config_dir: Path | None, palette: Palette) -> Path:
