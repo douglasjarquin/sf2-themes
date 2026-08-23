@@ -117,6 +117,18 @@ def toml_array(values: tuple[str, ...]) -> str:
     return "[" + ", ".join(f'"{value}"' for value in values) + "]"
 
 
+def mix_hex(base: str, overlay: str, amount: float) -> str:
+    """Blend two #RRGGBB colors toward overlay by amount in 0..1."""
+    def channels(color: str) -> tuple[int, int, int]:
+        value = color.removeprefix("#")
+        return int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
+
+    start = channels(base)
+    end = channels(overlay)
+    mixed = tuple(round(left + (right - left) * amount) for left, right in zip(start, end, strict=True))
+    return f"#{mixed[0]:02x}{mixed[1]:02x}{mixed[2]:02x}"
+
+
 def render_wezterm(palette: Palette) -> str:
     """Render a loadable WezTerm color-scheme file."""
     ansi = (
@@ -179,18 +191,27 @@ def without_theme_sections(content: str) -> str:
 def render_herdr(palette: Palette, existing: str) -> str:
     """Render Herdr's documented inline theme configuration."""
     preserved = without_theme_sections(existing)
+    # Cream text on raw teal/gold is ~2:1. Mix toward navy so selected rows stay readable.
+    active_row = mix_hex(palette.deep_navy, palette.teal, 0.28)
+    selection = mix_hex(palette.deep_navy, palette.gold, 0.22)
+    surface0 = mix_hex(palette.deep_navy, palette.cream, 0.10)
+    surface1 = mix_hex(palette.deep_navy, palette.cream, 0.16)
     lines = (
         "[theme]",
         'name = "catppuccin"',
         "",
         "[theme.custom]",
         f'sidebar_bg = "{palette.deep_navy}"',
-        f'active_row_bg = "{palette.teal}"',
-        f'selection_bg = "{palette.gold}"',
+        f'active_row_bg = "{active_row}"',
+        f'selection_bg = "{selection}"',
+        f'surface0 = "{surface0}"',
+        f'surface1 = "{surface1}"',
+        f'surface_dim = "{palette.deep_navy}"',
         f'panel_bg = "{palette.deep_navy}"',
         f'accent = "{palette.gold}"',
         f'green = "{palette.teal}"',
         f'blue = "{palette.teal}"',
+        f'teal = "{palette.teal}"',
         f'red = "{palette.arcade_red}"',
         f'yellow = "{palette.gold}"',
         f'text = "{palette.cream}"',
