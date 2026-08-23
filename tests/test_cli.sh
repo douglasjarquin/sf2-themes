@@ -18,7 +18,12 @@ import tomllib
 
 config = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert config["ui"]["theme"] == "follow-system"
-assert config["theme"]["custom"]["accent"] == "#f2b134"
+custom = config["theme"]["custom"]
+assert custom["accent"] == "#f2b134"
+assert custom["text"] == "#fff4d6"
+assert custom["active_row_bg"] == "#124158"
+assert custom["selection_bg"] == "#423b39"
+assert custom["surface0"] == "#28304a"
 print("Herdr merge preservation: PASS")
 PY
 
