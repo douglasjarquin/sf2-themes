@@ -3,6 +3,7 @@
 A small CLI that installs a Street Fighter II color palette into WezTerm and Herdr.
 
 The palette lives in [`palette.toml`](palette.toml), so both adapters use the same deep navy, arcade red, gold, teal, and cream source data.
+If `palette.toml` is not next to the installed `sf2-theme` script (for example, a copy-only install), the CLI falls back to an embedded copy of the same palette.
 
 ## Install
 
