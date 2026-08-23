@@ -32,9 +32,8 @@ sf2-theme install wezterm
 sf2-theme apply wezterm
 ```
 
-This writes `~/.config/wezterm/colors/street-fighter-2.toml`.
-
-Select it from `wezterm.lua` with `config.color_scheme = "street-fighter-2"`.
+This writes `~/.config/wezterm/colors/street-fighter-2.toml` and selects that scheme in `wezterm.lua`.
+WezTerm reloads `wezterm.lua` on its own, so the running terminal should pick up the palette without a restart.
 
 Set `WEZTERM_CONFIG_DIR` or pass `--config-dir PATH` to target another WezTerm config directory.
 

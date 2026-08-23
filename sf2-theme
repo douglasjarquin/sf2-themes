@@ -14,6 +14,10 @@ from typing import Final
 APP_NAMES: Final[tuple[str, str]] = ("wezterm", "herdr")
 CONFIG_DIR_OPTION: Final[str] = "--config-dir"
 PALETTE_PATH: Final[Path] = Path(__file__).with_name("palette.toml")
+WEZTERM_SCHEME_NAME: Final[str] = "street-fighter-2"
+COLOR_SCHEME_LINE: Final[re.Pattern[str]] = re.compile(
+    r"^(\s*)((?:config\.)?color_scheme)(\s*=\s*)(.*)$"
+)
 EMBEDDED_PALETTE: Final[str] = """[palette]
 deep_navy = "#101a3a"
 arcade_red = "#d62939"
@@ -30,7 +34,8 @@ Usage:
 
 Supported apps: wezterm, herdr
 
-install and apply are equivalent. Both write the app's native theme format.
+install and apply are equivalent. Both write the app's native theme format
+and select it in that app's live config.
 """
 
 
@@ -146,6 +151,9 @@ def render_wezterm(palette: Palette) -> str:
             f"ansi = {toml_array(ansi)}",
             f"brights = {toml_array(brights)}",
             "",
+            "[metadata]",
+            f'name = "{WEZTERM_SCHEME_NAME}"',
+            "",
         ),
     )
 
@@ -192,12 +200,75 @@ def render_herdr(palette: Palette, existing: str) -> str:
     return "\n".join((preserved, "\n".join(lines))) if preserved else "\n".join(lines)
 
 
-def wezterm_path(config_dir: Path | None) -> Path:
-    """Return the target WezTerm color-scheme path."""
-    root = config_dir or Path(
+def wezterm_root(config_dir: Path | None) -> Path:
+    """Return the WezTerm configuration directory."""
+    return config_dir or Path(
         os.environ.get("WEZTERM_CONFIG_DIR", config_root() / "wezterm")
     )
-    return root / "colors" / "street-fighter-2.toml"
+
+
+def wezterm_path(config_dir: Path | None) -> Path:
+    """Return the target WezTerm color-scheme path."""
+    return wezterm_root(config_dir) / "colors" / f"{WEZTERM_SCHEME_NAME}.toml"
+
+
+def wezterm_lua_path(config_dir: Path | None) -> Path:
+    """Return the WezTerm Lua configuration path."""
+    return wezterm_root(config_dir) / "wezterm.lua"
+
+
+def _color_scheme_assignment(indent: str, name: str, equals: str, rest: str) -> str:
+    """Replace a color_scheme RHS while preserving comma and comment."""
+    comment = ""
+    code = rest
+    if "--" in rest:
+        code, marker, tail = rest.partition("--")
+        comment = marker + tail
+    comma = ""
+    code = code.rstrip()
+    if code.endswith(","):
+        comma = ","
+        code = code[:-1].rstrip()
+    return f'{indent}{name}{equals}"{WEZTERM_SCHEME_NAME}"{comma}{comment}'
+
+
+def select_wezterm_scheme(existing: str) -> str:
+    """Point WezTerm's live config at the installed Street Fighter II scheme."""
+    if not existing.strip():
+        return "\n".join(
+            (
+                'local wezterm = require("wezterm")',
+                "local config = wezterm.config_builder()",
+                f'config.color_scheme = "{WEZTERM_SCHEME_NAME}"',
+                "return config",
+                "",
+            )
+        )
+    updated: list[str] = []
+    replaced = False
+    for line in existing.splitlines():
+        match = COLOR_SCHEME_LINE.match(line)
+        if match:
+            updated.append(_color_scheme_assignment(*match.groups()))
+            replaced = True
+        else:
+            updated.append(line)
+    if replaced:
+        result = "\n".join(updated)
+        return result + "\n" if existing.endswith("\n") else result
+    assignment = f'config.color_scheme = "{WEZTERM_SCHEME_NAME}"'
+    table_return = re.search(r"^return\s*\{", existing, re.MULTILINE)
+    if table_return:
+        insert_at = table_return.end()
+        injection = f'\n  color_scheme = "{WEZTERM_SCHEME_NAME}",'
+        return existing[:insert_at] + injection + existing[insert_at:]
+    return_match = re.search(r"^return\b", existing, re.MULTILINE)
+    if return_match:
+        prefix = existing[: return_match.start()].rstrip()
+        suffix = existing[return_match.start() :]
+        return f"{prefix}\n{assignment}\n{suffix}"
+    stripped = existing.rstrip()
+    return f"{stripped}\n{assignment}\n"
 
 
 def herdr_path(config_dir: Path | None) -> Path:
@@ -218,6 +289,9 @@ def install(app: str, config_dir: Path | None, palette: Palette) -> Path:
         case "wezterm":
             path = wezterm_path(config_dir)
             atomic_write(path, render_wezterm(palette))
+            lua_path = wezterm_lua_path(config_dir)
+            existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
+            atomic_write(lua_path, select_wezterm_scheme(existing))
         case "herdr":
             path = herdr_path(config_dir)
             existing = path.read_text(encoding="utf-8") if path.exists() else ""
