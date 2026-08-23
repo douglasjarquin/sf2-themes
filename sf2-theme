@@ -14,6 +14,13 @@ from typing import Final
 APP_NAMES: Final[tuple[str, str]] = ("wezterm", "herdr")
 CONFIG_DIR_OPTION: Final[str] = "--config-dir"
 PALETTE_PATH: Final[Path] = Path(__file__).with_name("palette.toml")
+EMBEDDED_PALETTE: Final[str] = """[palette]
+deep_navy = "#101a3a"
+arcade_red = "#d62939"
+gold = "#f2b134"
+teal = "#18a6a6"
+cream = "#fff4d6"
+"""
 HELP_TEXT: Final[str] = """Street Fighter II theme installer
 
 Usage:
@@ -50,7 +57,8 @@ class CliError(Exception):
 
 def load_palette(path: Path) -> Palette:
     """Parse the palette data file into a typed value object."""
-    data = tomllib.loads(path.read_text(encoding="utf-8"))
+    source = path.read_text(encoding="utf-8") if path.is_file() else EMBEDDED_PALETTE
+    data = tomllib.loads(source)
     values = data.get("palette")
     if not isinstance(values, dict):
         raise CliError("palette.toml must contain a [palette] table")
