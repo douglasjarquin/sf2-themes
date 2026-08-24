@@ -1,8 +1,12 @@
+import { readFileSync } from "node:fs";
+
 import { expect, test } from "@playwright/test";
 
-const installScript = `git clone https://github.com/douglasjarquin/street-fighter-2-theme.git
-cd street-fighter-2-theme
-install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"`;
+const readmeInstallBlock = readFileSync(new URL("../../../README.md", import.meta.url), "utf8").match(
+  /## Install[\s\S]*?```sh\n([\s\S]*?)```/,
+);
+if (!readmeInstallBlock) throw new Error("README install script not found");
+const installScript = readmeInstallBlock[1].trim();
 
 test("install route gives the real setup then apply commands", async ({ page }) => {
   // Given: a visitor needs to install the CLI from the project site.
