@@ -8,3 +8,9 @@ build/
 .venv/
 venv/
 .DS_Store
+
+# Keep reviewable no-mistakes test evidence, not local runtime state.
+.no-mistakes/*
+!.no-mistakes/evidence/
+!.no-mistakes/evidence/**
+
