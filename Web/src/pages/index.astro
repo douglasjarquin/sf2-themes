@@ -1,8 +1,211 @@
 ---
-import RoutePlaceholder from "../components/RoutePlaceholder.astro";
+import { characterVariants, themeTokens } from "../data/theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import { sitePath } from "../lib/site-path.mjs";
+
+const main = themeTokens.main;
+const homeStyle = [
+  ["--home-background", main.ui.background],
+  ["--home-foreground", main.ui.foreground],
+  ["--home-panel", main.ui.panel_bg],
+  ["--home-surface", main.ui.surface1],
+  ["--home-accent", main.ui.accent],
+  ["--home-red", main.semantic.red],
+  ["--home-gold", main.semantic.yellow],
+  ["--home-cyan", main.semantic.cyan],
+]
+  .map(([property, value]) => `${property}: ${value}`)
+  .join("; ");
+
+const fighterStyle = (fighter: (typeof characterVariants)[number]) =>
+  [
+    ["--fighter-background", fighter.colors.background],
+    ["--fighter-foreground", fighter.colors.foreground],
+    ["--fighter-red", fighter.colors.red],
+    ["--fighter-gold", fighter.colors.yellow],
+    ["--fighter-accent", fighter.colors.accent],
+  ]
+    .map(([property, value]) => `${property}: ${value}`)
+    .join("; ");
 ---
 
-<SiteLayout title="Home">
-  <RoutePlaceholder eyebrow="PLAYER SELECT" title="SELECT YOUR COLORS" />
+<SiteLayout
+  title="Street Fighter II terminal themes"
+  description="Street Fighter II color themes for WezTerm and Herdr."
+>
+  <div class="home-page" style={homeStyle}>
+    <section class="home-hero site-frame" aria-labelledby="home-heading">
+      <div class="home-hero__copy">
+        <p class="home-kicker">ROUND ONE - TERMINAL EDITION</p>
+        <h1 id="home-heading">FIGHT FOR YOUR TERMINAL</h1>
+        <p class="home-lede">
+          A complete Street Fighter II color pack for WezTerm and Herdr, tuned from
+          the arcade floor to your command line.
+        </p>
+        <div class="home-actions">
+          <a class="home-action home-action--primary" href={sitePath("themes")}>VIEW THE ROSTER</a>
+          <a class="home-action" href={sitePath("install")}>INSTALL THE PACK</a>
+        </div>
+      </div>
+
+      <section class="arcade-cabinet" aria-label="Interactive terminal cabinet" data-cabinet>
+        <div class="arcade-cabinet__marquee">SF2 THEME</div>
+        <div class="arcade-cabinet__screen">
+          <div class="arcade-cabinet__status">
+            <span>TERMINAL READY</span>
+            <span data-active-chip>RYU</span>
+          </div>
+          <pre class="terminal-transcript is-updating" data-terminal-transcript aria-live="polite">$ sf2-theme apply wezterm --theme ryu
+SELECTED: RYU
+PROFILE LOADED. FIGHT!</pre>
+        </div>
+        <div class="arcade-cabinet__controls" aria-label="Choose your fighter">
+          {
+            characterVariants.map((fighter, index) => (
+              <button
+                aria-pressed={index === 0 ? "true" : "false"}
+                class="fighter-control"
+                data-command={`sf2-theme apply wezterm --theme ${fighter.id}`}
+                data-fighter-control
+                data-fighter-name={fighter.character.toUpperCase()}
+                style={fighterStyle(fighter)}
+                type="button"
+              >
+                <span aria-hidden="true" class="fighter-control__mark">{index + 1}</span>
+                {fighter.character.toUpperCase()}
+              </button>
+            ))
+          }
+        </div>
+        <div class="arcade-cabinet__coin-slot">
+          <button class="coin-button" data-coin-button type="button">INSERT COIN</button>
+          <span class="coin-counter" data-coin-counter>0 CREDITS</span>
+        </div>
+      </section>
+    </section>
+
+    <section class="home-menu site-frame" aria-labelledby="menu-heading">
+      <div>
+        <p class="home-kicker">CHOOSE YOUR MODE</p>
+        <h2 id="menu-heading">MAKE THE CABINET YOURS</h2>
+      </div>
+      <nav aria-label="Explore sf2-theme" class="home-menu__links">
+        <a href={sitePath("themes")}>01 / THEMES</a>
+        <a href={sitePath("palette")}>02 / PALETTE</a>
+        <a href={sitePath("install")}>03 / INSTALL</a>
+      </nav>
+    </section>
+
+    <section class="home-values site-frame" aria-label="Pack highlights">
+      <article>
+        <span>36</span>
+        <h2>FULLY RESOLVED THEMES</h2>
+        <p>Dark and light main variants plus the Super Street Fighter II Turbo roster.</p>
+      </article>
+      <article>
+        <span>02</span>
+        <h2>SUPPORTED TERMINALS</h2>
+        <p>Install a matching palette in WezTerm or Herdr with the same command.</p>
+      </article>
+      <article>
+        <span>00</span>
+        <h2>RUNTIME DEPENDENCIES</h2>
+        <p>The standalone CLI needs Python 3.11 or newer and nothing else.</p>
+      </article>
+    </section>
+  </div>
 </SiteLayout>
+
+<script>
+  const cabinet = document.querySelector("[data-cabinet]");
+
+  if (cabinet instanceof HTMLElement) {
+    const controls = [...cabinet.querySelectorAll<HTMLElement>("[data-fighter-control]")];
+    const transcript = cabinet.querySelector("[data-terminal-transcript]");
+    const activeChip = cabinet.querySelector("[data-active-chip]");
+    const coinButton = cabinet.querySelector("[data-coin-button]");
+    const coinCounter = cabinet.querySelector("[data-coin-counter]");
+    let activeIndex = 0;
+    let credits = 0;
+
+    const selectFighter = (nextIndex: number) => {
+      activeIndex = (nextIndex + controls.length) % controls.length;
+      const activeControl = controls[activeIndex];
+      if (activeControl === undefined) return;
+      const fighterName = activeControl.dataset.fighterName ?? "RYU";
+      const command = activeControl.dataset.command ?? "sf2-theme apply wezterm --theme ryu";
+
+      for (const [index, control] of controls.entries()) {
+        control.setAttribute("aria-pressed", String(index === activeIndex));
+      }
+      if (activeChip instanceof HTMLElement) activeChip.textContent = fighterName;
+      if (transcript instanceof HTMLElement) {
+        transcript.textContent = `$ ${command}\nSELECTED: ${fighterName}\nPROFILE LOADED. FIGHT!`;
+        transcript.classList.remove("is-updating");
+        if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          void transcript.offsetWidth;
+          transcript.classList.add("is-updating");
+        }
+      }
+    };
+
+    controls.forEach((control, index) => {
+      control.addEventListener("click", () => selectFighter(index));
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        selectFighter(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
+      }
+    });
+    coinButton?.addEventListener("click", () => {
+      credits += 1;
+      if (coinCounter instanceof HTMLElement) {
+        coinCounter.textContent = `${credits} ${credits === 1 ? "CREDIT" : "CREDITS"}`;
+      }
+    });
+  }
+</script>
+
+<style>
+  .home-page { padding-block: var(--space-12) var(--space-20); }
+  .home-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .88fr); align-items: center; gap: clamp(var(--space-8), 6vw, var(--space-20)); }
+  .home-hero__copy { display: grid; gap: var(--space-6); max-inline-size: 42rem; }
+  .home-kicker { margin: 0; color: var(--home-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
+  h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.5; }
+  h1 { color: var(--home-gold); font-size: clamp(28px, 4.8vw, 52px); text-shadow: 5px 5px 0 var(--home-red); }
+  h2 { color: var(--home-foreground); font-size: clamp(16px, 2vw, 22px); }
+  .home-lede { margin: 0; color: color-mix(in srgb, var(--home-foreground) 72%, transparent); font-size: clamp(17px, 2vw, 21px); line-height: 1.6; }
+  .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  .home-action { border: 2px solid var(--home-foreground); box-shadow: 4px 4px 0 var(--home-background); color: var(--home-foreground); font-family: var(--font-display); font-size: 9px; line-height: 1.5; padding: 14px 16px; }
+  .home-action:hover { background: var(--home-foreground); color: var(--home-background); transform: translate(2px, 2px); }
+  .home-action--primary { border-color: var(--home-red); background: var(--home-red); color: var(--home-foreground); }
+  .arcade-cabinet { border: 3px solid var(--home-gold); box-shadow: 9px 9px 0 var(--home-red); background: var(--home-panel); overflow: hidden; }
+  .arcade-cabinet__marquee { border-block-end: 3px solid var(--home-red); background: var(--home-gold); color: var(--home-background); font-family: var(--font-display); font-size: 13px; letter-spacing: .12em; padding: var(--space-5); text-align: center; text-shadow: 2px 2px 0 var(--home-red); }
+  .arcade-cabinet__screen { position: relative; min-block-size: 190px; padding: var(--space-5); background: var(--home-background); isolation: isolate; }
+  .arcade-cabinet__screen::after { position: absolute; z-index: 1; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--home-background) 28%, transparent) 0, color-mix(in srgb, var(--home-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
+  .arcade-cabinet__status { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: var(--space-3); color: var(--home-cyan); font-family: var(--font-mono); font-size: 11px; }
+  [data-active-chip] { border: 1px solid var(--home-gold); color: var(--home-gold); padding: 2px 5px; }
+  .terminal-transcript { position: relative; z-index: 2; margin: var(--space-6) 0 0; color: var(--home-foreground); font-family: var(--font-mono); font-size: clamp(12px, 1.35vw, 14px); line-height: 1.7; white-space: pre-wrap; }
+  .terminal-transcript.is-updating { animation: transcript-in 240ms ease-out; }
+  .arcade-cabinet__controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: var(--space-4); border-block: 2px solid var(--home-surface); background: color-mix(in srgb, var(--home-background) 38%, var(--home-panel)); }
+  .fighter-control { min-block-size: 66px; border: 2px solid var(--fighter-accent); background: var(--fighter-background); box-shadow: 3px 3px 0 var(--fighter-red); color: var(--fighter-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; line-height: 1.6; padding: var(--space-2); }
+  .fighter-control:hover, .fighter-control[aria-pressed="true"] { border-color: var(--fighter-gold); color: var(--fighter-gold); transform: translate(1px, 1px); }
+  .fighter-control__mark { display: block; color: var(--fighter-red); font-family: var(--font-mono); font-size: 10px; }
+  .arcade-cabinet__coin-slot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); }
+  .coin-button { border: 2px solid var(--home-red); background: var(--home-red); box-shadow: 3px 3px 0 var(--home-background); color: var(--home-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; padding: 11px; }
+  .coin-button:hover { background: var(--home-gold); color: var(--home-background); transform: translate(1px, 1px); }
+  .coin-counter { color: var(--home-gold); font-family: var(--font-mono); font-size: 12px; }
+  .home-menu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: clamp(var(--space-15), 12vw, 144px); padding-block: var(--space-10); border-block: 2px solid color-mix(in srgb, var(--home-foreground) 18%, transparent); }
+  .home-menu__links { display: grid; gap: var(--space-3); align-content: center; }
+  .home-menu__links a { border-inline-start: 3px solid var(--home-red); color: var(--home-foreground); font-family: var(--font-display); font-size: 10px; line-height: 1.6; padding: var(--space-3) var(--space-4); }
+  .home-menu__links a:hover { border-color: var(--home-gold); background: var(--home-panel); color: var(--home-gold); transform: translateX(3px); }
+  .home-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); margin-block-start: var(--space-12); }
+  .home-values article { border: 2px solid var(--home-surface); background: var(--home-panel); box-shadow: 5px 5px 0 color-mix(in srgb, var(--home-background) 75%, transparent); padding: var(--space-6); }
+  .home-values span { color: var(--home-red); font-family: var(--font-display); font-size: 22px; }
+  .home-values h2 { margin-block: var(--space-4) var(--space-3); font-size: 12px; }
+  .home-values p { margin: 0; color: color-mix(in srgb, var(--home-foreground) 64%, transparent); font-size: 15px; line-height: 1.65; }
+  @keyframes transcript-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 760px) { .home-page { padding-block-start: var(--space-10); } .home-hero, .home-menu { grid-template-columns: 1fr; } .arcade-cabinet { box-shadow: 6px 6px 0 var(--home-red); } .home-values { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .home-action, .fighter-control, .coin-button, .home-menu__links a { transition: none; } .terminal-transcript.is-updating { animation: none; } }
+</style>
