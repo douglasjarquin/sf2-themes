@@ -1,0 +1,53 @@
+---
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { characterVariants, themeTokens } from "../data/theme-data.mjs";
+import "../styles/global.css";
+
+const { description = "Street Fighter II terminal color themes.", title } = Astro.props;
+const main = themeTokens.main;
+const colorVariables = new Map([
+  ["--color-background", main.ui.background],
+  ["--color-foreground", main.ui.foreground],
+  ["--color-accent", main.ui.accent],
+  ["--color-red", main.semantic.red],
+  ["--color-cyan", main.semantic.cyan],
+  ["--color-surface-dim", main.ui.surface_dim],
+  ["--color-surface-0", main.ui.surface0],
+  ["--color-surface-1", main.ui.surface1],
+  ["--color-panel", main.ui.panel_bg],
+]);
+
+for (const variant of characterVariants) {
+  for (const [role, value] of Object.entries(variant.colors)) {
+    colorVariables.set(`--character-${variant.id}-${role}`, value);
+  }
+}
+
+const customProperties = [...colorVariables]
+  .map(([property, value]) => `${property}: ${value}`)
+  .join("; ");
+---
+
+<!doctype html>
+<html lang="en" style={customProperties}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title} | sf2-theme</title>
+  </head>
+  <body>
+    <div class="site-shell">
+      <SiteHeader currentPath={Astro.url.pathname} />
+      <main id="main-content"><slot /></main>
+      <SiteFooter />
+    </div>
+  </body>
+</html>

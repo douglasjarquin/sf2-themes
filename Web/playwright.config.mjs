@@ -7,7 +7,8 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:4321/street-fighter-2-theme/"
   },
   webServer: {
-    command: "npm run build && npm run preview -- --host 127.0.0.1",
+    command:
+      "npm run build && ASTRO_PREVIEW_BACKGROUND=0 npm run preview -- --host 127.0.0.1",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
     url: "http://127.0.0.1:4321/street-fighter-2-theme/"

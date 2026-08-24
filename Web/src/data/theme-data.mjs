@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 import { parse } from "smol-toml";
 
@@ -44,14 +44,10 @@ const ANSI_FIELDS = [
 const META_FIELDS = ["id", "display_name", "kind", "introduced_in", "aliases"];
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
-const DEFAULT_MAIN_PATH = fileURLToPath(
-  new URL("../../../themes/main.toml", import.meta.url),
-);
+const DEFAULT_THEME_DIRECTORY = path.resolve(process.cwd(), "../themes");
+const DEFAULT_MAIN_PATH = path.join(DEFAULT_THEME_DIRECTORY, "main.toml");
 const DEFAULT_CHARACTER_PATHS = ["ryu", "ken", "chun-li", "guile"].map(
-  (id) =>
-    fileURLToPath(
-      new URL(`../../../themes/characters/${id}.toml`, import.meta.url),
-    ),
+  (id) => path.join(DEFAULT_THEME_DIRECTORY, "characters", `${id}.toml`),
 );
 
 function requiredTable(value, source) {

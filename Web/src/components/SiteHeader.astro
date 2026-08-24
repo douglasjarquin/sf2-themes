@@ -1,0 +1,43 @@
+---
+import { sitePath } from "../lib/site-path.mjs";
+
+const { currentPath } = Astro.props;
+const navigation = [
+  { label: "HOME", href: sitePath() },
+  { label: "THEMES", href: sitePath("themes") },
+  { label: "PALETTE", href: sitePath("palette") },
+  { label: "INSTALL", href: sitePath("install") },
+];
+
+const normalizedCurrentPath = currentPath.endsWith("/")
+  ? currentPath
+  : `${currentPath}/`;
+---
+
+<header class="site-header">
+  <div class="site-frame site-header__inner">
+    <a class="site-brand" href={sitePath()}>SF2 THEME</a>
+    <nav class="primary-nav" aria-label="Primary">
+      {
+        navigation.map((item) => (
+          <a
+            aria-current={normalizedCurrentPath === item.href ? "page" : undefined}
+            class="primary-nav__link"
+            data-nav-link
+            href={item.href}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      <a
+        class="primary-nav__link primary-nav__link--action"
+        href="https://github.com/douglasjarquin/street-fighter-2-theme"
+        rel="noreferrer"
+        target="_blank"
+      >
+        GITHUB <span aria-hidden="true">↗</span>
+      </a>
+    </nav>
+  </div>
+</header>
