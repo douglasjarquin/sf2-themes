@@ -17,7 +17,9 @@ ignore_patterns:
   - "dist/**"
   - "build/**"
 
+# Evidence is published to the orphan no-mistakes/evidence branch, not the code branch.
 test:
   evidence:
     store_in_repo: true
     dir: .no-mistakes/evidence
+    branch: no-mistakes/evidence
