@@ -91,7 +91,11 @@ const moves = [
 
     try {
       await navigator.clipboard.writeText(installScript);
-    } catch {
+    } catch (error) {
+      console.warn(
+        "[sf2-theme] Clipboard write failed:",
+        error instanceof Error ? error.name : "UnknownError",
+      );
       return;
     }
 

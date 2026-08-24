@@ -72,3 +72,30 @@ test("install script copy stays unconfirmed when clipboard rejects", async ({ pa
   // Then: no successful-copy checkmark is shown.
   await expect(copyButton).toHaveText("Copy install script");
 });
+
+test("install script copy reports unexpected clipboard errors without exposing details", async ({ page }) => {
+  // Given: the browser throws an unexpected error containing sensitive details.
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: () => Promise.reject(new Error("secret clipboard payload")),
+      },
+    });
+  });
+  const diagnostics = [];
+  page.on("console", (message) => {
+    if (message.type() === "warning") diagnostics.push(message.text());
+  });
+  await page.goto("./install/");
+
+  // When: the visitor attempts to copy the install script.
+  const copyButton = page.locator("[data-install-copy]");
+  await expect(copyButton).toHaveAccessibleName("Copy install script");
+  await copyButton.click();
+
+  // Then: the failure is observable by safe error type only and never looks successful.
+  await expect.poll(() => diagnostics).toContain("[sf2-theme] Clipboard write failed: Error");
+  expect(diagnostics.join("\n")).not.toContain("secret clipboard payload");
+  await expect(copyButton).toHaveText("Copy install script");
+});
