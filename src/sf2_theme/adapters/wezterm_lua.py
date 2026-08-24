@@ -6,7 +6,10 @@ from pathlib import Path
 
 BUILDER = re.compile(r"^local\s+(\w+)\s*=\s*wezterm\.config_builder\(\)\s*$", re.MULTILINE)
 RETURN_NAME = re.compile(r"^return\s+(\w+)\s*$", re.MULTILINE)
-COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=", re.MULTILINE)
+COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=")
+SF2_SCHEME_VALUE = re.compile(
+    r'"(?:street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"'
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,21 +58,48 @@ def already_integrated(existing: str, pointer: Path) -> bool:
     return "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
 
 
-def setup_lua(existing: str, pointer: Path) -> LuaSetup:
+def _scheme_kind(line: str) -> str | None:
+    if COLOR_SCHEME_LINE.match(line) is None:
+        return None
+    if SF2_SCHEME_VALUE.search(line) is not None:
+        return "sf2"
+    return "other"
+
+
+def _strip_scheme_lines(existing: str, *, kinds: frozenset[str]) -> str:
+    kept = [line for line in existing.splitlines() if _scheme_kind(line) not in kinds]
+    newline = "\n" if existing.endswith("\n") else ""
+    return "\n".join(kept) + newline
+
+
+def _has_scheme_kind(existing: str, kind: str) -> bool:
+    return any(_scheme_kind(line) == kind for line in existing.splitlines())
+
+
+def setup_lua(existing: str, pointer: Path, *, adopt: bool = False) -> LuaSetup:
     """Mutate only empty files and known-safe config_builder configs."""
     snippet = integration_snippet(pointer)
     if not existing.strip():
         return LuaSetup(content=starter_config(pointer), mutated=True, snippet=None)
     if already_integrated(existing, pointer):
         return LuaSetup(content=existing, mutated=False, snippet=None)
-    if COLOR_SCHEME_LINE.search(existing):
-        return LuaSetup(content=existing, mutated=False, snippet=snippet)
     builder = BUILDER.search(existing)
     returned = RETURN_NAME.search(existing)
     if builder is None or returned is None or builder.group(1) != returned.group(1):
         return LuaSetup(content=existing, mutated=False, snippet=snippet)
+    has_foreign = _has_scheme_kind(existing, "other")
+    has_sf2 = _has_scheme_kind(existing, "sf2")
+    if has_foreign and not adopt:
+        return LuaSetup(content=existing, mutated=False, snippet=snippet)
+    strip_kinds = {"sf2"}
+    if adopt:
+        strip_kinds.add("other")
+    cleaned = _strip_scheme_lines(existing, kinds=frozenset(strip_kinds)) if (has_sf2 or adopt) else existing
+    returned = RETURN_NAME.search(cleaned)
+    if returned is None:
+        return LuaSetup(content=existing, mutated=False, snippet=snippet)
     name = builder.group(1)
     assignment = integration_snippet(pointer, name).rstrip()
-    prefix = existing[: returned.start()].rstrip()
-    suffix = existing[returned.start() :]
+    prefix = cleaned[: returned.start()].rstrip()
+    suffix = cleaned[returned.start() :]
     return LuaSetup(content=f"{prefix}\n{assignment}\n{suffix}", mutated=True, snippet=None)

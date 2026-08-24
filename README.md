@@ -35,7 +35,8 @@ sf2-theme apply herdr --theme chun-li
 herdr server reload-config
 ```
 
-If WezTerm's `wezterm.lua` is not a known-safe `config_builder` file, `setup` writes the color schemes and a managed pointer, then prints the exact Lua snippet to paste. It will not guess.
+If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
+If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
 
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
 

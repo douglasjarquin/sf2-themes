@@ -159,18 +159,22 @@ def setup_wezterm(
     config_dir: Path | None,
     dry_run: bool,
     follow_symlinks: bool,
+    adopt: bool = False,
+    replace_pointer: bool = True,
 ) -> tuple[list[WriteResult], LuaSetup]:
     """Install schemes, pointer, and optionally a known-safe Lua integration."""
-    results = apply_wezterm(
-        theme,
+    results = write_schemes(
         themes,
         config_dir=config_dir,
         dry_run=dry_run,
         follow_symlinks=follow_symlinks,
     )
+    pointer = current_pointer_path()
+    if replace_pointer or not pointer.is_file():
+        results.append(write_pointer(theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
     lua_path = wezterm_lua_path(config_dir)
     existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
-    lua = setup_lua(existing, current_pointer_path())
+    lua = setup_lua(existing, current_pointer_path(), adopt=adopt)
     if lua.mutated:
         results.append(
             write_file(lua_path, lua.content, dry_run=dry_run, follow_symlinks=follow_symlinks)

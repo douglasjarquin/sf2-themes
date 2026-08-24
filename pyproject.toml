@@ -1,6 +1,6 @@
 [project]
 name = "sf2-theme"
-version = "1.0.0"
+version = "1.0.1"
 description = "Street Fighter II color themes for WezTerm and Herdr"
 readme = "README.md"
 requires-python = ">=3.11"

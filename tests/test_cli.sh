@@ -57,10 +57,10 @@ config.font_size = 16
 return config
 LUA
 
-"$repo_dir/sf2-theme" setup wezterm --config-dir "$test_dir/wezterm-existing" >"$test_dir/setup-out.txt"
+"$repo_dir/sf2-theme" setup wezterm --config-dir "$test_dir/wezterm-existing" >"$test_dir/setup-out.txt" 2>"$test_dir/setup-err.txt"
 grep -q 'scheme_for_appearance' "$test_dir/wezterm-existing/wezterm.lua"
 grep -q 'config.font_size = 16' "$test_dir/wezterm-existing/wezterm.lua"
-grep -q 'WezTerm config was left unchanged' "$test_dir/setup-out.txt"
+grep -q 'WezTerm config was left unchanged' "$test_dir/setup-err.txt"
 test -f "$test_dir/wezterm-existing/colors/street-fighter-ii-main.toml"
 printf '%s\n' 'WezTerm unknown lua left unchanged: PASS'
 
