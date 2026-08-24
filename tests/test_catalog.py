@@ -19,9 +19,23 @@ def test_unknown_theme_errors() -> None:
         get_theme("bison", parse_catalog())
 
 
-def test_catalog_has_eighteen_themes_and_role_aliases() -> None:
+def test_catalog_has_thirty_six_themes_and_role_aliases() -> None:
     catalog = parse_catalog()
-    assert len(catalog) == 18
+    assert len(catalog) == 36
     assert get_theme("boxer", catalog).metadata.id == "balrog"
     assert get_theme("claw", catalog).metadata.id == "vega"
     assert get_theme("dictator", catalog).metadata.id == "m-bison"
+
+
+def test_catalog_has_light_variant_for_every_dark_theme() -> None:
+    catalog = parse_catalog()
+    by_id = {theme.metadata.id: theme for theme in catalog}
+    dark_themes = tuple(theme for theme in catalog if not theme.metadata.id.endswith("-light"))
+
+    assert len(catalog) == 36
+    assert len(dark_themes) == 18
+    for dark in dark_themes:
+        light = by_id[f"{dark.metadata.id}-light"]
+        assert light.metadata.display_name == f"{dark.metadata.display_name} Light"
+        assert light.ui.background != dark.ui.background
+        assert light.ui.foreground != dark.ui.foreground

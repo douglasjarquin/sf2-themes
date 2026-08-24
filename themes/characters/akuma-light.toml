@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "akuma-light"
+display_name = "Street Fighter II - Akuma Light"
+kind = "character"
+introduced_in = "super-turbo"
+character = "Akuma"
+aliases = []
+
+[ui]
+background = "#e7e0d2"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e7e0d2"
+selection_bg = "#1b1e2d"
+selection_fg = "#e7e0d2"
+panel_bg = "#dfd8cb"
+sidebar_bg = "#e7e0d2"
+active_row_bg = "#e6cdbd"
+navigate_row_bg = "#e0d5c0"
+surface_dim = "#e3dccf"
+surface0 = "#d7d0c5"
+surface1 = "#cac5bb"
+overlay0 = "#8b8988"
+overlay1 = "#6d6c6f"
+subtext = "#918f8d"
+accent = "#e04020"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#e07038"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#c34850"
+green = "#4b8a52"
+yellow = "#b38326"
+blue = "#4394e6"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#dfd8cb"
+
+[ansi.bright]
+black = "#716f72"
+red = "#df535b"
+green = "#5aa662"
+yellow = "#dfa330"
+blue = "#49a2fa"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfc9be"

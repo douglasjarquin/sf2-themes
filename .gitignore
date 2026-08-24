@@ -8,8 +8,8 @@ build/
 .venv/
 venv/
 .DS_Store
+.omo/
 
 # Worktree no-mistakes state and evidence stay local. Evidence is published
 # to the orphan no-mistakes/evidence branch, not this code branch.
 .no-mistakes/
-

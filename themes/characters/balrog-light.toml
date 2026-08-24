@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "balrog-light"
+display_name = "Street Fighter II - Balrog Light"
+kind = "character"
+introduced_in = "champion-edition"
+character = "Balrog"
+aliases = []
+
+[ui]
+background = "#e7e1d4"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e7e1d4"
+selection_bg = "#1b1e2d"
+selection_fg = "#e7e1d4"
+panel_bg = "#dfd9cd"
+sidebar_bg = "#e7e1d4"
+active_row_bg = "#d4d2cf"
+navigate_row_bg = "#e0d6c2"
+surface_dim = "#e3ddd1"
+surface0 = "#d7d1c7"
+surface1 = "#cac6bd"
+overlay0 = "#8b8989"
+overlay1 = "#6d6c70"
+subtext = "#918f8e"
+accent = "#4a65a9"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4a8bdd"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#c34850"
+green = "#4b8a52"
+yellow = "#b38326"
+blue = "#437dc7"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#dfd9cd"
+
+[ansi.bright]
+black = "#717073"
+red = "#df535b"
+green = "#5aa662"
+yellow = "#dfa330"
+blue = "#4988d9"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfcac0"

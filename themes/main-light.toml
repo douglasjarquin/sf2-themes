@@ -1,0 +1,56 @@
+schema_version = 1
+
+[meta]
+id = "main-light"
+display_name = "Street Fighter II - Main Light"
+kind = "main"
+introduced_in = "main"
+aliases = []
+
+[ui]
+background = "#e7e2d6"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e7e2d6"
+selection_bg = "#1b1e2d"
+selection_fg = "#e7e2d6"
+panel_bg = "#dfdacf"
+sidebar_bg = "#e7e2d6"
+active_row_bg = "#ded5c0"
+navigate_row_bg = "#e0d7c4"
+surface_dim = "#e3ded3"
+surface0 = "#d7d2c8"
+surface1 = "#cac7be"
+overlay0 = "#8b8a8a"
+overlay1 = "#6d6c71"
+subtext = "#91908f"
+accent = "#9d7322"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#c34850"
+green = "#4b8a52"
+yellow = "#b38326"
+blue = "#4394e6"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#dfdacf"
+
+[ansi.bright]
+black = "#717074"
+red = "#df535b"
+green = "#5aa662"
+yellow = "#dfa330"
+blue = "#49a2fa"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfcac2"

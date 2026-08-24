@@ -2,7 +2,7 @@
 
 A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/) and [Herdr](https://herdr.dev/).
 
-The pack contains **18 fully resolved themes**: a shared `main` family theme plus the arcade roster through Super Street Fighter II Turbo.
+The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
 Unofficial fan project. Street Fighter and related names are trademarks of Capcom. This project is not affiliated with or endorsed by Capcom.
 
@@ -48,6 +48,7 @@ Herdr configs that already have an unmarked `[theme]` section are left alone unl
 sf2-theme apps
 sf2-theme themes
 sf2-theme show ryu
+sf2-theme show ryu-light
 sf2-theme validate --all
 sf2-theme current wezterm
 sf2-theme apply herdr --theme boxer --dry-run
@@ -73,4 +74,5 @@ Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/sf2-theme
 
 See [docs/theme-guidelines.md](docs/theme-guidelines.md), [docs/roster.md](docs/roster.md), and [docs/previews/](docs/previews/).
 
-Theme data lives in [`themes/`](themes/). The committed `sf2-theme` script embeds a generated copy of that catalog. Do not hand-edit the embed.
+Theme data lives in [`themes/`](themes/). Dark themes keep their original IDs, and light variants use the corresponding `<id>-light` ID.
+The committed `sf2-theme` script embeds a generated copy of that catalog. Do not hand-edit the embed.

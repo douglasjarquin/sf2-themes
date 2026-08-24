@@ -2,6 +2,22 @@
 
 These rules apply to every committed theme in this repository.
 
+The catalog contains a dark and light variant for every theme.
+
+Dark variants keep their original IDs and light variants append `-light`.
+
+## 0. Light-mode variants
+
+Light variants must remain recognizably related to their dark counterparts through the same character accent, semantic hue meanings, and warm arcade-era family.
+
+Light variants must use an explicitly reviewed light background and dark foreground rather than runtime color inversion or inherited tokens.
+
+Light variants must satisfy the same contrast, ANSI distinctness, complete-resolution, adapter, and automated validation requirements as dark variants.
+
+Light variants must keep red, green, yellow, blue, magenta, cyan, and orange semantic meanings unchanged.
+
+Light variants must be authored as complete TOML files with reviewed hexadecimal values.
+
 ## 1. Theme identity
 
 Every theme must clearly belong to the same Street Fighter II family.

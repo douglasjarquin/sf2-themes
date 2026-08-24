@@ -26,6 +26,9 @@ MODULES: tuple[tuple[str, Path, bool], ...] = (
 
 def theme_files() -> dict[str, str]:
     files = {"main.toml": (ROOT / "themes" / "main.toml").read_text(encoding="utf-8")}
+    main_light = ROOT / "themes" / "main-light.toml"
+    if main_light.is_file():
+        files["main-light.toml"] = main_light.read_text(encoding="utf-8")
     for path in sorted((ROOT / "themes" / "characters").glob("*.toml")):
         files[f"characters/{path.name}"] = path.read_text(encoding="utf-8")
     return files

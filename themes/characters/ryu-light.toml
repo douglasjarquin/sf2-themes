@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "ryu-light"
+display_name = "Street Fighter II - Ryu Light"
+kind = "character"
+introduced_in = "world-warrior"
+character = "Ryu"
+aliases = []
+
+[ui]
+background = "#e7e1d3"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e7e1d3"
+selection_bg = "#1b1e2d"
+selection_fg = "#e7e1d3"
+panel_bg = "#dfd9cc"
+sidebar_bg = "#e7e1d3"
+active_row_bg = "#e5cdc1"
+navigate_row_bg = "#e0d6c1"
+surface_dim = "#e3ddd0"
+surface0 = "#d7d1c6"
+surface1 = "#cac6bc"
+overlay0 = "#8b8988"
+overlay1 = "#6d6c6f"
+subtext = "#918f8d"
+accent = "#d83a3a"
+
+[semantic]
+red = "#e24c52"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#be4045"
+green = "#4b8a52"
+yellow = "#b38326"
+blue = "#4394e6"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#dfd9cc"
+
+[ansi.bright]
+black = "#717073"
+red = "#d9494f"
+green = "#5aa662"
+yellow = "#dfa330"
+blue = "#49a2fa"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfcabf"

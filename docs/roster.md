@@ -1,6 +1,7 @@
 # Roster
 
-Eighteen themes cover the arcade Street Fighter II lineage through Super Street Fighter II Turbo.
+Eighteen dark themes cover the arcade Street Fighter II lineage through Super Street Fighter II Turbo.
+Every row also has a light variant with the same ID plus the `-light` suffix, for 36 fully resolved catalog entries.
 
 | ID | Aliases | Character | Introduced | Visual direction |
 |---|---|---|---|---|
