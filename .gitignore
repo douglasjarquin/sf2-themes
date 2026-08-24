@@ -9,6 +9,10 @@ build/
 venv/
 .DS_Store
 .omo/
+/design/
+/Web/node_modules/
+/Web/.astro/
+/Web/dist/
 
 # Worktree no-mistakes state and evidence stay local. Evidence is published
 # to the orphan no-mistakes/evidence branch, not this code branch.
