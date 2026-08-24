@@ -1,0 +1,25 @@
+commands:
+  format: 'ruff format src tests scripts'
+  lint: 'ruff check src tests scripts'
+  test: 'pytest'
+
+# Ignore these paths during review and documentation checks.
+ignore_patterns:
+  - "*.pyc"
+  - "*.pyo"
+  - "*.egg-info"
+  - "**/__pycache__/**"
+  - "**/*.egg-info/**"
+  - ".pytest_cache/**"
+  - ".ruff_cache/**"
+  - ".venv/**"
+  - "venv/**"
+  - "dist/**"
+  - "build/**"
+
+# Evidence is published to the orphan no-mistakes/evidence branch, not the code branch.
+test:
+  evidence:
+    store_in_repo: true
+    dir: .no-mistakes/evidence
+    branch: no-mistakes/evidence
