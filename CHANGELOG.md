@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1
+
+- Upgrade a previous `config.color_scheme = "street-fighter-2"` assignment during `setup wezterm` instead of leaving WezTerm pinned to the old scheme file.
+- Keep an already-selected theme when `setup wezterm` is re-run without `--theme`.
+- Support `--adopt` for WezTerm, matching Herdr.
+
 ## 1.0.0
 
 - Replace the five-color brand palette with 18 fully resolved themes (`main` plus the Super Turbo roster).

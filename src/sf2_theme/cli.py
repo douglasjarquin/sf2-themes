@@ -132,11 +132,17 @@ def _setup(app: str, options: Options) -> None:
                 config_dir=options.config_dir,
                 dry_run=options.dry_run,
                 follow_symlinks=options.follow_symlinks,
+                adopt=options.adopt,
+                replace_pointer=options.theme is not None,
             )
             _report(results)
             if lua.snippet is not None:
-                print("WezTerm config was left unchanged. Add this integration:\n")
-                print(lua.snippet, end="")
+                print(
+                    "WezTerm config was left unchanged because it already selects a color scheme.\n"
+                    "Pass --adopt to replace it, or add this integration:\n",
+                    file=sys.stderr,
+                )
+                print(lua.snippet, end="", file=sys.stderr)
         case "herdr":
             result = apply_herdr(
                 theme,

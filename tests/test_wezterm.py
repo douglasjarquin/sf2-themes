@@ -2,7 +2,13 @@
 
 from pathlib import Path
 
-from sf2_theme.adapters.wezterm import apply_wezterm, render_scheme, setup_wezterm, wezterm_lua_path
+from sf2_theme.adapters.wezterm import (
+    apply_wezterm,
+    current_pointer_path,
+    render_scheme,
+    setup_wezterm,
+    wezterm_lua_path,
+)
 from sf2_theme.adapters.wezterm_lua import setup_lua
 from sf2_theme.catalog import get_theme, parse_catalog
 
@@ -68,6 +74,35 @@ def test_existing_color_scheme_is_not_stolen() -> None:
     assert 'config.color_scheme = "Catppuccin Mocha"' in result.content
 
 
+def test_previous_sf2_scheme_assignment_is_upgraded() -> None:
+    existing = Path("tests/fixtures/wezterm-previous-sf2.lua").read_text(encoding="utf-8")
+    pointer = Path("/Users/douglasjarquin/.config/sf2-theme/wezterm-current.lua")
+    result = setup_lua(existing, pointer)
+    assert result.mutated is True
+    assert result.snippet is None
+    assert 'config.color_scheme = "street-fighter-2"' not in result.content
+    assert "config.color_scheme = dofile(sf2_current)" in result.content
+    assert "wezterm.add_to_config_reload_watch_list(sf2_current)" in result.content
+    assert 'config.font = wezterm.font("Monaspace Neon")' in result.content
+    assert "scheme_for_appearance" in result.content
+
+
+def test_adopt_replaces_foreign_color_scheme() -> None:
+    existing = "\n".join(
+        (
+            'local wezterm = require("wezterm")',
+            "local config = wezterm.config_builder()",
+            'config.color_scheme = "Catppuccin Mocha"',
+            "return config",
+            "",
+        )
+    )
+    result = setup_lua(existing, Path("/tmp/pointer.lua"), adopt=True)
+    assert result.mutated is True
+    assert "Catppuccin Mocha" not in result.content
+    assert "config.color_scheme = dofile(sf2_current)" in result.content
+
+
 def test_apply_does_not_touch_lua(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     lua_dir = tmp_path / "wezterm"
@@ -103,6 +138,28 @@ def test_setup_writes_starter_when_missing(tmp_path: Path, monkeypatch) -> None:
     written = (tmp_path / "xdg" / "wezterm" / "wezterm.lua").read_text(encoding="utf-8")
     assert "dofile(sf2_current)" in written
     assert any(result.path.name == "street-fighter-ii-main.toml" for result in results)
+
+
+def test_setup_without_theme_keeps_existing_pointer(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    catalog = parse_catalog()
+    apply_wezterm(
+        get_theme("ken", catalog),
+        catalog,
+        config_dir=tmp_path / "wezterm",
+        dry_run=False,
+        follow_symlinks=False,
+    )
+    assert "ken" in current_pointer_path().read_text(encoding="utf-8")
+    setup_wezterm(
+        get_theme("main", catalog),
+        catalog,
+        config_dir=tmp_path / "wezterm",
+        dry_run=False,
+        follow_symlinks=False,
+        replace_pointer=False,
+    )
+    assert "ken" in current_pointer_path().read_text(encoding="utf-8")
 
 
 def test_wezterm_config_file_env(tmp_path: Path, monkeypatch) -> None:

@@ -9,7 +9,7 @@ def test_apps_and_version(capsys) -> None:
     assert dispatch(["apps"]) == 0
     assert "wezterm" in capsys.readouterr().out
     assert dispatch(["--version"]) == 0
-    assert capsys.readouterr().out.strip() == "1.0.0"
+    assert capsys.readouterr().out.strip() == "1.0.1"
 
 
 def test_validate_main(capsys) -> None:
@@ -53,4 +53,5 @@ def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:
     (lua_dir / "wezterm.lua").write_text(original, encoding="utf-8")
     assert dispatch(["setup", "wezterm", "--config-dir", str(lua_dir)]) == 0
     assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
-    assert "WezTerm config was left unchanged" in capsys.readouterr().out
+    captured = capsys.readouterr()
+    assert "WezTerm config was left unchanged" in captured.err
