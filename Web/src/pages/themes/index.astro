@@ -1,8 +1,320 @@
 ---
-import RoutePlaceholder from "../../components/RoutePlaceholder.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+
+const adapters = [
+  {
+    name: "wezterm",
+    command: "sf2-theme setup wezterm",
+    description:
+      "Writes every scheme to the WezTerm colors directory and safely integrates the managed current-theme pointer into wezterm.lua.",
+  },
+  {
+    name: "herdr",
+    command: "sf2-theme setup herdr",
+    description:
+      "Writes the documented marked theme block to config.toml while preserving unrelated Herdr configuration.",
+  },
+];
 ---
 
 <SiteLayout title="Themes">
-  <RoutePlaceholder eyebrow="CHOOSE YOUR FIGHTER" title="THEMES" />
+  <section class="themes-hero site-frame" aria-labelledby="themes-title">
+    <h1 id="themes-title">THEMES</h1>
+    <p>
+      Every port lives in this repo and installs with one command. WezTerm and Herdr are
+      in the ring today.
+    </p>
+    <p class="themes-stats" data-testid="themes-stats">2 PORTS · 2 READY · 1 CLI</p>
+  </section>
+
+  <section class="themes-catalog site-frame" aria-label="Theme adapters">
+    <div class="themes-controls">
+      <div class="themes-filters" aria-label="Adapter status filter">
+        <button aria-pressed="true" data-filter="all" type="button">ALL</button>
+        <button aria-pressed="false" data-filter="ready" type="button">READY</button>
+        <button aria-pressed="false" data-filter="planned" type="button">PLANNED</button>
+      </div>
+      <label class="themes-search">
+        <span class="sr-only">Search ports</span>
+        <input aria-label="Search ports" placeholder="Search ports…" type="search" />
+      </label>
+    </div>
+
+    <div class="themes-grid" data-testid="themes-grid">
+      {
+        adapters.map((adapter) => (
+          <article class="adapter-card" data-adapter={adapter.name} data-status="ready" data-testid="adapter-card">
+            <div class="adapter-card__heading">
+              <h2>{adapter.name}</h2>
+              <span class="adapter-card__chip">READY</span>
+            </div>
+            <p>{adapter.description}</p>
+            <div class="adapter-card__command">
+              <code>{adapter.command}</code>
+              <button data-command={adapter.command} type="button">COPY</button>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="themes-empty" data-testid="themes-empty-state" hidden>
+      K.O. - NO PORT MATCHES. TRY ANOTHER NAME.
+    </p>
+    <p class="themes-request">
+      Missing your app? <a href="https://github.com/douglasjarquin/street-fighter-2-theme/issues" rel="noreferrer" target="_blank">Challenge us with an issue <span aria-hidden="true">↗</span></a>
+    </p>
+  </section>
 </SiteLayout>
+
+<script>
+  // allow: SIZE_OK - This scoped Astro route owns its markup, interaction, and page-only styling.
+  const filters = document.querySelectorAll<HTMLButtonElement>("[data-filter]");
+  const cards = document.querySelectorAll<HTMLElement>("[data-adapter]");
+  const search = document.querySelector<HTMLInputElement>("input[type=search]");
+  const empty = document.querySelector<HTMLElement>("[data-testid=themes-empty-state]");
+  let activeFilter = "all";
+
+  const applyFilters = () => {
+    const query = search?.value.trim().toLowerCase() ?? "";
+    let visible = 0;
+    for (const card of cards) {
+      const matchesFilter = activeFilter === "all" || card.dataset.status === activeFilter;
+      const matchesQuery = card.dataset.adapter?.includes(query) ?? false;
+      const matches = matchesFilter && matchesQuery;
+      card.hidden = !matches;
+      visible += Number(matches);
+    }
+    if (empty) empty.hidden = visible !== 0;
+  };
+
+  for (const filter of filters) {
+    filter.addEventListener("click", () => {
+      activeFilter = filter.dataset.filter ?? "all";
+      for (const button of filters) {
+        button.setAttribute("aria-pressed", String(button === filter));
+      }
+      applyFilters();
+    });
+  }
+
+  search?.addEventListener("input", applyFilters);
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-command]")) {
+    button.addEventListener("click", async () => {
+      const command = button.dataset.command;
+      if (!command || !navigator.clipboard?.writeText) return;
+      try {
+        await navigator.clipboard.writeText(command);
+        button.textContent = "COPIED";
+        window.setTimeout(() => {
+          button.textContent = "COPY";
+        }, 1400);
+      } catch {
+        // A rejected clipboard permission must not look successful.
+      }
+    });
+  }
+</script>
+
+<style>
+  .themes-hero {
+    display: grid;
+    gap: var(--space-5);
+    padding-block: var(--space-12) var(--space-2);
+  }
+
+  .themes-hero h1 {
+    margin: 0;
+    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-size: clamp(22px, 5vw, 30px);
+    line-height: 1.5;
+    text-shadow: 4px 4px 0 var(--color-red);
+  }
+
+  .themes-hero p {
+    max-inline-size: 62ch;
+    margin: 0;
+    color: color-mix(in srgb, var(--color-foreground) 68%, transparent);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .themes-hero .themes-stats {
+    color: var(--color-cyan);
+    font-family: var(--font-display);
+    font-size: 8px;
+    line-height: 1.9;
+  }
+
+  .themes-catalog {
+    padding-block: var(--space-8) var(--space-20);
+  }
+
+  .themes-controls,
+  .themes-filters,
+  .adapter-card__heading,
+  .adapter-card__command {
+    display: flex;
+    align-items: center;
+  }
+
+  .themes-controls {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-5);
+    margin-block-end: var(--space-6);
+  }
+
+  .themes-filters {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .themes-filters button {
+    border: 2px solid color-mix(in srgb, var(--color-foreground) 18%, transparent);
+    padding: 10px 14px;
+    background: transparent;
+    color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-size: 8px;
+  }
+
+  .themes-filters button[aria-pressed="true"] {
+    border-color: var(--color-red);
+    background: var(--color-red);
+    color: var(--color-foreground);
+  }
+
+  .themes-search input {
+    inline-size: min(280px, 100%);
+    border: 2px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface-0);
+    color: var(--color-foreground);
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .themes-search input:focus {
+    border-color: var(--color-accent);
+    outline: 0;
+  }
+
+  .themes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr));
+    gap: var(--space-4);
+  }
+
+  .adapter-card {
+    display: grid;
+    gap: var(--space-3);
+    border: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent);
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface-0);
+  }
+
+  .adapter-card[hidden] {
+    display: none;
+  }
+
+  .adapter-card__heading,
+  .adapter-card__command {
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .adapter-card h2,
+  .adapter-card p {
+    margin: 0;
+  }
+
+  .adapter-card h2,
+  .adapter-card code {
+    font-family: var(--font-mono);
+  }
+
+  .adapter-card h2 {
+    color: var(--color-foreground);
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .adapter-card__chip {
+    border: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent);
+    padding: 5px 7px;
+    background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
+    color: var(--color-cyan);
+    font-family: var(--font-display);
+    font-size: 6px;
+  }
+
+  .adapter-card p {
+    color: color-mix(in srgb, var(--color-foreground) 58%, transparent);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .adapter-card__command {
+    min-inline-size: 0;
+    padding: 9px var(--space-3);
+    background: var(--color-surface-dim);
+  }
+
+  .adapter-card code {
+    overflow: hidden;
+    color: var(--color-accent);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .adapter-card__command button {
+    flex: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: color-mix(in srgb, var(--color-foreground) 50%, transparent);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+  }
+
+  .adapter-card__command button:hover {
+    color: var(--color-accent);
+  }
+
+  .themes-empty {
+    margin: 0;
+    padding: var(--space-10) var(--space-1);
+    color: color-mix(in srgb, var(--color-foreground) 45%, transparent);
+    font-family: var(--font-display);
+    font-size: 10px;
+    line-height: 2;
+  }
+
+  .themes-request {
+    margin: var(--space-8) 0 0;
+    color: color-mix(in srgb, var(--color-foreground) 50%, transparent);
+    font-size: 14px;
+  }
+
+  .sr-only {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 720px) {
+    .themes-search,
+    .themes-search input {
+      inline-size: 100%;
+    }
+  }
+</style>
