@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "m-bison"
+display_name = "Street Fighter II - M. Bison"
+kind = "character"
+introduced_in = "champion-edition"
+character = "M. Bison"
+aliases = ["dictator"]
+
+[ui]
+background = "#140a12"
+foreground = "#fff4d6"
+cursor_bg = "#f2b134"
+cursor_fg = "#140a12"
+selection_bg = "#f2b134"
+selection_fg = "#140a12"
+panel_bg = "#1d131a"
+sidebar_bg = "#140a12"
+active_row_bg = "#1d3e43"
+navigate_row_bg = "#452f19"
+surface_dim = "#140a12"
+surface0 = "#2c2126"
+surface1 = "#3a2f31"
+overlay0 = "#776c64"
+overlay1 = "#958b7e"
+subtext = "#b8ae9b"
+accent = "#c41e3a"
+
+[semantic]
+red = "#db4252"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#140a12"
+red = "#db4252"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+white = "#e3d8be"
+
+[ansi.bright]
+black = "#6d635c"
+red = "#e16471"
+green = "#88d490"
+yellow = "#f4bf59"
+blue = "#6bb5ff"
+magenta = "#d199e0"
+cyan = "#59cfcd"
+white = "#fffaf0"

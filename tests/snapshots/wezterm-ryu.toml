@@ -1,0 +1,16 @@
+[colors]
+foreground = "#fff4d6"
+background = "#101522"
+cursor_bg = "#f2b134"
+cursor_fg = "#101522"
+cursor_border = "#f2b134"
+selection_bg = "#d8cab0"
+selection_fg = "#101522"
+split = "#36393f"
+scrollbar_thumb = "#74736e"
+ansi = ["#101522", "#e24c52", "#6ecb78", "#f2b134", "#4aa5ff", "#c783d9", "#35c4c2", "#e2d9c0"]
+brights = ["#6b6a66", "#e76c71", "#88d490", "#f4bf59", "#6bb5ff", "#d199e0", "#59cfcd", "#fffaf0"]
+
+[metadata]
+name = "Street Fighter II - Ryu"
+aliases = []

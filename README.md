@@ -1,13 +1,14 @@
 # Street Fighter II Theme Pack
 
-A small CLI that installs a Street Fighter II color palette into WezTerm and Herdr.
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/) and [Herdr](https://herdr.dev/).
 
-The palette lives in [`palette.toml`](palette.toml), so both adapters use the same deep navy, arcade red, gold, teal, and cream source data.
-If `palette.toml` is not next to the installed `sf2-theme` script (for example, a copy-only install), the CLI falls back to an embedded copy of the same palette.
+The pack contains **18 fully resolved themes**: a shared `main` family theme plus the arcade roster through Super Street Fighter II Turbo.
+
+Unofficial fan project. Street Fighter and related names are trademarks of Capcom. This project is not affiliated with or endorsed by Capcom.
 
 ## Install
 
-Clone this repository and put `sf2-theme` somewhere on your `PATH`.
+Clone this repository and put the standalone `sf2-theme` script on your `PATH`.
 
 ```sh
 git clone https://github.com/douglasjarquin/street-fighter-2-theme.git
@@ -15,43 +16,60 @@ cd street-fighter-2-theme
 install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"
 ```
 
-The CLI has no package dependencies, but needs Python 3.11 or newer (it uses the standard library `tomllib` module).
+The CLI has no package dependencies. It needs Python 3.11 or newer.
 
-## Usage
+From a checkout you can also run `python3 -m sf2_theme` with `PYTHONPATH=src`, or `pip install -e .`.
 
-List the supported applications:
+## Setup, then apply
 
-```sh
-sf2-theme apps
-```
-
-Install or apply the WezTerm theme.
+`setup` is one-time application integration.
+`apply` selects a theme (default: `main`).
 
 ```sh
-sf2-theme install wezterm
+sf2-theme setup wezterm
 sf2-theme apply wezterm
-```
+sf2-theme apply wezterm --theme ryu
 
-This writes `~/.config/wezterm/colors/street-fighter-2.toml` and selects that scheme in `wezterm.lua`.
-WezTerm reloads `wezterm.lua` on its own, so the running terminal should pick up the palette without a restart.
-
-Set `WEZTERM_CONFIG_DIR` or pass `--config-dir PATH` to target another WezTerm config directory.
-
-Install or apply the Herdr theme.
-
-```sh
-sf2-theme install herdr
-sf2-theme apply herdr
-```
-
-This writes the documented Herdr theme tables to `~/.config/herdr/config.toml` while preserving unrelated configuration.
-
-Set `HERDR_CONFIG_PATH` to target a specific config file, or pass `--config-dir PATH` to target a different Herdr config directory.
-
-After changing a running Herdr instance, reload the config:
-
-```sh
+sf2-theme setup herdr
+sf2-theme apply herdr --theme chun-li
 herdr server reload-config
 ```
 
-Herdr's current configuration contract is documented at [herdr.dev/docs/configuration](https://herdr.dev/docs/configuration/).
+If WezTerm's `wezterm.lua` is not a known-safe `config_builder` file, `setup` writes the color schemes and a managed pointer, then prints the exact Lua snippet to paste. It will not guess.
+
+Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
+
+`install` still works as a deprecated alias for `apply`.
+
+## Commands
+
+```sh
+sf2-theme apps
+sf2-theme themes
+sf2-theme show ryu
+sf2-theme validate --all
+sf2-theme current wezterm
+sf2-theme apply herdr --theme boxer --dry-run
+```
+
+Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
+
+## How it writes files
+
+- WezTerm schemes go in `~/.config/wezterm/colors/`.
+- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua`.
+- Herdr updates only a marked block in `~/.config/herdr/config.toml`.
+- Symlinks are refused unless you pass `--follow-symlinks`.
+- Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
+
+Override locations with `--config-dir`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, or `XDG_CONFIG_HOME`.
+
+## Uninstall
+
+Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/sf2-theme/`, the WezTerm integration snippet, and the marked Herdr theme block.
+
+## Design
+
+See [docs/theme-guidelines.md](docs/theme-guidelines.md), [docs/roster.md](docs/roster.md), and [docs/previews/](docs/previews/).
+
+Theme data lives in [`themes/`](themes/). The committed `sf2-theme` script embeds a generated copy of that catalog. Do not hand-edit the embed.
