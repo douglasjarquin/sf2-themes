@@ -1,8 +1,134 @@
 ---
-import RoutePlaceholder from "../../components/RoutePlaceholder.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+
+const installScript = `git clone https://github.com/douglasjarquin/street-fighter-2-theme.git
+cd street-fighter-2-theme
+install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"`;
+
+const moves = [
+  ["WEZTERM", "sf2-theme setup wezterm", "Set up the one-time WezTerm integration."],
+  ["WEZTERM", "sf2-theme apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
+  ["HERDR", "sf2-theme setup herdr", "Set up the one-time Herdr integration."],
+  ["HERDR", "sf2-theme apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
+];
 ---
 
-<SiteLayout title="Install">
-  <RoutePlaceholder eyebrow="READY PLAYER ONE" title="INSTALL" />
+<SiteLayout
+  title="Install"
+  description="Install sf2-theme, then set up and apply Street Fighter II terminal colors."
+>
+  <section class="install-page">
+    <div class="site-frame install-page__inner">
+      <header class="install-page__header">
+        <p>READY PLAYER ONE</p>
+        <h1>INSTALL</h1>
+        <p class="install-page__lede">
+          Clone the project, put the standalone CLI on your PATH, then set up each terminal once.
+        </p>
+      </header>
+
+      <section aria-labelledby="install-script-heading" class="install-panel">
+        <div class="install-panel__heading">
+          <div>
+            <p class="install-panel__eyebrow">TERMINAL</p>
+            <h2 id="install-script-heading">GET THE CLI</h2>
+          </div>
+          <button data-install-copy data-install-script={installScript} type="button"
+            >Copy install script</button
+          >
+        </div>
+        <pre aria-label="Install script"><code>{installScript}</code></pre>
+        <p class="install-panel__meta">Python 3.11 or newer. No package dependencies.</p>
+      </section>
+
+      <section aria-labelledby="move-list-heading" class="install-moves">
+        <div class="install-moves__heading">
+          <p>SETUP, THEN APPLY</p>
+          <h2 id="move-list-heading">MAKE YOUR MOVE</h2>
+        </div>
+        <ol>
+          {
+            moves.map(([adapter, command, detail], index) => (
+              <li>
+                <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                <div>
+                  <p>{adapter}</p>
+                  <code>{command}</code>
+                  <small>{detail}</small>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <aside aria-labelledby="adapter-notes-heading" class="adapter-notes">
+        <p>ADAPTER NOTES</p>
+        <h2 id="adapter-notes-heading">NO GUESSWORK</h2>
+        <ul>
+          <li>
+            WezTerm upgrades a known <code>street-fighter-2</code> assignment. For another
+            selected scheme, use <code>--adopt</code> or paste the printed snippet.
+          </li>
+          <li>
+            Herdr leaves an unmarked <code>[theme]</code> section alone unless you use
+            <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.
+          </li>
+          <li><code>install</code> remains a deprecated alias for <code>apply</code>.</li>
+        </ul>
+      </aside>
+    </div>
+  </section>
 </SiteLayout>
+
+<script>
+  const copyButton = document.querySelector<HTMLButtonElement>("[data-install-copy]");
+
+  copyButton?.addEventListener("click", async () => {
+    const installScript = copyButton.dataset.installScript;
+
+    if (!installScript || !navigator.clipboard?.writeText) return;
+
+    try {
+      await navigator.clipboard.writeText(installScript);
+    } catch {
+      return;
+    }
+
+    copyButton.textContent = "✓ Copied";
+  });
+</script>
+
+<style>
+  .install-page__inner { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-12); padding-block: var(--space-15) var(--space-20); }
+  .install-page__header { display: grid; gap: var(--space-4); max-inline-size: 760px; }
+  .install-page__header > p:first-child, .install-panel__eyebrow, .install-moves__heading > p, .adapter-notes > p, .install-moves li > span, .install-moves li p { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
+  h1, h2 { margin: 0; color: var(--color-accent); font-family: var(--font-display); font-weight: 400; text-shadow: 4px 4px 0 var(--color-red); }
+  h1 { font-size: clamp(24px, 6vw, 38px); line-height: 1.45; }
+  h2 { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; }
+  .install-page__lede, .install-panel__meta, .install-moves small, .adapter-notes li { color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 16px; line-height: 1.7; }
+  .install-page__lede, .install-panel__meta { margin: 0; }
+  .install-panel, .adapter-notes { border: 2px solid color-mix(in srgb, var(--color-foreground) 18%, transparent); background: color-mix(in srgb, var(--color-panel) 88%, var(--color-surface-0)); box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-background) 72%, black); }
+  .install-panel__heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-6); border-block-end: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); }
+  button { min-block-size: 44px; padding: var(--space-3) var(--space-4); border: 2px solid var(--color-accent); background: var(--color-accent); box-shadow: 3px 3px 0 var(--color-red); color: var(--color-background); cursor: pointer; font: 400 10px/1.5 var(--font-display); transition: transform var(--duration-micro) ease-out; }
+  button:hover { transform: translate(1px, 1px); }
+  button:focus-visible { outline: 3px solid var(--color-cyan); outline-offset: 4px; }
+  pre { overflow-x: auto; margin: 0; padding: var(--space-6); background: color-mix(in srgb, var(--color-background) 82%, black); color: var(--color-foreground); font: 500 14px/1.8 var(--font-mono); }
+  .install-panel__meta { padding: var(--space-4) var(--space-6); }
+  .install-moves { display: grid; gap: var(--space-6); }
+  .install-moves__heading { display: grid; gap: var(--space-2); }
+  ol, ul { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
+  .install-moves li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-4); padding: var(--space-5); border-inline-start: 4px solid var(--color-red); background: color-mix(in srgb, var(--color-surface-0) 72%, transparent); }
+  .install-moves li > div { display: grid; gap: var(--space-2); }
+  code { overflow-wrap: anywhere; color: var(--color-foreground); font-family: var(--font-mono); font-size: 14px; }
+  .install-moves small { font-size: 14px; }
+  .adapter-notes { padding: var(--space-6); }
+  .adapter-notes h2 { margin-block: var(--space-2) var(--space-5); }
+  .adapter-notes li { position: relative; padding-inline-start: var(--space-5); }
+  .adapter-notes li::before { position: absolute; inset-inline-start: 0; color: var(--color-red); content: "▸"; }
+  @media (max-width: 560px) {
+    .install-page__inner { gap: var(--space-10); padding-block: var(--space-10) var(--space-15); }
+    .install-panel__heading { align-items: flex-start; flex-direction: column; }
+    pre { font-size: 12px; }
+  }
+</style>
