@@ -50,7 +50,11 @@ def load_catalog() -> tuple[Theme, ...]:
 
 
 def _parse_directory(root: Path) -> list[Theme]:
-    paths = [root / "main.toml", *sorted((root / "characters").glob("*.toml"))]
+    paths = [root / "main.toml"]
+    main_light = root / "main-light.toml"
+    if main_light.is_file():
+        paths.append(main_light)
+    paths.extend(sorted((root / "characters").glob("*.toml")))
     themes: list[Theme] = []
     for path in paths:
         if not path.is_file():
@@ -61,7 +65,10 @@ def _parse_directory(root: Path) -> list[Theme]:
 
 
 def _parse_embedded(files: Mapping[str, str]) -> list[Theme]:
-    names = ["main.toml", *sorted(name for name in files if name.startswith("characters/"))]
+    names = ["main.toml"]
+    if "main-light.toml" in files:
+        names.append("main-light.toml")
+    names.extend(sorted(name for name in files if name.startswith("characters/")))
     themes: list[Theme] = []
     for name in names:
         source = files.get(name)

@@ -4,12 +4,13 @@
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+import tomllib
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from sf2_theme.model import HexColor, parse_hex, theme_to_toml  # noqa: E402
+from sf2_theme.model import AnsiColors, HexColor, Theme, UiColors, parse_hex, theme_to_toml  # noqa: E402
 from sf2_theme.parse import parse_theme  # noqa: E402
 from sf2_theme.validation import (  # noqa: E402
     NONTEXT_CONTRAST,
@@ -39,6 +40,9 @@ MAIN_BRIGHT = {
     "cyan": parse_hex("#62dedb"),
     "white": parse_hex("#fffaf0"),
 }
+
+LIGHT_BASE = parse_hex("#fff8e7")
+LIGHT_FOREGROUND = parse_hex("#1b1e2d")
 
 
 @dataclass(frozen=True, slots=True)
@@ -117,6 +121,15 @@ def readable_accent(background: HexColor, accent: HexColor) -> HexColor:
     while contrast_ratio(candidate, background) < NONTEXT_CONTRAST and amount < 0.6:
         amount += 0.05
         candidate = lighten(accent, amount)
+    return candidate
+
+
+def readable_light_accent(background: HexColor, accent: HexColor) -> HexColor:
+    candidate = accent
+    amount = 0.0
+    while contrast_ratio(candidate, background) < NONTEXT_CONTRAST and amount < 0.8:
+        amount += 0.05
+        candidate = darken(accent, amount)
     return candidate
 
 
@@ -235,13 +248,77 @@ white = "{MAIN_BRIGHT['white']}"
     return theme_to_toml(theme)
 
 
+def light_variant(theme: Theme) -> Theme:
+    background = mix(LIGHT_BASE, theme.ui.background, 0.10)
+    accent = readable_light_accent(background, theme.ui.accent)
+    navigate = readable_light_accent(background, theme.semantic.yellow)
+    ui = UiColors(
+        background=background,
+        foreground=LIGHT_FOREGROUND,
+        cursor_bg=LIGHT_FOREGROUND,
+        cursor_fg=background,
+        selection_bg=LIGHT_FOREGROUND,
+        selection_fg=background,
+        panel_bg=mix(background, LIGHT_FOREGROUND, 0.04),
+        sidebar_bg=background,
+        active_row_bg=mix(background, accent, 0.12),
+        navigate_row_bg=mix(background, navigate, 0.10),
+        surface_dim=mix(background, LIGHT_FOREGROUND, 0.02),
+        surface0=mix(background, LIGHT_FOREGROUND, 0.08),
+        surface1=mix(background, LIGHT_FOREGROUND, 0.14),
+        overlay0=mix(background, LIGHT_FOREGROUND, 0.45),
+        overlay1=mix(background, LIGHT_FOREGROUND, 0.60),
+        subtext=mix(background, LIGHT_FOREGROUND, 0.42),
+        accent=accent,
+    )
+    semantic = theme.semantic
+    ansi_normal = AnsiColors(
+        black=LIGHT_FOREGROUND,
+        red=darken(semantic.red, 0.16),
+        green=darken(semantic.green, 0.32),
+        yellow=darken(semantic.yellow, 0.26),
+        blue=darken(semantic.blue, 0.10),
+        magenta=darken(semantic.magenta, 0.12),
+        cyan=darken(semantic.cyan, 0.18),
+        white=mix(background, LIGHT_FOREGROUND, 0.04),
+    )
+    ansi_bright = AnsiColors(
+        black=mix(background, LIGHT_FOREGROUND, 0.58),
+        red=darken(semantic.red, 0.04),
+        green=darken(semantic.green, 0.18),
+        yellow=darken(semantic.yellow, 0.08),
+        blue=darken(semantic.blue, 0.02),
+        magenta=darken(semantic.magenta, 0.02),
+        cyan=darken(semantic.cyan, 0.06),
+        white=mix(background, LIGHT_FOREGROUND, 0.12),
+    )
+    metadata = replace(
+        theme.metadata,
+        id=f"{theme.metadata.id}-light",
+        display_name=f"{theme.metadata.display_name} Light",
+        aliases=(),
+    )
+    return replace(theme, metadata=metadata, ui=ui, ansi_normal=ansi_normal, ansi_bright=ansi_bright)
+
+
 def main() -> int:
-    root = Path(__file__).resolve().parents[1] / "themes" / "characters"
+    themes_root = Path(__file__).resolve().parents[1] / "themes"
+    root = themes_root / "characters"
     root.mkdir(parents=True, exist_ok=True)
+    main_path = themes_root / "main.toml"
+    main_theme = parse_theme(tomllib.loads(main_path.read_text(encoding="utf-8")), source=str(main_path))
+    main_light_path = themes_root / "main-light.toml"
+    main_light_path.write_text(theme_to_toml(light_variant(main_theme)), encoding="utf-8")
+    print(f"wrote {main_light_path}")
     for seed in SEEDS:
         path = root / f"{seed.theme_id}.toml"
-        path.write_text(build(seed), encoding="utf-8")
+        dark_text = build(seed)
+        path.write_text(dark_text, encoding="utf-8")
         print(f"wrote {path}")
+        light_path = root / f"{seed.theme_id}-light.toml"
+        dark_theme = parse_theme(tomllib.loads(dark_text), source=str(path))
+        light_path.write_text(theme_to_toml(light_variant(dark_theme)), encoding="utf-8")
+        print(f"wrote {light_path}")
     return 0
 
 

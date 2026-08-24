@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "dhalsim-light"
+display_name = "Street Fighter II - Dhalsim Light"
+kind = "character"
+introduced_in = "world-warrior"
+character = "Dhalsim"
+aliases = []
+
+[ui]
+background = "#e8e1d1"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e8e1d1"
+selection_bg = "#1b1e2d"
+selection_fg = "#e8e1d1"
+panel_bg = "#e0d9ca"
+sidebar_bg = "#e8e1d1"
+active_row_bg = "#e3d1bb"
+navigate_row_bg = "#e2d6bf"
+surface_dim = "#e4ddce"
+surface0 = "#d8d1c4"
+surface1 = "#cbc6ba"
+overlay0 = "#8c8987"
+overlay1 = "#6d6c6f"
+subtext = "#928f8c"
+accent = "#be5f1b"
+
+[semantic]
+red = "#e8565f"
+green = "#6ecb78"
+yellow = "#eea12f"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#d46642"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#c34850"
+green = "#4b8a52"
+yellow = "#b07723"
+blue = "#4394e6"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#e0d9ca"
+
+[ansi.bright]
+black = "#717072"
+red = "#df535b"
+green = "#5aa662"
+yellow = "#db942b"
+blue = "#49a2fa"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfcabd"

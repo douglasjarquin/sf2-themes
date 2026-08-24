@@ -27,6 +27,14 @@ def test_ansi_order_and_distinct_brights() -> None:
     assert f"ansi = [{expected}]" in rendered
 
 
+def test_light_variant_resolves_and_renders_light_metadata() -> None:
+    theme = get_theme("ryu-light", parse_catalog())
+    rendered = render_scheme(theme)
+    assert theme.metadata.display_name == "Street Fighter II - Ryu Light"
+    assert 'name = "Street Fighter II - Ryu Light"' in rendered
+    assert 'background = "#' in rendered
+
+
 def test_return_cfg_uses_discovered_builder_name() -> None:
     existing = "\n".join(
         (

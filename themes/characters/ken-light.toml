@@ -1,0 +1,57 @@
+schema_version = 1
+
+[meta]
+id = "ken-light"
+display_name = "Street Fighter II - Ken Light"
+kind = "character"
+introduced_in = "world-warrior"
+character = "Ken"
+aliases = []
+
+[ui]
+background = "#e8e1d2"
+foreground = "#1b1e2d"
+cursor_bg = "#1b1e2d"
+cursor_fg = "#e8e1d2"
+selection_bg = "#1b1e2d"
+selection_fg = "#e8e1d2"
+panel_bg = "#e0d9cb"
+sidebar_bg = "#e8e1d2"
+active_row_bg = "#e7cdc0"
+navigate_row_bg = "#e0d6c0"
+surface_dim = "#e4ddcf"
+surface0 = "#d8d1c5"
+surface1 = "#cbc6bb"
+overlay0 = "#8c8988"
+overlay1 = "#6d6c6f"
+subtext = "#928f8d"
+accent = "#e23b3b"
+
+[semantic]
+red = "#e64d52"
+green = "#6ecb78"
+yellow = "#f2b134"
+blue = "#4aa5ff"
+magenta = "#c783d9"
+cyan = "#35c4c2"
+orange = "#dc8d55"
+
+[ansi.normal]
+black = "#1b1e2d"
+red = "#c14145"
+green = "#4b8a52"
+yellow = "#b38326"
+blue = "#4394e6"
+magenta = "#af73bf"
+cyan = "#2ba19f"
+white = "#e0d9cb"
+
+[ansi.bright]
+black = "#717072"
+red = "#dd4a4f"
+green = "#5aa662"
+yellow = "#dfa330"
+blue = "#49a2fa"
+magenta = "#c380d5"
+cyan = "#32b8b6"
+white = "#cfcabe"
