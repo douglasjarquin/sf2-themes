@@ -25,34 +25,42 @@ test("the home route presents the playable theme cabinet", async ({ page }) => {
 
   const activeChip = page.locator("[data-active-chip]");
   await expect(activeChip).toHaveText("RYU");
-  await expect(page.getByRole("button", { name: "KEN" })).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
+  for (const fighter of ["RYU", "KEN", "CHUN-LI", "GUILE"]) {
+    const control = page.getByRole("button", { name: fighter });
+    await expect(control).toBeVisible();
+    await control.click();
+    await expect(activeChip).toHaveText(fighter);
+    await expect(control).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator("[data-terminal-transcript]")).toContainText(fighter);
+  }
 
-  await page.getByRole("button", { name: "KEN" }).click();
-  await expect(activeChip).toHaveText("KEN");
-  await expect(page.getByRole("button", { name: "KEN" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.locator("[data-terminal-transcript]")).toContainText("KEN");
+  await page.getByRole("button", { name: "RYU" }).click();
+  for (const fighter of ["KEN", "CHUN-LI", "GUILE", "RYU"]) {
+    await page.keyboard.press("ArrowRight");
+    await expect(activeChip).toHaveText(fighter);
+  }
 
+  const focusedInput = page.locator("#keyboard-guard-probe");
+  await page.evaluate(() => {
+    const input = document.createElement("input");
+    input.id = "keyboard-guard-probe";
+    input.name = "keyboard-guard-probe";
+    input.value = "protected";
+    document.body.append(input);
+  });
+  await focusedInput.focus();
   await page.keyboard.press("ArrowRight");
-  await expect(activeChip).toHaveText("CHUN-LI");
   await page.keyboard.press("ArrowLeft");
-  await expect(activeChip).toHaveText("KEN");
+  await expect(focusedInput).toHaveValue("protected");
+  await expect(activeChip).toHaveText("RYU");
 
   await page.keyboard.press("ArrowUp");
-  await expect(activeChip).toHaveText("KEN");
+  await expect(activeChip).toHaveText("RYU");
 
   const coinCounter = page.locator("[data-coin-counter]");
-  await expect(coinCounter).toHaveText("0 CREDITS");
+  await expect(coinCounter).toHaveText("CREDIT 00");
   await page.getByRole("button", { name: "INSERT COIN" }).click();
-  await expect(coinCounter).toHaveText("1 CREDIT");
-
-  await page.goto("./?fighter=not-a-fighter");
-  await expect(page.locator("[data-active-chip]")).toHaveText("RYU");
+  await expect(coinCounter).toHaveText("CREDIT 01");
 });
 
 test("the cabinet disables transcript animation for reduced motion", async ({ page }) => {

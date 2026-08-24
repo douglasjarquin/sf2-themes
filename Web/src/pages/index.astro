@@ -79,7 +79,7 @@ PROFILE LOADED. FIGHT!</pre>
         </div>
         <div class="arcade-cabinet__coin-slot">
           <button class="coin-button" data-coin-button type="button">INSERT COIN</button>
-          <span class="coin-counter" data-coin-counter>0 CREDITS</span>
+          <span class="coin-counter" data-coin-counter>CREDIT 00</span>
         </div>
       </section>
     </section>
@@ -154,6 +154,12 @@ PROFILE LOADED. FIGHT!</pre>
     });
     document.addEventListener("keydown", (event) => {
       if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        if (
+          event.target instanceof Element &&
+          event.target.closest("input, textarea, [contenteditable]")
+        ) {
+          return;
+        }
         event.preventDefault();
         selectFighter(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
       }
@@ -161,7 +167,7 @@ PROFILE LOADED. FIGHT!</pre>
     coinButton?.addEventListener("click", () => {
       credits += 1;
       if (coinCounter instanceof HTMLElement) {
-        coinCounter.textContent = `${credits} ${credits === 1 ? "CREDIT" : "CREDITS"}`;
+        coinCounter.textContent = `CREDIT ${String(credits).padStart(2, "0")}`;
       }
     });
   }
