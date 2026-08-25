@@ -8,12 +8,12 @@ Unofficial fan project. Street Fighter and related names are trademarks of Capco
 
 ## Install
 
-Clone this repository and put the standalone `sf2-theme` script on your `PATH`.
+Clone this repository and put the standalone `sf2-themes` script on your `PATH`.
 
 ```sh
 git clone https://github.com/douglasjarquin/sf2-themes.git
 cd sf2-themes
-install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"
+install -m 755 sf2-themes "$HOME/.local/bin/sf2-themes"
 ```
 
 The CLI has no package dependencies. It needs Python 3.11 or newer.
@@ -26,16 +26,16 @@ From a checkout you can also run `python3 -m sf2_theme` with `PYTHONPATH=src`, o
 `apply` selects a theme (default: `main`).
 
 ```sh
-sf2-theme setup wezterm
-sf2-theme apply wezterm
-sf2-theme apply wezterm --theme ryu
+sf2-themes setup wezterm
+sf2-themes apply wezterm
+sf2-themes apply wezterm --theme ryu
 
-sf2-theme setup herdr
-sf2-theme apply herdr --theme chun-li
+sf2-themes setup herdr
+sf2-themes apply herdr --theme chun-li
 herdr server reload-config
 
-sf2-theme setup nvim
-sf2-theme apply nvim --theme ryu-light
+sf2-themes setup nvim
+sf2-themes apply nvim --theme ryu-light
 ```
 
 Neovim setup installs every catalog colorscheme under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
@@ -51,14 +51,14 @@ Herdr configs that already have an unmarked `[theme]` section are left alone unl
 ## Commands
 
 ```sh
-sf2-theme apps
-sf2-theme themes
-sf2-theme show ryu
-sf2-theme show ryu-light
-sf2-theme validate --all
-sf2-theme current wezterm
-sf2-theme apply herdr --theme boxer --dry-run
-sf2-theme current nvim
+sf2-themes apps
+sf2-themes themes
+sf2-themes show ryu
+sf2-themes show ryu-light
+sf2-themes validate --all
+sf2-themes current wezterm
+sf2-themes apply herdr --theme boxer --dry-run
+sf2-themes current nvim
 ```
 
 Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
@@ -84,4 +84,4 @@ Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/nvim/colo
 See [docs/theme-guidelines.md](docs/theme-guidelines.md), [docs/roster.md](docs/roster.md), and [docs/previews/](docs/previews/).
 
 Theme data lives in [`themes/`](themes/). Dark themes keep their original IDs, and light variants use the corresponding `<id>-light` ID.
-The committed `sf2-theme` script embeds a generated copy of that catalog. Do not hand-edit the embed.
+The committed `sf2-themes` script embeds a generated copy of that catalog. Do not hand-edit the embed.

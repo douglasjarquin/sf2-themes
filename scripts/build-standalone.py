@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src" / "sf2_theme"
-OUT = ROOT / "sf2-theme"
+OUT = ROOT / "sf2-themes"
 
 MODULES: tuple[tuple[str, Path, bool], ...] = (
     ("sf2_theme", SRC / "__init__.py", True),

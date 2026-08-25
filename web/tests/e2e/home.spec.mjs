@@ -14,7 +14,7 @@ test("the home route presents the playable theme cabinet", async ({ page }) => {
     "href",
     "/sf2-themes/install/",
   );
-  await expect(page.getByText("sf2-theme apply wezterm --theme ryu")).toBeVisible();
+  await expect(page.getByText("sf2-themes apply wezterm --theme ryu")).toBeVisible();
   await expect
     .poll(() =>
       page.locator("[data-terminal-transcript]").evaluate(

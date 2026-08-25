@@ -12,10 +12,10 @@ test("themes catalog truthfully lists the two supported adapters", async ({ page
   await expect(cards).toHaveCount(2);
   await expect(cards.nth(0)).toContainText("wezterm");
   await expect(cards.nth(0)).toContainText("READY");
-  await expect(cards.nth(0).locator("code")).toHaveText("sf2-theme setup wezterm");
+  await expect(cards.nth(0).locator("code")).toHaveText("sf2-themes setup wezterm");
   await expect(cards.nth(1)).toContainText("herdr");
   await expect(cards.nth(1)).toContainText("READY");
-  await expect(cards.nth(1).locator("code")).toHaveText("sf2-theme setup herdr");
+  await expect(cards.nth(1).locator("code")).toHaveText("sf2-themes setup herdr");
   await expect(page.getByText(/neovim|tmux|alacritty|ghostty/i)).toHaveCount(0);
 });
 
@@ -62,7 +62,7 @@ test("copy feedback follows clipboard success and never reports a rejected write
   await expect(wezterm.getByRole("button", { name: "COPIED" })).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => window.__copiedCommands))
-    .toEqual(["sf2-theme setup wezterm"]);
+    .toEqual(["sf2-themes setup wezterm"]);
 
   await page.addInitScript(() => {
     navigator.clipboard.writeText = async () => Promise.reject(new DOMException("Denied", "NotAllowedError"));

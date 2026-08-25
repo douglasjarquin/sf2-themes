@@ -49,13 +49,13 @@ const fighterStyle = (fighter: (typeof characterVariants)[number]) =>
       </div>
 
       <section class="arcade-cabinet" aria-label="Interactive terminal cabinet" data-cabinet>
-        <div class="arcade-cabinet__marquee">SF2 THEME</div>
+        <div class="arcade-cabinet__marquee">SF2 THEMES</div>
         <div class="arcade-cabinet__screen">
           <div class="arcade-cabinet__status">
             <span>TERMINAL READY</span>
             <span data-active-chip>RYU</span>
           </div>
-          <pre class="terminal-transcript is-updating" data-terminal-transcript aria-live="polite">$ sf2-theme apply wezterm --theme ryu
+          <pre class="terminal-transcript is-updating" data-terminal-transcript aria-live="polite">$ sf2-themes apply wezterm --theme ryu
 SELECTED: RYU
 PROFILE LOADED. FIGHT!</pre>
         </div>
@@ -65,7 +65,7 @@ PROFILE LOADED. FIGHT!</pre>
               <button
                 aria-pressed={index === 0 ? "true" : "false"}
                 class="fighter-control"
-                data-command={`sf2-theme apply wezterm --theme ${fighter.id}`}
+                data-command={`sf2-themes apply wezterm --theme ${fighter.id}`}
                 data-fighter-control
                 data-fighter-name={fighter.character.toUpperCase()}
                 style={fighterStyle(fighter)}
@@ -89,7 +89,7 @@ PROFILE LOADED. FIGHT!</pre>
         <p class="home-kicker">CHOOSE YOUR MODE</p>
         <h2 id="menu-heading">MAKE THE CABINET YOURS</h2>
       </div>
-      <nav aria-label="Explore sf2-theme" class="home-menu__links">
+      <nav aria-label="Explore sf2-themes" class="home-menu__links">
         <a href={sitePath("themes")}>01 / THEMES</a>
         <a href={sitePath("palette")}>02 / PALETTE</a>
         <a href={sitePath("install")}>03 / INSTALL</a>
@@ -133,7 +133,7 @@ PROFILE LOADED. FIGHT!</pre>
       const activeControl = controls[activeIndex];
       if (activeControl === undefined) return;
       const fighterName = activeControl.dataset.fighterName ?? "RYU";
-      const command = activeControl.dataset.command ?? "sf2-theme apply wezterm --theme ryu";
+      const command = activeControl.dataset.command ?? "sf2-themes apply wezterm --theme ryu";
 
       for (const [index, control] of controls.entries()) {
         control.setAttribute("aria-pressed", String(index === activeIndex));

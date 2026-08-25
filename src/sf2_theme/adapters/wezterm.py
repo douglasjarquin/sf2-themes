@@ -98,7 +98,7 @@ def render_scheme(theme: Theme) -> str:
 
 def render_pointer(theme: Theme) -> str:
     """Render the managed Lua pointer file."""
-    return f'-- sf2-theme: {theme.metadata.id}\nreturn "{theme.metadata.display_name}"\n'
+    return f'-- sf2-themes: {theme.metadata.id}\nreturn "{theme.metadata.display_name}"\n'
 
 
 def write_schemes(
@@ -187,6 +187,6 @@ def read_current_id() -> str:
         raise ThemeError(f"no WezTerm theme applied yet ({path} missing)")
     for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
-        if stripped.startswith("-- sf2-theme:"):
+        if stripped.startswith("-- sf2-themes:"):
             return stripped.split(":", 1)[1].strip()
     raise ThemeError(f"could not read theme id from {path}")

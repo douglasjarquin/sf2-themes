@@ -24,7 +24,7 @@ def test_preserves_unrelated_sections() -> None:
     merged = merge_theme(existing, theme, adopt=False)
     assert 'theme = "follow-system"' in merged
     assert 'prefix = "ctrl+b"' in merged
-    assert "# >>> sf2-theme managed theme" in merged
+    assert "# >>> sf2-themes managed theme" in merged
 
 
 def test_refuses_unmarked_theme_without_adopt() -> None:
@@ -48,7 +48,7 @@ def test_second_apply_replaces_marked_block() -> None:
     main = get_theme("main", catalog)
     first = merge_theme("", main, adopt=False)
     second = merge_theme(first, main, adopt=False)
-    assert second.count("# >>> sf2-theme managed theme") == 1
+    assert second.count("# >>> sf2-themes managed theme") == 1
 
 
 def test_apply_herdr_round_trip(tmp_path: Path) -> None:

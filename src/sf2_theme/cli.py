@@ -29,14 +29,14 @@ APP_NAMES = ("wezterm", "herdr", "nvim")
 HELP_TEXT = """Street Fighter II theme pack
 
 Usage:
-  sf2-theme apps
-  sf2-theme themes
-  sf2-theme show THEME
-  sf2-theme validate [THEME | --all]
-  sf2-theme setup APP [--config-dir PATH] [--dry-run] [--follow-symlinks] [--adopt]
-  sf2-theme apply APP [--theme THEME] [--config-dir PATH] [--dry-run] [--follow-symlinks]
-  sf2-theme current APP [--config-dir PATH]
-  sf2-theme install APP ...
+  sf2-themes apps
+  sf2-themes themes
+  sf2-themes show THEME
+  sf2-themes validate [THEME | --all]
+  sf2-themes setup APP [--config-dir PATH] [--dry-run] [--follow-symlinks] [--adopt]
+  sf2-themes apply APP [--theme THEME] [--config-dir PATH] [--dry-run] [--follow-symlinks]
+  sf2-themes current APP [--config-dir PATH]
+  sf2-themes install APP ...
 
 setup performs one-time application integration.
 apply writes or selects the active theme (default: main).
@@ -294,7 +294,7 @@ def dispatch(arguments: list[str]) -> int:
                     raise CliError("current requires an app: wezterm, herdr, or nvim")
                 _current(_app(options.rest[0]), options)
             case _:
-                raise CliError(f"unknown command: {command}; run sf2-theme --help")
+                raise CliError(f"unknown command: {command}; run sf2-themes --help")
     except (ThemeError, OSError, tomllib.TOMLDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

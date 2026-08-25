@@ -17,13 +17,13 @@ test("install route gives the real setup then apply commands", async ({ page }) 
 
   // Then: it preserves the README script and presents supported adapter commands only.
   await expect(installBlock).toHaveText(installScript);
-  await expect(page.getByText("sf2-theme setup wezterm", { exact: true })).toBeVisible();
+  await expect(page.getByText("sf2-themes setup wezterm", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("sf2-theme apply wezterm --theme ryu", { exact: true }),
+    page.getByText("sf2-themes apply wezterm --theme ryu", { exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("sf2-theme setup herdr", { exact: true })).toBeVisible();
+  await expect(page.getByText("sf2-themes setup herdr", { exact: true })).toBeVisible();
   await expect(
-    page.getByText("sf2-theme apply herdr --theme chun-li", { exact: true }),
+    page.getByText("sf2-themes apply herdr --theme chun-li", { exact: true }),
   ).toBeVisible();
 
   const adapterNotesText = await page.locator(".adapter-notes").innerText();
@@ -32,8 +32,8 @@ test("install route gives the real setup then apply commands", async ({ page }) 
 
   const pageText = await page.locator("body").innerText();
   expect(pageText).not.toMatch(/\bTUI\b/i);
-  expect(pageText).not.toContain("sf2-theme install wezterm");
-  expect(pageText).not.toContain("sf2-theme install herdr");
+  expect(pageText).not.toContain("sf2-themes install wezterm");
+  expect(pageText).not.toContain("sf2-themes install herdr");
 });
 
 test("install script copy confirms only after clipboard success", async ({ page }) => {
@@ -103,7 +103,7 @@ test("install script copy reports unexpected clipboard errors without exposing d
   await copyButton.click();
 
   // Then: the failure is observable by safe error type only and never looks successful.
-  await expect.poll(() => diagnostics).toContain("[sf2-theme] Clipboard write failed: Error");
+  await expect.poll(() => diagnostics).toContain("[sf2-themes] Clipboard write failed: Error");
   expect(diagnostics.join("\n")).not.toContain("secret clipboard payload");
   await expect(copyButton).toHaveText("Copy install script");
 });

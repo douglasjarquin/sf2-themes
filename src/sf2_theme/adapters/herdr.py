@@ -9,9 +9,9 @@ from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
 
-MANAGED_START = "# >>> sf2-theme managed theme"
-MANAGED_END = "# <<< sf2-theme managed theme"
-ID_COMMENT = re.compile(r"^# sf2-theme:\s+(\S+)\s*$")
+MANAGED_START = "# >>> sf2-themes managed theme"
+MANAGED_END = "# <<< sf2-themes managed theme"
+ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
 HERDR_TOKENS = (
     ("sidebar_bg", "ui", "sidebar_bg"),
     ("panel_bg", "ui", "panel_bg"),
@@ -51,7 +51,7 @@ def render_block(theme: Theme) -> str:
     """Render a fully resolved, marked Herdr theme block."""
     lines = [
         MANAGED_START,
-        f"# sf2-theme: {theme.metadata.id}",
+        f"# sf2-themes: {theme.metadata.id}",
         "[theme]",
         'name = "terminal"',
         "",
@@ -103,7 +103,7 @@ def merge_theme(existing: str, theme: Theme, *, adopt: bool) -> str:
         start = existing.find(MANAGED_START)
         end = existing.find(MANAGED_END)
         if start == -1 or end == -1 or end < start:
-            raise ThemeError("Herdr config has incomplete sf2-theme markers")
+            raise ThemeError("Herdr config has incomplete sf2-themes markers")
         after = end + len(MANAGED_END)
         if after < len(existing) and existing[after] == "\n":
             after += 1
