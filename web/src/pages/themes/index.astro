@@ -14,6 +14,18 @@ const adapters = [
     description:
       "Writes the documented marked theme block to config.toml while preserving unrelated Herdr configuration.",
   },
+  {
+    name: "nvim",
+    command: "sf2-themes setup nvim",
+    description:
+      "Installs every catalog colorscheme and a managed startup loader for the selected theme.",
+  },
+  {
+    name: "codex",
+    command: "sf2-themes setup codex",
+    description:
+      "Writes every catalog theme as a custom .tmTheme and selects it through Codex's config.toml.",
+  },
 ];
 ---
 
@@ -21,10 +33,10 @@ const adapters = [
   <section class="themes-hero site-frame" aria-labelledby="themes-title">
     <h1 id="themes-title">THEMES</h1>
     <p>
-      Every port lives in this repo and installs with one command. WezTerm and Herdr are
-      in the ring today.
+      Every port lives in this repo and installs with one command. WezTerm, Herdr, Neovim,
+      and Codex are in the ring today.
     </p>
-    <p class="themes-stats" data-testid="themes-stats">2 PORTS · 2 READY · 1 CLI</p>
+    <p class="themes-stats" data-testid="themes-stats">4 PORTS · 4 READY · 1 CLI</p>
   </section>
 
   <section class="themes-catalog site-frame" aria-label="Theme adapters">
@@ -206,7 +218,7 @@ const adapters = [
 
   .themes-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
 
@@ -269,11 +281,11 @@ const adapters = [
   }
 
   .adapter-card code {
-    overflow: hidden;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
     color: var(--color-accent);
     font-size: 12px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
   }
 
   .adapter-card__command button {
@@ -331,6 +343,12 @@ const adapters = [
 
     .adapter-card {
       min-block-size: 0;
+    }
+  }
+
+  @media (min-width: 721px) and (max-width: 960px) {
+    .themes-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 </style>

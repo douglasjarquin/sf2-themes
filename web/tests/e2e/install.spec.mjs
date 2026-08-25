@@ -25,6 +25,14 @@ test("install route gives the real setup then apply commands", async ({ page }) 
   await expect(
     page.getByText("sf2-themes apply herdr --theme chun-li", { exact: true }),
   ).toBeVisible();
+  await expect(page.getByText("sf2-themes setup nvim", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("sf2-themes apply nvim --theme ryu-light", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("sf2-themes setup codex", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("sf2-themes apply codex --theme ryu-light", { exact: true }),
+  ).toBeVisible();
 
   const adapterNotesText = await page.locator(".adapter-notes").innerText();
   expect(adapterNotesText).not.toContain("street-fighter-2");
@@ -34,6 +42,8 @@ test("install route gives the real setup then apply commands", async ({ page }) 
   expect(pageText).not.toMatch(/\bTUI\b/i);
   expect(pageText).not.toContain("sf2-themes install wezterm");
   expect(pageText).not.toContain("sf2-themes install herdr");
+  expect(pageText).not.toContain("sf2-themes install nvim");
+  expect(pageText).not.toContain("sf2-themes install codex");
 });
 
 test("install script copy confirms only after clipboard success", async ({ page }) => {

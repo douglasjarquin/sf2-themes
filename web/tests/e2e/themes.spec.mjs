@@ -2,21 +2,24 @@ import { expect, test } from "@playwright/test";
 
 const themesPath = "/sf2-themes/themes/";
 
-test("themes catalog truthfully lists the two supported adapters", async ({ page }) => {
+test("themes catalog truthfully lists the supported adapters", async ({ page }) => {
   await page.goto(themesPath);
 
   await expect(page.getByRole("heading", { name: "THEMES" })).toBeVisible();
-  await expect(page.getByTestId("themes-stats")).toHaveText("2 PORTS · 2 READY · 1 CLI");
+  await expect(page.getByTestId("themes-stats")).toHaveText("4 PORTS · 4 READY · 1 CLI");
 
   const cards = page.getByTestId("adapter-card");
-  await expect(cards).toHaveCount(2);
+  await expect(cards).toHaveCount(4);
   await expect(cards.nth(0)).toContainText("wezterm");
   await expect(cards.nth(0)).toContainText("READY");
   await expect(cards.nth(0).locator("code")).toHaveText("sf2-themes setup wezterm");
   await expect(cards.nth(1)).toContainText("herdr");
   await expect(cards.nth(1)).toContainText("READY");
   await expect(cards.nth(1).locator("code")).toHaveText("sf2-themes setup herdr");
-  await expect(page.getByText(/neovim|tmux|alacritty|ghostty/i)).toHaveCount(0);
+  await expect(cards.nth(2)).toContainText("nvim");
+  await expect(cards.nth(2).locator("code")).toHaveText("sf2-themes setup nvim");
+  await expect(cards.nth(3)).toContainText("codex");
+  await expect(cards.nth(3).locator("code")).toHaveText("sf2-themes setup codex");
 });
 
 test("themes catalog filters, trims searches, and shows the empty state", async ({ page }) => {
@@ -24,7 +27,7 @@ test("themes catalog filters, trims searches, and shows the empty state", async 
   const visibleCards = page.locator('[data-testid="adapter-card"]:visible');
 
   await page.getByRole("button", { name: "READY", exact: true }).click();
-  await expect(visibleCards).toHaveCount(2);
+  await expect(visibleCards).toHaveCount(4);
 
   await page.getByRole("button", { name: "PLANNED", exact: true }).click();
   await expect(visibleCards).toHaveCount(0);
