@@ -1,7 +1,20 @@
 import { expect, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const mainColors = ["#101a3a", "#e8565f", "#f2b134", "#f2b134", "#fff4d6"];
-const terminalColors = ["#101a3a", "#e8565f", "#f2b134", "#f2b134", "#fff4d6"];
+import { parse } from "smol-toml";
+
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const mainTheme = parse(readFileSync(path.join(projectRoot, "themes/main.toml"), "utf8"));
+const mainColors = [
+  mainTheme.ui.background,
+  mainTheme.semantic.red,
+  mainTheme.semantic.yellow,
+  mainTheme.ui.accent,
+  mainTheme.ui.foreground,
+];
+const terminalColors = [...mainColors];
 const variants = [
   {
     name: "Ryu",

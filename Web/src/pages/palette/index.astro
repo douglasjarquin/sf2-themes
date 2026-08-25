@@ -1,6 +1,6 @@
 ---
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { characterVariants, mainCards } from "../../data/theme-data.mjs";
+import { characterVariants, mainCards, themeTokens } from "../../data/theme-data.mjs";
 
 const mainColors = Object.fromEntries(mainCards.map(({ hex, token }) => [token, hex]));
 const terminalMappings = [
@@ -12,7 +12,7 @@ const terminalMappings = [
 ].map(([label, token]) => ({
   label,
   token,
-  hex: mainColors[token === "ui.accent" ? "semantic.yellow" : token],
+  hex: token === "ui.accent" ? themeTokens.main.ui.accent : mainColors[token],
 }));
 const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as const;
 ---
