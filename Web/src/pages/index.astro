@@ -72,7 +72,7 @@ PROFILE LOADED. FIGHT!</pre>
                 type="button"
               >
                 <span aria-hidden="true" class="fighter-control__mark">{index + 1}</span>
-                {fighter.character.toUpperCase()}
+                <span class="fighter-control__label">{fighter.character.toUpperCase()}</span>
               </button>
             ))
           }
@@ -174,44 +174,45 @@ PROFILE LOADED. FIGHT!</pre>
 </script>
 
 <style>
-  .home-page { padding-block: var(--space-12) var(--space-20); }
-  .home-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, .88fr); align-items: center; gap: clamp(var(--space-8), 6vw, var(--space-20)); }
-  .home-hero__copy { display: grid; gap: var(--space-6); max-inline-size: 42rem; }
+  .home-page { display: flex; flex-direction: column; padding-block-end: var(--space-20); background-image: radial-gradient(color-mix(in srgb, var(--home-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+  .home-hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--space-15); padding-block: var(--space-15) 90px; }
+  .home-hero__copy { display: grid; gap: var(--space-6); max-inline-size: 46ch; }
   .home-kicker { margin: 0; color: var(--home-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
   h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.5; }
-  h1 { color: var(--home-gold); font-size: clamp(28px, 4.8vw, 52px); text-shadow: 5px 5px 0 var(--home-red); }
+  h1 { color: var(--home-gold); font-size: clamp(28px, 3vw, 30px); text-shadow: 4px 4px 0 var(--home-red); }
   h2 { color: var(--home-foreground); font-size: clamp(16px, 2vw, 22px); }
-  .home-lede { margin: 0; color: color-mix(in srgb, var(--home-foreground) 72%, transparent); font-size: clamp(17px, 2vw, 21px); line-height: 1.6; }
+  .home-lede { margin: 0; color: color-mix(in srgb, var(--home-foreground) 70%, transparent); font-size: 16.5px; line-height: 1.7; }
   .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); }
   .home-action { border: 2px solid var(--home-foreground); box-shadow: 4px 4px 0 var(--home-background); color: var(--home-foreground); font-family: var(--font-display); font-size: 9px; line-height: 1.5; padding: 14px 16px; }
   .home-action:hover { background: var(--home-foreground); color: var(--home-background); transform: translate(2px, 2px); }
   .home-action--primary { border-color: var(--home-red); background: var(--home-red); color: var(--home-foreground); }
-  .arcade-cabinet { border: 3px solid var(--home-gold); box-shadow: 9px 9px 0 var(--home-red); background: var(--home-panel); overflow: hidden; }
-  .arcade-cabinet__marquee { border-block-end: 3px solid var(--home-red); background: var(--home-gold); color: var(--home-background); font-family: var(--font-display); font-size: 13px; letter-spacing: .12em; padding: var(--space-5); text-align: center; text-shadow: 2px 2px 0 var(--home-red); }
-  .arcade-cabinet__screen { position: relative; min-block-size: 190px; padding: var(--space-5); background: var(--home-background); isolation: isolate; }
+  .arcade-cabinet { inline-size: 100%; max-inline-size: 480px; justify-self: center; border: 2px solid color-mix(in srgb, var(--home-foreground) 14%, transparent); box-shadow: 10px 10px 0 color-mix(in srgb, var(--home-background) 60%, black); background: var(--home-panel); overflow: hidden; }
+  .arcade-cabinet__marquee { border-block-end: 3px solid var(--home-gold); background: linear-gradient(135deg, var(--home-red), color-mix(in srgb, var(--home-red) 65%, black)); color: var(--home-foreground); font-family: var(--font-display); font-size: 10px; letter-spacing: .12em; padding: var(--space-4); text-align: center; }
+  .arcade-cabinet__screen { position: relative; min-block-size: 362px; margin: var(--space-4); padding: var(--space-5); background: var(--home-background); isolation: isolate; }
   .arcade-cabinet__screen::after { position: absolute; z-index: 1; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--home-background) 28%, transparent) 0, color-mix(in srgb, var(--home-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
   .arcade-cabinet__status { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: var(--space-3); color: var(--home-cyan); font-family: var(--font-mono); font-size: 11px; }
   [data-active-chip] { border: 1px solid var(--home-gold); color: var(--home-gold); padding: 2px 5px; }
   .terminal-transcript { position: relative; z-index: 2; margin: var(--space-6) 0 0; color: var(--home-foreground); font-family: var(--font-mono); font-size: clamp(12px, 1.35vw, 14px); line-height: 1.7; white-space: pre-wrap; }
   .terminal-transcript.is-updating { animation: transcript-in 240ms ease-out; }
-  .arcade-cabinet__controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: var(--space-4); border-block: 2px solid var(--home-surface); background: color-mix(in srgb, var(--home-background) 38%, var(--home-panel)); }
-  .fighter-control { min-block-size: 66px; border: 2px solid var(--fighter-accent); background: var(--fighter-background); box-shadow: 3px 3px 0 var(--fighter-red); color: var(--fighter-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; line-height: 1.6; padding: var(--space-2); }
+  .arcade-cabinet__controls { display: flex; justify-content: flex-end; gap: var(--space-4); padding: 18px 22px 28px; border-block: 2px solid var(--home-surface); background: color-mix(in srgb, var(--home-background) 38%, var(--home-panel)); }
+  .fighter-control { position: relative; inline-size: 34px; block-size: 34px; flex: none; border: 0; border-radius: 50%; background: var(--fighter-accent); box-shadow: 0 3px 0 var(--fighter-red); color: transparent; cursor: pointer; font-family: var(--font-display); font-size: 0; padding: 0; white-space: nowrap; }
+  .fighter-control__label { position: absolute; inset-block-start: calc(100% + 7px); inset-inline-start: 50%; color: color-mix(in srgb, var(--fighter-foreground) 45%, transparent); font-size: 6.5px; line-height: 1; transform: translateX(-50%); white-space: nowrap; }
   .fighter-control:hover, .fighter-control[aria-pressed="true"] { border-color: var(--fighter-gold); color: var(--fighter-gold); transform: translate(1px, 1px); }
-  .fighter-control__mark { display: block; color: var(--fighter-red); font-family: var(--font-mono); font-size: 10px; }
+  .fighter-control__mark { display: none; }
   .arcade-cabinet__coin-slot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); }
   .coin-button { border: 2px solid var(--home-red); background: var(--home-red); box-shadow: 3px 3px 0 var(--home-background); color: var(--home-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; padding: 11px; }
   .coin-button:hover { background: var(--home-gold); color: var(--home-background); transform: translate(1px, 1px); }
   .coin-counter { color: var(--home-gold); font-family: var(--font-mono); font-size: 12px; }
-  .home-menu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: clamp(var(--space-15), 12vw, 144px); padding-block: var(--space-10); border-block: 2px solid color-mix(in srgb, var(--home-foreground) 18%, transparent); }
+  .home-menu { order: 3; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: var(--space-15); padding-block: var(--space-10); border-block-start: 2px solid color-mix(in srgb, var(--home-foreground) 8%, transparent); }
   .home-menu__links { display: grid; gap: var(--space-3); align-content: center; }
   .home-menu__links a { border-inline-start: 3px solid var(--home-red); color: var(--home-foreground); font-family: var(--font-display); font-size: 10px; line-height: 1.6; padding: var(--space-3) var(--space-4); }
   .home-menu__links a:hover { border-color: var(--home-gold); background: var(--home-panel); color: var(--home-gold); transform: translateX(3px); }
-  .home-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-5); margin-block-start: var(--space-12); }
-  .home-values article { border: 2px solid var(--home-surface); background: var(--home-panel); box-shadow: 5px 5px 0 color-mix(in srgb, var(--home-background) 75%, transparent); padding: var(--space-6); }
+  .home-values { order: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-10); padding-block: var(--space-15); border-block-start: 2px solid color-mix(in srgb, var(--home-foreground) 8%, transparent); }
+  .home-values article { padding: 0; }
   .home-values span { color: var(--home-red); font-family: var(--font-display); font-size: 22px; }
   .home-values h2 { margin-block: var(--space-4) var(--space-3); font-size: 12px; }
   .home-values p { margin: 0; color: color-mix(in srgb, var(--home-foreground) 64%, transparent); font-size: 15px; line-height: 1.65; }
   @keyframes transcript-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 760px) { .home-page { padding-block-start: var(--space-10); } .home-hero, .home-menu { grid-template-columns: 1fr; } .arcade-cabinet { box-shadow: 6px 6px 0 var(--home-red); } .home-values { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .home-hero { grid-template-columns: 1fr; padding-block: var(--space-12) var(--space-20); } .home-hero__copy { gap: var(--space-5); } h1 { font-size: 28px; } .home-menu { grid-template-columns: 1fr; } .arcade-cabinet { margin-block-start: var(--space-4); } .home-values { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) { .home-action, .fighter-control, .coin-button, .home-menu__links a { transition: none; } .terminal-transcript.is-updating { animation: none; } }
 </style>

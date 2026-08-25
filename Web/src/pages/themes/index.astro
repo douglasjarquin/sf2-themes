@@ -128,7 +128,7 @@ const adapters = [
     margin: 0;
     color: var(--color-accent);
     font-family: var(--font-display);
-    font-size: clamp(22px, 5vw, 30px);
+    font-size: 26px;
     line-height: 1.5;
     text-shadow: 4px 4px 0 var(--color-red);
   }
@@ -149,6 +149,7 @@ const adapters = [
   }
 
   .themes-catalog {
+    min-block-size: 640px;
     padding-block: var(--space-8) var(--space-20);
   }
 
@@ -205,8 +206,8 @@ const adapters = [
 
   .themes-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(215px, 100%), 1fr));
-    gap: var(--space-4);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
   }
 
   .adapter-card {
@@ -315,6 +316,10 @@ const adapters = [
     .themes-search,
     .themes-search input {
       inline-size: 100%;
+    }
+
+    .themes-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>

@@ -84,11 +84,6 @@ a:hover {
   grid-template-rows: auto 1fr auto;
   min-block-size: 100dvh;
   overflow: clip;
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--color-foreground) 7%, transparent) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
 }
 
 .site-frame {
@@ -98,9 +93,7 @@ a:hover {
 }
 
 .site-header {
-  border-block-end: 2px solid
-    color-mix(in srgb, var(--color-foreground) 8%, transparent);
-  background: color-mix(in srgb, var(--color-background) 94%, transparent);
+  background: var(--color-background);
 }
 
 .site-header__inner {
@@ -201,8 +194,13 @@ a:hover {
   }
 
   .primary-nav {
+    inline-size: 100%;
     justify-content: flex-start;
     gap: var(--space-3) var(--space-4);
+  }
+
+  .primary-nav__link--action {
+    margin-inline-end: calc(100% - 100px);
   }
 
   .site-footer__inner {
