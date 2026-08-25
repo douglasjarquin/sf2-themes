@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const mainColors = ["#101a3a", "#e8565f", "#f2b134", "#35c4c2", "#fff4d6"];
+const mainColors = ["#101a3a", "#e8565f", "#f2b134", "#f2b134", "#fff4d6"];
 const terminalColors = ["#101a3a", "#e8565f", "#f2b134", "#f2b134", "#fff4d6"];
 const variants = [
   {
@@ -34,6 +34,7 @@ test("renders the exact TOML source cards and terminal mapping", async ({ page }
   await expect(sourceCards.evaluateAll((cards) => cards.map((card) => card.dataset.color))).resolves.toEqual(
     mainColors,
   );
+  await expect(sourceCards.nth(3).getByText("ui.accent", { exact: true })).toBeVisible();
   await expect(terminalMappings).toHaveCount(5);
   await expect(
     terminalMappings.evaluateAll((mappings) => mappings.map((mapping) => mapping.dataset.color)),

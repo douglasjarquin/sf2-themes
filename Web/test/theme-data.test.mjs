@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, unlink, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, rm, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
+
+import { parse } from "smol-toml";
 
 import {
   characterVariants,
@@ -50,11 +52,14 @@ const ANSI_FIELDS = [
   "white",
 ];
 
-function themeToml(id, { kind = "character", invalidHex = false } = {}) {
+function themeToml(id, { kind = "character", invalidHex = false, uiValues = {} } = {}) {
   const character = kind === "character" ? `character = "${id}"\n` : "";
-  const ui = UI_FIELDS.map(
-    (field, index) => `${field} = "${invalidHex && field === "accent" ? "gold" : `#${(index + 1).toString(16).padStart(6, "0")}`}"`,
-  ).join("\n");
+  const ui = UI_FIELDS.map((field, index) => {
+    const color = invalidHex && field === "accent"
+      ? "gold"
+      : (uiValues[field] ?? `#${(index + 1).toString(16).padStart(6, "0")}`);
+    return `${field} = "${color}"`;
+  }).join("\n");
   const semantic = SEMANTIC_FIELDS.map(
     (field, index) => `${field} = "#${(index + 21).toString(16).padStart(6, "0")}"`,
   ).join("\n");
@@ -85,7 +90,7 @@ ${ansi}
 `;
 }
 
-async function fixture(t) {
+async function fixture(t, { mainUiValues } = {}) {
   const root = await mkdtemp(path.join(tmpdir(), "sf2-theme-data-"));
   const characterDirectory = path.join(root, "characters");
   await mkdir(characterDirectory);
@@ -93,7 +98,7 @@ async function fixture(t) {
   const characterPaths = ["ryu", "ken", "chun-li", "guile"].map((id) =>
     path.join(characterDirectory, `${id}.toml`),
   );
-  await writeFile(mainPath, themeToml("main", { kind: "main" }));
+  await writeFile(mainPath, themeToml("main", { kind: "main", uiValues: mainUiValues }));
   await Promise.all(
     characterPaths.map((filePath) =>
       writeFile(filePath, themeToml(path.basename(filePath, ".toml"))),
@@ -110,7 +115,7 @@ test("exports the committed main cards, character variants, and complete tokens"
       ["deep_navy", "ui.background", "#101a3a"],
       ["arcade_red", "semantic.red", "#e8565f"],
       ["gold", "semantic.yellow", "#f2b134"],
-      ["teal", "semantic.cyan", "#35c4c2"],
+      ["accent", "ui.accent", "#f2b134"],
       ["cream", "ui.foreground", "#fff4d6"],
     ],
   );
@@ -138,7 +143,7 @@ test("loads a complete temporary theme set", async (t) => {
   assert.equal(data.mainCards[0].hex, "#000001");
   assert.equal(data.mainCards[1].hex, "#000015");
   assert.equal(data.mainCards[2].hex, "#000017");
-  assert.equal(data.mainCards[3].hex, "#00001a");
+  assert.equal(data.mainCards[3].hex, "#000011");
   assert.equal(data.mainCards[4].hex, "#000002");
   assert.deepEqual(data.characterVariants.map(({ id }) => id), [
     "ryu",
@@ -146,6 +151,16 @@ test("loads a complete temporary theme set", async (t) => {
     "chun-li",
     "guile",
   ]);
+});
+
+test("sources the fourth main card from fixture ui.accent, not semantic.cyan", async (t) => {
+  const paths = await fixture(t, { mainUiValues: { accent: "#123456" } });
+  const fixtureMain = parse(await readFile(paths.mainPath, "utf8"));
+  const data = loadThemeData(paths);
+
+  assert.notEqual(fixtureMain.ui.accent, fixtureMain.semantic.cyan);
+  assert.equal(data.mainCards[3].token, "ui.accent");
+  assert.equal(data.mainCards[3].hex, fixtureMain.ui.accent);
 });
 
 test("reports a missing source file with its path", async (t) => {

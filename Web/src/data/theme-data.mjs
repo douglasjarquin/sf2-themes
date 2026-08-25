@@ -138,7 +138,7 @@ export function loadThemeData({
     mainCard("Deep Navy", "deep_navy", "ui.background", main.ui.background),
     mainCard("Arcade Red", "arcade_red", "semantic.red", main.semantic.red),
     mainCard("Gold", "gold", "semantic.yellow", main.semantic.yellow),
-    mainCard("Teal", "teal", "semantic.cyan", main.semantic.cyan),
+    mainCard("Accent", "accent", "ui.accent", main.ui.accent),
     mainCard("Cream", "cream", "ui.foreground", main.ui.foreground),
   ];
   const variants = characters.map((tokens) => ({
