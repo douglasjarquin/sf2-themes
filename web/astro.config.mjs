@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  base: "/street-fighter-2-theme",
+  base: "/sf2-themes",
   output: "static",
   site: "https://douglasjarquin.github.io"
 });

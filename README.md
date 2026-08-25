@@ -11,8 +11,8 @@ Unofficial fan project. Street Fighter and related names are trademarks of Capco
 Clone this repository and put the standalone `sf2-theme` script on your `PATH`.
 
 ```sh
-git clone https://github.com/douglasjarquin/street-fighter-2-theme.git
-cd street-fighter-2-theme
+git clone https://github.com/douglasjarquin/sf2-themes.git
+cd sf2-themes
 install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"
 ```
 

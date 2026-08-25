@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const themesPath = "/street-fighter-2-theme/themes/";
+const themesPath = "/sf2-themes/themes/";
 
 test("themes catalog truthfully lists the two supported adapters", async ({ page }) => {
   await page.goto(themesPath);
