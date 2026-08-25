@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 const routes = [
-  { label: "HOME", pathname: "/street-fighter-2-theme/" },
-  { label: "THEMES", pathname: "/street-fighter-2-theme/themes/" },
-  { label: "PALETTE", pathname: "/street-fighter-2-theme/palette/" },
-  { label: "INSTALL", pathname: "/street-fighter-2-theme/install/" },
+  { label: "HOME", pathname: "/sf2-themes/" },
+  { label: "THEMES", pathname: "/sf2-themes/themes/" },
+  { label: "PALETTE", pathname: "/sf2-themes/palette/" },
+  { label: "INSTALL", pathname: "/sf2-themes/install/" },
 ];
 
 const viewports = [
@@ -23,7 +23,7 @@ for (const viewport of viewports) {
 
     // Then: focus is visible and the document does not overflow horizontally.
     const focusedLink = page.locator(":focus-visible");
-    await expect(focusedLink).toHaveAttribute("href", "/street-fighter-2-theme/");
+    await expect(focusedLink).toHaveAttribute("href", "/sf2-themes/");
     await expect
       .poll(() => focusedLink.evaluate((element) => getComputedStyle(element).outlineStyle))
       .not.toBe("none");

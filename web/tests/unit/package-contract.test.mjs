@@ -4,7 +4,7 @@ import test from "node:test";
 test("Astro config uses the GitHub Pages static deployment contract", async () => {
   const config = await import("../../astro.config.mjs");
 
-  assert.equal(config.default.base, "/street-fighter-2-theme");
+  assert.equal(config.default.base, "/sf2-themes");
   assert.equal(config.default.output, "static");
   assert.equal(config.default.site, "https://douglasjarquin.github.io");
 });

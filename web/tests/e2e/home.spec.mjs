@@ -8,11 +8,11 @@ test("the home route presents the playable theme cabinet", async ({ page }) => {
   );
   await expect(page.getByRole("link", { name: "VIEW THE ROSTER" })).toHaveAttribute(
     "href",
-    "/street-fighter-2-theme/themes/",
+    "/sf2-themes/themes/",
   );
   await expect(page.getByRole("link", { name: "INSTALL THE PACK" })).toHaveAttribute(
     "href",
-    "/street-fighter-2-theme/install/",
+    "/sf2-themes/install/",
   );
   await expect(page.getByText("sf2-theme apply wezterm --theme ryu")).toBeVisible();
   await expect
