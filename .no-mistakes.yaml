@@ -1,7 +1,7 @@
 commands:
   format: 'ruff format src tests scripts'
   lint: 'ruff check src tests scripts'
-  test: 'pytest'
+  test: 'uv run --with pytest pytest'
 
 # Ignore these paths during review and documentation checks.
 ignore_patterns:
