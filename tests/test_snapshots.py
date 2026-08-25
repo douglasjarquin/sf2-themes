@@ -1,8 +1,9 @@
-"""Golden WezTerm and Herdr renders for main and one character theme."""
+"""Golden WezTerm, Herdr, and Neovim renders for main and one character theme."""
 
 from pathlib import Path
 
 from sf2_theme.adapters.herdr import render_block
+from sf2_theme.adapters.nvim import render_scheme as render_nvim_scheme
 from sf2_theme.adapters.wezterm import render_scheme
 from sf2_theme.catalog import get_theme, parse_catalog
 
@@ -28,3 +29,13 @@ def test_main_herdr_snapshot() -> None:
 def test_ryu_wezterm_snapshot() -> None:
     theme = get_theme("ryu", parse_catalog())
     _assert_snapshot("wezterm-ryu.toml", render_scheme(theme))
+
+
+def test_main_nvim_snapshot() -> None:
+    theme = get_theme("main", parse_catalog())
+    _assert_snapshot("nvim-main.lua", render_nvim_scheme(theme))
+
+
+def test_ryu_light_nvim_snapshot() -> None:
+    theme = get_theme("ryu-light", parse_catalog())
+    _assert_snapshot("nvim-ryu-light.lua", render_nvim_scheme(theme))

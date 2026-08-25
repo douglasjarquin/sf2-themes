@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/) and [Herdr](https://herdr.dev/).
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), and Neovim.
 
 The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
@@ -33,7 +33,13 @@ sf2-theme apply wezterm --theme ryu
 sf2-theme setup herdr
 sf2-theme apply herdr --theme chun-li
 herdr server reload-config
+
+sf2-theme setup nvim
+sf2-theme apply nvim --theme ryu-light
 ```
+
+Neovim setup installs every catalog colorscheme under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
+The loader applies the selected theme automatically when Neovim starts.
 
 If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
 If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
@@ -52,6 +58,7 @@ sf2-theme show ryu-light
 sf2-theme validate --all
 sf2-theme current wezterm
 sf2-theme apply herdr --theme boxer --dry-run
+sf2-theme current nvim
 ```
 
 Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
@@ -61,14 +68,16 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua`.
 - Herdr updates only a marked block in `~/.config/herdr/config.toml`.
+- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active theme at `~/.config/nvim/sf2-theme/current.lua`.
+- Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Symlinks are refused unless you pass `--follow-symlinks`.
 - Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
-Override locations with `--config-dir`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, or `XDG_CONFIG_HOME`.
+Override locations with `--config-dir`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
 
 ## Uninstall
 
-Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/sf2-theme/`, the WezTerm integration snippet, and the marked Herdr theme block.
+Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/nvim/colors/street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, the WezTerm integration snippet, and the marked Herdr theme block.
 
 ## Design
 
