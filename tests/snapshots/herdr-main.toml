@@ -1,5 +1,5 @@
-# >>> sf2-theme managed theme
-# sf2-theme: main
+# >>> sf2-themes managed theme
+# sf2-themes: main
 [theme]
 name = "terminal"
 
@@ -23,4 +23,4 @@ red = "#e8565f"
 blue = "#4aa5ff"
 teal = "#35c4c2"
 peach = "#dc8d55"
-# <<< sf2-theme managed theme
+# <<< sf2-themes managed theme

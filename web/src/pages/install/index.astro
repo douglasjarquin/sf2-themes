@@ -3,19 +3,19 @@ import SiteLayout from "../../layouts/SiteLayout.astro";
 
 const installScript = `git clone https://github.com/douglasjarquin/sf2-themes.git
 cd sf2-themes
-install -m 755 sf2-theme "$HOME/.local/bin/sf2-theme"`;
+install -m 755 sf2-themes "$HOME/.local/bin/sf2-themes"`;
 
 const moves = [
-  ["WEZTERM", "sf2-theme setup wezterm", "Set up the one-time WezTerm integration."],
-  ["WEZTERM", "sf2-theme apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
-  ["HERDR", "sf2-theme setup herdr", "Set up the one-time Herdr integration."],
-  ["HERDR", "sf2-theme apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
+  ["WEZTERM", "sf2-themes setup wezterm", "Set up the one-time WezTerm integration."],
+  ["WEZTERM", "sf2-themes apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
+  ["HERDR", "sf2-themes setup herdr", "Set up the one-time Herdr integration."],
+  ["HERDR", "sf2-themes apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
 ];
 ---
 
 <SiteLayout
   title="Install"
-  description="Install sf2-theme, then set up and apply Street Fighter II terminal colors."
+  description="Install sf2-themes, then set up and apply Street Fighter II terminal colors."
 >
   <section class="install-page">
     <div class="site-frame install-page__inner">
@@ -94,7 +94,7 @@ const moves = [
       await navigator.clipboard.writeText(installScript);
     } catch (error) {
       console.warn(
-        "[sf2-theme] Clipboard write failed:",
+        "[sf2-themes] Clipboard write failed:",
         error instanceof Error ? error.name : "UnknownError",
       );
       return;

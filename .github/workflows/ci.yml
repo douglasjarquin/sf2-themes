@@ -27,7 +27,7 @@ jobs:
       - name: Standalone freshness
         run: |
           python scripts/build-standalone.py
-          git diff --exit-code -- sf2-theme
+          git diff --exit-code -- sf2-themes
       - name: Lint
         run: ruff check src tests scripts
       - name: ShellCheck

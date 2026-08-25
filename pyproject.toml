@@ -1,5 +1,5 @@
 [project]
-name = "sf2-theme"
+name = "sf2-themes"
 version = "1.0.1"
 description = "Street Fighter II color themes for WezTerm, Herdr, and Neovim"
 readme = "README.md"
@@ -8,7 +8,7 @@ license = "MIT"
 authors = [{ name = "Douglas Jarquin" }]
 
 [project.scripts]
-sf2-theme = "sf2_theme.cli:main"
+sf2-themes = "sf2_theme.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]

@@ -12,7 +12,7 @@ SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
 CURRENT_DIR_NAME: Final = "sf2-theme"
 CURRENT_FILE_NAME: Final = "current.lua"
 PLUGIN_FILE_NAME: Final = "sf2-theme.lua"
-ID_COMMENT: Final = re.compile(r"^-- sf2-theme:\s+(\S+)\s*$")
+ID_COMMENT: Final = re.compile(r"^-- sf2-themes:\s+(\S+)\s*$")
 
 
 def config_root() -> Path:
@@ -157,7 +157,7 @@ def render_scheme(theme: Theme) -> str:
 
 
 def render_pointer(theme: Theme) -> str:
-    return f'-- sf2-theme: {theme.metadata.id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
+    return f'-- sf2-themes: {theme.metadata.id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
 
 
 def render_loader() -> str:
