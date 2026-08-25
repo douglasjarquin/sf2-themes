@@ -41,8 +41,9 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           if [[ "$FILTER_OUTCOME" != "success" ||
-                -z "$EVENT_BEFORE" ||
-                "$EVENT_BEFORE" == "0000000000000000000000000000000000000000" ||
+                ( "$EVENT_NAME" == "push" &&
+                  ( -z "$EVENT_BEFORE" ||
+                    "$EVENT_BEFORE" == "0000000000000000000000000000000000000000" ) ) ||
                 ( "$EVENT_NAME" == "pull_request" && -z "$BASE_SHA" ) ]]; then
             echo 'workflows=true' >> "$GITHUB_OUTPUT"
             echo 'python=true' >> "$GITHUB_OUTPUT"
