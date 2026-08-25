@@ -63,7 +63,7 @@ def test_safe_config_builder_gets_dofile() -> None:
     result = setup_lua(existing, pointer)
     assert result.mutated is True
     assert "dofile(sf2_current)" in result.content
-    assert 'config.color_scheme = dofile' in result.content
+    assert "config.color_scheme = dofile" in result.content
     assert result.snippet is None
 
 

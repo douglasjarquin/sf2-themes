@@ -9,6 +9,8 @@ from pathlib import Path
 from sf2_theme import __version__
 from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
+from sf2_theme.adapters.nvim import apply_nvim, setup_nvim
+from sf2_theme.adapters.nvim import read_current_id as nvim_current
 from sf2_theme.adapters.wezterm import apply_wezterm, setup_wezterm
 from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
 from sf2_theme.catalog import (
@@ -23,7 +25,7 @@ from sf2_theme.errors import CliError, ThemeError
 from sf2_theme.filesystem import WriteResult
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr")
+APP_NAMES = ("wezterm", "herdr", "nvim")
 HELP_TEXT = """Street Fighter II theme pack
 
 Usage:
@@ -110,7 +112,7 @@ def _need_value(arguments: Sequence[str], index: int, flag: str) -> str:
 
 def _app(name: str) -> str:
     if name not in APP_NAMES:
-        raise CliError(f"unsupported app: {name}; choose wezterm or herdr")
+        raise CliError(f"unsupported app: {name}; choose wezterm, herdr, or nvim")
     return name
 
 
@@ -152,6 +154,17 @@ def _setup(app: str, options: Options) -> None:
                 adopt=options.adopt,
             )
             _report((result,))
+        case "nvim":
+            _report(
+                setup_nvim(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
+                    replace_pointer=options.theme is not None,
+                )
+            )
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -180,6 +193,16 @@ def _apply(app: str, options: Options) -> None:
                         follow_symlinks=options.follow_symlinks,
                         adopt=options.adopt,
                     ),
+                )
+            )
+        case "nvim":
+            _report(
+                apply_nvim(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
                 )
             )
         case unreachable:
@@ -216,6 +239,8 @@ def _current(app: str, options: Options) -> None:
             print(wezterm_current())
         case "herdr":
             print(herdr_current(options.config_dir))
+        case "nvim":
+            print(nvim_current(options.config_dir))
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -250,23 +275,23 @@ def dispatch(arguments: list[str]) -> int:
             case "setup":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("setup requires an app: wezterm or herdr")
+                    raise CliError("setup requires an app: wezterm, herdr, or nvim")
                 _setup(_app(options.rest[0]), options)
             case "apply":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("apply requires an app: wezterm or herdr")
+                    raise CliError("apply requires an app: wezterm, herdr, or nvim")
                 _apply(_app(options.rest[0]), options)
             case "install":
                 print("warning: install is deprecated; use apply", file=sys.stderr)
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("install requires an app: wezterm or herdr")
+                    raise CliError("install requires an app: wezterm, herdr, or nvim")
                 _apply(_app(options.rest[0]), options)
             case "current":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("current requires an app: wezterm or herdr")
+                    raise CliError("current requires an app: wezterm, herdr, or nvim")
                 _current(_app(options.rest[0]), options)
             case _:
                 raise CliError(f"unknown command: {command}; run sf2-theme --help")

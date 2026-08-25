@@ -176,9 +176,7 @@ def setup_wezterm(
     existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
     lua = setup_lua(existing, current_pointer_path(), adopt=adopt)
     if lua.mutated:
-        results.append(
-            write_file(lua_path, lua.content, dry_run=dry_run, follow_symlinks=follow_symlinks)
-        )
+        results.append(write_file(lua_path, lua.content, dry_run=dry_run, follow_symlinks=follow_symlinks))
     return results, lua
 
 

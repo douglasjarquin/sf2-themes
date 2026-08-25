@@ -7,9 +7,7 @@ from pathlib import Path
 BUILDER = re.compile(r"^local\s+(\w+)\s*=\s*wezterm\.config_builder\(\)\s*$", re.MULTILINE)
 RETURN_NAME = re.compile(r"^return\s+(\w+)\s*$", re.MULTILINE)
 COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=")
-SF2_SCHEME_VALUE = re.compile(
-    r'"(?:street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"'
-)
+SF2_SCHEME_VALUE = re.compile(r'"(?:street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"')
 
 
 @dataclass(frozen=True, slots=True)

@@ -39,6 +39,13 @@ test ! -e "$test_dir/bin/themes"
 (cd "$test_dir" && "$test_dir/bin/sf2-theme" apply herdr --config-dir "$test_dir/installed-herdr")
 test -f "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
 test -f "$test_dir/installed-herdr/config.toml"
+"$repo_dir/sf2-theme" setup nvim --config-dir "$test_dir/installed-nvim"
+"$repo_dir/sf2-theme" apply nvim --theme ryu-light --config-dir "$test_dir/installed-nvim"
+test -f "$test_dir/installed-nvim/colors/street-fighter-ii-main.lua"
+test -f "$test_dir/installed-nvim/colors/street-fighter-ii-ryu-light.lua"
+test -f "$test_dir/installed-nvim/plugin/sf2-theme.lua"
+grep -q 'colorscheme street-fighter-ii-ryu-light' "$test_dir/installed-nvim/sf2-theme/current.lua"
+printf '%s\n' 'Copy-only installed Neovim: PASS'
 grep -q 'background = "#101a3a"' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
 grep -q 'name = "Street Fighter II - Main"' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"
 grep -q 'street-fighter-2' "$test_dir/wezterm/colors/street-fighter-ii-main.toml"

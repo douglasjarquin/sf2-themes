@@ -7,7 +7,10 @@ from sf2_theme.cli import dispatch
 
 def test_apps_and_version(capsys) -> None:
     assert dispatch(["apps"]) == 0
-    assert "wezterm" in capsys.readouterr().out
+    apps = capsys.readouterr().out
+    assert "wezterm" in apps
+    assert "herdr" in apps
+    assert "nvim" in apps
     assert dispatch(["--version"]) == 0
     assert capsys.readouterr().out.strip() == "1.0.1"
 
