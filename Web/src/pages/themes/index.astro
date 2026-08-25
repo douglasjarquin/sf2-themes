@@ -150,7 +150,7 @@ const adapters = [
 
   .themes-catalog {
     min-block-size: 640px;
-    padding-block: var(--space-8) var(--space-20);
+    padding-block: var(--space-8) var(--space-15);
   }
 
   .themes-controls,
@@ -212,9 +212,11 @@ const adapters = [
 
   .adapter-card {
     display: grid;
-    gap: var(--space-3);
+    align-content: start;
+    gap: var(--space-2);
     border: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent);
-    padding: var(--space-4) var(--space-5);
+    min-block-size: 164px;
+    padding: var(--space-3) var(--space-4);
     background: var(--color-surface-0);
   }
 
@@ -256,12 +258,13 @@ const adapters = [
   .adapter-card p {
     color: color-mix(in srgb, var(--color-foreground) 58%, transparent);
     font-size: 14px;
-    line-height: 1.55;
+    line-height: 1.45;
   }
 
   .adapter-card__command {
     min-inline-size: 0;
-    padding: 9px var(--space-3);
+    margin-block-start: auto;
+    padding: 8px var(--space-2);
     background: var(--color-surface-dim);
   }
 
@@ -313,6 +316,10 @@ const adapters = [
   }
 
   @media (max-width: 720px) {
+    .themes-hero {
+      padding-block: calc(var(--space-12) + var(--space-1)) var(--space-4);
+    }
+
     .themes-search,
     .themes-search input {
       inline-size: 100%;
@@ -320,6 +327,10 @@ const adapters = [
 
     .themes-grid {
       grid-template-columns: 1fr;
+    }
+
+    .adapter-card {
+      min-block-size: 0;
     }
   }
 </style>

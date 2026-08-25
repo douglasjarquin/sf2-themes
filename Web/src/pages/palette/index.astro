@@ -141,10 +141,11 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
   .palette-card-name, .palette-variant h3 { font-family: var(--font-display); font-size: 10px; line-height: 1.8; }
   .palette-page code { color: var(--color-foreground); font-family: var(--font-mono); font-size: 13px; }
   .palette-token { color: color-mix(in srgb, var(--color-foreground) 55%, transparent); font-family: var(--font-mono); font-size: 12px; }
-  .palette-section:nth-of-type(2) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
-  .palette-terminal-map { display: grid; grid-template-columns: 1fr; gap: var(--space-3); margin: 0; padding: var(--space-5); border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); list-style: none; }
-  .palette-terminal-map li { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: var(--space-2) var(--space-3); min-block-size: 76px; padding: var(--space-3); border-block-end: 2px solid color-mix(in srgb, var(--palette-color) 60%, transparent); background: color-mix(in srgb, var(--color-panel) 82%, var(--palette-color)); }
-  .palette-map-color { grid-row: span 2; inline-size: 30px; block-size: 30px; border: 1px solid color-mix(in srgb, var(--color-foreground) 25%, transparent); }
+  .palette-section:nth-of-type(2) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; gap: var(--space-12); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
+  .palette-section:nth-of-type(2) .palette-section__heading { align-content: start; }
+  .palette-terminal-map { display: grid; grid-template-columns: 1fr; gap: var(--space-1); margin: 0; padding: var(--space-4); border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); list-style: none; }
+  .palette-terminal-map li { display: grid; grid-template-columns: 20px minmax(72px, .7fr) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-block-size: 0; padding: var(--space-1) 0; border: 0; background: transparent; }
+  .palette-map-color { inline-size: 20px; block-size: 20px; border: 1px solid color-mix(in srgb, var(--color-foreground) 25%, transparent); }
   .palette-terminal-map strong { font-family: var(--font-display); font-size: 9px; line-height: 1.5; }
   .palette-terminal-map li > span:last-child { color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 12px; }
   .palette-variant-list { display: grid; gap: var(--space-4); }
@@ -158,7 +159,8 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
   .palette-swatches code { overflow: hidden; color: color-mix(in srgb, var(--color-foreground) 78%, transparent); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
   .palette-copy-feedback { position: fixed; z-index: 20; inset-inline: 0; inset-block-end: var(--space-4); inline-size: max-content; max-inline-size: calc(100% - var(--space-8)); margin: auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-cyan); background: var(--color-panel); color: var(--color-foreground); font-family: var(--font-mono); font-size: 12px; text-align: center; }
   .palette-copy-feedback:empty { display: none; }
-  @media (max-width: 620px) { .palette-source-grid, .palette-section:nth-of-type(2) { grid-template-columns: 1fr; } .palette-source-grid { gap: var(--space-6); } .palette-variant { grid-template-columns: 1fr; } .palette-swatches { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); } }
+  @media (min-width: 621px) { .palette-hero { padding-block-end: var(--space-5); } .palette-section:first-of-type { padding-block: var(--space-5) 100px; } .palette-section:nth-of-type(2) { padding-block-start: var(--space-12); } }
+  @media (max-width: 620px) { .palette-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .palette-source-grid, .palette-section:nth-of-type(2) { grid-template-columns: 1fr; } .palette-source-grid { gap: var(--space-6); } .palette-terminal-map li { grid-template-columns: 20px minmax(64px, .7fr) minmax(0, 1fr); } .palette-terminal-map li > span:last-child { grid-column: 2 / -1; } .palette-variant { grid-template-columns: 1fr; } .palette-swatches { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); } }
   @media (prefers-reduced-motion: reduce) { .palette-source-card { transition: none; } .palette-source-card:hover { transform: none; } }
 </style>
 

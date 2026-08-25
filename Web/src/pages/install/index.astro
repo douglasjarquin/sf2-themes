@@ -105,9 +105,10 @@ const moves = [
 </script>
 
 <style>
-  .install-page__inner { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: var(--space-12); padding-block: var(--space-12) var(--space-20); }
+  .install-page__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); align-items: start; gap: var(--space-12); padding-block: var(--space-12) var(--space-20); }
   .install-page__header, .adapter-notes { grid-column: 1 / -1; }
   .install-page__header { display: grid; gap: var(--space-4); max-inline-size: 760px; }
+  .install-page__header > p:first-child { display: none; }
   .install-page__header > p:first-child, .install-panel__eyebrow, .install-moves__heading > p, .adapter-notes > p, .install-moves li > span, .install-moves li p { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
   h1, h2 { margin: 0; color: var(--color-accent); font-family: var(--font-display); font-weight: 400; text-shadow: 4px 4px 0 var(--color-red); }
   h1 { font-size: 26px; line-height: 1.5; }
@@ -115,32 +116,37 @@ const moves = [
   .install-page__lede, .install-panel__meta, .install-moves small, .adapter-notes li { color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 16px; line-height: 1.7; }
   .install-page__lede, .install-panel__meta { margin: 0; }
   .install-panel, .adapter-notes { border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-background) 72%, black); }
-  .install-panel__heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) var(--space-4); border-block-end: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
+  .install-panel__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-block-size: 54px; padding: var(--space-3) var(--space-4); border-block-end: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
   .install-panel__heading > div { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .install-panel__lights { display: flex; gap: 7px; }
   .install-panel__lights i { inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--color-red); }
   .install-panel__lights i:nth-child(2) { background: var(--color-accent); }
   .install-panel__lights i:nth-child(3) { background: var(--color-cyan); }
-  button { min-block-size: 44px; padding: var(--space-3) var(--space-4); border: 2px solid var(--color-accent); background: var(--color-accent); box-shadow: 3px 3px 0 var(--color-red); color: var(--color-background); cursor: pointer; font: 400 10px/1.5 var(--font-display); transition: transform var(--duration-micro) ease-out; }
-  button:hover { transform: translate(1px, 1px); }
+  button { min-block-size: 30px; padding: var(--space-2) var(--space-3); border: 1px solid color-mix(in srgb, var(--color-foreground) 24%, transparent); background: transparent; box-shadow: none; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); cursor: pointer; font: 500 12px/1.2 var(--font-mono); transition: color var(--duration-micro) ease-out, border-color var(--duration-micro) ease-out; }
+  button:hover { border-color: var(--color-accent); color: var(--color-accent); }
   button:focus-visible { outline: 3px solid var(--color-cyan); outline-offset: 4px; }
-  pre { min-inline-size: 0; overflow: visible; margin: 0; padding: var(--space-5) var(--space-6); background: transparent; color: var(--color-foreground); font: 500 13px/2 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
+  pre { min-block-size: 150px; min-inline-size: 0; overflow: hidden; margin: 0; padding: var(--space-5) var(--space-6); background: transparent; color: var(--color-foreground); font: 500 13px/2 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
   pre code { white-space: inherit; }
   .install-panel__meta { display: none; }
-  .install-moves { display: grid; gap: var(--space-6); }
+  .install-moves { display: grid; gap: var(--space-4); }
   .install-moves__heading { display: grid; gap: var(--space-2); }
   ol, ul { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
-  .install-moves li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-4); padding: 0; }
+  .install-moves li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); padding: 0; }
   .install-moves li > div { display: grid; gap: var(--space-2); }
   code { overflow-wrap: anywhere; color: var(--color-foreground); font-family: var(--font-mono); font-size: 14px; }
-  .install-moves small { font-size: 14px; }
+  .install-moves small { font-size: 14px; line-height: 1.45; }
   .adapter-notes { padding: var(--space-6); }
   .adapter-notes h2 { margin-block: var(--space-2) var(--space-5); }
   .adapter-notes li { position: relative; padding-inline-start: var(--space-5); }
   .adapter-notes li::before { position: absolute; inset-inline-start: 0; color: var(--color-red); content: "▸"; }
+  @media (min-width: 561px) { .install-page__header { margin-block-end: var(--space-6); } }
   @media (max-width: 560px) {
-    .install-page__inner { grid-template-columns: 1fr; gap: var(--space-10); padding-block: var(--space-12) var(--space-15); }
+    .install-page__inner { grid-template-columns: 1fr; gap: var(--space-10); padding-block: calc(var(--space-12) + var(--space-1)) var(--space-15); }
     .install-page__header, .adapter-notes { grid-column: auto; }
-    pre { font-size: 12px; }
+    .install-page__header { margin-block-end: calc(var(--space-6) + var(--space-1)); }
+    .install-panel__heading { flex-wrap: nowrap; }
+    .install-panel__lights { flex: none; }
+    button { max-inline-size: 190px; }
+    pre { padding-inline: var(--space-5); font-size: 12px; }
   }
 </style>
