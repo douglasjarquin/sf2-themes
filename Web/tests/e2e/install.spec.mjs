@@ -26,6 +26,10 @@ test("install route gives the real setup then apply commands", async ({ page }) 
     page.getByText("sf2-theme apply herdr --theme chun-li", { exact: true }),
   ).toBeVisible();
 
+  const adapterNotesText = await page.locator(".adapter-notes").innerText();
+  expect(adapterNotesText).not.toContain("street-fighter-2");
+  expect(adapterNotesText).not.toMatch(/\bryu\b.*alias|alias.*\bryu\b/i);
+
   const pageText = await page.locator("body").innerText();
   expect(pageText).not.toMatch(/\bTUI\b/i);
   expect(pageText).not.toContain("sf2-theme install wezterm");
