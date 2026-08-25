@@ -15,7 +15,7 @@ const projectRoot = path.resolve(webRoot, "..");
 
 test("renders the ui.accent terminal row from divergent fixture data", async (t) => {
   const root = await mkdtemp(path.join(tmpdir(), "sf2-theme-palette-"));
-  const fixtureWebRoot = path.join(root, "Web");
+  const fixtureWebRoot = path.join(root, "web");
   const fixtureThemesRoot = path.join(root, "themes");
   const mainSource = await readFile(path.join(projectRoot, "themes/main.toml"), "utf8");
   const sourceTokens = parse(mainSource);
