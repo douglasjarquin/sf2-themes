@@ -118,7 +118,7 @@ def _section_bounds(lines: list[str], section: str) -> tuple[int, int] | None:
 
 
 def _has_inline_tui(existing: str) -> bool:
-    return any(re.match(r"^\s*tui\s*=", line) for line in existing.splitlines())
+    return any(re.match(r"^\s*tui\s*[.=]", line) for line in existing.splitlines())
 
 
 def _has_tui_theme(existing: str) -> bool:
