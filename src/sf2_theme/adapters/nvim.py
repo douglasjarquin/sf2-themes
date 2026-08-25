@@ -157,7 +157,7 @@ def render_scheme(theme: Theme) -> str:
 
 
 def render_pointer(theme: Theme) -> str:
-    return f"-- sf2-theme: {theme.metadata.id}\nvim.cmd(\"colorscheme {scheme_name(theme)}\")\n"
+    return f'-- sf2-theme: {theme.metadata.id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
 
 
 def render_loader() -> str:

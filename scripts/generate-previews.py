@@ -21,12 +21,12 @@ def swatch(theme: Theme) -> str:
         y = 92 + (index // 8) * 36
         cells.append(f'<rect x="{x}" y="{y}" width="32" height="32" fill="{color}"/>')
     rows = (
-        ('background', ui.background),
-        ('foreground', ui.foreground),
-        ('accent', ui.accent),
-        ('active row', ui.active_row_bg),
-        ('navigate', ui.navigate_row_bg),
-        ('selection', ui.selection_bg),
+        ("background", ui.background),
+        ("foreground", ui.foreground),
+        ("accent", ui.accent),
+        ("active row", ui.active_row_bg),
+        ("navigate", ui.navigate_row_bg),
+        ("selection", ui.selection_bg),
     )
     chips = []
     for index, (label, color) in enumerate(rows):

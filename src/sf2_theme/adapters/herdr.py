@@ -110,9 +110,7 @@ def merge_theme(existing: str, theme: Theme, *, adopt: bool) -> str:
         merged = existing[:start] + render_block(theme) + existing[after:]
     elif _has_unmarked_theme(existing):
         if not adopt:
-            raise ThemeError(
-                "Herdr config already has a [theme] section; pass --adopt to replace it"
-            )
+            raise ThemeError("Herdr config already has a [theme] section; pass --adopt to replace it")
         preserved = _strip_theme_sections(existing)
         merged = f"{preserved}\n\n{render_block(theme)}" if preserved else render_block(theme)
     elif existing.strip():

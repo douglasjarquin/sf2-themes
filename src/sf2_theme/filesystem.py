@@ -59,9 +59,7 @@ def _resolve_destination(path: Path, *, follow_symlinks: bool) -> Path:
     if not path.is_symlink():
         return path
     if not follow_symlinks:
-        raise ThemeError(
-            f"refusing to replace symlink {path}; pass --follow-symlinks to write through"
-        )
+        raise ThemeError(f"refusing to replace symlink {path}; pass --follow-symlinks to write through")
     return path.resolve()
 
 

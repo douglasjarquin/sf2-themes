@@ -92,9 +92,7 @@ def validate_theme(theme: Theme) -> tuple[Issue, ...]:
         seen.setdefault(color, []).append(slot)
     for color, slots in seen.items():
         if len(slots) > 1:
-            issues.append(
-                Issue(Severity.WARNING, f"{theme_id}: {color} reused by {', '.join(slots)}")
-            )
+            issues.append(Issue(Severity.WARNING, f"{theme_id}: {color} reused by {', '.join(slots)}"))
     return tuple(issues)
 
 
@@ -109,9 +107,7 @@ def _ansi_issues(theme: Theme) -> list[Issue]:
         issues.append(Issue(Severity.ERROR, f"{theme_id}: ansi.bright has duplicate colors"))
     for name, left, right in zip(ANSI_ORDER, normal, bright, strict=True):
         if left == right:
-            issues.append(
-                Issue(Severity.ERROR, f"{theme_id}: ansi.bright.{name} matches ansi.normal.{name}")
-            )
+            issues.append(Issue(Severity.ERROR, f"{theme_id}: ansi.bright.{name} matches ansi.normal.{name}"))
     return issues
 
 
@@ -142,9 +138,7 @@ def validate_catalog(themes: Sequence[Theme]) -> tuple[Issue, ...]:
         for key in theme.lookup_keys():
             owner = claimed.get(key)
             if owner is not None:
-                issues.append(
-                    Issue(Severity.ERROR, f"duplicate lookup key {key!r} on {owner} and {theme.metadata.id}")
-                )
+                issues.append(Issue(Severity.ERROR, f"duplicate lookup key {key!r} on {owner} and {theme.metadata.id}"))
             else:
                 claimed[key] = theme.metadata.id
         if "bison" in theme.lookup_keys():

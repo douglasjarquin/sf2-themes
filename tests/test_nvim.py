@@ -49,9 +49,9 @@ def test_setup_writes_managed_loader_and_default_current(tmp_path: Path) -> None
 
     loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
     assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
-    assert "colorscheme street-fighter-ii-main" in (
-        tmp_path / "nvim" / "sf2-theme" / "current.lua"
-    ).read_text(encoding="utf-8")
+    assert "colorscheme street-fighter-ii-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(
+        encoding="utf-8"
+    )
     assert len(results) == len(catalog) + 2
 
 
@@ -88,17 +88,20 @@ def test_apply_dry_run_leaves_existing_pointer_unchanged(tmp_path: Path) -> None
     pointer = config_dir / "sf2-theme" / "current.lua"
     original = pointer.read_text(encoding="utf-8")
 
-    assert dispatch(
-        [
-            "apply",
-            "nvim",
-            "--theme",
-            "ryu-light",
-            "--config-dir",
-            str(config_dir),
-            "--dry-run",
-        ]
-    ) == 0
+    assert (
+        dispatch(
+            [
+                "apply",
+                "nvim",
+                "--theme",
+                "ryu-light",
+                "--config-dir",
+                str(config_dir),
+                "--dry-run",
+            ]
+        )
+        == 0
+    )
 
     assert pointer.read_text(encoding="utf-8") == original
     assert not list((config_dir / "sf2-theme").glob("current.lua.bak.*"))
@@ -126,9 +129,7 @@ def test_apply_follows_symlink_when_requested(tmp_path: Path) -> None:
     target.write_text("-- preserve\n", encoding="utf-8")
     (colors / "street-fighter-ii-main.lua").symlink_to(target)
 
-    assert dispatch(
-        ["apply", "nvim", "--config-dir", str(config_dir), "--follow-symlinks"]
-    ) == 0
+    assert dispatch(["apply", "nvim", "--config-dir", str(config_dir), "--follow-symlinks"]) == 0
 
     assert (colors / "street-fighter-ii-main.lua").is_symlink()
     assert 'vim.g.colors_name = "street-fighter-ii-main"' in target.read_text(encoding="utf-8")
