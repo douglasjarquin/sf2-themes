@@ -10,8 +10,6 @@ on:
 # To roll back, revert the deployed commit and let this workflow redeploy it.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   build:
@@ -30,6 +28,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'pull_request' }}
+    permissions:
+      pages: write
+      id-token: write
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
