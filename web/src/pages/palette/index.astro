@@ -1,0 +1,187 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { characterVariants, mainCards, themeTokens } from "../../data/theme-data.mjs";
+
+const mainColors = Object.fromEntries(mainCards.map(({ hex, token }) => [token, hex]));
+const terminalMappings = [
+  ["BG", "ui.background"],
+  ["RED", "semantic.red"],
+  ["GOLD", "semantic.yellow"],
+  ["ACCENT", "ui.accent"],
+  ["FG", "ui.foreground"],
+].map(([label, token]) => ({
+  label,
+  token,
+  hex: token === "ui.accent" ? themeTokens.main.ui.accent : mainColors[token],
+}));
+const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as const;
+---
+
+<SiteLayout title="Palette">
+  <section class="palette-page">
+    <header class="palette-hero site-frame">
+      <p class="palette-eyebrow">TOML-BACKED SOURCE COLORS</p>
+      <h1>PALETTE</h1>
+      <p>
+        The main arcade palette and four available character variants, rendered directly from
+        the theme source.
+      </p>
+    </header>
+
+    <section class="palette-section site-frame" aria-labelledby="main-colors-heading">
+      <div class="palette-section__heading">
+        <p class="palette-eyebrow">MAIN.TOML</p>
+        <h2 id="main-colors-heading">SOURCE CARDS</h2>
+      </div>
+      <div class="palette-source-grid">
+        {
+          mainCards.map((card) => (
+            <button
+              aria-label={`Copy ${card.name} ${card.hex}`}
+              class="palette-source-card"
+              data-color={card.hex}
+              data-copy-color={card.hex}
+              data-source-card
+              style={`--palette-color: ${card.hex}`}
+              type="button"
+            >
+              <span class="palette-color-block" aria-hidden="true"></span>
+              <span class="palette-card-name">{card.name}</span>
+              <code>{card.hex}</code>
+              <span class="palette-token">{card.token}</span>
+            </button>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="palette-section site-frame" aria-labelledby="terminal-mapping-heading">
+      <div class="palette-section__heading">
+        <p class="palette-eyebrow">TERMINAL ROLES</p>
+        <h2 id="terminal-mapping-heading">FIGHTER READY</h2>
+      </div>
+      <ol class="palette-terminal-map">
+        {
+          terminalMappings.map((mapping) => (
+            <li
+              data-color={mapping.hex}
+              data-terminal-mapping
+              data-token={mapping.token}
+              style={`--palette-color: ${mapping.hex}`}
+            >
+              <span class="palette-map-color" aria-hidden="true"></span>
+              <strong>{mapping.label}</strong>
+              <code>{mapping.token}</code>
+              <span>{mapping.hex}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <section class="palette-section site-frame" aria-labelledby="variants-heading">
+      <div class="palette-section__heading">
+        <p class="palette-eyebrow">CHARACTER VARIANTS</p>
+        <h2 id="variants-heading">SELECT YOUR FIGHTER</h2>
+      </div>
+      <div class="palette-variant-list">
+        {
+          characterVariants.map((variant) => (
+            <article class="palette-variant" data-character-variant={variant.id}>
+              <div class="palette-variant__identity">
+                <h3>{variant.character}</h3>
+                <span>AVAILABLE</span>
+              </div>
+              <div class="palette-swatches" aria-label={`${variant.character} colors`}>
+                {
+                  colorRoles.map((role) => (
+                    <button
+                      aria-label={`Copy ${variant.character} ${role} ${variant.colors[role]}`}
+                      data-character-swatch
+                      data-color={variant.colors[role]}
+                      data-copy-color={variant.colors[role]}
+                      style={`--palette-color: ${variant.colors[role]}`}
+                      type="button"
+                    >
+                      <span class="palette-color-block" aria-hidden="true"></span>
+                      <span>{role}</span>
+                      <code>{variant.colors[role]}</code>
+                    </button>
+                  ))
+                }
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <p class="palette-copy-feedback" aria-live="polite" data-copy-feedback role="status"></p>
+  </section>
+</SiteLayout>
+
+<style>
+  .palette-page { padding-block: var(--space-12) var(--space-20); }
+  .palette-page button { font: inherit; }
+  .palette-hero { display: grid; gap: var(--space-4); padding-block-end: var(--space-8); }
+  .palette-hero .palette-eyebrow, .palette-section:first-of-type .palette-section__heading { display: none; }
+  .palette-eyebrow { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
+  .palette-hero h1, .palette-section h2, .palette-variant h3 { margin: 0; font-family: var(--font-display); }
+  .palette-hero h1 { color: var(--color-accent); font-size: 26px; line-height: 1.5; text-shadow: 4px 4px 0 var(--color-red); }
+  .palette-hero > p:last-child { max-inline-size: 56ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 17px; line-height: 1.7; }
+  .palette-section { padding-block: var(--space-8) var(--space-15); }
+  .palette-section__heading { display: grid; gap: var(--space-2); margin-block-end: var(--space-6); }
+  .palette-section h2 { color: var(--color-foreground); font-size: clamp(14px, 3vw, 18px); line-height: 1.7; }
+  .palette-source-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+  .palette-source-card, .palette-variant { border: 2px solid color-mix(in srgb, var(--color-foreground) 14%, transparent); background: var(--color-panel); box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-background) 70%, black); }
+  .palette-source-card { display: grid; gap: var(--space-2); padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--color-foreground); text-align: start; cursor: copy; transition: transform var(--duration-micro) ease-out; }
+  .palette-source-card:hover { border-color: var(--palette-color); transform: translate(-1px, -1px); }
+  .palette-color-block, .palette-map-color { display: block; background: var(--palette-color); }
+  .palette-source-card .palette-color-block { min-block-size: 118px; border: 2px solid color-mix(in srgb, var(--color-foreground) 22%, transparent); box-shadow: 5px 5px 0 color-mix(in srgb, var(--color-background) 70%, black); }
+  .palette-card-name, .palette-variant h3 { font-family: var(--font-display); font-size: 10px; line-height: 1.8; }
+  .palette-page code { color: var(--color-foreground); font-family: var(--font-mono); font-size: 13px; }
+  .palette-token { color: color-mix(in srgb, var(--color-foreground) 55%, transparent); font-family: var(--font-mono); font-size: 12px; }
+  .palette-section:nth-of-type(2) { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; gap: var(--space-12); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
+  .palette-section:nth-of-type(2) .palette-section__heading { align-content: start; }
+  .palette-terminal-map { display: grid; grid-template-columns: 1fr; gap: var(--space-1); margin: 0; padding: var(--space-4); border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); list-style: none; }
+  .palette-terminal-map li { display: grid; grid-template-columns: 20px minmax(72px, .7fr) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); min-block-size: 0; padding: var(--space-1) 0; border: 0; background: transparent; }
+  .palette-map-color { inline-size: 20px; block-size: 20px; border: 1px solid color-mix(in srgb, var(--color-foreground) 25%, transparent); }
+  .palette-terminal-map strong { font-family: var(--font-display); font-size: 9px; line-height: 1.5; }
+  .palette-terminal-map li > span:last-child { color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 12px; }
+  .palette-variant-list { display: grid; gap: var(--space-4); }
+  .palette-variant { display: grid; grid-template-columns: minmax(120px, 0.35fr) 1fr; gap: var(--space-4); padding: var(--space-4); }
+  .palette-variant__identity { display: grid; align-content: center; gap: var(--space-2); }
+  .palette-variant__identity span { inline-size: max-content; padding: var(--space-1) var(--space-2); border: 1px solid var(--color-cyan); color: var(--color-cyan); font-family: var(--font-mono); font-size: 11px; }
+  .palette-swatches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
+  .palette-swatches button { display: grid; gap: var(--space-2); min-inline-size: 0; padding: var(--space-2); border: 1px solid color-mix(in srgb, var(--color-foreground) 16%, transparent); background: color-mix(in srgb, var(--color-background) 50%, var(--color-panel)); color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 11px; text-align: start; cursor: copy; }
+  .palette-swatches button:hover { border-color: var(--palette-color); }
+  .palette-swatches .palette-color-block { min-block-size: 34px; }
+  .palette-swatches code { overflow: hidden; color: color-mix(in srgb, var(--color-foreground) 78%, transparent); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+  .palette-copy-feedback { position: fixed; z-index: 20; inset-inline: 0; inset-block-end: var(--space-4); inline-size: max-content; max-inline-size: calc(100% - var(--space-8)); margin: auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-cyan); background: var(--color-panel); color: var(--color-foreground); font-family: var(--font-mono); font-size: 12px; text-align: center; }
+  .palette-copy-feedback:empty { display: none; }
+  @media (min-width: 621px) { .palette-hero { padding-block-end: var(--space-5); } .palette-section:first-of-type { padding-block: var(--space-5) 100px; } .palette-section:nth-of-type(2) { padding-block-start: var(--space-12); } }
+  @media (max-width: 620px) { .palette-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .palette-source-grid, .palette-section:nth-of-type(2) { grid-template-columns: 1fr; } .palette-source-grid { gap: var(--space-6); } .palette-terminal-map li { grid-template-columns: 20px minmax(64px, .7fr) minmax(0, 1fr); } .palette-terminal-map li > span:last-child { grid-column: 2 / -1; } .palette-variant { grid-template-columns: 1fr; } .palette-swatches { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); } }
+  @media (prefers-reduced-motion: reduce) { .palette-source-card { transition: none; } .palette-source-card:hover { transform: none; } }
+</style>
+
+<script>
+  const feedback = document.querySelector("[data-copy-feedback]");
+
+  if (feedback instanceof HTMLElement) {
+    document.querySelectorAll("[data-copy-color]").forEach((button) => {
+      if (!(button instanceof HTMLButtonElement)) return;
+
+      button.addEventListener("click", async () => {
+        const color = button.dataset.copyColor;
+        if (!color) return;
+
+        try {
+          await navigator.clipboard.writeText(color);
+          feedback.textContent = `COPIED ${color}`;
+        } catch {
+          feedback.textContent = "COPY FAILED";
+        }
+      });
+    });
+  }
+</script>
