@@ -21,6 +21,7 @@ MODULES: tuple[tuple[str, Path, bool], ...] = (
     ("sf2_theme.adapters.wezterm", SRC / "adapters" / "wezterm.py", False),
     ("sf2_theme.adapters.herdr", SRC / "adapters" / "herdr.py", False),
     ("sf2_theme.adapters.nvim", SRC / "adapters" / "nvim.py", False),
+    ("sf2_theme.adapters.codex", SRC / "adapters" / "codex.py", False),
     ("sf2_theme.cli", SRC / "cli.py", False),
 )
 

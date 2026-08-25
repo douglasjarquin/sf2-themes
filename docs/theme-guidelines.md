@@ -120,6 +120,8 @@ WezTerm receives foreground, background, cursor, selection, split, scrollbar, AN
 
 Neovim receives every current theme token, including overlays and subtext, mapped onto both `colors` values and editor highlight groups.
 
+Codex receives the current UI and semantic colors through its supported Syntect/TextMate `.tmTheme` surface under `$CODEX_HOME/themes/`.
+
 ## 10. Automated validation
 
 Every theme must pass schema validation, exact `#RRGGBB` validation, unique id and alias checks, contrast tests, ANSI completeness tests, renderer parsing, golden-output snapshots, and idempotent apply tests.
