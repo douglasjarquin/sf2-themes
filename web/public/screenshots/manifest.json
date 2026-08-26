@@ -1,0 +1,34 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "generatedAt": "2026-08-26T04:55:31.855Z",
+  "source": "ASCII cabinet",
+  "entries": [
+    {
+      "id": "ryu",
+      "name": "Ryu",
+      "image": "ryu.png",
+      "moment": "fight"
+    },
+    {
+      "id": "ken",
+      "name": "Ken",
+      "image": "ken.png",
+      "moment": "hadouken"
+    },
+    {
+      "id": "chun-li",
+      "name": "Chun-Li",
+      "image": "chun-li.png",
+      "moment": "counter"
+    },
+    {
+      "id": "guile",
+      "name": "Guile",
+      "image": "guile.png",
+      "moment": "ko"
+    }
+  ]
+}

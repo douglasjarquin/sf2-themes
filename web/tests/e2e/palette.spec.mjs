@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +7,15 @@ import { parse } from "smol-toml";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const mainTheme = parse(readFileSync(path.join(projectRoot, "themes/main.toml"), "utf8"));
+const paletteIds = [
+  "main",
+  "main-light",
+  ...readdirSync(path.join(projectRoot, "themes/characters"))
+    .filter((fileName) => fileName.endsWith(".toml"))
+    .map((fileName) => fileName.slice(0, -5)),
+];
+const darkPaletteIds = paletteIds.filter((id) => !id.endsWith("-light"));
+const lightPaletteIds = paletteIds.filter((id) => id.endsWith("-light"));
 const mainColors = [
   mainTheme.ui.background,
   mainTheme.semantic.red,
@@ -33,6 +42,48 @@ const variants = [
     colors: ["#101820", "#e8565f", "#f2b134", "#537244", "#fff4d6"],
   },
 ];
+
+test("filters catalog palettes by color mode", async ({ page }) => {
+  // Given: a visitor opens the palette route with all catalog entries visible.
+  await page.goto("palette/");
+
+  // When: the visitor uses the all, dark, and light controls.
+  const filters = page.locator("[data-palette-filter]");
+  const palettes = page.locator("[data-palette-id]");
+
+  // Then: each mode exposes the exact catalog subset and announces its active state.
+  await expect(filters).toHaveCount(3);
+  await expect(palettes).toHaveCount(paletteIds.length);
+  await expect(page.locator('[data-palette-filter="all"]')).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator('[data-palette-filter="dark"]').click();
+  await expect(page.locator('[data-palette-filter="dark"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-mode=dark]:visible")).toHaveCount(darkPaletteIds.length);
+  await expect(page.locator("[data-palette-mode=light]:visible")).toHaveCount(0);
+
+  await page.locator('[data-palette-filter="light"]').click();
+  await expect(page.locator('[data-palette-filter="light"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-mode=light]:visible")).toHaveCount(lightPaletteIds.length);
+  await expect(page.locator("[data-palette-mode=dark]:visible")).toHaveCount(0);
+
+  await page.locator('[data-palette-filter="all"]').click();
+  await expect(page.locator('[data-palette-filter="all"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-id]:visible")).toHaveCount(paletteIds.length);
+});
+
+test("renders every catalog palette from the theme source", async ({ page }) => {
+  // Given: a visitor opens the palette route.
+  await page.goto("palette/");
+
+  // When: the complete catalog palette surface renders.
+  const palettes = page.locator("[data-palette-id]");
+
+  // Then: every source theme appears exactly once in catalog order.
+  await expect(palettes).toHaveCount(paletteIds.length);
+  await expect(
+    palettes.evaluateAll((items) => items.map((item) => item.getAttribute("data-palette-id"))),
+  ).resolves.toEqual(paletteIds);
+});
 
 test("renders the exact TOML source cards and terminal mapping", async ({ page }) => {
   // Given: a visitor opens the palette route.
@@ -63,19 +114,18 @@ test("renders the exact TOML source cards and terminal mapping", async ({ page }
   ]);
 });
 
-test("renders twenty available character swatches from TOML variants", async ({ page }) => {
+test("renders every catalog palette with its five TOML swatches", async ({ page }) => {
   // Given: a visitor opens the palette route.
   await page.goto("palette/");
 
-  // When: the character variant rows render.
-  const rows = page.locator("[data-character-variant]");
+  // When: the catalog palette rows render.
+  const rows = page.locator("[data-palette-id]");
 
-  // Then: Ryu, Ken, Chun-Li, and Guile are available with their five exact swatches.
-  await expect(rows).toHaveCount(4);
-  for (const [index, variant] of variants.entries()) {
-    const row = rows.nth(index);
-    await expect(row).toHaveAttribute("data-character-variant", variant.name.toLowerCase());
-    await expect(row.getByText("AVAILABLE", { exact: true })).toBeVisible();
+  // Then: the complete catalog is present and the existing fighter colors remain exact.
+  await expect(rows).toHaveCount(paletteIds.length);
+  for (const variant of variants) {
+    const row = page.locator(`[data-palette-id="${variant.name.toLowerCase()}"]`);
+    await expect(row).toHaveCount(1);
     await expect(row.locator("[data-character-swatch]")).toHaveCount(5);
     await expect(
       row.locator("[data-character-swatch]").evaluateAll((swatches) =>
@@ -83,18 +133,18 @@ test("renders twenty available character swatches from TOML variants", async ({ 
       ),
     ).resolves.toEqual(variant.colors);
   }
-  await expect(page.locator("[data-character-swatch]")).toHaveCount(20);
+  await expect(page.locator("[data-character-swatch]")).toHaveCount(paletteIds.length * 5);
 });
 
 test("copies the exact selected color and confirms it", async ({ context, page }) => {
   // Given: clipboard access is granted to a palette visitor.
   await context.grantPermissions(["clipboard-read", "clipboard-write"], {
-    origin: "http://127.0.0.1:4321",
+    origin: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}`,
   });
   await page.goto("palette/");
 
   // When: the visitor copies Ryu's background swatch.
-  await page.locator('[data-character-variant="ryu"] [data-character-swatch]').first().click();
+  await page.locator('[data-palette-id="ryu"] [data-character-swatch]').first().click();
 
   // Then: the clipboard and live feedback contain the exact color.
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("#101522");

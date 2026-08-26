@@ -8,17 +8,34 @@ Unofficial fan project. Street Fighter and related names are trademarks of Capco
 
 ## Install
 
-Clone this repository and put the standalone `sf2-themes` script on your `PATH`.
+Run the CLI directly from GitHub with uv. No checkout or globally installed binary is required.
 
 ```sh
-git clone https://github.com/douglasjarquin/sf2-themes.git
-cd sf2-themes
-install -m 755 sf2-themes "$HOME/.local/bin/sf2-themes"
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version
 ```
 
-The CLI has no package dependencies. It needs Python 3.11 or newer.
+The command requires uv and Python 3.11 or newer.
 
-From a checkout you can also run `python3 -m sf2_theme` with `PYTHONPATH=src`, or `pip install -e .`.
+From a checkout you can run `uv run --project . sf2-themes`.
+
+## Development with mise
+
+The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.1.
+
+```sh
+mise install
+mise run web:install
+mise run test
+mise run web:test
+mise run web:check
+mise run web:build
+mise run web:screenshots
+mise run web:dev
+```
+
+`mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
+`mise run web:screenshots` captures the four playable cabinet themes at 1280 × 720 and writes them to `web/public/screenshots/`.
+The generated archive is available at `/sf2-themes/screenshots/`.
 
 ## Setup, then apply
 
@@ -29,19 +46,19 @@ The CLI keeps short catalog ids such as `ken` and `ryu-light` for input.
 Every adapter installs and selects the corresponding prefixed ids such as `sf2-ken` and `sf2-ryu-light`.
 
 ```sh
-sf2-themes setup wezterm
-sf2-themes apply wezterm
-sf2-themes apply wezterm --theme ryu
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes setup wezterm
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply wezterm
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply wezterm --theme ryu
 
-sf2-themes setup herdr
-sf2-themes apply herdr --theme chun-li
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes setup herdr
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply herdr --theme chun-li
 herdr server reload-config
 
-sf2-themes setup nvim
-sf2-themes apply nvim --theme ryu-light
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes setup nvim
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply nvim --theme ryu-light
 
-sf2-themes setup codex
-sf2-themes apply codex --theme ryu-light
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes setup codex
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply codex --theme ryu-light
 ```
 
 Neovim setup installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
@@ -62,15 +79,15 @@ Herdr configs that already have an unmarked `[theme]` section are left alone unl
 ## Commands
 
 ```sh
-sf2-themes apps
-sf2-themes themes
-sf2-themes show ryu
-sf2-themes show ryu-light
-sf2-themes validate --all
-sf2-themes current wezterm
-sf2-themes apply herdr --theme boxer --dry-run
-sf2-themes current nvim
-sf2-themes current codex
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apps
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes themes
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes show ryu
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes show ryu-light
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes validate --all
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes current wezterm
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply herdr --theme boxer --dry-run
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes current nvim
+uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes current codex
 ```
 
 Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).

@@ -1,19 +1,18 @@
 ---
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
-const installScript = `git clone https://github.com/douglasjarquin/sf2-themes.git
-cd sf2-themes
-install -m 755 sf2-themes "$HOME/.local/bin/sf2-themes"`;
+const uvCommand = "uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
+const installScript = `${uvCommand} --version`;
 
 const moves = [
-  ["WEZTERM", "sf2-themes setup wezterm", "Set up the one-time WezTerm integration."],
-  ["WEZTERM", "sf2-themes apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
-  ["HERDR", "sf2-themes setup herdr", "Set up the one-time Herdr integration."],
-  ["HERDR", "sf2-themes apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
-  ["NVIM", "sf2-themes setup nvim", "Set up the one-time Neovim colorscheme loader."],
-  ["NVIM", "sf2-themes apply nvim --theme ryu-light", "Apply Ryu Light, or replace the theme name with your fighter."],
-  ["CODEX", "sf2-themes setup codex", "Set up the one-time Codex custom theme directory."],
-  ["CODEX", "sf2-themes apply codex --theme ryu-light", "Apply Ryu Light, then restart Codex or reselect it with /theme."],
+  ["WEZTERM", `${uvCommand} setup wezterm`, "Set up the one-time WezTerm integration."],
+  ["WEZTERM", `${uvCommand} apply wezterm --theme ryu`, "Apply Ryu, or replace the theme name with your fighter."],
+  ["HERDR", `${uvCommand} setup herdr`, "Set up the one-time Herdr integration."],
+  ["HERDR", `${uvCommand} apply herdr --theme chun-li`, "Apply Chun-Li, then reload the Herdr server configuration."],
+  ["NVIM", `${uvCommand} setup nvim`, "Set up the one-time Neovim colorscheme loader."],
+  ["NVIM", `${uvCommand} apply nvim --theme ryu-light`, "Apply Ryu Light, or replace the theme name with your fighter."],
+  ["CODEX", `${uvCommand} setup codex`, "Set up the one-time Codex custom theme directory."],
+  ["CODEX", `${uvCommand} apply codex --theme ryu-light`, "Apply Ryu Light, then restart Codex or reselect it with /theme."],
 ];
 ---
 
@@ -27,7 +26,7 @@ const moves = [
         <p>READY PLAYER ONE</p>
         <h1>INSTALL</h1>
         <p class="install-page__lede">
-          Clone the project, put the standalone CLI on your PATH, then set up each terminal once.
+          Run the CLI directly from GitHub with uv, then set up each terminal once.
         </p>
         <p class="install-page__lede">
           Use short catalog ids such as <code>ken</code> on the CLI; installed theme identities use the
@@ -47,7 +46,8 @@ const moves = [
           >
         </div>
         <pre aria-label="Install script"><code>{installScript}</code></pre>
-        <p class="install-panel__meta">Python 3.11 or newer. No package dependencies.</p>
+        <p class="install-panel__meta">Requires uv and Python 3.11 or newer.</p>
+        <p aria-live="polite" class="sr-only" data-install-status role="status"></p>
       </section>
 
       <section aria-labelledby="move-list-heading" class="install-moves">
@@ -92,11 +92,15 @@ const moves = [
 
 <script>
   const copyButton = document.querySelector<HTMLButtonElement>("[data-install-copy]");
+  const copyStatus = document.querySelector<HTMLElement>("[data-install-status]");
 
   copyButton?.addEventListener("click", async () => {
     const installScript = copyButton.dataset.installScript;
 
-    if (!installScript || !navigator.clipboard?.writeText) return;
+    if (!installScript || !navigator.clipboard?.writeText) {
+      if (copyStatus) copyStatus.textContent = "Copy unavailable";
+      return;
+    }
 
     try {
       await navigator.clipboard.writeText(installScript);
@@ -105,15 +109,18 @@ const moves = [
         "[sf2-themes] Clipboard write failed:",
         error instanceof Error ? error.name : "UnknownError",
       );
+      if (copyStatus) copyStatus.textContent = "Copy failed";
       return;
     }
 
     copyButton.textContent = "✓ Copied";
+    if (copyStatus) copyStatus.textContent = "Install script copied";
   });
 </script>
 
 <style>
   .install-page__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); align-items: start; gap: var(--space-12); padding-block: var(--space-12) var(--space-20); }
+  .sr-only { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .install-page__header, .adapter-notes { grid-column: 1 / -1; }
   .install-page__header { display: grid; gap: var(--space-4); max-inline-size: 760px; }
   .install-page__header > p:first-child { display: none; }

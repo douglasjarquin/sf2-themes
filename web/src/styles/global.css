@@ -15,6 +15,13 @@
   --space-15: 60px;
   --space-20: 80px;
   --duration-micro: 120ms;
+  --text-display: 26px;
+  --text-body-lg: 17px;
+  --text-caption: 12px;
+  --text-label: 10px;
+  --text-overline: 9px;
+  --border-strong: 2px;
+  --shadow-card: 4px;
   color-scheme: dark;
   font-synthesis: none;
 }
@@ -84,6 +91,15 @@ a:hover {
   grid-template-rows: auto 1fr auto;
   min-block-size: 100dvh;
   overflow: clip;
+}
+
+html[data-capture-mode="cabinet"] .site-header,
+html[data-capture-mode="cabinet"] .site-footer {
+  display: none;
+}
+
+html[data-capture-mode="cabinet"] body {
+  overflow: hidden;
 }
 
 .site-frame {
