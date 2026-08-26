@@ -1,6 +1,6 @@
 ---
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { characterVariants, mainCards, themeTokens } from "../../data/theme-data.mjs";
+import { mainCards, paletteVariants, themeTokens } from "../../data/theme-data.mjs";
 
 const mainColors = Object.fromEntries(mainCards.map(({ hex, token }) => [token, hex]));
 const terminalMappings = [
@@ -23,8 +23,8 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
       <p class="palette-eyebrow">TOML-BACKED SOURCE COLORS</p>
       <h1>PALETTE</h1>
       <p>
-        The main arcade palette and four available character variants, rendered directly from
-        the theme source.
+        The complete {paletteVariants.length}-theme catalog, rendered directly from the TOML
+        source.
       </p>
     </header>
 
@@ -81,22 +81,22 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
 
     <section class="palette-section site-frame" aria-labelledby="variants-heading">
       <div class="palette-section__heading">
-        <p class="palette-eyebrow">CHARACTER VARIANTS</p>
-        <h2 id="variants-heading">SELECT YOUR FIGHTER</h2>
+        <p class="palette-eyebrow">FULL CATALOG</p>
+        <h2 id="variants-heading">SELECT YOUR PALETTE</h2>
       </div>
       <div class="palette-variant-list">
         {
-          characterVariants.map((variant) => (
-            <article class="palette-variant" data-character-variant={variant.id}>
+          paletteVariants.map((variant) => (
+            <article class="palette-variant" data-palette-id={variant.id}>
               <div class="palette-variant__identity">
                 <h3>{variant.character}</h3>
-                <span>AVAILABLE</span>
+                <span>{variant.id}</span>
               </div>
-              <div class="palette-swatches" aria-label={`${variant.character} colors`}>
+              <div class="palette-swatches" aria-label={`${variant.name} colors`}>
                 {
                   colorRoles.map((role) => (
                     <button
-                      aria-label={`Copy ${variant.character} ${role} ${variant.colors[role]}`}
+                      aria-label={`Copy ${variant.name} ${role} ${variant.colors[role]}`}
                       data-character-swatch
                       data-color={variant.colors[role]}
                       data-copy-color={variant.colors[role]}

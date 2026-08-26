@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import { parse } from "smol-toml";
@@ -49,6 +49,13 @@ const DEFAULT_MAIN_PATH = path.join(DEFAULT_THEME_DIRECTORY, "main.toml");
 const DEFAULT_CHARACTER_PATHS = ["ryu", "ken", "chun-li", "guile"].map(
   (id) => path.join(DEFAULT_THEME_DIRECTORY, "characters", `${id}.toml`),
 );
+
+function discoverCharacterPaths(directory) {
+  return readdirSync(directory)
+    .filter((fileName) => fileName.endsWith(".toml"))
+    .sort()
+    .map((fileName) => path.join(directory, fileName));
+}
 
 function requiredTable(value, source) {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -127,24 +134,11 @@ function mainCard(name, key, token, hex) {
   return { name, key, token, hex };
 }
 
-export function loadThemeData({
-  mainPath = DEFAULT_MAIN_PATH,
-  characterPaths = DEFAULT_CHARACTER_PATHS,
-} = {}) {
-  const main = readTheme(mainPath);
-  const characters = characterPaths.map(readTheme);
-
-  const cards = [
-    mainCard("Deep Navy", "deep_navy", "ui.background", main.ui.background),
-    mainCard("Arcade Red", "arcade_red", "semantic.red", main.semantic.red),
-    mainCard("Gold", "gold", "semantic.yellow", main.semantic.yellow),
-    mainCard("Accent", "accent", "ui.accent", main.ui.accent),
-    mainCard("Cream", "cream", "ui.foreground", main.ui.foreground),
-  ];
-  const variants = characters.map((tokens) => ({
+function paletteVariant(tokens) {
+  return {
     id: tokens.meta.id,
     name: tokens.meta.display_name,
-    character: tokens.meta.character,
+    character: tokens.meta.character ?? "Main",
     colors: {
       background: tokens.ui.background,
       red: tokens.semantic.red,
@@ -153,11 +147,36 @@ export function loadThemeData({
       foreground: tokens.ui.foreground,
     },
     tokens,
-  }));
+  };
+}
+
+export function loadThemeData({
+  mainPath = DEFAULT_MAIN_PATH,
+  characterPaths = DEFAULT_CHARACTER_PATHS,
+  catalogCharacterPaths = discoverCharacterPaths(path.join(path.dirname(mainPath), "characters")),
+} = {}) {
+  const main = readTheme(mainPath);
+  const mainLightPath = path.join(path.dirname(mainPath), "main-light.toml");
+  const mainLight = existsSync(mainLightPath)
+    ? readTheme(mainLightPath)
+    : null;
+  const characters = characterPaths.map(readTheme);
+  const catalogCharacters = catalogCharacterPaths.map(readTheme);
+
+  const cards = [
+    mainCard("Deep Navy", "deep_navy", "ui.background", main.ui.background),
+    mainCard("Arcade Red", "arcade_red", "semantic.red", main.semantic.red),
+    mainCard("Gold", "gold", "semantic.yellow", main.semantic.yellow),
+    mainCard("Accent", "accent", "ui.accent", main.ui.accent),
+    mainCard("Cream", "cream", "ui.foreground", main.ui.foreground),
+  ];
+  const variants = characters.map(paletteVariant);
+  const palettes = [main, ...(mainLight ? [mainLight] : []), ...catalogCharacters].map(paletteVariant);
 
   return {
     mainCards: cards,
     characterVariants: variants,
+    paletteVariants: palettes,
     themeTokens: {
       main,
       characters: Object.fromEntries(
@@ -171,4 +190,5 @@ const themeData = loadThemeData();
 
 export const mainCards = themeData.mainCards;
 export const characterVariants = themeData.characterVariants;
+export const paletteVariants = themeData.paletteVariants;
 export const themeTokens = themeData.themeTokens;
