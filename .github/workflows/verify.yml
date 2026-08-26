@@ -1,4 +1,4 @@
-name: ci
+name: Verify changes
 
 on:
   push:
@@ -92,7 +92,7 @@ jobs:
       - name: Shell integration
         run: tests/test_cli.sh
 
-  ci:
+  gate:
     if: always()
     needs: [changes, actionlint, test]
     runs-on: ubuntu-latest
