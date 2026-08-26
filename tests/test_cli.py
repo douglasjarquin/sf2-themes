@@ -22,12 +22,13 @@ def test_validate_main(capsys) -> None:
 
 def test_apply_wezterm_defaults_to_main(tmp_path: Path, monkeypatch, capsys) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    monkeypatch.setenv("WEZTERM_CONFIG_DIR", str(tmp_path / "xdg" / "wezterm"))
     assert dispatch(["apply", "wezterm"]) == 0
     pointer = (tmp_path / "xdg" / "sf2-theme" / "wezterm-current.lua").read_text(encoding="utf-8")
-    assert "sf2-themes: main" in pointer
-    assert "Street Fighter II - Main" in pointer
+    assert "sf2-themes: sf2-main" in pointer
+    assert 'return "sf2-main"' in pointer
     captured = capsys.readouterr().out
-    assert "street-fighter-ii-main.toml" in captured
+    assert "sf2-main.toml" in captured
 
 
 def test_install_warns_and_applies(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -37,7 +38,7 @@ def test_install_warns_and_applies(tmp_path: Path, monkeypatch, capsys) -> None:
     assert dispatch(["install", "herdr", "--config-dir", str(herdr)]) == 0
     err = capsys.readouterr().err
     assert "deprecated" in err
-    assert "sf2-themes: main" in (herdr / "config.toml").read_text(encoding="utf-8")
+    assert "sf2-themes: sf2-main" in (herdr / "config.toml").read_text(encoding="utf-8")
 
 
 def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:

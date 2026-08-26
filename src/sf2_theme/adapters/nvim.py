@@ -8,7 +8,7 @@ from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
 
-SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
+LEGACY_SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
 CURRENT_DIR_NAME: Final = "sf2-theme"
 CURRENT_FILE_NAME: Final = "current.lua"
 PLUGIN_FILE_NAME: Final = "sf2-theme.lua"
@@ -46,11 +46,11 @@ def plugin_path(config_dir: Path | None) -> Path:
 
 
 def scheme_filename(theme: Theme) -> str:
-    return f"{SCHEME_FILE_PREFIX}-{theme.metadata.id}.lua"
+    return f"{theme.metadata.selectable_id}.lua"
 
 
 def scheme_name(theme: Theme) -> str:
-    return f"{SCHEME_FILE_PREFIX}-{theme.metadata.id}"
+    return theme.metadata.selectable_id
 
 
 def render_scheme(theme: Theme) -> str:
@@ -157,7 +157,7 @@ def render_scheme(theme: Theme) -> str:
 
 
 def render_pointer(theme: Theme) -> str:
-    return f'-- sf2-themes: {theme.metadata.id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
+    return f'-- sf2-themes: {theme.metadata.selectable_id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
 
 
 def render_loader() -> str:
@@ -180,6 +180,9 @@ def write_schemes(
     follow_symlinks: bool,
 ) -> list[WriteResult]:
     target = colors_dir(config_dir)
+    if not dry_run:
+        for theme in themes:
+            (target / f"{LEGACY_SCHEME_FILE_PREFIX}-{theme.metadata.id}.lua").unlink(missing_ok=True)
     return [
         write_file(
             target / scheme_filename(theme),
@@ -256,6 +259,18 @@ def setup_nvim(
                 follow_symlinks=follow_symlinks,
             )
         )
+    else:
+        existing_id = read_current_id(config_dir)
+        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == existing_id), None)
+        if legacy_theme is not None:
+            results.append(
+                write_pointer(
+                    legacy_theme,
+                    config_dir=config_dir,
+                    dry_run=dry_run,
+                    follow_symlinks=follow_symlinks,
+                )
+            )
     results.append(
         write_file(
             plugin_path(config_dir),

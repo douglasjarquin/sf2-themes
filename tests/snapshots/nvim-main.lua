@@ -1,7 +1,7 @@
 vim.cmd("highlight clear")
 if vim.fn.exists("syntax_on") == 1 then vim.cmd("syntax reset") end
 vim.o.background = "dark"
-vim.g.colors_name = "street-fighter-ii-main"
+vim.g.colors_name = "sf2-main"
 local colors = {
   background = "#101a3a",
   foreground = "#fff4d6",

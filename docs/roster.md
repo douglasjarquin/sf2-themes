@@ -3,6 +3,9 @@
 Eighteen dark themes cover the arcade Street Fighter II lineage through Super Street Fighter II Turbo.
 Every row also has a light variant with the same ID plus the `-light` suffix, for 36 fully resolved catalog entries.
 
+The IDs in this table are the short canonical catalog ids used by `--theme`.
+Installed and selectable adapter identities prefix them with `sf2-`, for example `ken` becomes `sf2-ken` and `ken-light` becomes `sf2-ken-light`.
+
 | ID | Aliases | Character | Introduced | Visual direction |
 |---|---|---|---|---|
 | `main` | `street-fighter-2`, `street-fighter-ii-main` | - | family | Deep navy, gold, cream, arcade red, electric blue |

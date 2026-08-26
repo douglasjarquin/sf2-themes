@@ -7,9 +7,9 @@ from pathlib import Path
 from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme
+from sf2_theme.model import Theme, selectable_id
 
-SCHEME_FILE_PREFIX = "street-fighter-ii"
+LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
 
 
 def config_root() -> Path:
@@ -62,7 +62,7 @@ def current_pointer_path() -> Path:
 
 def scheme_filename(theme: Theme) -> str:
     """Return the on-disk scheme file name."""
-    return f"{SCHEME_FILE_PREFIX}-{theme.metadata.id}.toml"
+    return f"{theme.metadata.selectable_id}.toml"
 
 
 def render_scheme(theme: Theme) -> str:
@@ -85,12 +85,12 @@ def render_scheme(theme: Theme) -> str:
         f"brights = [{brights}]",
         "",
         "[metadata]",
-        f'name = "{theme.metadata.display_name}"',
+        f'name = "{theme.metadata.selectable_id}"',
     ]
     aliases = list(theme.metadata.aliases)
     if theme.metadata.id == "main" and "street-fighter-2" not in aliases:
         aliases.insert(0, "street-fighter-2")
-    rendered = ", ".join(f'"{alias}"' for alias in aliases)
+    rendered = ", ".join(f'"{selectable_id(alias)}"' for alias in aliases)
     lines.append(f"aliases = [{rendered}]")
     lines.append("")
     return "\n".join(lines)
@@ -98,7 +98,7 @@ def render_scheme(theme: Theme) -> str:
 
 def render_pointer(theme: Theme) -> str:
     """Render the managed Lua pointer file."""
-    return f'-- sf2-themes: {theme.metadata.id}\nreturn "{theme.metadata.display_name}"\n'
+    return f'-- sf2-themes: {theme.metadata.selectable_id}\nreturn "{theme.metadata.selectable_id}"\n'
 
 
 def write_schemes(
@@ -110,6 +110,9 @@ def write_schemes(
 ) -> list[WriteResult]:
     """Write every scheme file into WezTerm's colors directory."""
     target = colors_dir(config_dir)
+    if not dry_run:
+        for theme in themes:
+            (target / f"{LEGACY_SCHEME_FILE_PREFIX}-{theme.metadata.id}.toml").unlink(missing_ok=True)
     results: list[WriteResult] = []
     for theme in themes:
         results.append(
@@ -172,6 +175,11 @@ def setup_wezterm(
     pointer = current_pointer_path()
     if replace_pointer or not pointer.is_file():
         results.append(write_pointer(theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
+    else:
+        existing_id = read_current_id()
+        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == existing_id), None)
+        if legacy_theme is not None:
+            results.append(write_pointer(legacy_theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
     lua_path = wezterm_lua_path(config_dir)
     existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
     lua = setup_lua(existing, current_pointer_path(), adopt=adopt)

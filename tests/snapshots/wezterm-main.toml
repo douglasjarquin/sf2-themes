@@ -12,5 +12,5 @@ ansi = ["#101a3a", "#e8565f", "#6ecb78", "#f2b134", "#4aa5ff", "#c783d9", "#35c4
 brights = ["#7f89aa", "#ff7880", "#8ee695", "#ffd166", "#74bdff", "#e1a5ef", "#62dedb", "#fffaf0"]
 
 [metadata]
-name = "Street Fighter II - Main"
-aliases = ["street-fighter-2", "street-fighter-ii-main"]
+name = "sf2-main"
+aliases = ["sf2-street-fighter-2", "sf2-street-fighter-ii-main"]

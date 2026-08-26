@@ -58,6 +58,6 @@ The absence of file-watcher evidence is an evidence-bound limitation, not a clai
 
 ## Recommendation
 
-Implement the sf2-themes Codex adapter as a copy/install operation that writes `<name>.tmTheme` to `$CODEX_HOME/themes/` and sets `[tui].theme = "<name>"` in `config.toml`.
+Implement the sf2-themes Codex adapter as a copy/install operation that writes `sf2-<catalog-id>.tmTheme` to `$CODEX_HOME/themes/` and sets `[tui].theme = "sf2-<catalog-id>"` in `config.toml`.
 Provide distinct light and dark theme names, and tell users to restart Codex after file/config changes unless they select the theme again through `/theme`.
 Do not target Codex Desktop `appearanceLight*` or `appearanceDark*` settings: those are outside the CLI/TUI surface researched here and are not established by the Codex CLI source.
