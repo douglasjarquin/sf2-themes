@@ -2,6 +2,7 @@
 node = "24"
 python = "3.11"
 uv = "0.11"
+aube = "2.1"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
@@ -9,16 +10,20 @@ run = ["uv run --with pytest pytest -q", "bash tests/test_cli.sh"]
 
 [tasks."web:dev"]
 description = "Start the Astro development server"
-run = "npm --prefix web run dev -- --host 127.0.0.1"
+run = "aube -C web run dev -- --host 127.0.0.1"
+
+[tasks."web:install"]
+description = "Install Astro dependencies from package-lock.json"
+run = "aube -C web install"
 
 [tasks."web:test"]
 description = "Run Astro unit and end-to-end tests"
-run = "npm --prefix web test"
+run = "aube -C web run test"
 
 [tasks."web:check"]
 description = "Run Astro type and template checks"
-run = "npm --prefix web run check"
+run = "aube -C web run check"
 
 [tasks."web:build"]
 description = "Build the Astro site"
-run = "npm --prefix web run build"
+run = "aube -C web run build"

@@ -22,10 +22,11 @@ From a checkout you can also run `python3 -m sf2_theme` with `PYTHONPATH=src`, o
 
 ## Development with mise
 
-The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, and uv 0.11.
+The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.1.
 
 ```sh
 mise install
+mise run web:install
 mise run test
 mise run web:test
 mise run web:check
