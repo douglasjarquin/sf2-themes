@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), and Neovim.
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, and [Codex](https://github.com/openai/codex).
 
 The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
@@ -36,10 +36,16 @@ herdr server reload-config
 
 sf2-themes setup nvim
 sf2-themes apply nvim --theme ryu-light
+
+sf2-themes setup codex
+sf2-themes apply codex --theme ryu-light
 ```
 
 Neovim setup installs every catalog colorscheme under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
 The loader applies the selected theme automatically when Neovim starts.
+
+Codex setup writes every catalog theme as a custom `.tmTheme` file under `$CODEX_HOME/themes/` and selects the active theme with `[tui].theme` in `$CODEX_HOME/config.toml`.
+Restart Codex after applying a theme, or reselect it with `/theme` in an existing session.
 
 If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
 If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
@@ -59,6 +65,7 @@ sf2-themes validate --all
 sf2-themes current wezterm
 sf2-themes apply herdr --theme boxer --dry-run
 sf2-themes current nvim
+sf2-themes current codex
 ```
 
 Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
@@ -70,14 +77,15 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 - Herdr updates only a marked block in `~/.config/herdr/config.toml`.
 - Neovim colorschemes go in `~/.config/nvim/colors/`, with the active theme at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
+- Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
 - Symlinks are refused unless you pass `--follow-symlinks`.
 - Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
-Override locations with `--config-dir`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
+Override locations with `--config-dir`, `CODEX_HOME`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
 
 ## Uninstall
 
-Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/nvim/colors/street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, the WezTerm integration snippet, and the marked Herdr theme block.
+Remove `~/.config/wezterm/colors/street-fighter-ii-*.toml`, `~/.config/nvim/colors/street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/*.tmTheme`, the Codex `[tui]` theme setting, the WezTerm integration snippet, and the marked Herdr theme block.
 
 ## Design
 
