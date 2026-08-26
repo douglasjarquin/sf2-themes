@@ -51,7 +51,7 @@ def render_block(theme: Theme) -> str:
     """Render a fully resolved, marked Herdr theme block."""
     lines = [
         MANAGED_START,
-        f"# sf2-themes: {theme.metadata.id}",
+        f"# sf2-themes: {theme.metadata.selectable_id}",
         "[theme]",
         'name = "terminal"',
         "",

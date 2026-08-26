@@ -20,6 +20,7 @@ ANSI_ORDER: Final[tuple[str, ...]] = (
     "white",
 )
 HEX_PATTERN: Final = r"^#[0-9A-Fa-f]{6}$"
+SELECTABLE_PREFIX: Final = "sf2-"
 
 UI_COLOR_FIELDS: Final[tuple[str, ...]] = (
     "background",
@@ -76,6 +77,11 @@ class ThemeMetadata:
     introduced_in: IntroducedIn
     character: str | None
     aliases: tuple[str, ...]
+
+    @property
+    def selectable_id(self) -> str:
+        """Return the prefixed identity used by installed adapters."""
+        return selectable_id(self.id)
 
 
 @dataclass(frozen=True, slots=True)
@@ -155,6 +161,11 @@ class Theme:
         """Return ids that should resolve to this theme."""
         keys = (self.metadata.id, *self.metadata.aliases)
         return keys
+
+
+def selectable_id(theme_id: str) -> str:
+    """Prefix an adapter-facing identity while leaving catalog ids unchanged."""
+    return theme_id if theme_id.startswith(SELECTABLE_PREFIX) else f"{SELECTABLE_PREFIX}{theme_id}"
 
 
 def parse_hex(raw: str) -> HexColor:

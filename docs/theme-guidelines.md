@@ -22,6 +22,8 @@ Light variants must be authored as complete TOML files with reviewed hexadecimal
 
 Every theme must clearly belong to the same Street Fighter II family.
 
+Catalog ids remain short source names, while adapter-generated selectable identities use the `sf2-<catalog-id>` form.
+
 The common family traits are:
 
 - dark arcade-style base

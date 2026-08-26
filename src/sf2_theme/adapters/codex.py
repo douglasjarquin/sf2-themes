@@ -59,7 +59,7 @@ def themes_dir(config_dir: Path | None) -> Path:
 
 
 def theme_path(theme: Theme, config_dir: Path | None) -> Path:
-    return themes_dir(config_dir) / f"{theme.metadata.id}{THEME_SUFFIX}"
+    return themes_dir(config_dir) / f"{theme.metadata.selectable_id}{THEME_SUFFIX}"
 
 
 def _color(theme: Theme, group: str, field: str) -> str:
@@ -77,7 +77,7 @@ def render_theme(theme: Theme) -> str:
         '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
         '<plist version="1.0">',
         "<dict>",
-        _setting("name", theme.metadata.display_name),
+        _setting("name", theme.metadata.selectable_id),
         "<key>settings</key>",
         "<array>",
         "<dict>",
@@ -135,7 +135,7 @@ def merge_config(existing: str, theme: Theme) -> str:
         tomllib.loads(existing)
     lines = existing.splitlines()
     bounds = _section_bounds(lines, "tui")
-    assignment = f'theme = "{theme.metadata.id}"'
+    assignment = f'theme = "{theme.metadata.selectable_id}"'
     if bounds is None:
         if _has_inline_tui(existing):
             raise ThemeError("Codex config has an inline tui table; replace it with [tui] before applying")
@@ -157,6 +157,9 @@ def _write_themes(
     dry_run: bool,
     follow_symlinks: bool,
 ) -> list[WriteResult]:
+    if not dry_run:
+        for theme in themes:
+            (themes_dir(config_dir) / f"{theme.metadata.id}{THEME_SUFFIX}").unlink(missing_ok=True)
     return [
         write_file(
             theme_path(theme, config_dir),
@@ -236,6 +239,18 @@ def setup_codex(
                 follow_symlinks=follow_symlinks,
             )
         )
+    else:
+        configured = tomllib.loads(existing).get("tui", {}).get("theme")
+        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == configured), None)
+        if legacy_theme is not None:
+            results.append(
+                _write_config(
+                    legacy_theme,
+                    config_dir=config_dir,
+                    dry_run=dry_run,
+                    follow_symlinks=follow_symlinks,
+                )
+            )
     return results
 
 

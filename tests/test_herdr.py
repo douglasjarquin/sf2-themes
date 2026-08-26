@@ -18,6 +18,12 @@ def test_render_includes_every_token() -> None:
     assert "overlay0" in block and "mauve" in block and "peach" in block
 
 
+def test_herdr_managed_identity_is_prefixed() -> None:
+    theme = get_theme("main", parse_catalog())
+
+    assert "# sf2-themes: sf2-main" in render_block(theme)
+
+
 def test_preserves_unrelated_sections() -> None:
     theme = get_theme("main", parse_catalog())
     existing = '[ui]\ntheme = "follow-system"\n\n[keys]\nprefix = "ctrl+b"\n'
