@@ -1,0 +1,2 @@
+-- sf2-themes: ken
+vim.cmd("colorscheme street-fighter-ii-ken")
