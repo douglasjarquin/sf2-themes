@@ -15,6 +15,19 @@ const terminalMappings = [
   hex: token === "ui.accent" ? themeTokens.main.ui.accent : mainColors[token],
 }));
 const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as const;
+const paletteModes = [
+  { id: "all", label: "ALL", count: paletteVariants.length },
+  {
+    id: "dark",
+    label: "DARK",
+    count: paletteVariants.filter(({ id }) => !id.endsWith("-light")).length,
+  },
+  {
+    id: "light",
+    label: "LIGHT",
+    count: paletteVariants.filter(({ id }) => id.endsWith("-light")).length,
+  },
+];
 ---
 
 <SiteLayout title="Palette">
@@ -80,14 +93,34 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
     </section>
 
     <section class="palette-section site-frame" aria-labelledby="variants-heading">
-      <div class="palette-section__heading">
-        <p class="palette-eyebrow">FULL CATALOG</p>
-        <h2 id="variants-heading">SELECT YOUR PALETTE</h2>
+      <div class="palette-catalog-header">
+        <div class="palette-section__heading">
+          <p class="palette-eyebrow">FULL CATALOG</p>
+          <h2 id="variants-heading">SELECT YOUR PALETTE</h2>
+        </div>
+        <div class="palette-filter-list" data-palette-filter-group role="group" aria-label="Filter palettes by color mode">
+          {
+            paletteModes.map((mode) => (
+              <button
+                aria-pressed={mode.id === "all" ? "true" : "false"}
+                class="palette-filter"
+                data-palette-filter={mode.id}
+                type="button"
+              >
+                {mode.label} <span>{mode.count}</span>
+              </button>
+            ))
+          }
+        </div>
       </div>
       <div class="palette-variant-list">
         {
           paletteVariants.map((variant) => (
-            <article class="palette-variant" data-palette-id={variant.id}>
+            <article
+              class="palette-variant"
+              data-palette-id={variant.id}
+              data-palette-mode={variant.id.endsWith("-light") ? "light" : "dark"}
+            >
               <div class="palette-variant__identity">
                 <h3>{variant.character}</h3>
                 <span>{variant.id}</span>
@@ -132,6 +165,13 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
   .palette-section { padding-block: var(--space-8) var(--space-15); }
   .palette-section__heading { display: grid; gap: var(--space-2); margin-block-end: var(--space-6); }
   .palette-section h2 { color: var(--color-foreground); font-size: clamp(14px, 3vw, 18px); line-height: 1.7; }
+  .palette-catalog-header { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); margin-block-end: var(--space-6); }
+  .palette-catalog-header .palette-section__heading { margin-block-end: 0; }
+  .palette-filter-list { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+  .palette-filter { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border: 2px solid color-mix(in srgb, var(--color-foreground) 18%, transparent); background: transparent; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font-family: var(--font-display); font-size: 9px; line-height: 1.5; cursor: pointer; }
+  .palette-filter span { color: var(--color-cyan); font-family: var(--font-mono); }
+  .palette-filter:hover, .palette-filter[aria-pressed="true"] { border-color: var(--color-cyan); background: color-mix(in srgb, var(--color-cyan) 12%, transparent); color: var(--color-foreground); }
+  .palette-filter[aria-pressed="true"] span { color: var(--color-foreground); }
   .palette-source-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
   .palette-source-card, .palette-variant { border: 2px solid color-mix(in srgb, var(--color-foreground) 14%, transparent); background: var(--color-panel); box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-background) 70%, black); }
   .palette-source-card { display: grid; gap: var(--space-2); padding: 0; border: 0; background: transparent; box-shadow: none; color: var(--color-foreground); text-align: start; cursor: copy; transition: transform var(--duration-micro) ease-out; }
@@ -150,6 +190,7 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
   .palette-terminal-map li > span:last-child { color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 12px; }
   .palette-variant-list { display: grid; gap: var(--space-4); }
   .palette-variant { display: grid; grid-template-columns: minmax(120px, 0.35fr) 1fr; gap: var(--space-4); padding: var(--space-4); }
+  .palette-variant[hidden] { display: none; }
   .palette-variant__identity { display: grid; align-content: center; gap: var(--space-2); }
   .palette-variant__identity span { inline-size: max-content; padding: var(--space-1) var(--space-2); border: 1px solid var(--color-cyan); color: var(--color-cyan); font-family: var(--font-mono); font-size: 11px; }
   .palette-swatches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
@@ -160,12 +201,28 @@ const colorRoles = ["background", "red", "yellow", "accent", "foreground"] as co
   .palette-copy-feedback { position: fixed; z-index: 20; inset-inline: 0; inset-block-end: var(--space-4); inline-size: max-content; max-inline-size: calc(100% - var(--space-8)); margin: auto; padding: var(--space-2) var(--space-3); border: 1px solid var(--color-cyan); background: var(--color-panel); color: var(--color-foreground); font-family: var(--font-mono); font-size: 12px; text-align: center; }
   .palette-copy-feedback:empty { display: none; }
   @media (min-width: 621px) { .palette-hero { padding-block-end: var(--space-5); } .palette-section:first-of-type { padding-block: var(--space-5) 100px; } .palette-section:nth-of-type(2) { padding-block-start: var(--space-12); } }
-  @media (max-width: 620px) { .palette-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .palette-source-grid, .palette-section:nth-of-type(2) { grid-template-columns: 1fr; } .palette-source-grid { gap: var(--space-6); } .palette-terminal-map li { grid-template-columns: 20px minmax(64px, .7fr) minmax(0, 1fr); } .palette-terminal-map li > span:last-child { grid-column: 2 / -1; } .palette-variant { grid-template-columns: 1fr; } .palette-swatches { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); } }
+  @media (max-width: 620px) { .palette-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .palette-source-grid, .palette-section:nth-of-type(2) { grid-template-columns: 1fr; } .palette-source-grid { gap: var(--space-6); } .palette-catalog-header { align-items: start; flex-direction: column; } .palette-terminal-map li { grid-template-columns: 20px minmax(64px, .7fr) minmax(0, 1fr); } .palette-terminal-map li > span:last-child { grid-column: 2 / -1; } .palette-variant { grid-template-columns: 1fr; } .palette-swatches { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); } }
   @media (prefers-reduced-motion: reduce) { .palette-source-card { transition: none; } .palette-source-card:hover { transform: none; } }
 </style>
 
 <script>
+  const filters = [...document.querySelectorAll<HTMLButtonElement>("[data-palette-filter]")];
+  const palettes = [...document.querySelectorAll<HTMLElement>("[data-palette-id]")];
   const feedback = document.querySelector("[data-copy-feedback]");
+
+  const applyPaletteFilter = (mode: string) => {
+    for (const palette of palettes) {
+      palette.hidden = mode !== "all" && palette.dataset.paletteMode !== mode;
+    }
+    for (const filter of filters) {
+      filter.setAttribute("aria-pressed", String(filter.dataset.paletteFilter === mode));
+    }
+  };
+
+  for (const filter of filters) {
+    filter.addEventListener("click", () => applyPaletteFilter(filter.dataset.paletteFilter ?? "all"));
+  }
+  applyPaletteFilter("all");
 
   if (feedback instanceof HTMLElement) {
     document.querySelectorAll("[data-copy-color]").forEach((button) => {

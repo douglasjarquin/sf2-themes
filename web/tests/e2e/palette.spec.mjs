@@ -14,6 +14,8 @@ const paletteIds = [
     .filter((fileName) => fileName.endsWith(".toml"))
     .map((fileName) => fileName.slice(0, -5)),
 ];
+const darkPaletteIds = paletteIds.filter((id) => !id.endsWith("-light"));
+const lightPaletteIds = paletteIds.filter((id) => id.endsWith("-light"));
 const mainColors = [
   mainTheme.ui.background,
   mainTheme.semantic.red,
@@ -40,6 +42,34 @@ const variants = [
     colors: ["#101820", "#e8565f", "#f2b134", "#537244", "#fff4d6"],
   },
 ];
+
+test("filters catalog palettes by color mode", async ({ page }) => {
+  // Given: a visitor opens the palette route with all catalog entries visible.
+  await page.goto("palette/");
+
+  // When: the visitor uses the all, dark, and light controls.
+  const filters = page.locator("[data-palette-filter]");
+  const palettes = page.locator("[data-palette-id]");
+
+  // Then: each mode exposes the exact catalog subset and announces its active state.
+  await expect(filters).toHaveCount(3);
+  await expect(palettes).toHaveCount(paletteIds.length);
+  await expect(page.locator('[data-palette-filter="all"]')).toHaveAttribute("aria-pressed", "true");
+
+  await page.locator('[data-palette-filter="dark"]').click();
+  await expect(page.locator('[data-palette-filter="dark"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-mode=dark]:visible")).toHaveCount(darkPaletteIds.length);
+  await expect(page.locator("[data-palette-mode=light]:visible")).toHaveCount(0);
+
+  await page.locator('[data-palette-filter="light"]').click();
+  await expect(page.locator('[data-palette-filter="light"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-mode=light]:visible")).toHaveCount(lightPaletteIds.length);
+  await expect(page.locator("[data-palette-mode=dark]:visible")).toHaveCount(0);
+
+  await page.locator('[data-palette-filter="all"]').click();
+  await expect(page.locator('[data-palette-filter="all"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-palette-id]:visible")).toHaveCount(paletteIds.length);
+});
 
 test("renders every catalog palette from the theme source", async ({ page }) => {
   // Given: a visitor opens the palette route.

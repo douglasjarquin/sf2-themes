@@ -92,6 +92,16 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Motion**: no decorative motion.
 - **Layout**: two-column row on wide screens and a single-column stack on mobile.
 
+### Palette Mode Filter
+
+- **Structure**: a grouped set of native toggle buttons above the catalog.
+- **Variants**: all, dark, and light.
+- **Spacing**: shared spacing tokens and compact control gaps.
+- **States**: default, hover, active, focus-visible, and pressed.
+- **Accessibility**: `role="group"`, an accessible group label, and `aria-pressed` on each control.
+- **Motion**: color and border feedback only.
+- **Layout**: inline cluster that stacks with the catalog heading on mobile.
+
 ## 6. Motion & Interaction
 
 The micro duration is 120ms with ease-out timing.
