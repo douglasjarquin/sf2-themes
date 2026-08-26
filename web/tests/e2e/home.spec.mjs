@@ -24,13 +24,26 @@ test("the home route presents the playable theme cabinet", async ({ page }) => {
     .toBe("transcript-in");
 
   const activeChip = page.locator("[data-active-chip]");
+  const cabinet = page.locator("[data-cabinet]");
   await expect(activeChip).toHaveText("RYU");
   for (const fighter of ["RYU", "KEN", "CHUN-LI", "GUILE"]) {
     const control = page.getByRole("button", { name: fighter });
+    const themeId = await control.getAttribute("data-theme-id");
+    const themeBackground = await control.getAttribute("data-theme-background");
+    expect(themeId).toBeTruthy();
+    expect(themeBackground).toBeTruthy();
     await expect(control).toBeVisible();
     await control.click();
     await expect(activeChip).toHaveText(fighter);
     await expect(control).toHaveAttribute("aria-pressed", "true");
+    await expect(cabinet).toHaveAttribute("data-theme-id", themeId ?? "");
+    await expect
+      .poll(() =>
+        cabinet.evaluate((element) =>
+          getComputedStyle(element).getPropertyValue("--cabinet-background").trim(),
+        ),
+      )
+      .toBe(themeBackground ?? "");
     await expect(page.locator("[data-terminal-transcript]")).toContainText(fighter);
   }
 
@@ -58,9 +71,17 @@ test("the home route presents the playable theme cabinet", async ({ page }) => {
   await expect(activeChip).toHaveText("RYU");
 
   const coinCounter = page.locator("[data-coin-counter]");
+  const transcript = page.locator("[data-terminal-transcript]");
   await expect(coinCounter).toHaveText("CREDIT 00");
   await page.getByRole("button", { name: "INSERT COIN" }).click();
   await expect(coinCounter).toHaveText("CREDIT 01");
+  await expect(cabinet).toHaveAttribute("data-game-state", "playing");
+  await expect(transcript).toContainText("ROUND 1");
+  await expect(transcript).toContainText("FIGHT!");
+  await expect
+    .poll(() => transcript.textContent().then((text) => text ?? ""), { timeout: 5000 })
+    .toContain("K.O.");
+  await expect(cabinet).toHaveAttribute("data-game-state", "complete");
 });
 
 test("the cabinet disables transcript animation for reduced motion", async ({ page }) => {

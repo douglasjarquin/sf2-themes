@@ -139,7 +139,7 @@ test("renders every catalog palette with its five TOML swatches", async ({ page 
 test("copies the exact selected color and confirms it", async ({ context, page }) => {
   // Given: clipboard access is granted to a palette visitor.
   await context.grantPermissions(["clipboard-read", "clipboard-write"], {
-    origin: "http://127.0.0.1:4321",
+    origin: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}`,
   });
   await page.goto("palette/");
 

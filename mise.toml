@@ -27,3 +27,7 @@ run = "aube -C web run check"
 [tasks."web:build"]
 description = "Build the Astro site"
 run = "aube -C web run build"
+
+[tasks."web:screenshots"]
+description = "Generate the ASCII cabinet screenshot library"
+run = "node scripts/capture-screenshots.mjs"

@@ -102,12 +102,32 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Motion**: color and border feedback only.
 - **Layout**: inline cluster that stacks with the catalog heading on mobile.
 
+### Arcade Cabinet
+
+- **Structure**: marquee, live terminal transcript, fighter selector, and coin action.
+- **Variants**: idle, playing, and complete sequence states with a selected TOML-backed fighter theme.
+- **States**: selected fighter, pressed fighter controls, credit count, active fight frame, and completed K.O. frame.
+- **Accessibility**: native buttons, exclusive `aria-pressed` selection, and a polite live transcript.
+- **Motion**: 120ms color and border transition for theme changes; transcript frames advance every 480ms and use no transform animation when reduced motion is preferred.
+- **Layout**: cabinet remains a readable single-column terminal surface at mobile widths.
+
+### Screenshot Card
+
+- **Structure**: a generated cabinet image with a fighter label and captured game moment.
+- **Variants**: one card for each playable character theme.
+- **Spacing**: two-column archive grid on wide screens with shared frame and card spacing.
+- **States**: default, loading image, and keyboard focus when the image is inspected by assistive technology.
+- **Accessibility**: semantic figure captions, descriptive alternative text, intrinsic image dimensions, and a single labeled screenshot landmark.
+- **Motion**: no decorative card motion; images remain stable records of the cabinet.
+- **Layout**: cards collapse to one column below 621px without cropping the source image's 16:9 frame.
+
 ## 6. Motion & Interaction
 
 The micro duration is 120ms with ease-out timing.
 Only transform, color, background, and border presentation transitions are used for interactive feedback.
 Reduced-motion users receive no non-essential transform animation.
 Copy actions announce success or failure in a live status region.
+The arcade cabinet advances meaningful text fight frames at a 480ms cadence after a credit is inserted.
 
 ## 7. Depth & Surface
 

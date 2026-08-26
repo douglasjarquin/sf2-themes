@@ -29,10 +29,13 @@ mise run test
 mise run web:test
 mise run web:check
 mise run web:build
+mise run web:screenshots
 mise run web:dev
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
+`mise run web:screenshots` captures the four playable cabinet themes at 1280 × 720 and writes them to `web/public/screenshots/`.
+The generated archive is available at `/sf2-themes/screenshots/`.
 
 ## Setup, then apply
 
