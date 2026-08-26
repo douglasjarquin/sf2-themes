@@ -16,10 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: withastro/action@v6
+      - uses: jdx/mise-action@v4
+      - name: Install dependencies
+        run: aube -C web ci
+      - name: Build
+        run: aube -C web run build
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: web
-          node-version: 24
+          path: web/dist
 
   deploy:
     environment:
