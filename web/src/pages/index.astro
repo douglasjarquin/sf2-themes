@@ -1,5 +1,6 @@
 ---
-import { characterVariants, themeTokens } from "../data/theme-data.mjs";
+import ArcadeGame from "../components/ArcadeGame.astro";
+import { themeTokens } from "../data/theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { sitePath } from "../lib/site-path.mjs";
 
@@ -17,27 +18,6 @@ const homeStyle = [
   .map(([property, value]) => `${property}: ${value}`)
   .join("; ");
 
-const fighterStyle = (fighter: (typeof characterVariants)[number]) =>
-  [
-    ["--fighter-background", fighter.colors.background],
-    ["--fighter-foreground", fighter.colors.foreground],
-    ["--fighter-red", fighter.colors.red],
-    ["--fighter-gold", fighter.colors.yellow],
-    ["--fighter-accent", fighter.colors.accent],
-  ]
-    .map(([property, value]) => `${property}: ${value}`)
-    .join("; ");
-
-const cabinetThemeStyle = (fighter: (typeof characterVariants)[number]) =>
-  [
-    ["--cabinet-background", fighter.colors.background],
-    ["--cabinet-foreground", fighter.colors.foreground],
-    ["--cabinet-red", fighter.colors.red],
-    ["--cabinet-gold", fighter.colors.yellow],
-    ["--cabinet-accent", fighter.colors.accent],
-  ]
-    .map(([property, value]) => `${property}: ${value}`)
-    .join("; ");
 ---
 
 <SiteLayout
@@ -59,53 +39,7 @@ const cabinetThemeStyle = (fighter: (typeof characterVariants)[number]) =>
         </div>
       </div>
 
-      <section
-        class="arcade-cabinet"
-        aria-label="Interactive terminal cabinet"
-        data-cabinet
-        data-game-state="ready"
-        data-theme-id={characterVariants[0].id}
-        style={cabinetThemeStyle(characterVariants[0])}
-      >
-        <div class="arcade-cabinet__marquee">SF2 THEMES</div>
-        <div class="arcade-cabinet__screen">
-          <div class="arcade-cabinet__status">
-            <span>TERMINAL READY</span>
-            <span data-active-chip>RYU</span>
-          </div>
-          <pre class="terminal-transcript is-updating" data-terminal-transcript aria-atomic="true" aria-live="polite">$ sf2-themes apply wezterm --theme ryu
-SELECTED: RYU
-PROFILE LOADED. FIGHT!</pre>
-        </div>
-        <div class="arcade-cabinet__controls" aria-label="Choose your fighter">
-          {
-            characterVariants.map((fighter, index) => (
-              <button
-                aria-pressed={index === 0 ? "true" : "false"}
-                class="fighter-control"
-                data-command={`sf2-themes apply wezterm --theme ${fighter.id}`}
-                data-fighter-control
-                data-fighter-name={fighter.character.toUpperCase()}
-                data-theme-accent={fighter.colors.accent}
-                data-theme-background={fighter.colors.background}
-                data-theme-foreground={fighter.colors.foreground}
-                data-theme-gold={fighter.colors.yellow}
-                data-theme-id={fighter.id}
-                data-theme-red={fighter.colors.red}
-                style={fighterStyle(fighter)}
-                type="button"
-              >
-                <span aria-hidden="true" class="fighter-control__mark">{index + 1}</span>
-                <span class="fighter-control__label">{fighter.character.toUpperCase()}</span>
-              </button>
-            ))
-          }
-        </div>
-        <div class="arcade-cabinet__coin-slot">
-          <button class="coin-button" data-coin-button type="button">INSERT COIN</button>
-          <span class="coin-counter" data-coin-counter>CREDIT 00</span>
-        </div>
-      </section>
+      <ArcadeGame compact initialThemeId="ryu" captureMode={false} />
     </section>
 
     <section class="home-menu site-frame" aria-labelledby="menu-heading">
@@ -140,126 +74,6 @@ PROFILE LOADED. FIGHT!</pre>
   </div>
 </SiteLayout>
 
-<script>
-  const cabinet = document.querySelector("[data-cabinet]");
-
-  if (cabinet instanceof HTMLElement) {
-    const controls = [...cabinet.querySelectorAll<HTMLElement>("[data-fighter-control]")];
-    const transcript = cabinet.querySelector("[data-terminal-transcript]");
-    const activeChip = cabinet.querySelector("[data-active-chip]");
-    const coinButton = cabinet.querySelector("[data-coin-button]");
-    const coinCounter = cabinet.querySelector("[data-coin-counter]");
-    let activeIndex = 0;
-    let credits = 0;
-    let sequenceRun = 0;
-    let sequenceTimers: number[] = [];
-
-    const fightFrames = (fighter: string, opponent: string) => [
-      `ROUND 1\n\n${fighter} VS ${opponent}\n O        O\n/|\\  FIGHT!  /|\\\n/ \\      / \\`,
-      `ROUND 1\n\n${fighter}  > HADOUKEN! >  ${opponent}\n O       *       O\n/|\\             /|\\\n/ \\           / \\`,
-      `ROUND 1\n\n${fighter} < SHORYUKEN! < ${opponent}\n O              X\n/|\\  COUNTER!  /|\\\n/ \\            / \\`,
-      `${fighter} WINS!\n\n O              X\n/|\\    K.O.    /|\\\n/ \\            / \\`,
-    ];
-
-    const clearSequence = () => {
-      sequenceRun += 1;
-      for (const timer of sequenceTimers) window.clearTimeout(timer);
-      sequenceTimers = [];
-    };
-
-    const setCabinetTheme = (control: HTMLElement) => {
-      const themeProperties = [
-        ["--cabinet-background", "themeBackground"],
-        ["--cabinet-foreground", "themeForeground"],
-        ["--cabinet-red", "themeRed"],
-        ["--cabinet-gold", "themeGold"],
-        ["--cabinet-accent", "themeAccent"],
-      ] as const;
-
-      for (const [property, dataKey] of themeProperties) {
-        const value = control.dataset[dataKey];
-        if (value) cabinet.style.setProperty(property, value);
-      }
-      cabinet.dataset.themeId = control.dataset.themeId ?? "ryu";
-    };
-
-    const renderTranscript = (content: string) => {
-      if (!(transcript instanceof HTMLElement)) return;
-      transcript.textContent = content;
-      transcript.classList.remove("is-updating");
-      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        void transcript.offsetWidth;
-        transcript.classList.add("is-updating");
-      }
-    };
-
-    const playFight = () => {
-      const activeControl = controls[activeIndex];
-      const opponentControl = controls[(activeIndex + 1) % controls.length];
-      if (activeControl === undefined || opponentControl === undefined) return;
-
-      clearSequence();
-      setCabinetTheme(activeControl);
-      cabinet.dataset.gameState = "playing";
-      const run = sequenceRun;
-      const fighter = activeControl.dataset.fighterName ?? "RYU";
-      const opponent = opponentControl.dataset.fighterName ?? "KEN";
-      const frames = fightFrames(fighter, opponent);
-
-      sequenceTimers = frames.map((frame, index) =>
-        window.setTimeout(() => {
-          if (run !== sequenceRun) return;
-          renderTranscript(frame);
-          if (index === frames.length - 1) {
-            cabinet.dataset.gameState = "complete";
-            sequenceTimers = [];
-          }
-        }, index * 480),
-      );
-    };
-
-    const selectFighter = (nextIndex: number) => {
-      activeIndex = (nextIndex + controls.length) % controls.length;
-      const activeControl = controls[activeIndex];
-      if (activeControl === undefined) return;
-      const fighterName = activeControl.dataset.fighterName ?? "RYU";
-      const command = activeControl.dataset.command ?? "sf2-themes apply wezterm --theme ryu";
-
-      clearSequence();
-      cabinet.dataset.gameState = "ready";
-      setCabinetTheme(activeControl);
-      for (const [index, control] of controls.entries()) {
-        control.setAttribute("aria-pressed", String(index === activeIndex));
-      }
-      if (activeChip instanceof HTMLElement) activeChip.textContent = fighterName;
-      renderTranscript(`$ ${command}\nSELECTED: ${fighterName}\nPRESS INSERT COIN TO FIGHT!`);
-    };
-
-    controls.forEach((control, index) => {
-      control.addEventListener("click", () => selectFighter(index));
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        if (
-          event.target instanceof Element &&
-          event.target.closest("input, textarea, [contenteditable]")
-        ) {
-          return;
-        }
-        event.preventDefault();
-        selectFighter(activeIndex + (event.key === "ArrowRight" ? 1 : -1));
-      }
-    });
-    coinButton?.addEventListener("click", () => {
-      credits += 1;
-      if (coinCounter instanceof HTMLElement) {
-        coinCounter.textContent = `CREDIT ${String(credits).padStart(2, "0")}`;
-      }
-      playFight();
-    });
-  }
-</script>
-
 <style>
   .home-page { display: flex; flex-direction: column; padding-block-end: var(--space-20); background-image: radial-gradient(color-mix(in srgb, var(--home-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
   .home-hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--space-8); padding-block: var(--space-15) calc(var(--space-15) * 2); }
@@ -273,24 +87,6 @@ PROFILE LOADED. FIGHT!</pre>
   .home-action { border: 2px solid var(--home-foreground); box-shadow: 4px 4px 0 var(--home-background); color: var(--home-foreground); font-family: var(--font-display); font-size: 9px; line-height: 1.5; padding: 14px 16px; }
   .home-action:hover { background: var(--home-foreground); color: var(--home-background); transform: translate(2px, 2px); }
   .home-action--primary { border-color: var(--home-red); background: var(--home-red); color: var(--home-foreground); }
-  .arcade-cabinet { inline-size: 100%; max-inline-size: 480px; justify-self: center; border: 2px solid color-mix(in srgb, var(--cabinet-foreground) 14%, transparent); box-shadow: 10px 10px 0 color-mix(in srgb, var(--home-background) 60%, black); background: var(--cabinet-background); overflow: hidden; transition: background-color 120ms ease-out, border-color 120ms ease-out; }
-  .arcade-cabinet__marquee { border-block-end: 3px solid var(--cabinet-gold); background: linear-gradient(135deg, var(--cabinet-red), color-mix(in srgb, var(--cabinet-red) 65%, black)); color: var(--cabinet-foreground); font-family: var(--font-display); font-size: 10px; letter-spacing: .12em; padding: var(--space-4); text-align: center; transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; }
-  .arcade-cabinet__screen { position: relative; min-block-size: 300px; margin: var(--space-4); padding: var(--space-5); background: var(--cabinet-background); isolation: isolate; transition: background-color 120ms ease-out; }
-  .arcade-cabinet__screen::after { position: absolute; z-index: 1; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--home-background) 28%, transparent) 0, color-mix(in srgb, var(--home-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
-  .arcade-cabinet__status { position: relative; z-index: 2; display: flex; justify-content: space-between; gap: var(--space-3); color: var(--cabinet-accent); font-family: var(--font-mono); font-size: 11px; }
-  [data-active-chip] { border: 1px solid var(--cabinet-gold); color: var(--cabinet-gold); padding: 2px 5px; transition: border-color 120ms ease-out, color 120ms ease-out; }
-  .terminal-transcript { position: relative; z-index: 2; margin: var(--space-6) 0 0; color: var(--cabinet-foreground); font-family: var(--font-mono); font-size: clamp(12px, 1.35vw, 14px); line-height: 1.7; white-space: pre-wrap; transition: color 120ms ease-out; }
-  .terminal-transcript.is-updating { animation: transcript-in 240ms ease-out; }
-  .arcade-cabinet__controls { display: flex; justify-content: flex-end; gap: var(--space-4); padding: 16px 22px 26px; border-block: 2px solid var(--home-surface); background: color-mix(in srgb, var(--cabinet-background) 38%, var(--cabinet-background)); }
-  .fighter-control { position: relative; inline-size: 34px; block-size: 34px; flex: none; border: 0; border-radius: 50%; background: var(--fighter-accent); box-shadow: 0 3px 0 var(--fighter-red); color: transparent; cursor: pointer; font-family: var(--font-display); font-size: 0; padding: 0; white-space: nowrap; }
-  .fighter-control__label { position: absolute; inset-block-start: calc(100% + 7px); inset-inline-start: 50%; color: color-mix(in srgb, var(--fighter-foreground) 45%, transparent); font-size: 6.5px; line-height: 1; transform: translateX(-50%); white-space: nowrap; }
-  .fighter-control:hover { border-color: var(--fighter-gold); color: var(--fighter-gold); transform: translate(1px, 1px); }
-  .fighter-control[aria-pressed="true"] { outline: 2px solid var(--fighter-gold); outline-offset: 3px; color: var(--fighter-gold); }
-  .fighter-control__mark { display: none; }
-  .arcade-cabinet__coin-slot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-4) var(--space-5); }
-  .coin-button { border: 2px solid var(--cabinet-red); background: var(--cabinet-red); box-shadow: 3px 3px 0 var(--cabinet-background); color: var(--cabinet-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; padding: 11px; transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; }
-  .coin-button:hover { background: var(--cabinet-gold); color: var(--cabinet-background); transform: translate(1px, 1px); }
-  .coin-counter { color: var(--cabinet-gold); font-family: var(--font-mono); font-size: 12px; transition: color 120ms ease-out; }
   .home-menu { order: 3; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: var(--space-15); padding-block: var(--space-10); border-block-start: 2px solid color-mix(in srgb, var(--home-foreground) 8%, transparent); }
   .home-menu__links { display: grid; gap: var(--space-3); align-content: center; }
   .home-menu__links a { border-inline-start: 3px solid var(--home-red); color: var(--home-foreground); font-family: var(--font-display); font-size: 10px; line-height: 1.6; padding: var(--space-3) var(--space-4); }
@@ -300,13 +96,6 @@ PROFILE LOADED. FIGHT!</pre>
   .home-values span { color: var(--home-red); font-family: var(--font-display); font-size: 22px; }
   .home-values h2 { margin-block: var(--space-4) var(--space-3); font-size: 12px; }
   .home-values p { margin: 0; color: color-mix(in srgb, var(--home-foreground) 64%, transparent); font-size: 15px; line-height: 1.65; }
-  .home-page[data-capture-mode="cabinet"] { min-block-size: 100dvh; justify-content: center; padding: 0; background-image: none; }
-  .home-page[data-capture-mode="cabinet"] .home-hero { display: block; inline-size: 100%; padding: var(--space-8); }
-  .home-page[data-capture-mode="cabinet"] .home-hero__copy,
-  .home-page[data-capture-mode="cabinet"] .home-menu,
-  .home-page[data-capture-mode="cabinet"] .home-values { display: none; }
-  .home-page[data-capture-mode="cabinet"] .arcade-cabinet { max-inline-size: 720px; margin-inline: auto; }
-  @keyframes transcript-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 760px) { .home-hero { grid-template-columns: 1fr; gap: 0; padding-block: var(--space-15) var(--space-20); } .home-hero__copy { gap: var(--space-5); } .home-hero .home-kicker { max-inline-size: 28ch; } h1 { font-size: 28px; } .home-menu { grid-template-columns: 1fr; } .arcade-cabinet { margin-block-start: calc((var(--space-20) * 3) + var(--space-2)); } .home-values { grid-template-columns: 1fr; } }
-  @media (prefers-reduced-motion: reduce) { .home-action, .fighter-control, .coin-button, .home-menu__links a { transition: none; } .terminal-transcript.is-updating { animation: none; } }
+  @media (max-width: 760px) { .home-hero { grid-template-columns: 1fr; gap: var(--space-20); padding-block: var(--space-15) var(--space-20); } .home-hero__copy { gap: var(--space-5); } .home-hero .home-kicker { max-inline-size: 28ch; } h1 { font-size: 28px; } .home-menu { grid-template-columns: 1fr; } .home-values { grid-template-columns: 1fr; } }
+  @media (prefers-reduced-motion: reduce) { .home-action, .home-menu__links a { transition: none; } }
 </style>
