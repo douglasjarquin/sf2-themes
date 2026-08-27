@@ -16,6 +16,28 @@ function captureRuntimeErrors(page) {
   return errors;
 }
 
+// A fixed-tick simulation can run several ticks per animation frame, so a value this
+// attribute takes on can appear and revert between two Node-side polls. Recording every
+// distinct value via an in-page MutationObserver avoids racing the simulation's clock.
+async function observeAttributeHistory(locator, attribute) {
+  await locator.evaluate((element, attr) => {
+    const store = (element.__attributeHistory ??= {});
+    store[attr] = [element.getAttribute(attr) ?? ""];
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === attr) store[attr].push(element.getAttribute(attr) ?? "");
+      }
+    }).observe(element, { attributes: true, attributeFilter: [attr] });
+  }, attribute);
+}
+
+function attributeHistoryIncludes(locator, attribute, value) {
+  return locator.evaluate(
+    (element, [attr, expected]) => (element.__attributeHistory?.[attr] ?? []).includes(expected),
+    [attribute, value],
+  );
+}
+
 async function logicalRowInk(canvas, logicalSize, row) {
   return canvas.evaluate((element, input) => {
     if (!(element instanceof HTMLCanvasElement)) throw new TypeError("renderer canvas missing");
@@ -126,11 +148,12 @@ test("the home arcade handles focused key taps and palette-only changes", async 
     .poll(() => numericAttribute(cabinet, "data-player-one-x"), { timeout: 1000 })
     .toBeGreaterThan(playerOneX);
 
+  await observeAttributeHistory(cabinet, "data-player-one-move-id");
   await page.keyboard.down("z");
   try {
     await expect
-      .poll(() => cabinet.getAttribute("data-player-one-move-id"), { timeout: 1000 })
-      .toBe("straight-punch");
+      .poll(() => attributeHistoryIncludes(cabinet, "data-player-one-move-id", "straight-punch"), { timeout: 1000 })
+      .toBe(true);
   } finally {
     await page.keyboard.up("z");
   }

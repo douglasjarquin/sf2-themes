@@ -68,6 +68,28 @@ function captureRuntimeErrors(page) {
   return errors;
 }
 
+// A fixed-tick simulation can run several ticks per animation frame, so a value this
+// attribute takes on can appear and revert between two Node-side polls. Recording every
+// distinct value via an in-page MutationObserver avoids racing the simulation's clock.
+async function observeAttributeHistory(locator, attribute) {
+  await locator.evaluate((element, attr) => {
+    const store = (element.__attributeHistory ??= {});
+    store[attr] = [element.getAttribute(attr) ?? ""];
+    new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.attributeName === attr) store[attr].push(element.getAttribute(attr) ?? "");
+      }
+    }).observe(element, { attributes: true, attributeFilter: [attr] });
+  }, attribute);
+}
+
+function attributeHistoryIncludes(locator, attribute, value) {
+  return locator.evaluate(
+    (element, [attr, expected]) => (element.__attributeHistory?.[attr] ?? []).includes(expected),
+    [attribute, value],
+  );
+}
+
 test("the full game route exposes independent theme and fighter selectors", async ({ page }) => {
   const runtimeErrors = captureRuntimeErrors(page);
   await page.context().tracing.start({ screenshots: true, snapshots: true });
@@ -119,10 +141,11 @@ test("the full game route exposes independent theme and fighter selectors", asyn
     await expect
       .poll(() => cabinet.getAttribute("data-player-one-x"), { timeout: 5000 })
       .not.toBe(String(startX));
+    await observeAttributeHistory(cabinet, "data-player-one-move-id");
     await cabinet.press("z");
     await expect
-      .poll(() => cabinet.getAttribute("data-player-one-move-id"), { timeout: 5000 })
-      .toBe("crescent-palm");
+      .poll(() => attributeHistoryIncludes(cabinet, "data-player-one-move-id", "crescent-palm"), { timeout: 5000 })
+      .toBe(true);
     await expect(page.locator("[data-game-live-status]")).toContainText("PLAYER ONE READY");
     expect(runtimeErrors).toEqual([]);
     await page.screenshot({ path: "test-results/todo7-game-route.png", fullPage: true });
