@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import shutil
 import sys
 import tempfile
 import tomllib
@@ -129,6 +130,26 @@ def destination_matches(destination: Path, transformed: tuple[tuple[str, str], .
     )
 
 
+def snapshot_catalog(
+    destination: Path,
+    snapshot: Path,
+    transformed: tuple[tuple[str, str], ...],
+) -> None:
+    for name, _content in transformed:
+        snapshot_path = destination_path(snapshot, name)
+        snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(destination_path(destination, name), snapshot_path)
+
+
+def restore_catalog(
+    snapshot: Path,
+    destination: Path,
+    transformed: tuple[tuple[str, str], ...],
+) -> None:
+    for name, _content in transformed:
+        os.replace(destination_path(snapshot, name), destination_path(destination, name))
+
+
 def promote_catalog(
     source: Path,
     destination: Path,
@@ -136,7 +157,8 @@ def promote_catalog(
     transformed: tuple[tuple[str, str], ...],
 ) -> None:
     with tempfile.TemporaryDirectory(prefix=".import-revised-themes-", dir=destination.parent) as temporary:
-        staging = Path(temporary)
+        staging = Path(temporary) / "staged"
+        snapshot = Path(temporary) / "snapshot"
         for name, content in transformed:
             staged_path = destination_path(staging, name)
             staged_path.parent.mkdir(parents=True, exist_ok=True)
@@ -145,8 +167,13 @@ def promote_catalog(
         require_bound_inventory(final_inventory)
         if final_inventory != inventory:
             raise RevisedThemeImportError("source changed while import was staged")
-        for name, _content in transformed:
-            os.replace(destination_path(staging, name), destination_path(destination, name))
+        snapshot_catalog(destination, snapshot, transformed)
+        try:
+            for name, _content in transformed:
+                os.replace(destination_path(staging, name), destination_path(destination, name))
+        except (OSError, KeyboardInterrupt):
+            restore_catalog(snapshot, destination, transformed)
+            raise
 
 
 def parse_args() -> argparse.Namespace:
