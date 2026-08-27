@@ -42,6 +42,14 @@ test("renders the ui.accent terminal row from divergent fixture data", async (t)
   ]);
   await writeFile(path.join(fixtureThemesRoot, "main.toml"), fixtureSource);
 
+  await execFileAsync("python3", [
+    path.join(projectRoot, "scripts/generate-web-theme-data.py"),
+    "--source",
+    fixtureThemesRoot,
+    "--output",
+    path.join(fixtureWebRoot, "src/data/generated-theme-data.json"),
+  ]);
+
   await execFileAsync(process.execPath, [path.join(webRoot, "node_modules/astro/bin/astro.mjs"), "build"], {
     cwd: fixtureWebRoot,
   });
