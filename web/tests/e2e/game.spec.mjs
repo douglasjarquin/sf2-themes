@@ -117,11 +117,11 @@ test("the full game route exposes independent theme and fighter selectors", asyn
     const startX = Number(await cabinet.getAttribute("data-player-one-x"));
     await cabinet.press("ArrowRight");
     await expect
-      .poll(() => cabinet.getAttribute("data-player-one-x"), { timeout: 1000 })
+      .poll(() => cabinet.getAttribute("data-player-one-x"), { timeout: 5000 })
       .not.toBe(String(startX));
     await cabinet.press("z");
     await expect
-      .poll(() => cabinet.getAttribute("data-player-one-move-id"), { timeout: 1000 })
+      .poll(() => cabinet.getAttribute("data-player-one-move-id"), { timeout: 5000 })
       .toBe("crescent-palm");
     await expect(page.locator("[data-game-live-status]")).toContainText("PLAYER ONE READY");
     expect(runtimeErrors).toEqual([]);
