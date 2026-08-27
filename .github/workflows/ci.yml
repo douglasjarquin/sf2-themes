@@ -12,6 +12,7 @@ jobs:
       workflows: ${{ steps.select.outputs.workflows }}
       python: ${{ steps.select.outputs.python }}
       web: ${{ steps.select.outputs.web }}
+      web_screenshots: ${{ steps.select.outputs.web_screenshots }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -38,6 +39,16 @@ jobs:
               - 'scripts/capture-screenshots.mjs'
               - 'scripts/capture-game-screenshots.mjs'
               - 'scripts/verify-game-screenshots.mjs'
+            web_screenshots:
+              - 'web/src/game/**'
+              - 'web/src/components/ArcadeGame.astro'
+              - 'web/src/pages/game/index.astro'
+              - 'web/src/data/theme-data.mjs'
+              - 'web/src/styles/global.css'
+              - 'web/public/screenshots/**'
+              - 'themes/**'
+              - 'scripts/capture-game-screenshots.mjs'
+              - 'scripts/verify-game-screenshots.mjs'
       - id: select
         if: always()
         env:
@@ -45,6 +56,7 @@ jobs:
           FILTER_WORKFLOWS: ${{ steps.filter.outputs.workflows }}
           FILTER_PYTHON: ${{ steps.filter.outputs.python }}
           FILTER_WEB: ${{ steps.filter.outputs.web }}
+          FILTER_WEB_SCREENSHOTS: ${{ steps.filter.outputs.web_screenshots }}
           EVENT_BEFORE: ${{ github.event.before }}
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -58,12 +70,14 @@ jobs:
               echo 'workflows=true'
               echo 'python=true'
               echo 'web=true'
+              echo 'web_screenshots=true'
             } >> "$GITHUB_OUTPUT"
           else
             {
               echo "workflows=$FILTER_WORKFLOWS"
               echo "python=$FILTER_PYTHON"
               echo "web=$FILTER_WEB"
+              echo "web_screenshots=$FILTER_WEB_SCREENSHOTS"
             } >> "$GITHUB_OUTPUT"
           fi
 
@@ -126,6 +140,31 @@ jobs:
         run: aube -C web run test:e2e
       - name: Build
         run: aube -C web run build
+      - name: Verify screenshot archive
+        if: needs.changes.outputs.web_screenshots == 'true'
+        run: aube -C web run screenshots:verify
+      - name: Run deterministic screenshot smoke
+        if: needs.changes.outputs.web_screenshots == 'true'
+        run: |
+          aube -C web run screenshots:game -- --theme main --seed ci-smoke --output "$RUNNER_TEMP/sf2-game-smoke"
+          test -f "$RUNNER_TEMP/sf2-game-smoke/manifest.json"
+          test -f "$RUNNER_TEMP/sf2-game-smoke/game/main.png"
+      - name: Regenerate and verify screenshot archive
+        if: needs.changes.outputs.web_screenshots == 'true'
+        run: |
+          aube -C web run screenshots:game
+          aube -C web run screenshots:verify
+          git diff --exit-code -- web/public/screenshots
+      - name: Upload screenshot diagnostics
+        if: always() && needs.changes.outputs.web_screenshots == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sf2-game-screenshot-diagnostics
+          if-no-files-found: ignore
+          path: |
+            web/public/screenshots
+            web/test-results
+            web/playwright-report
 
   ci:
     if: always()

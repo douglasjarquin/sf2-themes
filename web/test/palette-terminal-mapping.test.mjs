@@ -31,9 +31,11 @@ test("renders the ui.accent terminal row from divergent fixture data", async (t)
   await mkdir(fixtureWebRoot, { recursive: true });
   await Promise.all([
     cp(path.join(webRoot, "src"), path.join(fixtureWebRoot, "src"), { recursive: true }),
+    cp(path.join(webRoot, "public"), path.join(fixtureWebRoot, "public"), { recursive: true }),
     cp(path.join(projectRoot, "themes/characters"), path.join(fixtureThemesRoot, "characters"), {
       recursive: true,
     }),
+    cp(path.join(projectRoot, "themes/main-light.toml"), path.join(fixtureThemesRoot, "main-light.toml")),
     cp(path.join(webRoot, "astro.config.mjs"), path.join(fixtureWebRoot, "astro.config.mjs")),
     cp(path.join(webRoot, "package.json"), path.join(fixtureWebRoot, "package.json")),
     symlink(path.join(webRoot, "node_modules"), path.join(fixtureWebRoot, "node_modules")),

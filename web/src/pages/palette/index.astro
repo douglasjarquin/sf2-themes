@@ -1,6 +1,56 @@
 ---
+import { readFileSync } from "node:fs";
+
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { mainCards, paletteVariants, themeTokens } from "../../data/theme-data.mjs";
+import { sitePath } from "../../lib/site-path.mjs";
+
+type GameScreenshot = {
+  readonly id: string;
+  readonly image: string;
+  readonly width: number;
+  readonly height: number;
+  readonly moment: string;
+};
+
+function requiredString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) throw new TypeError(`${label} must be a non-empty string`);
+  return value;
+}
+
+function requiredDimension(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0) throw new TypeError(`${label} must be a positive integer`);
+  return value;
+}
+
+const screenshotManifestUrl = new URL("../../../public/screenshots/manifest.json", import.meta.url);
+const parsedScreenshotManifest: unknown = JSON.parse(readFileSync(screenshotManifestUrl, "utf8"));
+if (typeof parsedScreenshotManifest !== "object" || parsedScreenshotManifest === null || Array.isArray(parsedScreenshotManifest)) {
+  throw new TypeError("Palette screenshot manifest must be an object");
+}
+const parsedScreenshotEntries: unknown = Reflect.get(parsedScreenshotManifest, "entries");
+if (!Array.isArray(parsedScreenshotEntries) || parsedScreenshotEntries.length !== paletteVariants.length) {
+  throw new TypeError(`Palette screenshot manifest must contain ${paletteVariants.length} entries`);
+}
+const screenshotsById = new Map<string, GameScreenshot>();
+for (const [index, entry] of parsedScreenshotEntries.entries()) {
+  if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+    throw new TypeError(`Palette screenshot entry ${index} is invalid`);
+  }
+  const id = requiredString(Reflect.get(entry, "id"), `Palette screenshot entry ${index} id`);
+  const image = requiredString(Reflect.get(entry, "image"), `Palette screenshot entry ${index} image`);
+  const width = requiredDimension(Reflect.get(entry, "width"), `Palette screenshot entry ${index} width`);
+  const height = requiredDimension(Reflect.get(entry, "height"), `Palette screenshot entry ${index} height`);
+  const moment = requiredString(Reflect.get(entry, "moment"), `Palette screenshot entry ${index} moment`);
+  screenshotsById.set(id, { id, image, width, height, moment });
+}
+for (const variant of paletteVariants) {
+  const screenshot = screenshotsById.get(variant.id);
+  if (screenshot === undefined || screenshot.image !== `game/${variant.id}.png`) {
+    throw new TypeError(`Palette screenshot is missing canonical theme ${variant.id}`);
+  }
+}
+const screenshotBase = sitePath("screenshots");
 
 const mainColors = Object.fromEntries(mainCards.map(({ hex, token }) => [token, hex]));
 const terminalMappings = [
@@ -125,6 +175,17 @@ const paletteModes = [
                 <h3>{variant.character}</h3>
                 <span>{variant.id}</span>
               </div>
+              <figure class="palette-variant__preview">
+                <img
+                  alt={`${variant.name} gameplay capture`}
+                  data-game-screenshot
+                  height={screenshotsById.get(variant.id)?.height}
+                  loading="lazy"
+                  src={`${screenshotBase}${screenshotsById.get(variant.id)?.image}`}
+                  width={screenshotsById.get(variant.id)?.width}
+                />
+                <figcaption>FRAME: {screenshotsById.get(variant.id)?.moment.toUpperCase()}</figcaption>
+              </figure>
               <div class="palette-swatches" aria-label={`${variant.name} colors`}>
                 {
                   colorRoles.map((role) => (
@@ -189,10 +250,13 @@ const paletteModes = [
   .palette-terminal-map strong { font-family: var(--font-display); font-size: 9px; line-height: 1.5; }
   .palette-terminal-map li > span:last-child { color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 12px; }
   .palette-variant-list { display: grid; gap: var(--space-4); }
-  .palette-variant { display: grid; grid-template-columns: minmax(120px, 0.35fr) 1fr; gap: var(--space-4); padding: var(--space-4); }
+  .palette-variant { display: grid; grid-template-columns: minmax(120px, 0.3fr) minmax(220px, 0.7fr) 1.35fr; gap: var(--space-4); padding: var(--space-4); }
   .palette-variant[hidden] { display: none; }
   .palette-variant__identity { display: grid; align-content: center; gap: var(--space-2); }
   .palette-variant__identity span { inline-size: max-content; padding: var(--space-1) var(--space-2); border: 1px solid var(--color-cyan); color: var(--color-cyan); font-family: var(--font-mono); font-size: 11px; }
+  .palette-variant__preview { display: grid; align-content: center; gap: var(--space-2); min-inline-size: 0; margin: 0; }
+  .palette-variant__preview img { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 16 / 9; object-fit: cover; }
+  .palette-variant__preview figcaption { color: var(--color-cyan); font-family: var(--font-mono); font-size: 10px; }
   .palette-swatches { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--space-2); }
   .palette-swatches button { display: grid; gap: var(--space-2); min-inline-size: 0; padding: var(--space-2); border: 1px solid color-mix(in srgb, var(--color-foreground) 16%, transparent); background: color-mix(in srgb, var(--color-background) 50%, var(--color-panel)); color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-family: var(--font-mono); font-size: 11px; text-align: start; cursor: copy; }
   .palette-swatches button:hover { border-color: var(--palette-color); }

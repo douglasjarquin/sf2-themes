@@ -19,3 +19,9 @@ Prefer rewriting or pruning existing entries over appending new ones.
 
 - Run `uv run --with pytest pytest -q` and `bash tests/test_cli.sh` for the Python and standalone CLI suites.
 When updating this file, preserve this bar for all agents and keep entries concise.
+
+## Web game
+
+- The static `/game/` cabinet, capture bridge, and `/screenshots/` archive share the browser-independent fixed-step core under `web/src/game/`.
+- Run `mise run web:check`, `mise run web:test`, `mise run web:build`, and `mise run web:screenshots:verify` for web changes.
+- Screenshot-affecting changes require `mise run web:screenshots` followed by strict verification; the archive is 36 `1280x720` PNGs under `web/public/screenshots/game/` with manifest fingerprints.

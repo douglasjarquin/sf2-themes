@@ -1,34 +1,775 @@
 {
+  "schemaVersion": 1,
+  "recipeVersion": "sf2-game-screenshots-v1",
   "viewport": {
     "width": 1280,
-    "height": 720
+    "height": 720,
+    "deviceScaleFactor": 1
   },
-  "generatedAt": "2026-08-26T04:55:31.855Z",
-  "source": "ASCII cabinet",
+  "logicalGrid": {
+    "columns": 96,
+    "rows": 40
+  },
+  "sourceFingerprint": "0a84e29ff5774ba9b9278b25b0ff9f7ba2754d0d03478739f7cf1b668f67f9c7",
+  "recipeFingerprint": "538867a6228ca3c74804ce3006150e3e1f9de9f9860392c42a852494fb88ae0f",
+  "paletteHash": "bd0749e2d3c34e83008a4dade4646b4b8aabf10a334bd40f34ac7b7923c8f4c9",
+  "seed": "sf2-themes-screenshots-v1",
   "entries": [
     {
-      "id": "ryu",
-      "name": "Ryu",
-      "image": "ryu.png",
-      "moment": "fight"
+      "id": "main",
+      "name": "Street Fighter II - Main",
+      "image": "game/main.png",
+      "sha256": "2abd16bf7f99a8a164aea634d2d0cb578f1c940b333a627f3e70fca37c039289",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ryu",
+      "p2": "vega",
+      "occupancy": 0.787797
     },
     {
-      "id": "ken",
-      "name": "Ken",
-      "image": "ken.png",
-      "moment": "hadouken"
+      "id": "main-light",
+      "name": "Street Fighter II - Main Light",
+      "image": "game/main-light.png",
+      "sha256": "fac37c12e9071599779fc887891c452bc5478321065badc88313dc8f51dfb262",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ken",
+      "p2": "sagat",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "akuma-light",
+      "name": "Street Fighter II - Akuma Light",
+      "image": "game/akuma-light.png",
+      "sha256": "7bccf7f0bbb3f5b33837d12af0df29ea83ffa38047e6423545609139accb666a",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "chun-li",
+      "p2": "m-bison",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "akuma",
+      "name": "Street Fighter II - Akuma",
+      "image": "game/akuma.png",
+      "sha256": "c0baaf39d3c460d0afc78de711b767b89425302ff7191d84af3a5a77412ef0c6",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "e-honda",
+      "p2": "cammy",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "balrog-light",
+      "name": "Street Fighter II - Balrog Light",
+      "image": "game/balrog-light.png",
+      "sha256": "de9762823598386f9b4d14c66466b02c9ec8f7d36bae16b747058e1b939990ff",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "blanka",
+      "p2": "t-hawk",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "balrog",
+      "name": "Street Fighter II - Balrog",
+      "image": "game/balrog.png",
+      "sha256": "3537e807b83ae5de5a236ac54d622a57ca135d19faaefa7999f72e624ba8a9fe",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "zangief",
+      "p2": "fei-long",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "blanka-light",
+      "name": "Street Fighter II - Blanka Light",
+      "image": "game/blanka-light.png",
+      "sha256": "e6e8b2568246c9bc899718eba3ecfa969ebfddd7768e44c1f925db81e429a5c8",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "guile",
+      "p2": "dee-jay",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "blanka",
+      "name": "Street Fighter II - Blanka",
+      "image": "game/blanka.png",
+      "sha256": "993c4e800e7e8e1556f2e730712ea2478eb7f8892c3fcb26b33de3bfe09f1679",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "dhalsim",
+      "p2": "akuma",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "cammy-light",
+      "name": "Street Fighter II - Cammy Light",
+      "image": "game/cammy-light.png",
+      "sha256": "823f40069dcf14ce706fd19a5f4698e81d2889669a00a55f48d365cd31627f44",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "balrog",
+      "p2": "ryu",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "cammy",
+      "name": "Street Fighter II - Cammy",
+      "image": "game/cammy.png",
+      "sha256": "43982a6e805352880ff138eeb910a1e54db01d2114b38644fe7638c94aafd9a1",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "vega",
+      "p2": "ken",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "chun-li-light",
+      "name": "Street Fighter II - Chun-Li Light",
+      "image": "game/chun-li-light.png",
+      "sha256": "97bce947b91f8ee72524e0e03f3fb4d520f62673d211219e4ff0b9f6f2bdfea0",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "sagat",
+      "p2": "chun-li",
+      "occupancy": 0.951125
     },
     {
       "id": "chun-li",
-      "name": "Chun-Li",
-      "image": "chun-li.png",
-      "moment": "counter"
+      "name": "Street Fighter II - Chun-Li",
+      "image": "game/chun-li.png",
+      "sha256": "bb0c6d6ea14e525e4ae579c8800c6d2f0e59dacfaa8774e908cb6438e06abedd",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "m-bison",
+      "p2": "e-honda",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "dee-jay-light",
+      "name": "Street Fighter II - Dee Jay Light",
+      "image": "game/dee-jay-light.png",
+      "sha256": "16f3411b15100ad433c4e5a4a3cca17bf682885ce8f95fa079fb9a07fc5568e9",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "cammy",
+      "p2": "blanka",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "dee-jay",
+      "name": "Street Fighter II - Dee Jay",
+      "image": "game/dee-jay.png",
+      "sha256": "bf08f8d3e3e914b4fb618c24757438184dcd211ea1d093a09e92a5ee94ec4f50",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "t-hawk",
+      "p2": "zangief",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "dhalsim-light",
+      "name": "Street Fighter II - Dhalsim Light",
+      "image": "game/dhalsim-light.png",
+      "sha256": "c8a1c9389c38a65d0be1999ea87c7389f1e3035458732e2a299dfcdb2bdd4058",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "fei-long",
+      "p2": "guile",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "dhalsim",
+      "name": "Street Fighter II - Dhalsim",
+      "image": "game/dhalsim.png",
+      "sha256": "0d0e063fbc9e2c41589fe7b017be0d697542a6275ceb16d0456b6e4f85f79165",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "dee-jay",
+      "p2": "dhalsim",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "e-honda-light",
+      "name": "Street Fighter II - E. Honda Light",
+      "image": "game/e-honda-light.png",
+      "sha256": "89114fff48103fcfaf9b70fb1e168b19dda32ea3af9434e2b888a4da91cdf597",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "akuma",
+      "p2": "balrog",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "e-honda",
+      "name": "Street Fighter II - E. Honda",
+      "image": "game/e-honda.png",
+      "sha256": "0f2e38be286716dcb242502c9ff7f86d6f5f398eed9065c2cff445d91c9807b8",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ryu",
+      "p2": "vega",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "fei-long-light",
+      "name": "Street Fighter II - Fei Long Light",
+      "image": "game/fei-long-light.png",
+      "sha256": "50e61e1fce20fa56154bd662272d376f908e1daf46aae58c7fbc5bb3b2749f58",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ken",
+      "p2": "sagat",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "fei-long",
+      "name": "Street Fighter II - Fei Long",
+      "image": "game/fei-long.png",
+      "sha256": "ceacf9fe0275b23818b202f5326d043acd2b0b5279bc77ea82d5e9b36ac4cef9",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "chun-li",
+      "p2": "m-bison",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "guile-light",
+      "name": "Street Fighter II - Guile Light",
+      "image": "game/guile-light.png",
+      "sha256": "d972c6d312a28168dbbb1fc54322a2e4bd1e93834e8cdc77e1fca696dd72c553",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "e-honda",
+      "p2": "cammy",
+      "occupancy": 0.951125
     },
     {
       "id": "guile",
-      "name": "Guile",
-      "image": "guile.png",
-      "moment": "ko"
+      "name": "Street Fighter II - Guile",
+      "image": "game/guile.png",
+      "sha256": "58b53c2db3175e2e540e6f87db603fb2b97720bf2277102ed839c169057aff69",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "blanka",
+      "p2": "t-hawk",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "ken-light",
+      "name": "Street Fighter II - Ken Light",
+      "image": "game/ken-light.png",
+      "sha256": "76363611c010f0ad6d186b4ce35a0f451bd2fffb370b89b21dc8b47c67456945",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "zangief",
+      "p2": "fei-long",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "ken",
+      "name": "Street Fighter II - Ken",
+      "image": "game/ken.png",
+      "sha256": "f48c48a699280589bd4868ba5eb7b0aa4257df0c65fdb607ef0785f5021b7e21",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "guile",
+      "p2": "dee-jay",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "m-bison-light",
+      "name": "Street Fighter II - M. Bison Light",
+      "image": "game/m-bison-light.png",
+      "sha256": "6b6dbb14caa8344d4b907e995beb2ffe67ddcacb9b83276d433886be880d661c",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "dhalsim",
+      "p2": "akuma",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "m-bison",
+      "name": "Street Fighter II - M. Bison",
+      "image": "game/m-bison.png",
+      "sha256": "046bde1f7550f63287abcf7aba8b16af4d0c2b81dcab700e8bd63c88cabc839d",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "balrog",
+      "p2": "ryu",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "ryu-light",
+      "name": "Street Fighter II - Ryu Light",
+      "image": "game/ryu-light.png",
+      "sha256": "60a5b2a3393f4dcf3069ffda5b2cb930452ce9497d0e58ea77cebfe7981b8b82",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "vega",
+      "p2": "ken",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "ryu",
+      "name": "Street Fighter II - Ryu",
+      "image": "game/ryu.png",
+      "sha256": "81af828f2bf53e30e92c890ba20489c720ac95c267ca76d9c2aa001fe1bfe66b",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "sagat",
+      "p2": "chun-li",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "sagat-light",
+      "name": "Street Fighter II - Sagat Light",
+      "image": "game/sagat-light.png",
+      "sha256": "b410f82a518ad0d685593bdabff513a17a7fc72b24755ddd0e2120f48cc7f28b",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "m-bison",
+      "p2": "e-honda",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "sagat",
+      "name": "Street Fighter II - Sagat",
+      "image": "game/sagat.png",
+      "sha256": "8822f8157e585b5848e72334cec5da0006e165b77924877565dc1615f918c324",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "cammy",
+      "p2": "blanka",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "t-hawk-light",
+      "name": "Street Fighter II - T. Hawk Light",
+      "image": "game/t-hawk-light.png",
+      "sha256": "731ae728fd82663ac73575c73190da7b5dc69932816dcd16f32c163bbd577554",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "t-hawk",
+      "p2": "zangief",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "t-hawk",
+      "name": "Street Fighter II - T. Hawk",
+      "image": "game/t-hawk.png",
+      "sha256": "4cfa6d3453c4e685e253a2b3deb33b87af703964ccbd4635823553755f7aacfe",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "fei-long",
+      "p2": "guile",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "vega-light",
+      "name": "Street Fighter II - Vega Light",
+      "image": "game/vega-light.png",
+      "sha256": "705547a88382201f5ea3f837e369dcec243916cb9033a40bba86311bdbb979f6",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 900,
+      "moment": "fight",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "dee-jay",
+      "p2": "dhalsim",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "vega",
+      "name": "Street Fighter II - Vega",
+      "image": "game/vega.png",
+      "sha256": "f5d8cd584df01d6123f1bc9d231a907aedf8a4edd7391ae9fb56b7ca818c2040",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 2400,
+      "moment": "ko",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "akuma",
+      "p2": "balrog",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "zangief-light",
+      "name": "Street Fighter II - Zangief Light",
+      "image": "game/zangief-light.png",
+      "sha256": "fb85da4e629bd8f04e6945031bb5e25f8531ec925a9a72f92a9fe161e225be6d",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 3000,
+      "moment": "victory",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ryu",
+      "p2": "vega",
+      "occupancy": 0.951125
+    },
+    {
+      "id": "zangief",
+      "name": "Street Fighter II - Zangief",
+      "image": "game/zangief.png",
+      "sha256": "5c254db129f62cba0dd2b541c18b2bae499166f06d379d789665321445390f4f",
+      "width": 1280,
+      "height": 720,
+      "deviceScaleFactor": 1,
+      "logicalGrid": {
+        "columns": 96,
+        "rows": 40
+      },
+      "seed": "sf2-themes-screenshots-v1",
+      "tick": 120,
+      "moment": "intro",
+      "mode": "attract",
+      "stage": "dojo",
+      "p1": "ken",
+      "p2": "sagat",
+      "occupancy": 0.951125
     }
   ]
 }

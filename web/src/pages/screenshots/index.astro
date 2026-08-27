@@ -1,27 +1,70 @@
 ---
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
-import { characterVariants } from "../../data/theme-data.mjs";
+import { paletteVariants } from "../../data/theme-data.mjs";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { sitePath } from "../../lib/site-path.mjs";
 
 type ScreenshotManifest = {
-  viewport: { width: number; height: number };
-  entries: Array<{ id: string; name: string; image: string; moment: string }>;
+  readonly viewport: { readonly width: number; readonly height: number };
+  readonly entries: readonly ScreenshotEntry[];
+};
+type ScreenshotEntry = {
+  readonly id: string;
+  readonly name: string;
+  readonly image: string;
+  readonly moment: string;
+  readonly width: number;
+  readonly height: number;
 };
 
+function requiredString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) throw new TypeError(`${label} must be a non-empty string`);
+  return value;
+}
+
+function requiredDimension(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0) throw new TypeError(`${label} must be a positive integer`);
+  return value;
+}
+
 const manifestUrl = new URL("../../../public/screenshots/manifest.json", import.meta.url);
-const manifest: ScreenshotManifest = existsSync(manifestUrl)
-  ? JSON.parse(readFileSync(manifestUrl, "utf8"))
-  : {
-      viewport: { width: 1280, height: 720 },
-      entries: characterVariants.map((fighter) => ({
-        id: fighter.id,
-        name: fighter.character,
-        image: `${fighter.id}.png`,
-        moment: "cabinet",
-      })),
-    };
+const parsedManifest: unknown = JSON.parse(readFileSync(manifestUrl, "utf8"));
+if (typeof parsedManifest !== "object" || parsedManifest === null || Array.isArray(parsedManifest)) {
+  throw new TypeError("Screenshot manifest must be an object");
+}
+const parsedViewport: unknown = Reflect.get(parsedManifest, "viewport");
+const parsedEntries: unknown = Reflect.get(parsedManifest, "entries");
+if (typeof parsedViewport !== "object" || parsedViewport === null || Array.isArray(parsedViewport)) {
+  throw new TypeError("Screenshot manifest viewport is missing");
+}
+const viewportWidth = requiredDimension(Reflect.get(parsedViewport, "width"), "Screenshot manifest viewport width");
+const viewportHeight = requiredDimension(Reflect.get(parsedViewport, "height"), "Screenshot manifest viewport height");
+if (!Array.isArray(parsedEntries) || parsedEntries.length !== paletteVariants.length) {
+  throw new TypeError(`Screenshot manifest must contain ${paletteVariants.length} entries`);
+}
+const manifestEntries: ScreenshotEntry[] = parsedEntries.map((entry, index) => {
+  if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+    throw new TypeError(`Screenshot manifest entry ${index} is invalid`);
+  }
+  const id = requiredString(Reflect.get(entry, "id"), `Screenshot manifest entry ${index} id`);
+  const name = requiredString(Reflect.get(entry, "name"), `Screenshot manifest entry ${index} name`);
+  const image = requiredString(Reflect.get(entry, "image"), `Screenshot manifest entry ${index} image`);
+  const moment = requiredString(Reflect.get(entry, "moment"), `Screenshot manifest entry ${index} moment`);
+  const width = requiredDimension(Reflect.get(entry, "width"), `Screenshot manifest entry ${index} width`);
+  const height = requiredDimension(Reflect.get(entry, "height"), `Screenshot manifest entry ${index} height`);
+  return { id, name, image, moment, width, height };
+});
+for (const [index, variant] of paletteVariants.entries()) {
+  const entry = manifestEntries[index];
+  if (entry?.id !== variant.id || entry.image !== `game/${variant.id}.png`) {
+    throw new TypeError(`Screenshot manifest is missing canonical theme ${variant.id}`);
+  }
+}
+const manifest: ScreenshotManifest = {
+  viewport: { width: viewportWidth, height: viewportHeight },
+  entries: manifestEntries,
+};
 const screenshotBase = sitePath("screenshots");
 ---
 
@@ -31,7 +74,7 @@ const screenshotBase = sitePath("screenshots");
       <p class="screenshots-eyebrow">ASCII CABINET ARCHIVE</p>
       <h1>SCREENSHOT LIBRARY</h1>
       <p>
-        Four standard captures from the playable cabinet, one for every fighter theme. Each image is{" "}
+        Thirty-six standard captures from the playable cabinet, one for every palette variant. Each image is{" "}
         {manifest.viewport.width} × {manifest.viewport.height} pixels and preserves a different moment
         from the round.
       </p>
@@ -39,7 +82,7 @@ const screenshotBase = sitePath("screenshots");
 
     <section class="screenshots-grid site-frame" aria-label="ASCII cabinet screenshots">
       {
-        manifest.entries.map((screenshot, index) => (
+        manifest.entries.map((screenshot) => (
           <article
             class="screenshot-card"
             data-screenshot-card
@@ -48,11 +91,12 @@ const screenshotBase = sitePath("screenshots");
             <figure>
               <div class="screenshot-card__image-wrap">
                 <img
-                  alt={`${screenshot.name} theme in the ASCII fighting game cabinet`}
-                  height={manifest.viewport.height}
-                  loading={index === 0 ? "eager" : "lazy"}
+                  alt={`${screenshot.name} gameplay capture in the ASCII fighting game cabinet`}
+                  data-screenshot-image
+                  height={screenshot.height}
+                  loading="lazy"
                   src={`${screenshotBase}${screenshot.image}`}
-                  width={manifest.viewport.width}
+                  width={screenshot.width}
                 />
               </div>
               <figcaption>
