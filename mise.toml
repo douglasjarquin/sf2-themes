@@ -29,5 +29,9 @@ description = "Build the Astro site"
 run = "aube -C web run build"
 
 [tasks."web:screenshots"]
-description = "Generate the ASCII cabinet screenshot library"
-run = "node scripts/capture-screenshots.mjs"
+description = "Generate the deterministic all-theme game screenshot archive"
+run = "aube -C web run screenshots:game"
+
+[tasks."web:screenshots:verify"]
+description = "Verify the deterministic game screenshot archive"
+run = "aube -C web run screenshots:verify"

@@ -1,0 +1,231 @@
+---
+import ArcadeGame from "../../components/ArcadeGame.astro";
+import { paletteVariants } from "../../data/theme-data.mjs";
+import { FIGHTER_ROSTER } from "../../game/content/fighters/index.ts";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { sitePath } from "../../lib/site-path.mjs";
+
+const defaultTheme = paletteVariants.find(({ id }) => id === "main") ?? paletteVariants[0];
+const defaultPlayerOne = FIGHTER_ROSTER[0];
+const defaultPlayerTwo = FIGHTER_ROSTER[1];
+if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlayerTwo === undefined) {
+  throw new TypeError("Game route requires the complete theme and fighter catalogs");
+}
+---
+
+<SiteLayout
+  title="Arcade game"
+  description="Play the deterministic SF2 Themes terminal arcade game with the full palette and fighter catalog."
+>
+  <div class="game-page" data-game-route>
+    <section class="game-intro site-frame" aria-labelledby="game-heading">
+      <p class="game-kicker">PLAYER SELECT - FULL CABINET</p>
+      <h1 id="game-heading">ENTER THE ARCADE</h1>
+      <p>
+        Tune the palette, choose the next matchup, and take the terminal edition into a live
+        round. Theme changes recolor the current fight; fighter choices load on the next match.
+      </p>
+      <a class="game-back-link" href={sitePath("")}>RETURN HOME</a>
+    </section>
+
+    <main class="game-layout site-frame" aria-label="SF2 Themes full arcade game">
+      <aside class="game-config" aria-labelledby="config-heading">
+        <p class="game-kicker">CONFIGURE ROUND</p>
+        <h2 id="config-heading">CHOOSE YOUR FIGHTERS</h2>
+        <form data-game-config>
+          <label>
+            <span>PALETTE</span>
+            <select name="game-theme" data-game-theme-select>
+              {
+                paletteVariants.map((variant) => (
+                  <option value={variant.id} selected={variant.id === defaultTheme.id}>
+                    {variant.name} ({variant.id})
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+          <label>
+            <span>PLAYER ONE</span>
+            <select name="player-one" data-game-player-one-select>
+              {
+                FIGHTER_ROSTER.map(({ definition }) => (
+                  <option value={definition.id} selected={definition.id === defaultPlayerOne.definition.id}>
+                    {definition.displayName} ({definition.id})
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+          <label>
+            <span>PLAYER TWO</span>
+            <select name="player-two" data-game-player-two-select>
+              {
+                FIGHTER_ROSTER.map(({ definition }) => (
+                  <option value={definition.id} selected={definition.id === defaultPlayerTwo.definition.id}>
+                    {definition.displayName} ({definition.id})
+                  </option>
+                ))
+              }
+            </select>
+          </label>
+          <p class="game-config__hint" data-game-selection-status role="status" aria-live="polite">
+            FIGHTER CHANGES APPLY ON NEXT MATCH.
+          </p>
+          <button class="game-config__submit" type="submit">START NEW MATCH</button>
+        </form>
+        <div class="game-help" aria-labelledby="help-heading">
+          <h2 id="help-heading">CONTROL DECK</h2>
+          <p><kbd>ARROWS / WASD</kbd> MOVE</p>
+          <p><kbd>Z / J</kbd> LIGHT <kbd>X / K</kbd> HEAVY</p>
+          <p><kbd>C</kbd> PROJECTILE <kbd>SHIFT</kbd> BLOCK</p>
+          <p><kbd>ESC</kbd> PAUSE <kbd>ENTER</kbd> INSERT COIN</p>
+        </div>
+      </aside>
+
+      <section class="game-stage" aria-labelledby="stage-heading">
+        <div class="game-stage__header">
+          <div>
+            <p class="game-kicker">LIVE TEXTMODE FEED</p>
+            <h2 id="stage-heading">THE DOJO</h2>
+          </div>
+          <button class="fullscreen-button" data-game-fullscreen type="button">FULLSCREEN</button>
+        </div>
+        <ArcadeGame
+          configurableFighters
+          fullPalette
+          initialPlayerOneId={defaultPlayerOne.definition.id}
+          initialPlayerTwoId={defaultPlayerTwo.definition.id}
+          initialThemeId={defaultTheme.id}
+        />
+      </section>
+    </main>
+  </div>
+</SiteLayout>
+
+<script>
+  import { installCaptureBridge } from "../../game/capture/bridge.ts";
+
+  const captureUrl = new URL(window.location.href);
+  const captureRoot = document.querySelector("[data-arcade-game]");
+  if (captureUrl.searchParams.get("capture") === "1" && captureRoot instanceof HTMLElement) {
+    document.documentElement.dataset.captureMode = "cabinet";
+    void installCaptureBridge(captureRoot, captureUrl.searchParams).catch((error) => {
+      captureRoot.dataset.captureError = error instanceof Error ? error.name : "CaptureBridgeError";
+      captureRoot.dataset.rendererStatus = "failed";
+      captureRoot.dataset.loopStatus = "paused";
+      const poster = captureRoot.querySelector("[data-game-poster]");
+      if (poster instanceof HTMLElement) {
+        poster.hidden = false;
+        poster.dataset.failure = captureRoot.dataset.captureError;
+      }
+      const liveStatus = captureRoot.querySelector("[data-game-live-status]");
+      if (liveStatus instanceof HTMLElement) liveStatus.textContent = "CAPTURE DISPLAY UNAVAILABLE - STATIC POSTER ACTIVE";
+      const gameStatus = captureRoot.querySelector("[data-game-status]");
+      if (gameStatus instanceof HTMLElement) gameStatus.textContent = "STATIC FALLBACK";
+    });
+  }
+
+  const route = window.location.pathname;
+  const form = document.querySelector("[data-game-config]");
+  const cabinet = document.querySelector("[data-arcade-game]");
+  const themeSelect = document.querySelector("[data-game-theme-select]");
+  const playerOneSelect = document.querySelector("[data-game-player-one-select]");
+  const playerTwoSelect = document.querySelector("[data-game-player-two-select]");
+  const selectionStatus = document.querySelector("[data-game-selection-status]");
+  const fullscreenButton = document.querySelector("[data-game-fullscreen]");
+
+  if (form instanceof HTMLFormElement
+    && cabinet instanceof HTMLElement
+    && themeSelect instanceof HTMLSelectElement
+    && playerOneSelect instanceof HTMLSelectElement
+    && playerTwoSelect instanceof HTMLSelectElement
+    && selectionStatus instanceof HTMLElement) {
+    const currentUrl = new URL(window.location.href);
+    const chooseValue = (select: HTMLSelectElement, value: string | null, fallback: string): void => {
+      const option = [...select.options].find(({ value: optionValue }) => optionValue === value);
+      select.value = option?.value ?? fallback;
+    };
+    chooseValue(themeSelect, currentUrl.searchParams.get("theme"), "main");
+    chooseValue(playerOneSelect, currentUrl.searchParams.get("p1"), "ryu");
+    chooseValue(playerTwoSelect, currentUrl.searchParams.get("p2"), "ken");
+    if (playerOneSelect.value === playerTwoSelect.value) {
+      playerTwoSelect.value = playerOneSelect.value === "ken" ? "ryu" : "ken";
+    }
+
+    const applyTheme = () => {
+      const chip = [...cabinet.querySelectorAll("[data-game-theme-chip]")]
+        .find((candidate) => candidate instanceof HTMLElement && candidate.dataset.themeId === themeSelect.value);
+      if (chip instanceof HTMLButtonElement) chip.click();
+      selectionStatus.textContent = `PALETTE ONLINE: ${themeSelect.value.toUpperCase()}`;
+    };
+
+    themeSelect.addEventListener("change", applyTheme);
+    playerOneSelect.addEventListener("change", () => {
+      selectionStatus.textContent = `NEXT MATCH: ${playerOneSelect.value.toUpperCase()} VS ${playerTwoSelect.value.toUpperCase()}`;
+    });
+    playerTwoSelect.addEventListener("change", () => {
+      selectionStatus.textContent = `NEXT MATCH: ${playerOneSelect.value.toUpperCase()} VS ${playerTwoSelect.value.toUpperCase()}`;
+    });
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set("theme", themeSelect.value);
+      nextUrl.searchParams.set("p1", playerOneSelect.value);
+      nextUrl.searchParams.set("p2", playerTwoSelect.value);
+      window.location.assign(`${route}?${nextUrl.searchParams.toString()}`);
+    });
+    if (currentUrl.searchParams.has("theme")) applyTheme();
+  }
+
+  if (fullscreenButton instanceof HTMLButtonElement && cabinet instanceof HTMLElement) {
+    if (!("requestFullscreen" in cabinet)) fullscreenButton.hidden = true;
+    fullscreenButton.addEventListener("click", async () => {
+      try {
+        if (document.fullscreenElement !== null) await document.exitFullscreen();
+        else await cabinet.requestFullscreen();
+      } catch (error) {
+        fullscreenButton.textContent = error instanceof Error ? "FULLSCREEN UNAVAILABLE" : "FULLSCREEN FAILED";
+      }
+    });
+  }
+</script>
+
+<style>
+  .game-page { min-block-size: 100%; padding-block-end: var(--space-20); background-image: radial-gradient(color-mix(in srgb, var(--color-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+  .game-intro { display: grid; gap: var(--space-5); padding-block: var(--space-15) var(--space-10); }
+  .game-intro h1, .game-intro p { margin: 0; }
+  .game-intro h1 { color: var(--color-accent); font-family: var(--font-display); font-size: clamp(24px, 4vw, 40px); line-height: 1.5; text-shadow: 4px 4px 0 var(--color-red); }
+  .game-intro > p:not(.game-kicker) { max-inline-size: 62ch; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 17px; line-height: 1.7; }
+  .game-kicker { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
+  .game-back-link { justify-self: start; color: var(--color-foreground); font-family: var(--font-display); font-size: 9px; }
+  .game-layout { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(0, 1.7fr); align-items: start; gap: var(--space-8); }
+  .game-config { display: grid; gap: var(--space-5); padding: var(--space-6); border: 2px solid color-mix(in srgb, var(--color-foreground) 16%, transparent); background: color-mix(in srgb, var(--color-panel) 88%, black); box-shadow: 8px 8px 0 color-mix(in srgb, var(--color-background) 60%, black); }
+  .game-config h2, .game-help h2 { margin: 0; color: var(--color-foreground); font-family: var(--font-display); font-size: 12px; line-height: 1.8; }
+  .game-config form { display: grid; gap: var(--space-4); }
+  .game-config label { display: grid; gap: var(--space-2); }
+  .game-config label span { color: var(--color-cyan); font-family: var(--font-display); font-size: 8px; }
+  .game-config select { inline-size: 100%; min-block-size: 40px; border: 2px solid var(--color-surface-1); border-radius: 0; background: var(--color-surface-0); color: var(--color-foreground); font: 500 12px/1.4 var(--font-mono); padding: var(--space-3); }
+  .game-config__hint { min-block-size: 3.5em; margin: 0; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font: 10px/1.6 var(--font-mono); }
+  .game-config__submit, .fullscreen-button { border: 2px solid var(--color-red); background: var(--color-red); box-shadow: 3px 3px 0 var(--color-background); color: var(--color-foreground); cursor: pointer; font: 8px/1.5 var(--font-display); padding: var(--space-3) var(--space-4); }
+  .game-config__submit:hover, .fullscreen-button:hover { background: var(--color-accent); color: var(--color-background); transform: translate(1px, 1px); }
+  .game-help { display: grid; gap: var(--space-2); padding-block-start: var(--space-4); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); }
+  .game-help p { margin: 0; color: color-mix(in srgb, var(--color-foreground) 62%, transparent); font: 9px/1.7 var(--font-mono); }
+  kbd { color: var(--color-accent); font: inherit; }
+  .game-stage { min-inline-size: 0; padding: var(--space-6); border: 2px solid color-mix(in srgb, var(--color-foreground) 16%, transparent); background: color-mix(in srgb, var(--color-panel) 88%, black); box-shadow: 8px 8px 0 color-mix(in srgb, var(--color-background) 60%, black); }
+  .game-stage__header { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); padding-block-end: var(--space-5); }
+  .game-stage__header h2 { margin: 0; color: var(--color-foreground); font-family: var(--font-display); font-size: 16px; line-height: 1.7; }
+  .game-stage :global(.arcade-cabinet) { max-inline-size: none; box-shadow: none; }
+  @media (max-width: 760px) { .game-layout { grid-template-columns: 1fr; } .game-config { order: 2; } .game-stage { order: 1; } }
+  @media (max-width: 420px) { .game-intro, .game-layout { padding-inline: var(--space-4); } .game-stage, .game-config { padding: var(--space-4); } .game-stage__header { align-items: start; flex-direction: column; } .game-config select { font-size: 10px; } }
+  @media (prefers-reduced-motion: reduce) { .game-config__submit, .fullscreen-button { transition: none; } }
+  html[data-capture-mode="cabinet"] .game-intro,
+  html[data-capture-mode="cabinet"] .game-config,
+  html[data-capture-mode="cabinet"] .game-stage__header,
+  html[data-capture-mode="cabinet"] .arcade-cabinet__status,
+  html[data-capture-mode="cabinet"] .arcade-cabinet__palette,
+  html[data-capture-mode="cabinet"] .arcade-cabinet__controls { display: none; }
+  html[data-capture-mode="cabinet"] .game-page { display: grid; min-block-size: 100dvh; padding: 0; place-items: center; }
+  html[data-capture-mode="cabinet"] .game-layout { display: block; inline-size: min(100%, 1280px); padding: var(--space-4); }
+  html[data-capture-mode="cabinet"] .game-stage { padding: 0; border: 0; box-shadow: none; background: transparent; }
+</style>

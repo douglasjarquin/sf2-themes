@@ -76,5 +76,5 @@ test("JSON-LD describes the visible site and software without ratings or offers"
     assert.equal("offers" in node, false);
   }
   assert.doesNotMatch(serialized, /aggregateRating|offers|"ratingValue"/);
-  assert.equal(absoluteUrl(CABINET_IMAGE_PATH), "https://douglasjarquin.github.io/sf2-themes/screenshots/ryu.png");
+  assert.equal(absoluteUrl(CABINET_IMAGE_PATH), "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png");
 });

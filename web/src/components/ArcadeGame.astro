@@ -1,0 +1,140 @@
+---
+import { characterVariants, paletteVariants } from "../data/theme-data.mjs";
+import { sitePath } from "../lib/site-path.mjs";
+
+type Props = {
+  readonly compact?: boolean;
+  readonly initialThemeId?: string;
+  readonly captureMode?: boolean;
+  readonly initialPlayerOneId?: string;
+  readonly initialPlayerTwoId?: string;
+  readonly fullPalette?: boolean;
+  readonly configurableFighters?: boolean;
+};
+
+const {
+  compact = false,
+  initialThemeId = "ryu",
+  captureMode = false,
+  initialPlayerOneId = "ryu",
+  initialPlayerTwoId = "ken",
+  fullPalette = false,
+  configurableFighters = false,
+} = Astro.props;
+const themes = fullPalette ? paletteVariants : characterVariants;
+const initialTheme = themes.find((theme) => theme.id === initialThemeId) ?? themes[0];
+if (initialTheme === undefined) throw new TypeError("ArcadeGame requires at least one character palette");
+
+const palettePayload = JSON.stringify(
+  themes.map(({ id, tokens }) => ({ id, tokens })),
+)
+  .replaceAll("<", "\\u003c")
+  .replaceAll("\u2028", "\\u2028")
+  .replaceAll("\u2029", "\\u2029");
+
+const cabinetStyle = [
+  ["--cabinet-background", initialTheme.colors.background],
+  ["--cabinet-foreground", initialTheme.colors.foreground],
+  ["--cabinet-red", initialTheme.colors.red],
+  ["--cabinet-gold", initialTheme.colors.yellow],
+  ["--cabinet-accent", initialTheme.colors.accent],
+]
+  .map(([property, value]) => `${property}: ${value}`)
+  .join("; ");
+---
+
+<section
+  aria-label="Playable SF2 Themes arcade game"
+  class:list={["arcade-cabinet", { "arcade-cabinet--compact": compact }]}
+  data-active-theme={initialTheme.id}
+  data-arcade-game
+  data-capture-mode={captureMode ? "true" : "false"}
+  data-configurable-fighters={configurableFighters ? "true" : "false"}
+  data-game-state="boot"
+  data-game-focus
+  data-initial-theme-id={initialTheme.id}
+  data-initial-player-one={initialPlayerOneId}
+  data-initial-player-two={initialPlayerTwoId}
+  data-loop-status="paused"
+  data-player-one="ryu"
+  data-player-one-move-id=""
+  data-player-two="ken"
+  data-renderer-status="idle"
+  data-simulation-tick="0"
+  style={cabinetStyle}
+  tabindex="0"
+>
+  <script is:inline type="application/json" data-game-palettes set:html={palettePayload}></script>
+  <div class="arcade-cabinet__marquee">SF2 THEMES</div>
+  <div class="arcade-cabinet__screen">
+    <div class="arcade-cabinet__status">
+      <span role="status" aria-atomic="true" aria-live="polite" data-game-live-status>BOOTING ARCADE</span>
+      <span data-game-status>INITIALIZING</span>
+      <span data-game-credit-status>CREDIT 00</span>
+    </div>
+    <div class="arcade-cabinet__renderer" data-game-renderer>
+      <pre class="arcade-cabinet__poster" data-game-poster>SF2 THEMES
+
+RYU       VS       KEN
+ O                   O
+/|\   INSERT COIN   /|\
+/ \                 / \</pre>
+    </div>
+  </div>
+  <div class="arcade-cabinet__palette" aria-label="Change game palette">
+    <span>PALETTE</span>
+    {
+      themes.map((theme) => (
+        <button
+          aria-label={`Use ${theme.character} palette`}
+          aria-pressed={theme.id === initialTheme.id ? "true" : "false"}
+          class="theme-chip"
+          data-game-theme-chip
+          data-theme-id={theme.id}
+          style={`--chip-color: ${theme.colors.accent}; --chip-shadow: ${theme.colors.red}`}
+          type="button"
+        >
+          {theme.character.toUpperCase()}
+        </button>
+      ))
+    }
+  </div>
+  <div class="arcade-cabinet__controls">
+    <p><kbd>ARROWS</kbd> MOVE <kbd>Z</kbd> LIGHT <kbd>X</kbd> HEAVY <kbd>C</kbd> PROJECTILE <kbd>SHIFT</kbd> BLOCK</p>
+    <div class="arcade-cabinet__coin-slot">
+      <button class="coin-button" data-game-coin type="button">INSERT COIN</button>
+      <a class="full-game-link" href={sitePath("game")}>OPEN FULL GAME</a>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { bootstrapArcadeGames } from "../game/bootstrap.ts";
+
+  void bootstrapArcadeGames();
+</script>
+
+<style>
+  .arcade-cabinet { inline-size: 100%; max-inline-size: 720px; justify-self: center; border: 2px solid color-mix(in srgb, var(--cabinet-foreground) 14%, transparent); box-shadow: 10px 10px 0 color-mix(in srgb, var(--home-background) 60%, black); background: var(--cabinet-background); overflow: hidden; transition: background-color 120ms ease-out, border-color 120ms ease-out; }
+  .arcade-cabinet--compact { max-inline-size: 480px; }
+  .arcade-cabinet__marquee { border-block-end: 3px solid var(--cabinet-gold); background: linear-gradient(135deg, var(--cabinet-red), color-mix(in srgb, var(--cabinet-red) 65%, black)); color: var(--cabinet-foreground); font-family: var(--font-display); font-size: 10px; letter-spacing: .12em; padding: var(--space-4); text-align: center; transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; }
+  .arcade-cabinet__screen { position: relative; min-block-size: 236px; margin: var(--space-4); background: var(--cabinet-background); isolation: isolate; transition: background-color 120ms ease-out; }
+  .arcade-cabinet__screen::after { position: absolute; z-index: 2; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--home-background) 28%, transparent) 0, color-mix(in srgb, var(--home-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
+  .arcade-cabinet__status { position: absolute; z-index: 3; inset-block-start: var(--space-3); inset-inline: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); color: var(--cabinet-accent); font-family: var(--font-mono); font-size: 10px; pointer-events: none; }
+  .arcade-cabinet__renderer { min-block-size: 236px; display: grid; place-items: center; overflow: hidden; }
+  .arcade-cabinet__renderer :global(canvas) { inline-size: 100%; block-size: auto; }
+  .arcade-cabinet__poster { margin: 0; color: var(--cabinet-foreground); font-family: var(--font-mono); font-size: clamp(10px, 1.3vw, 13px); line-height: 1.7; text-align: center; white-space: pre; }
+  .arcade-cabinet__poster[hidden] { display: none; }
+  .arcade-cabinet__palette { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-block: 2px solid var(--home-surface); color: color-mix(in srgb, var(--cabinet-foreground) 62%, transparent); font-family: var(--font-display); font-size: 7px; }
+  .theme-chip { min-block-size: 32px; border: 2px solid transparent; background: var(--chip-color); box-shadow: 0 3px 0 var(--chip-shadow); color: var(--cabinet-background); cursor: pointer; font-family: var(--font-display); font-size: 6px; padding: 8px; }
+  .theme-chip:hover, .theme-chip[aria-pressed="true"] { border-color: var(--cabinet-gold); transform: translate(1px, 1px); }
+  .arcade-cabinet__controls { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); }
+  .arcade-cabinet__controls p { margin: 0; color: color-mix(in srgb, var(--cabinet-foreground) 60%, transparent); font-family: var(--font-mono); font-size: 8px; line-height: 1.8; }
+  kbd { color: var(--cabinet-gold); font: inherit; }
+  .arcade-cabinet__coin-slot { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .coin-button { border: 2px solid var(--cabinet-red); background: var(--cabinet-red); box-shadow: 3px 3px 0 var(--cabinet-background); color: var(--cabinet-foreground); cursor: pointer; font-family: var(--font-display); font-size: 8px; padding: 11px; transition: background-color 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; }
+  .coin-button:hover { background: var(--cabinet-gold); color: var(--cabinet-background); transform: translate(1px, 1px); }
+  .full-game-link { color: var(--cabinet-gold); font-family: var(--font-display); font-size: 7px; line-height: 1.5; text-align: end; }
+  @media (max-width: 420px) { .arcade-cabinet__palette { justify-content: flex-start; } .theme-chip { flex: 1 1 40%; } .arcade-cabinet__coin-slot { align-items: flex-start; flex-direction: column; } .full-game-link { text-align: start; } }
+  @media (prefers-reduced-motion: reduce) { .arcade-cabinet, .theme-chip, .coin-button { transition: none; } }
+</style>
