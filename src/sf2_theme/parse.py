@@ -14,6 +14,7 @@ from sf2_theme.model import (
     Theme,
     ThemeKind,
     ThemeMetadata,
+    ThemeVariant,
     UiColors,
     parse_hex,
 )
@@ -97,6 +98,16 @@ def _parse_era(raw: str, source: str) -> IntroducedIn:
             raise ThemeError(f"{source}: unknown introduced_in {raw!r}")
 
 
+def _parse_variant(raw: str, source: str) -> ThemeVariant:
+    match raw:
+        case ThemeVariant.DARK.value:
+            return ThemeVariant.DARK
+        case ThemeVariant.LIGHT.value:
+            return ThemeVariant.LIGHT
+        case _:
+            raise ThemeError(f"{source}: variant must be dark or light")
+
+
 def parse_theme(raw: object, *, source: str) -> Theme:  # object: TOML boundary
     """Parse a complete theme table. `source` is used in error messages."""
     table = _require_table(raw, source)
@@ -117,7 +128,18 @@ def parse_theme(raw: object, *, source: str) -> Theme:  # object: TOML boundary
             character = name
         case _:
             raise ThemeError(f"{source}: character is required for character themes and forbidden for main")
-    allowed_meta = {"id", "display_name", "kind", "introduced_in", "character", "aliases"}
+    allowed_meta = {
+        "id",
+        "display_name",
+        "kind",
+        "introduced_in",
+        "character",
+        "aliases",
+        "name",
+        "variant",
+        "family",
+        "stage",
+    }
     extra_meta = sorted(set(meta_table) - allowed_meta)
     if extra_meta:
         raise ThemeError(f"{source}: unknown meta keys: {', '.join(extra_meta)}")
@@ -131,6 +153,13 @@ def parse_theme(raw: object, *, source: str) -> Theme:  # object: TOML boundary
         ),
         character=character,
         aliases=_require_str_list(meta_table.get("aliases"), f"{source}.meta.aliases"),
+        name=_require_str(meta_table.get("name"), f"{source}.meta.name"),
+        variant=_parse_variant(
+            _require_str(meta_table.get("variant"), f"{source}.meta.variant"),
+            source,
+        ),
+        family=_require_str(meta_table.get("family"), f"{source}.meta.family"),
+        stage=_require_str(meta_table.get("stage"), f"{source}.meta.stage"),
     )
     ui = UiColors(**_hex_fields(_require_table(table.get("ui"), f"{source}.ui"), UI_COLOR_FIELDS, f"{source}.ui"))
     semantic = SemanticColors(
