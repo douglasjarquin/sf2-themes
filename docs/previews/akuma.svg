@@ -1,26 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="176" viewBox="0 0 320 176">
-<rect width="320" height="176" fill="#0c0a12"/>
-<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#fff4d6">Street Fighter II - Akuma</text>
-<rect x="16" y="36" width="48" height="40" fill="#0c0a12"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">background</text>
-<rect x="68" y="36" width="48" height="40" fill="#fff4d6"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">foreground</text>
-<rect x="120" y="36" width="48" height="40" fill="#e04020"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">accent</text>
-<rect x="172" y="36" width="48" height="40" fill="#173e43"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">active row</text>
-<rect x="224" y="36" width="48" height="40" fill="#3f2f19"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">navigate</text>
-<rect x="276" y="36" width="48" height="40" fill="#f2b134"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">selection</text>
-<rect x="16" y="92" width="32" height="32" fill="#0c0a12"/>
-<rect x="52" y="92" width="32" height="32" fill="#e8565f"/>
-<rect x="88" y="92" width="32" height="32" fill="#6ecb78"/>
-<rect x="124" y="92" width="32" height="32" fill="#f2b134"/>
-<rect x="160" y="92" width="32" height="32" fill="#4aa5ff"/>
-<rect x="196" y="92" width="32" height="32" fill="#c783d9"/>
-<rect x="232" y="92" width="32" height="32" fill="#35c4c2"/>
-<rect x="268" y="92" width="32" height="32" fill="#e2d8be"/>
-<rect x="16" y="128" width="32" height="32" fill="#68635c"/>
-<rect x="52" y="128" width="32" height="32" fill="#ec747c"/>
-<rect x="88" y="128" width="32" height="32" fill="#88d490"/>
-<rect x="124" y="128" width="32" height="32" fill="#f4bf59"/>
-<rect x="160" y="128" width="32" height="32" fill="#6bb5ff"/>
-<rect x="196" y="128" width="32" height="32" fill="#d199e0"/>
-<rect x="232" y="128" width="32" height="32" fill="#59cfcd"/>
-<rect x="268" y="128" width="32" height="32" fill="#fffaf0"/>
+<rect width="320" height="176" fill="#1c1515"/>
+<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#dbcaca">Street Fighter II - Akuma</text>
+<rect x="16" y="36" width="48" height="40" fill="#1c1515"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">background</text>
+<rect x="68" y="36" width="48" height="40" fill="#dbcaca"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">foreground</text>
+<rect x="120" y="36" width="48" height="40" fill="#dc6560"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">accent</text>
+<rect x="172" y="36" width="48" height="40" fill="#522d2b"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">active row</text>
+<rect x="224" y="36" width="48" height="40" fill="#382c2d"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">navigate</text>
+<rect x="276" y="36" width="48" height="40" fill="#522d2b"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#dbcaca">selection</text>
+<rect x="16" y="92" width="32" height="32" fill="#3b2a2b"/>
+<rect x="52" y="92" width="32" height="32" fill="#c66c66"/>
+<rect x="88" y="92" width="32" height="32" fill="#609261"/>
+<rect x="124" y="92" width="32" height="32" fill="#a68022"/>
+<rect x="160" y="92" width="32" height="32" fill="#6485cc"/>
+<rect x="196" y="92" width="32" height="32" fill="#a473b9"/>
+<rect x="232" y="92" width="32" height="32" fill="#0b949b"/>
+<rect x="268" y="92" width="32" height="32" fill="#c0afaf"/>
+<rect x="16" y="128" width="32" height="32" fill="#957d7e"/>
+<rect x="52" y="128" width="32" height="32" fill="#eb837b"/>
+<rect x="88" y="128" width="32" height="32" fill="#72af74"/>
+<rect x="124" y="128" width="32" height="32" fill="#c69a2e"/>
+<rect x="160" y="128" width="32" height="32" fill="#799ff3"/>
+<rect x="196" y="128" width="32" height="32" fill="#c38bdd"/>
+<rect x="232" y="128" width="32" height="32" fill="#16b2b9"/>
+<rect x="268" y="128" width="32" height="32" fill="#e2d5d5"/>
 </svg>

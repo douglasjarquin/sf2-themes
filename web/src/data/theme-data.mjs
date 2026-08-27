@@ -5,23 +5,35 @@ import { parse } from "smol-toml";
 
 const UI_FIELDS = [
   "background",
+  "surface",
+  "overlay",
+  "border",
   "foreground",
-  "cursor_bg",
-  "cursor_fg",
-  "selection_bg",
-  "selection_fg",
-  "panel_bg",
-  "sidebar_bg",
-  "active_row_bg",
-  "navigate_row_bg",
-  "surface_dim",
-  "surface0",
-  "surface1",
-  "overlay0",
-  "overlay1",
-  "subtext",
+  "muted",
+  "subtle",
   "accent",
+  "accent_secondary",
+  "cursor",
+  "cursor_text",
+  "selection_background",
+  "selection_foreground",
 ];
+const WEB_ROLE_SOURCES = {
+  cursor_bg: "cursor",
+  cursor_fg: "cursor_text",
+  selection_bg: "selection_background",
+  selection_fg: "selection_foreground",
+  panel_bg: "surface",
+  sidebar_bg: "background",
+  active_row_bg: "selection_background",
+  navigate_row_bg: "overlay",
+  surface_dim: "background",
+  surface0: "surface",
+  surface1: "overlay",
+  overlay0: "border",
+  overlay1: "muted",
+  subtext: "subtle",
+};
 const SEMANTIC_FIELDS = [
   "red",
   "green",
@@ -41,7 +53,17 @@ const ANSI_FIELDS = [
   "cyan",
   "white",
 ];
-const META_FIELDS = ["id", "display_name", "kind", "introduced_in", "aliases"];
+const META_FIELDS = [
+  "id",
+  "display_name",
+  "kind",
+  "introduced_in",
+  "aliases",
+  "name",
+  "variant",
+  "family",
+  "stage",
+];
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 const DEFAULT_THEME_DIRECTORY = path.resolve(process.cwd(), "../themes");
@@ -95,7 +117,7 @@ function validateTheme(raw, source) {
       throw new Error(`${source}.meta.${field}: required`);
     }
   }
-  for (const field of META_FIELDS.slice(0, -1)) {
+  for (const field of META_FIELDS.filter((field) => field !== "aliases")) {
     requiredString(meta[field], `${source}.meta.${field}`);
   }
   if (!Array.isArray(meta.aliases) || meta.aliases.some((alias) => typeof alias !== "string")) {
@@ -113,6 +135,12 @@ function validateTheme(raw, source) {
   return theme;
 }
 
+function projectWebRoles(ui) {
+  return Object.fromEntries(
+    Object.entries(WEB_ROLE_SOURCES).map(([role, source]) => [role, ui[source]]),
+  );
+}
+
 function readTheme(filePath) {
   let source;
   try {
@@ -127,7 +155,14 @@ function readTheme(filePath) {
   } catch (error) {
     throw new Error(`${filePath}: invalid TOML`, { cause: error });
   }
-  return validateTheme(parsed, filePath);
+  const theme = validateTheme(parsed, filePath);
+  return {
+    ...theme,
+    ui: {
+      ...theme.ui,
+      ...projectWebRoles(theme.ui),
+    },
+  };
 }
 
 function mainCard(name, key, token, hex) {
