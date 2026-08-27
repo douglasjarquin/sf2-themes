@@ -265,7 +265,10 @@ export async function captureArchive(options) {
   try {
     const running = await startStaticServer();
     server = running.server;
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      args: ["--force-color-profile=srgb", "--disable-lcd-text", "--disable-font-subpixel-positioning", "--font-render-hinting=none"],
+    });
     context = await browser.newContext({ viewport: { width: VIEWPORT.width, height: VIEWPORT.height }, deviceScaleFactor: VIEWPORT.deviceScaleFactor, reducedMotion: "reduce" });
     const page = await context.newPage();
     page.on("console", (message) => {
