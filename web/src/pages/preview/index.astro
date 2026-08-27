@@ -1,0 +1,257 @@
+---
+import { readFileSync } from "node:fs";
+
+import { paletteVariants } from "../../data/theme-data.mjs";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { sitePath } from "../../lib/site-path.mjs";
+
+type PreviewImage = {
+  readonly id: string;
+  readonly image: string;
+  readonly moment: string;
+  readonly width: number;
+  readonly height: number;
+};
+
+const uiRoles = [
+  "background", "surface", "overlay", "border", "foreground", "muted", "subtle",
+  "accent", "accent_secondary", "cursor", "cursor_text", "selection_background",
+  "selection_foreground",
+] as const;
+const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
+
+function requiredString(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) throw new TypeError(`${label} must be a non-empty string`);
+  return value;
+}
+
+function requiredDimension(value: unknown, label: string): number {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0) {
+    throw new TypeError(`${label} must be a positive integer`);
+  }
+  return value;
+}
+
+const parsedManifest: unknown = JSON.parse(
+  readFileSync(new URL("../../../public/screenshots/manifest.json", import.meta.url), "utf8"),
+);
+if (typeof parsedManifest !== "object" || parsedManifest === null || Array.isArray(parsedManifest)) {
+  throw new TypeError("Screenshot manifest must be an object");
+}
+const parsedEntries: unknown = Reflect.get(parsedManifest, "entries");
+if (!Array.isArray(parsedEntries) || parsedEntries.length !== paletteVariants.length) {
+  throw new TypeError(`Screenshot manifest must contain ${paletteVariants.length} entries`);
+}
+const previewImages = new Map<string, PreviewImage>();
+for (const [index, entry] of parsedEntries.entries()) {
+  if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+    throw new TypeError(`Screenshot manifest entry ${index} is invalid`);
+  }
+  const id = requiredString(Reflect.get(entry, "id"), `Screenshot manifest entry ${index} id`);
+  const image = requiredString(Reflect.get(entry, "image"), `Screenshot manifest entry ${index} image`);
+  const previewImage = {
+    id,
+    image,
+    moment: requiredString(Reflect.get(entry, "moment"), `Screenshot manifest entry ${index} moment`),
+    width: requiredDimension(Reflect.get(entry, "width"), `Screenshot manifest entry ${index} width`),
+    height: requiredDimension(Reflect.get(entry, "height"), `Screenshot manifest entry ${index} height`),
+  };
+  const variant = paletteVariants[index];
+  if (variant?.id !== id || image !== `game/${id}.png`) {
+    throw new TypeError(`Screenshot manifest is missing canonical theme ${variant?.id ?? index}`);
+  }
+  previewImages.set(id, previewImage);
+}
+
+const screenshotBase = sitePath("screenshots");
+---
+
+<SiteLayout title="Palette Preview" description="Canonical sf2-themes palettes shown in gameplay, code, and terminal surfaces.">
+  <section class="preview-page">
+    <header class="preview-hero site-frame">
+      <p class="preview-eyebrow">CANONICAL TOKENS / REAL SURFACES</p>
+      <h1>PALETTE PREVIEW</h1>
+      <p>
+        Thirty-six dark and light variants, each projected from its TOML source into gameplay,
+        an illustrative TypeScript object, and a real sf2-themes terminal command.
+      </p>
+    </header>
+
+    <section class="preview-list site-frame" aria-label="Palette previews">
+      {
+        paletteVariants.map((variant) => {
+          const screenshot = previewImages.get(variant.id);
+          const command = `sf2-themes show ${variant.id}`;
+          const code = [
+            `const theme = {`,
+            `  id: "${variant.id}",`,
+            `  ui: {`,
+            `    background: "${variant.tokens.ui.background}",`,
+            `    surface: "${variant.tokens.ui.surface}",`,
+            `    foreground: "${variant.tokens.ui.foreground}",`,
+            `    accent: "${variant.tokens.ui.accent}",`,
+            `  },`,
+            `  semantic: {`,
+            `    red: "${variant.tokens.semantic.red}",`,
+            `    green: "${variant.tokens.semantic.green}",`,
+            `    cyan: "${variant.tokens.semantic.cyan}",`,
+            `  },`,
+            `} as const;`,
+          ].join("\n");
+          const terminal = [
+            `$ ${command}`,
+            `theme       ${variant.id}`,
+            `background  ${variant.tokens.ui.background}`,
+            `foreground  ${variant.tokens.ui.foreground}`,
+            `accent      ${variant.tokens.ui.accent}`,
+            `ansi.black  ${variant.tokens.ansi.normal.black}`,
+          ].join("\n");
+          const cardStyle = [
+            `--preview-bg: ${variant.tokens.ui.background}`,
+            `--preview-surface: ${variant.tokens.ui.surface}`,
+            `--preview-overlay: ${variant.tokens.ui.overlay}`,
+            `--preview-border: ${variant.tokens.ui.border}`,
+            `--preview-fg: ${variant.tokens.ui.foreground}`,
+            `--preview-muted: ${variant.tokens.ui.muted}`,
+            `--preview-accent: ${variant.tokens.ui.accent}`,
+            `--preview-secondary: ${variant.tokens.ui.accent_secondary}`,
+          ].join("; ");
+
+          return (
+            <article class="preview-card" data-preview-card data-preview-id={variant.id} style={cardStyle}>
+              <header class="preview-card__header">
+                <div>
+                  <p>{variant.tokens.meta.variant.toUpperCase()} / {variant.tokens.meta.family.toUpperCase()}</p>
+                  <h2>{variant.name}</h2>
+                </div>
+                <code>{variant.id}</code>
+              </header>
+
+              <div class="preview-card__surface">
+                <figure class="preview-card__gameplay">
+                  <img
+                    alt={`${variant.name} gameplay capture in the ASCII fighting game cabinet`}
+                    data-preview-image
+                    height={screenshot?.height}
+                    loading="lazy"
+                    src={`${screenshotBase}${screenshot?.image}`}
+                    width={screenshot?.width}
+                  />
+                  <figcaption>GAMEPLAY / FRAME {screenshot?.moment.toUpperCase()}</figcaption>
+                </figure>
+
+                <div class="preview-card__panes">
+                  <section class="preview-pane" data-code-pane aria-labelledby={`code-${variant.id}`}>
+                    <h3 id={`code-${variant.id}`}>{variant.id}/apply.ts <span>ILLUSTRATIVE</span></h3>
+                    <pre tabindex="0"><code>{code}</code></pre>
+                  </section>
+                  <section class="preview-pane preview-pane--terminal" data-terminal-pane aria-labelledby={`terminal-${variant.id}`}>
+                    <div class="preview-pane__heading">
+                      <h3 id={`terminal-${variant.id}`}>TERMINAL / {variant.id}</h3>
+                      <button
+                        aria-label={`Copy terminal command for ${variant.name}`}
+                        data-command={command}
+                        data-command-copy
+                        type="button"
+                      >COPY COMMAND</button>
+                    </div>
+                    <pre tabindex="0"><code>{terminal}</code></pre>
+                    <p aria-live="polite" data-copy-status role="status"></p>
+                  </section>
+                </div>
+              </div>
+
+              <section class="preview-swatches" aria-label={`${variant.name} canonical UI and ANSI colors`}>
+                <div>
+                  <h3>UI TOKENS</h3>
+                  <ul class="preview-swatch-grid preview-swatch-grid--ui">
+                    {uiRoles.map((role) => (
+                      <li title={`${role}: ${variant.tokens.ui[role]}`}>
+                        <span style={`--swatch: ${variant.tokens.ui[role]}`} aria-hidden="true"></span>
+                        <code>{role}<br />{variant.tokens.ui[role]}</code>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3>ANSI 16</h3>
+                  <ul class="preview-swatch-grid preview-swatch-grid--ansi">
+                    {(["normal", "bright"] as const).flatMap((level) => ansiRoles.map((role) => (
+                      <li title={`${level}.${role}: ${variant.tokens.ansi[level][role]}`}>
+                        <span style={`--swatch: ${variant.tokens.ansi[level][role]}`} aria-hidden="true"></span>
+                        <code>{level === "bright" ? "BR " : ""}{role}<br />{variant.tokens.ansi[level][role]}</code>
+                      </li>
+                    )))}
+                  </ul>
+                </div>
+              </section>
+            </article>
+          );
+        })
+      }
+    </section>
+  </section>
+</SiteLayout>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-command-copy]")) {
+    if (!navigator.clipboard) {
+      button.hidden = true;
+      continue;
+    }
+    button.addEventListener("click", async () => {
+      const command = button.dataset.command;
+      const status = button.closest("[data-terminal-pane]")?.querySelector<HTMLElement>("[data-copy-status]");
+      if (!command || !status) return;
+      try {
+        await navigator.clipboard.writeText(command);
+        status.textContent = "COMMAND COPIED";
+      } catch (error) {
+        status.textContent = "COPY FAILED";
+        if (!(error instanceof Error)) throw error;
+      }
+    });
+  }
+</script>
+
+<style>
+  .preview-page { padding-block: var(--space-12) var(--space-20); }
+  .preview-hero { display: grid; gap: var(--space-4); padding-block-end: var(--space-8); }
+  .preview-eyebrow { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.9; }
+  .preview-hero h1 { margin: 0; color: var(--color-accent); font-family: var(--font-display); font-size: var(--text-display); line-height: 1.5; text-shadow: var(--shadow-card) var(--shadow-card) 0 var(--color-red); }
+  .preview-hero > p:last-child { max-inline-size: 66ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
+  .preview-list { display: grid; gap: var(--space-12); border-block-start: var(--border-strong) solid color-mix(in srgb, var(--color-foreground) 8%, transparent); padding-block-start: var(--space-8); }
+  .preview-card { min-inline-size: 0; overflow: hidden; border: var(--border-strong) solid var(--preview-border); background: var(--preview-bg); box-shadow: var(--shadow-card) var(--shadow-card) 0 color-mix(in srgb, var(--color-background) 70%, black); color: var(--preview-fg); content-visibility: auto; contain-intrinsic-size: auto 1160px; }
+  .preview-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-5); border-block-end: 1px solid var(--preview-border); }
+  .preview-card__header div { display: grid; gap: var(--space-2); }
+  .preview-card__header p, .preview-card__header h2 { margin: 0; }
+  .preview-card__header p { color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; }
+  .preview-card__header h2 { color: var(--preview-accent); font-family: var(--font-display); font-size: clamp(var(--text-body-lg), 3vw, var(--text-display)); line-height: 1.5; }
+  .preview-card__header > code { flex: none; padding: var(--space-1) var(--space-2); border: 1px solid var(--preview-border); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-card__surface { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: var(--space-5); padding: var(--space-5); background: var(--preview-surface); }
+  .preview-card__gameplay { min-inline-size: 0; margin: 0; }
+  .preview-card__gameplay img { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 16 / 9; border: 1px solid var(--preview-border); object-fit: cover; }
+  .preview-card__gameplay figcaption { margin-block-start: var(--space-2); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .08em; }
+  .preview-card__panes { display: grid; min-inline-size: 0; gap: var(--space-3); }
+  .preview-pane { min-inline-size: 0; overflow: hidden; border: 1px solid var(--preview-border); background: var(--preview-bg); }
+  .preview-pane h3 { margin: 0; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .06em; }
+  .preview-pane h3 span { color: var(--preview-secondary); }
+  .preview-pane > h3, .preview-pane__heading { padding: var(--space-2) var(--space-3); border-block-end: 1px solid var(--preview-border); }
+  .preview-pane__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .preview-pane button { flex: none; padding: var(--space-1) var(--space-2); border: 1px solid var(--preview-accent); background: transparent; color: var(--preview-accent); font-family: var(--font-mono); font-size: var(--text-overline); cursor: pointer; }
+  .preview-pane button:hover { background: var(--preview-accent); color: var(--preview-bg); }
+  .preview-pane pre { max-inline-size: 100%; margin: 0; padding: var(--space-3); overflow-wrap: anywhere; color: var(--preview-fg); font-family: var(--font-mono); font-size: var(--text-caption); line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+  .preview-pane--terminal { background: var(--preview-overlay); }
+  .preview-pane--terminal pre { color: var(--preview-accent); }
+  .preview-pane [data-copy-status] { min-block-size: 1.5em; margin: 0; padding-inline: var(--space-3); color: var(--preview-secondary); font-family: var(--font-mono); font-size: var(--text-overline); }
+  .preview-swatches { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--space-5); padding: var(--space-5); border-block-start: 1px solid var(--preview-border); }
+  .preview-swatches > div { min-inline-size: 0; }
+  .preview-swatches h3 { margin: 0 0 var(--space-3); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .12em; }
+  .preview-swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+  .preview-swatch-grid--ui { grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); }
+  .preview-swatch-grid li { min-inline-size: 0; }
+  .preview-swatch-grid li > span { display: block; block-size: var(--space-6); border: 1px solid var(--preview-border); background: var(--swatch); }
+  .preview-swatch-grid code { display: block; margin-block-start: var(--space-1); overflow-wrap: anywhere; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); line-height: 1.5; }
+  @media (max-width: 720px) { .preview-card__surface, .preview-swatches { grid-template-columns: 1fr; } }
+  @media (max-width: 620px) { .preview-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .preview-list { gap: var(--space-8); padding-block-start: var(--space-6); } .preview-card__header, .preview-card__surface, .preview-swatches { padding: var(--space-4); } .preview-card__header { align-items: start; } .preview-card__header > code { max-inline-size: 44%; overflow-wrap: anywhere; } .preview-pane__heading { align-items: start; flex-direction: column; } .preview-swatch-grid--ui { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-swatch-grid--ansi { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+</style>
