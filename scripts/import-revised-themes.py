@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import hashlib
 import os
 import shutil
@@ -23,8 +24,9 @@ import sys
 import tempfile
 import tomllib
 from dataclasses import dataclass
+from enum import StrEnum, unique
 from pathlib import Path
-from typing import Final
+from typing import Final, assert_never
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -36,6 +38,15 @@ from sf2_theme.validation import EXPECTED_DARK_IDS  # noqa: E402
 EXPECTED_INVENTORY_DIGEST: Final = "0d562e06f71b335bab44112d8dd7f7f5f9071547bb1675505467211ed1af64cf"
 DESIGNER_META_FIELDS: Final = frozenset({"id", "name", "variant", "family", "stage"})
 OPERATIONAL_META_FIELDS: Final = ("display_name", "kind", "introduced_in", "character", "aliases")
+AT_FDCWD: Final = -100
+RENAME_EXCHANGE: Final = 2
+RENAME_SWAP: Final = 2
+
+
+@unique
+class AtomicExchangePlatform(StrEnum):
+    DARWIN = "darwin"
+    LINUX = "linux"
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,24 +141,34 @@ def destination_matches(destination: Path, transformed: tuple[tuple[str, str], .
     )
 
 
-def snapshot_catalog(
-    destination: Path,
-    snapshot: Path,
-    transformed: tuple[tuple[str, str], ...],
-) -> None:
-    for name, _content in transformed:
-        snapshot_path = destination_path(snapshot, name)
-        snapshot_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(destination_path(destination, name), snapshot_path)
-
-
-def restore_catalog(
-    snapshot: Path,
-    destination: Path,
-    transformed: tuple[tuple[str, str], ...],
-) -> None:
-    for name, _content in transformed:
-        os.replace(destination_path(snapshot, name), destination_path(destination, name))
+def atomic_exchange(first: Path, second: Path) -> None:
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        platform = AtomicExchangePlatform(sys.platform)
+    except ValueError:
+        raise RevisedThemeImportError(f"atomic catalog exchange is unsupported on {sys.platform}") from None
+    match platform:
+        case AtomicExchangePlatform.DARWIN:
+            exchange = libc.renamex_np
+            exchange.argtypes = (ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint)
+            exchange.restype = ctypes.c_int
+            result = exchange(os.fsencode(first), os.fsencode(second), RENAME_SWAP)
+        case AtomicExchangePlatform.LINUX:
+            exchange = libc.renameat2
+            exchange.argtypes = (
+                ctypes.c_int,
+                ctypes.c_char_p,
+                ctypes.c_int,
+                ctypes.c_char_p,
+                ctypes.c_uint,
+            )
+            exchange.restype = ctypes.c_int
+            result = exchange(AT_FDCWD, os.fsencode(first), AT_FDCWD, os.fsencode(second), RENAME_EXCHANGE)
+        case unreachable:
+            assert_never(unreachable)
+    if result != 0:
+        error_number = ctypes.get_errno()
+        raise OSError(error_number, os.strerror(error_number), str(first), str(second))
 
 
 def promote_catalog(
@@ -158,22 +179,15 @@ def promote_catalog(
 ) -> None:
     with tempfile.TemporaryDirectory(prefix=".import-revised-themes-", dir=destination.parent) as temporary:
         staging = Path(temporary) / "staged"
-        snapshot = Path(temporary) / "snapshot"
+        shutil.copytree(destination, staging, symlinks=True)
         for name, content in transformed:
             staged_path = destination_path(staging, name)
-            staged_path.parent.mkdir(parents=True, exist_ok=True)
             staged_path.write_text(content, encoding="utf-8")
         final_inventory = source_inventory(source)
         require_bound_inventory(final_inventory)
         if final_inventory != inventory:
             raise RevisedThemeImportError("source changed while import was staged")
-        snapshot_catalog(destination, snapshot, transformed)
-        try:
-            for name, _content in transformed:
-                os.replace(destination_path(staging, name), destination_path(destination, name))
-        except (OSError, KeyboardInterrupt):
-            restore_catalog(snapshot, destination, transformed)
-            raise
+        atomic_exchange(staging, destination)
 
 
 def parse_args() -> argparse.Namespace:

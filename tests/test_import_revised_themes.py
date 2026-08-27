@@ -60,7 +60,10 @@ def test_importer_fails_before_writes_when_source_file_is_missing(tmp_path: Path
     assert tuple(destination.iterdir()) == (marker,)
 
 
-def test_promotion_failure_restores_exact_pre_import_catalog(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_persistent_replacement_failure_never_exposes_mixed_catalog(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # Given: a complete source and destination catalog with an operator-owned file.
     importer = load_importer()
     source = tmp_path / "source"
@@ -81,19 +84,111 @@ def test_promotion_failure_restores_exact_pre_import_catalog(tmp_path: Path, mon
     real_replace = os.replace
     replacement_calls = 0
 
-    def fail_third_replacement(source_path: Path, destination_path: Path) -> None:
+    def fail_from_third_replacement(source_path: Path, destination_path: Path) -> None:
         nonlocal replacement_calls
         replacement_calls += 1
-        if replacement_calls == 3:
-            raise OSError("injected third replacement failure")
+        if replacement_calls >= 3:
+            raise OSError("injected persistent replacement failure")
         real_replace(source_path, destination_path)
 
-    monkeypatch.setattr(importer.os, "replace", fail_third_replacement)
+    monkeypatch.setattr(importer.os, "replace", fail_from_third_replacement)
 
-    # When: the real promotion seam is interrupted during its third replacement.
-    with pytest.raises(OSError, match="injected third replacement failure"):
+    # When: the legacy per-file replacement primitive fails persistently from call three onward.
+    try:
+        importer.promote_catalog(source, destination, inventory, tuple(transformed))
+    except OSError as error:
+        assert "injected persistent replacement failure" in str(error)
+
+    # Then: the live catalog is one complete generation, never a mixture.
+    after = {
+        **before,
+        **{
+            importer.destination_path(destination, name).relative_to(destination): content.encode()
+            for name, content in transformed
+        },
+    }
+    assert replacement_calls == 0
+    assert catalog_snapshot(destination) == after
+
+
+def test_persistent_atomic_exchange_failure_leaves_pre_import_catalog(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given: a complete destination and an atomic exchange seam that always fails.
+    importer = load_importer()
+    source = tmp_path / "source"
+    destination = tmp_path / "themes"
+    source.mkdir()
+    destination.mkdir()
+    (destination / "AGENTS.md").write_text("operator owned\n", encoding="utf-8")
+    transformed: list[tuple[str, str]] = []
+    for name in importer.expected_names():
+        (source / name).write_text(f"source {name}\n", encoding="utf-8")
+        current_path = importer.destination_path(destination, name)
+        current_path.parent.mkdir(parents=True, exist_ok=True)
+        current_path.write_text(f"old {name}\n", encoding="utf-8")
+        transformed.append((name, f"new {name}\n"))
+    inventory = importer.source_inventory(source)
+    before = catalog_snapshot(destination)
+    monkeypatch.setattr(importer, "require_bound_inventory", lambda _inventory: None)
+    exchange_calls = 0
+
+    def fail_atomic_exchange(_first: Path, _second: Path) -> None:
+        nonlocal exchange_calls
+        exchange_calls += 1
+        raise OSError("injected persistent atomic exchange failure")
+
+    monkeypatch.setattr(importer, "atomic_exchange", fail_atomic_exchange)
+
+    # When: catalog promotion reaches the persistently failing atomic boundary.
+    with pytest.raises(OSError, match="injected persistent atomic exchange failure"):
         importer.promote_catalog(source, destination, inventory, tuple(transformed))
 
-    # Then: every destination byte is exactly the pre-import catalog, never a mixture.
-    assert replacement_calls >= 3
+    # Then: there was one indivisible attempt and the complete old catalog remains live.
+    assert exchange_calls == 1
     assert catalog_snapshot(destination) == before
+
+
+def test_interruption_after_atomic_exchange_leaves_complete_new_catalog(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Given: a complete source and destination plus an interruption immediately after exchange.
+    importer = load_importer()
+    source = tmp_path / "source"
+    destination = tmp_path / "themes"
+    source.mkdir()
+    destination.mkdir()
+    (destination / "AGENTS.md").write_text("operator owned\n", encoding="utf-8")
+    transformed: list[tuple[str, str]] = []
+    for name in importer.expected_names():
+        (source / name).write_text(f"source {name}\n", encoding="utf-8")
+        current_path = importer.destination_path(destination, name)
+        current_path.parent.mkdir(parents=True, exist_ok=True)
+        current_path.write_text(f"old {name}\n", encoding="utf-8")
+        transformed.append((name, f"new {name}\n"))
+    inventory = importer.source_inventory(source)
+    before = catalog_snapshot(destination)
+    after = {
+        **before,
+        **{
+            importer.destination_path(destination, name).relative_to(destination): content.encode()
+            for name, content in transformed
+        },
+    }
+    monkeypatch.setattr(importer, "require_bound_inventory", lambda _inventory: None)
+    real_atomic_exchange = importer.atomic_exchange
+
+    def interrupt_after_exchange(first: Path, second: Path) -> None:
+        real_atomic_exchange(first, second)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(importer, "atomic_exchange", interrupt_after_exchange)
+
+    # When: interruption lands immediately after the one catalog-level switch.
+    with pytest.raises(KeyboardInterrupt):
+        importer.promote_catalog(source, destination, inventory, tuple(transformed))
+
+    # Then: operator data and all 36 revised files form the complete new generation.
+    assert catalog_snapshot(destination) == after
