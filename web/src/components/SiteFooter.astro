@@ -1,3 +1,15 @@
+---
+import { sitePath } from "../lib/site-path.mjs";
+
+const pages = [
+  { label: "Home", href: sitePath() },
+  { label: "Themes", href: sitePath("themes") },
+  { label: "Palette", href: sitePath("palette") },
+  { label: "Screenshots", href: sitePath("screenshots") },
+  { label: "Install", href: sitePath("install") },
+];
+---
+
 <footer class="site-footer">
   <div class="site-frame site-footer__inner">
     <div class="site-footer__identity">
@@ -7,6 +19,13 @@
         Capcom. Street Fighter is a trademark of Capcom Co., Ltd.
       </p>
     </div>
+    <nav class="site-footer__links" aria-label="Site">
+      {
+        pages.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))
+      }
+    </nav>
     <nav class="site-footer__links" aria-label="Project links">
       <a
         href="https://github.com/douglasjarquin/sf2-themes"

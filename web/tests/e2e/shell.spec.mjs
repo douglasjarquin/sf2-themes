@@ -18,12 +18,13 @@ for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     await page.goto("./");
 
-    // When: keyboard focus enters the shared navigation.
+    // When: keyboard focus enters the page.
     await page.keyboard.press("Tab");
 
-    // Then: focus is visible and the document does not overflow horizontally.
+    // Then: the skip link is focused first, then the document does not overflow horizontally.
     const focusedLink = page.locator(":focus-visible");
-    await expect(focusedLink).toHaveAttribute("href", "/sf2-themes/");
+    await expect(focusedLink).toHaveAttribute("href", "#main-content");
+    await expect(focusedLink).toHaveText("Skip to main content");
     await expect
       .poll(() => focusedLink.evaluate((element) => getComputedStyle(element).outlineStyle))
       .not.toBe("none");

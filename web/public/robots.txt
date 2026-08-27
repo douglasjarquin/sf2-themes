@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /sf2-themes/
+
+Sitemap: https://douglasjarquin.github.io/sf2-themes/sitemap.xml
