@@ -37,7 +37,7 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - From the repository root, use the `mise run web:*` tasks so Node 24 and Aube 2.1 come from the pinned toolchain.
 - From `web/`, use `aube run <script>` or use `aube -C web ...` from the root for focused package scripts.
 - Treat `aubr` as package-script composition used inside `package.json`, not as the repository-level entry point.
-- Install from `package-lock.json` with `mise run web:install` locally or `aube -C web ci` in clean automation, and avoid npm or npx command paths.
+- Install from `package-lock.json` with `mise run web:install` locally or `npm --prefix web ci` in CI, matching the lockfile-backed path both `verify.yml` and `deploy.yml` run; Aube's virtual-store install fails on a fresh CI runner.
 - Keep `astro check`, unit tests, browser tests, and the production build as separate evidence because none substitutes for another.
 
 ## TEST SURFACES AND OWNED SERVERS
@@ -57,7 +57,7 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - Node manifest tests, Playwright route tests, and the verifier are distinct consumers, so preserve catalog order, image metadata, intrinsic dimensions, fingerprints, hashes, and fighter coverage together.
 - A custom capture output must be a fresh dedicated directory, while canonical generation stages, verifies, and atomically promotes the complete archive.
 - Screenshot-sensitive CI verifies the committed archive, captures a temporary smoke theme, regenerates the canonical archive, verifies it again, and requires a clean archive diff.
-- The normal web CI path installs with Aube, installs Chromium, runs check, Node tests, Playwright tests, and build, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
+- The normal web CI path installs with npm, installs Chromium, builds before Node and Playwright tests (capture tests need `web/dist`), then runs check, Node tests, and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
 
 ## GENERATED OUTPUTS
 
