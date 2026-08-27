@@ -1,4 +1,4 @@
-name: ci
+name: Verify changes
 
 on:
   push:
@@ -132,14 +132,14 @@ jobs:
         run: aube -C web ci
       - name: Install Chromium
         run: aube -C web exec playwright install --with-deps chromium
+      - name: Build
+        run: aube -C web run build
       - name: Check
         run: aube -C web run check
       - name: Unit tests
         run: aube -C web run test:unit
       - name: End-to-end tests
         run: aube -C web run test:e2e
-      - name: Build
-        run: aube -C web run build
       - name: Verify screenshot archive
         if: needs.changes.outputs.web_screenshots == 'true'
         run: aube -C web run screenshots:verify
@@ -166,7 +166,7 @@ jobs:
             web/test-results
             web/playwright-report
 
-  ci:
+  gate:
     if: always()
     needs: [changes, actionlint, test, web]
     runs-on: ubuntu-latest
