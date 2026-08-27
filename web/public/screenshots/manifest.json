@@ -10,16 +10,16 @@
     "columns": 96,
     "rows": 40
   },
-  "sourceFingerprint": "0a84e29ff5774ba9b9278b25b0ff9f7ba2754d0d03478739f7cf1b668f67f9c7",
+  "sourceFingerprint": "41e30ed225a141a2597ed875bb6d08965d0d3b3c99a9c84f95a0a5051d48efc2",
   "recipeFingerprint": "b6e743e98de95994b48e4619aefedee56b2111e7fd870a0ca177f461bbdf4cf2",
-  "paletteHash": "bd0749e2d3c34e83008a4dade4646b4b8aabf10a334bd40f34ac7b7923c8f4c9",
+  "paletteHash": "3aeb1c7bb1c9d0d427e1ae7b24e7917381d5b8d030644c21ab3766207322863c",
   "seed": "sf2-themes-screenshots-v1",
   "entries": [
     {
       "id": "main",
       "name": "Street Fighter II - Main",
       "image": "game/main.png",
-      "sha256": "93790ec83cd99571580db64b5d2b86e91955a09b56e382ccd030962ef0923c06",
+      "sha256": "0b536e62935e4160c0fd834fa1fa6993c963c6adc9309a309b7731f86ad28da0",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -34,13 +34,13 @@
       "stage": "dojo",
       "p1": "ryu",
       "p2": "vega",
-      "occupancy": 0.787735
+      "occupancy": 0.787888
     },
     {
       "id": "main-light",
       "name": "Street Fighter II - Main Light",
       "image": "game/main-light.png",
-      "sha256": "a677cd9af9bdbfc6e8c06d531511d862521c251bee7f114026350e8ba7d4ef24",
+      "sha256": "3712314589f6ec503b4b54f299db145d8c18ce4e8a73b4be818a3415a57bded3",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -55,13 +55,13 @@
       "stage": "dojo",
       "p1": "ken",
       "p2": "sagat",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "akuma-light",
       "name": "Street Fighter II - Akuma Light",
       "image": "game/akuma-light.png",
-      "sha256": "fcd1cd8e769ceb1ae32d90920ca124cefdc3992a455614c43d24b9ec3f4cb2b7",
+      "sha256": "031838e2cdcef12ca54cf477b24caba14cb902416c263d9ff9d3161379b05d1f",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -76,13 +76,13 @@
       "stage": "dojo",
       "p1": "chun-li",
       "p2": "m-bison",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "akuma",
       "name": "Street Fighter II - Akuma",
       "image": "game/akuma.png",
-      "sha256": "35ad02d0299c714a14210553509b0720a361a79f57d6f68ce3f569a2974838dc",
+      "sha256": "6a880fb39d7c2e6401385e33be5a4d4bcfa84f64727adf1aeb1bb58eaf829ddd",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -97,13 +97,13 @@
       "stage": "dojo",
       "p1": "e-honda",
       "p2": "cammy",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "balrog-light",
       "name": "Street Fighter II - Balrog Light",
       "image": "game/balrog-light.png",
-      "sha256": "b8ecdf8f7237e4e4fa114ffeda3e369c2f0f33dc1ee2613870c75db93a47cad6",
+      "sha256": "3b2bf18a343b61f84d7a1f010100bc29945545b0aec96771fe59b499771cdca0",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -118,13 +118,13 @@
       "stage": "dojo",
       "p1": "blanka",
       "p2": "t-hawk",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "balrog",
       "name": "Street Fighter II - Balrog",
       "image": "game/balrog.png",
-      "sha256": "a53029771cf1821dfce28ecbec6ffee9b3039ed881eee2c6d38a73f80911a761",
+      "sha256": "43524a611274b8b188317b5fb7b4556815748a1e8303b97e1d81e1e15587a151",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -139,13 +139,13 @@
       "stage": "dojo",
       "p1": "zangief",
       "p2": "fei-long",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "blanka-light",
       "name": "Street Fighter II - Blanka Light",
       "image": "game/blanka-light.png",
-      "sha256": "b2404c1c3ba105fb1509b19a5aa4e61739df4a6d8d181255a33d33237243b984",
+      "sha256": "156a9896c161a1024b491a37b1d10552910955421efe91c946f8ac211fc248fb",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -160,13 +160,13 @@
       "stage": "dojo",
       "p1": "guile",
       "p2": "dee-jay",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "blanka",
       "name": "Street Fighter II - Blanka",
       "image": "game/blanka.png",
-      "sha256": "53dffe8542d3959808e4e207a8a09193c79bd423740f73e705d904e979dddd9c",
+      "sha256": "a0227225a5898874971cfff66452f5d5838e9890dbab0b581e83022639174ecf",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -181,13 +181,13 @@
       "stage": "dojo",
       "p1": "dhalsim",
       "p2": "akuma",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "cammy-light",
       "name": "Street Fighter II - Cammy Light",
       "image": "game/cammy-light.png",
-      "sha256": "387f48357b03d8eb02fde392a50f43e241e8c369ddcc9ffa1c13cd88b7c5ddca",
+      "sha256": "6776ac15d9fc9b7036c71e88a28b2257801d4af91dbb1101ca79f2db22d5ea44",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -202,13 +202,13 @@
       "stage": "dojo",
       "p1": "balrog",
       "p2": "ryu",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "cammy",
       "name": "Street Fighter II - Cammy",
       "image": "game/cammy.png",
-      "sha256": "3284982d255ad429db093ba2776ff05ba1e9bbcff5594ffcd72f49f9bfc19309",
+      "sha256": "5be7e7284618796bbcb851c2a51cfc4428bf6b15724d25845d12ab50dbda9cf4",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -223,13 +223,13 @@
       "stage": "dojo",
       "p1": "vega",
       "p2": "ken",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "chun-li-light",
       "name": "Street Fighter II - Chun-Li Light",
       "image": "game/chun-li-light.png",
-      "sha256": "a9687c9766e021cc4838cd04a757cab5bb71202f987d9c7cd8ff114478711322",
+      "sha256": "29c1aedd7949d8652ef9930345dcf43de2f97a9e7f0a7c50b29c4a6dc57deeb5",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -244,13 +244,13 @@
       "stage": "dojo",
       "p1": "sagat",
       "p2": "chun-li",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "chun-li",
       "name": "Street Fighter II - Chun-Li",
       "image": "game/chun-li.png",
-      "sha256": "a1caf4bcbe4044ccbb9e2eb793333d7ac2a0f1d8235e35b50d352d25da2069e1",
+      "sha256": "351d95c2f0e46e38dcea0517d64f34e0b9983784669bf97282ab22259c7d2678",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -265,13 +265,13 @@
       "stage": "dojo",
       "p1": "m-bison",
       "p2": "e-honda",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "dee-jay-light",
       "name": "Street Fighter II - Dee Jay Light",
       "image": "game/dee-jay-light.png",
-      "sha256": "e1997d69fa00c69aeaf1d7b0750deb757dd49f81a2d3336731b35ffb2c880a5b",
+      "sha256": "cdeaf7258bf61223c77169e4685e917f573ae4b45c5ff283c3cffc2a368cc153",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -286,13 +286,13 @@
       "stage": "dojo",
       "p1": "cammy",
       "p2": "blanka",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "dee-jay",
       "name": "Street Fighter II - Dee Jay",
       "image": "game/dee-jay.png",
-      "sha256": "fd74d0f7ae68a6e2f6f58d5ad113dec4ff88dcc74dd1f008a1e7b74921a675b6",
+      "sha256": "259fb71c660d05f4cc1f0bdf834433cde9cbe58254b52c077672770c6b533c09",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -307,13 +307,13 @@
       "stage": "dojo",
       "p1": "t-hawk",
       "p2": "zangief",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "dhalsim-light",
       "name": "Street Fighter II - Dhalsim Light",
       "image": "game/dhalsim-light.png",
-      "sha256": "05886a0eb2d63a766181cfbd563aecc559ee1450dc3eba33a9ff98806b101e2c",
+      "sha256": "72ec2bd0cf35eb76fd53711ad7b2efbe688a291516eb42328368a01f55dab02f",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -328,13 +328,13 @@
       "stage": "dojo",
       "p1": "fei-long",
       "p2": "guile",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "dhalsim",
       "name": "Street Fighter II - Dhalsim",
       "image": "game/dhalsim.png",
-      "sha256": "6d310f2d9bc4109c48a4f03f134475dd8ec4fbb70202901576b62596963c7824",
+      "sha256": "171d751d6533f85446318e6b0472344a9c3e5f176fbfdb4a8560996f5d658b1a",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -349,13 +349,13 @@
       "stage": "dojo",
       "p1": "dee-jay",
       "p2": "dhalsim",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "e-honda-light",
       "name": "Street Fighter II - E. Honda Light",
       "image": "game/e-honda-light.png",
-      "sha256": "833116c44a7b8e9c7918708c625a7dae7c0ee8afc2ca6f5b3c9fd2803cd5079a",
+      "sha256": "a12a1b3d1d4a1449c02db162e37baf85e178f55fc03e15cee5cfbdd68a51b131",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -370,13 +370,13 @@
       "stage": "dojo",
       "p1": "akuma",
       "p2": "balrog",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "e-honda",
       "name": "Street Fighter II - E. Honda",
       "image": "game/e-honda.png",
-      "sha256": "ed855cc5e0317f1d285e89c5d69fb97b7ed47b91c97c9e47aa123d3b6a7562b0",
+      "sha256": "9cf3ced9ab2793422382e59ce9bb592df77b7744536e76150b46b4131ae5c49f",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -391,13 +391,13 @@
       "stage": "dojo",
       "p1": "ryu",
       "p2": "vega",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "fei-long-light",
       "name": "Street Fighter II - Fei Long Light",
       "image": "game/fei-long-light.png",
-      "sha256": "2bab807dbb5883a5595b90f807e1a744706902c53c738b8079a7a761ef84fb79",
+      "sha256": "6a085e6c40fa39658741462d2d42158d74e98abf1f44e5baf8ba13eaa0365cb6",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -412,13 +412,13 @@
       "stage": "dojo",
       "p1": "ken",
       "p2": "sagat",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "fei-long",
       "name": "Street Fighter II - Fei Long",
       "image": "game/fei-long.png",
-      "sha256": "8b4f1fedf91ae6dfab37dd3dabd02bf180231d262681eff8fd2da07263c3b2e8",
+      "sha256": "fef1f00433f8fc95d560feb871f8f97dfe2d5c48eb5864219b5ffe4c0d2efe30",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -433,13 +433,13 @@
       "stage": "dojo",
       "p1": "chun-li",
       "p2": "m-bison",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "guile-light",
       "name": "Street Fighter II - Guile Light",
       "image": "game/guile-light.png",
-      "sha256": "20f41173d78fc3569b3fe1a500ea429998a3cb24345f2e4c9836cf987571348b",
+      "sha256": "2d2cc5393628c2af5246fc3ce954947a5abc882ff50f67de83844a93dd1341ec",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -454,13 +454,13 @@
       "stage": "dojo",
       "p1": "e-honda",
       "p2": "cammy",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "guile",
       "name": "Street Fighter II - Guile",
       "image": "game/guile.png",
-      "sha256": "a7c473eb83ba973f99cc65cd9114034aa32806aa9cf9b88715315db533673be1",
+      "sha256": "2f96d4bda462dd5e3ac723ed7666d81fdfda9f79f56856b9fa26302ea57d8db3",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -475,13 +475,13 @@
       "stage": "dojo",
       "p1": "blanka",
       "p2": "t-hawk",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "ken-light",
       "name": "Street Fighter II - Ken Light",
       "image": "game/ken-light.png",
-      "sha256": "09406446d6a23be6d8f2fba8fcf7f496f76abfb0032803f64783c60a8b85b803",
+      "sha256": "e01b91d77138708ed0eae77e2b247b12a10084cfbe59d32ce6584aa56e55d808",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -496,13 +496,13 @@
       "stage": "dojo",
       "p1": "zangief",
       "p2": "fei-long",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "ken",
       "name": "Street Fighter II - Ken",
       "image": "game/ken.png",
-      "sha256": "daaa8a05e25c756461e1d18c799bc6dc8b3489ed1e9a58947e71451581656d13",
+      "sha256": "baef718bccb586803ca3c6f3ca05904caeadd64e54200aeb2f9e7b4c7b998bf2",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -517,13 +517,13 @@
       "stage": "dojo",
       "p1": "guile",
       "p2": "dee-jay",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "m-bison-light",
       "name": "Street Fighter II - M. Bison Light",
       "image": "game/m-bison-light.png",
-      "sha256": "3fb1b0ee95eedce9026701d1d6eee3c9153f61d057b6b38b828a12dc0aff6c6f",
+      "sha256": "b3ea937821e22a7ac2e6f774ce0cba985d50c6122b99e8e9aa64267be22b382c",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -538,13 +538,13 @@
       "stage": "dojo",
       "p1": "dhalsim",
       "p2": "akuma",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "m-bison",
       "name": "Street Fighter II - M. Bison",
       "image": "game/m-bison.png",
-      "sha256": "b12e45ee98cb48150877ee2d480af4119c6bc1ccaa159c9b9653b7712fe566b2",
+      "sha256": "850eb7415f2aa92ca2aa52cd9f3f424d299ccfa830297b16596a736e50ea7b3a",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -559,13 +559,13 @@
       "stage": "dojo",
       "p1": "balrog",
       "p2": "ryu",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "ryu-light",
       "name": "Street Fighter II - Ryu Light",
       "image": "game/ryu-light.png",
-      "sha256": "d8902ce00e85e74c33a1ec2233a14ddc05ed49f633cc820915c973f13dbeb506",
+      "sha256": "edf63227ab934a973f0fb2427f29b942ef8fd9729303da1ee1129e2a7e22990d",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -580,13 +580,13 @@
       "stage": "dojo",
       "p1": "vega",
       "p2": "ken",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "ryu",
       "name": "Street Fighter II - Ryu",
       "image": "game/ryu.png",
-      "sha256": "ca459806e788b8d471e83d1170da7521c3ec282da28fa14667810c7b76d07bce",
+      "sha256": "0adf9e2fc00311d7ad07887d8fa8ff538c754f6c43345424f337b3d9eb83bb77",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -601,13 +601,13 @@
       "stage": "dojo",
       "p1": "sagat",
       "p2": "chun-li",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "sagat-light",
       "name": "Street Fighter II - Sagat Light",
       "image": "game/sagat-light.png",
-      "sha256": "6c9e9ebf62bdd21084b0e46818bab398e971e709193f819553523e8fa997f731",
+      "sha256": "186d8c5d9d788da6e976d6bb7616df0d41a5f0f00bdde3746a5ba38774a575a5",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -622,13 +622,13 @@
       "stage": "dojo",
       "p1": "m-bison",
       "p2": "e-honda",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "sagat",
       "name": "Street Fighter II - Sagat",
       "image": "game/sagat.png",
-      "sha256": "d97b5fc4d50861e63380468c3e124417c3fa88694d16d9c26bf733876ec30eb3",
+      "sha256": "cdf8ac57879de207038fce72c890ed6ce47a2b3f46e91dd3b7aa2f74a8a2ba8d",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -643,13 +643,13 @@
       "stage": "dojo",
       "p1": "cammy",
       "p2": "blanka",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "t-hawk-light",
       "name": "Street Fighter II - T. Hawk Light",
       "image": "game/t-hawk-light.png",
-      "sha256": "bb40ca779f7a00f625f2df4535cb602521c44d6fddfe730e93eedc9a1a8c82aa",
+      "sha256": "afca2a097d2df4d085e6da4bd488bd6bd3779305c5ab19e1e66ebe5f4cb10c61",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -664,13 +664,13 @@
       "stage": "dojo",
       "p1": "t-hawk",
       "p2": "zangief",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "t-hawk",
       "name": "Street Fighter II - T. Hawk",
       "image": "game/t-hawk.png",
-      "sha256": "040288f8be1e983746e63812975a8c7f9958c728b24f66702145389932462030",
+      "sha256": "68747ba10e1b4944003059f1bb26a2d68402b48d8f2a19999389a94bf9b13371",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -685,13 +685,13 @@
       "stage": "dojo",
       "p1": "fei-long",
       "p2": "guile",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "vega-light",
       "name": "Street Fighter II - Vega Light",
       "image": "game/vega-light.png",
-      "sha256": "b750ca1dd480f0521e5d54837221fc425e53e3023c2ae30761838092f50fe8b1",
+      "sha256": "0cefa76b5745c3e752a1f1ce90c3381e55738ca8a18f219b7708278b34526a37",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -706,13 +706,13 @@
       "stage": "dojo",
       "p1": "dee-jay",
       "p2": "dhalsim",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "vega",
       "name": "Street Fighter II - Vega",
       "image": "game/vega.png",
-      "sha256": "b5c8a32723449d08504f4437128c559362a7fa4c3ff17b19591ec226e61a6fc4",
+      "sha256": "dfa7192caaf94f4c04e68f2d03a39ca5c32a9e5641273530f830143019c7061d",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -727,13 +727,13 @@
       "stage": "dojo",
       "p1": "akuma",
       "p2": "balrog",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "zangief-light",
       "name": "Street Fighter II - Zangief Light",
       "image": "game/zangief-light.png",
-      "sha256": "26b509db0cb56f63d1b566cae7899f93a95e2ec4c5ee1d127176318c445037f1",
+      "sha256": "41c4e4076446c0e21e90b8aa3c19fc282e632724152a66fde3bff32abe20f9fb",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -748,13 +748,13 @@
       "stage": "dojo",
       "p1": "ryu",
       "p2": "vega",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     },
     {
       "id": "zangief",
       "name": "Street Fighter II - Zangief",
       "image": "game/zangief.png",
-      "sha256": "078962239643f39caf7dc36c049ce38f8d19c1ed3e1bae2b9af8678c9ce8217c",
+      "sha256": "d0a067a0273c7280001cf6b2f805659a77031697abe6480093307bd9a736489d",
       "width": 1280,
       "height": 720,
       "deviceScaleFactor": 1,
@@ -769,7 +769,7 @@
       "stage": "dojo",
       "p1": "ken",
       "p2": "sagat",
-      "occupancy": 0.951108
+      "occupancy": 0.951125
     }
   ]
 }
