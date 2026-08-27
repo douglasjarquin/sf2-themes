@@ -159,18 +159,36 @@ def test_canonical_toml_round_trips_in_source_and_model_order() -> None:
     assert tuple(field.name for field in fields(UiColors)) == UI_COLOR_FIELDS
 
 
-def test_projection_has_no_duplicate_canonical_source_fields() -> None:
-    # Given: a canonical palette with no stored operational-role fields.
+@pytest.mark.parametrize(
+    ("role", "source_field"),
+    (
+        ("cursor_bg", "cursor"),
+        ("cursor_fg", "cursor_text"),
+        ("selection_bg", "selection_background"),
+        ("selection_fg", "selection_foreground"),
+        ("panel_bg", "surface"),
+        ("sidebar_bg", "background"),
+        ("active_row_bg", "selection_background"),
+        ("navigate_row_bg", "overlay"),
+        ("surface_dim", "background"),
+        ("surface0", "surface"),
+        ("surface1", "overlay"),
+        ("overlay0", "border"),
+        ("overlay1", "muted"),
+        ("subtext", "subtle"),
+    ),
+)
+def test_projection_role_tracks_its_canonical_source(role: str, source_field: str) -> None:
+    # Given: a canonical palette with one independently changed source token.
     theme = _canonical_theme()
-    revised = replace(theme.ui, surface=HexColor("#123456"))
+    revised = replace(theme.ui, **{source_field: HexColor("#123456")})
 
     # When: an owning canonical source token changes.
     projection = theme_model.project_adapter_colors(revised)
 
-    # Then: every dependent role changes from that source without a driftable copy.
-    assert "panel_bg" not in {field.name for field in fields(UiColors)}
-    assert projection.panel_bg == HexColor("#123456")
-    assert projection.surface0 == HexColor("#123456")
+    # Then: the named projection follows that source without a driftable copy.
+    assert role not in {field.name for field in fields(UiColors)}
+    assert getattr(projection, role) == HexColor("#123456")
 
 
 @pytest.mark.parametrize(
@@ -180,6 +198,7 @@ def test_projection_has_no_duplicate_canonical_source_fields() -> None:
         ("meta", "variant"),
         ("meta", "family"),
         ("meta", "stage"),
+        ("meta", "aliases"),
         *(("ui", field) for field in UI_COLOR_FIELDS),
     ),
 )
@@ -193,6 +212,33 @@ def test_parse_theme_names_each_missing_revised_field(section: str, field: str) 
     # When: the malformed source crosses the parser boundary.
     # Then: its source-qualified field name is the binary failure observable.
     with pytest.raises(ThemeError, match=rf"missing malformed\.toml\.{section}\.{field}$"):
+        parse_theme(raw, source="malformed.toml")
+
+
+@pytest.mark.parametrize("field", ("name", "family", "stage"))
+def test_parse_theme_rejects_blank_designer_metadata(field: str) -> None:
+    # Given: a complete fixture with one blank designer metadata value.
+    raw = deepcopy(_canonical_theme_raw())
+    meta = raw["meta"]
+    assert isinstance(meta, dict)
+    meta[field] = "  "
+
+    # When: the malformed source crosses the parser boundary.
+    # Then: the exact source-qualified field fails closed.
+    with pytest.raises(ThemeError, match=rf"malformed\.toml\.meta\.{field} must not be empty$"):
+        parse_theme(raw, source="malformed.toml")
+
+
+def test_parse_theme_rejects_unknown_revised_field() -> None:
+    # Given: the canonical UI table with one obsolete projection field added.
+    raw = deepcopy(_canonical_theme_raw())
+    ui = raw["ui"]
+    assert isinstance(ui, dict)
+    ui["panel_bg"] = "#123456"
+
+    # When: the expanded canonical boundary parses the source.
+    # Then: the unknown field is rejected by its source-qualified name.
+    with pytest.raises(ThemeError, match=r"unknown malformed\.toml\.ui keys: panel_bg$"):
         parse_theme(raw, source="malformed.toml")
 
 
@@ -228,6 +274,30 @@ def test_identical_bright_and_normal_is_an_error() -> None:
     theme = replace(theme, ansi_bright=replace(theme.ansi_bright, black=theme.ansi_normal.black))
     messages = [issue.message for issue in validate_theme(theme) if issue.severity is Severity.ERROR]
     assert any("ansi.bright.black matches" in message for message in messages)
+
+
+def test_semantic_slot_must_match_its_ansi_meaning() -> None:
+    # Given: a semantic error color drifted away from ANSI red.
+    theme = _canonical_theme()
+    malformed = replace(theme, semantic=replace(theme.semantic, red=HexColor("#123456")))
+
+    # When: theme validation checks stable semantic meanings.
+    messages = [issue.message for issue in validate_theme(malformed) if issue.severity is Severity.ERROR]
+
+    # Then: the mismatched named meaning fails closed.
+    assert "ryu: semantic.red must match ansi.normal.red" in messages
+
+
+def test_ansi_chromatic_slot_requires_text_contrast() -> None:
+    # Given: one ANSI chromatic slot with unreadable background contrast.
+    theme = _canonical_theme()
+    malformed = replace(theme, ansi_normal=replace(theme.ansi_normal, red=HexColor("#151b24")))
+
+    # When: ANSI validation runs.
+    messages = [issue.message for issue in validate_theme(malformed) if issue.severity is Severity.ERROR]
+
+    # Then: the exact row and slot own the contrast failure.
+    assert any(message.startswith("ryu: ansi.normal.red/background contrast") for message in messages)
 
 
 def test_duplicate_alias_is_an_error() -> None:

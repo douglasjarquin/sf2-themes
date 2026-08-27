@@ -38,6 +38,13 @@ def _require_str(raw: object, name: str) -> str:  # object: TOML boundary
             raise ThemeError(f"{name} must be a string")
 
 
+def _require_nonempty_str(raw: object, name: str) -> str:  # object: TOML boundary
+    text = _require_str(raw, name)
+    if not text.strip():
+        raise ThemeError(f"{name} must not be empty")
+    return text
+
+
 def _require_int(raw: object, name: str) -> int:  # object: TOML boundary
     match raw:
         case bool():
@@ -51,7 +58,7 @@ def _require_int(raw: object, name: str) -> int:  # object: TOML boundary
 def _require_str_list(raw: object, name: str) -> tuple[str, ...]:  # object: TOML boundary
     match raw:
         case None:
-            return ()
+            raise ThemeError(f"missing {name}")
         case list() as items:
             values: list[str] = []
             for index, item in enumerate(items):
@@ -153,13 +160,13 @@ def parse_theme(raw: object, *, source: str) -> Theme:  # object: TOML boundary
         ),
         character=character,
         aliases=_require_str_list(meta_table.get("aliases"), f"{source}.meta.aliases"),
-        name=_require_str(meta_table.get("name"), f"{source}.meta.name"),
+        name=_require_nonempty_str(meta_table.get("name"), f"{source}.meta.name"),
         variant=_parse_variant(
             _require_str(meta_table.get("variant"), f"{source}.meta.variant"),
             source,
         ),
-        family=_require_str(meta_table.get("family"), f"{source}.meta.family"),
-        stage=_require_str(meta_table.get("stage"), f"{source}.meta.stage"),
+        family=_require_nonempty_str(meta_table.get("family"), f"{source}.meta.family"),
+        stage=_require_nonempty_str(meta_table.get("stage"), f"{source}.meta.stage"),
     )
     ui = UiColors(**_hex_fields(_require_table(table.get("ui"), f"{source}.ui"), UI_COLOR_FIELDS, f"{source}.ui"))
     semantic = SemanticColors(

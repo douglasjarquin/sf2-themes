@@ -9,6 +9,7 @@ import pytest
 from sf2_theme.catalog import get_theme
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import HexColor, IntroducedIn, Theme, ThemeKind, ThemeMetadata, ThemeVariant
+from sf2_theme.validation import Severity, validate_catalog
 from test_validation import _canonical_theme
 
 CATALOG_IDS = (
@@ -67,7 +68,10 @@ def _catalog_contract() -> tuple[Theme, ...]:
             introduced_in=IntroducedIn(meta["introduced_in"]),
             character=meta.get("character"),
             aliases=tuple(meta.get("aliases", ())),
-            name=meta.get("character", meta["display_name"]),
+            name=meta.get(
+                "character",
+                meta["display_name"].removeprefix("Street Fighter II - ").removesuffix(" Light"),
+            ),
             variant=ThemeVariant.LIGHT if theme_id.endswith("-light") else ThemeVariant.DARK,
             family="sf2",
             stage="catalog contract",
@@ -113,3 +117,69 @@ def test_catalog_has_light_variant_for_every_dark_theme() -> None:
         assert light.metadata.display_name == f"{dark.metadata.display_name} Light"
         assert light.ui.background != dark.ui.background
         assert light.ui.foreground != dark.ui.foreground
+
+
+def test_catalog_contract_has_no_metadata_or_pairing_errors() -> None:
+    # Given: the complete expected 36-theme roster.
+    catalog = _catalog_contract()
+
+    # When: catalog-level metadata and pairing rules run.
+    errors = [issue.message for issue in validate_catalog(catalog) if issue.severity is Severity.ERROR]
+
+    # Then: the canonical roster satisfies the contract without exceptions.
+    assert errors == []
+
+
+def test_catalog_rejects_light_id_with_dark_variant() -> None:
+    # Given: the complete catalog with one light sibling mislabeled as dark.
+    catalog = _catalog_contract()
+    malformed = tuple(
+        replace(theme, metadata=replace(theme.metadata, variant=ThemeVariant.DARK))
+        if theme.metadata.id == "ryu-light"
+        else theme
+        for theme in catalog
+    )
+
+    # When: the catalog contract validates the paired variants.
+    issues = validate_catalog(malformed)
+
+    # Then: the responsible ID and variant mismatch fail closed.
+    assert any(
+        issue.severity is Severity.ERROR and issue.message == "ryu-light: variant must be light" for issue in issues
+    )
+
+
+def test_catalog_rejects_missing_and_unexpected_ids() -> None:
+    # Given: one expected ID replaced by an unapproved roster entry.
+    catalog = _catalog_contract()
+    malformed = tuple(
+        replace(theme, metadata=replace(theme.metadata, id="ryu-preview"))
+        if theme.metadata.id == "ryu-light"
+        else theme
+        for theme in catalog
+    )
+
+    # When: exact-roster validation runs.
+    messages = {issue.message for issue in validate_catalog(malformed) if issue.severity is Severity.ERROR}
+
+    # Then: both sides of the stale roster are named.
+    assert "missing expected theme ryu-light" in messages
+    assert "unexpected theme ryu-preview" in messages
+
+
+def test_catalog_rejects_light_metadata_drift() -> None:
+    # Given: a light sibling whose designer stage and aliases drift from its dark owner.
+    catalog = _catalog_contract()
+    malformed = tuple(
+        replace(theme, metadata=replace(theme.metadata, stage="Wrong stage", aliases=("ryu-alt",)))
+        if theme.metadata.id == "ryu-light"
+        else theme
+        for theme in catalog
+    )
+
+    # When: paired metadata validation runs.
+    messages = {issue.message for issue in validate_catalog(malformed) if issue.severity is Severity.ERROR}
+
+    # Then: each responsible pairing field is named.
+    assert "ryu-light: stage must match dark variant" in messages
+    assert "ryu-light: light variant aliases must be empty" in messages
