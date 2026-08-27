@@ -11,7 +11,7 @@ export const INDEXABLE_PATHS = Object.freeze([
   SITE_BASE,
   `${SITE_BASE}themes/`,
   `${SITE_BASE}palette/`,
-  `${SITE_BASE}screenshots/`,
+  `${SITE_BASE}preview/`,
   `${SITE_BASE}install/`,
 ]);
 

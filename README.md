@@ -37,7 +37,7 @@ mise run web:dev
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
 `mise run web:screenshots` captures all 36 palette variants at 1280 × 720 and writes the verified archive to `web/public/screenshots/game/` with a strict manifest.
 `mise run web:screenshots:verify` validates the archive without regenerating it.
-The generated archive is available at `/sf2-themes/screenshots/` and is also used by `/sf2-themes/palette/`.
+The generated archive is available at `/sf2-themes/preview/` and is also used by `/sf2-themes/palette/`.
 
 ## Arcade game
 

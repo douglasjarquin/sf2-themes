@@ -26,11 +26,11 @@ const routes = [
     heading: "PALETTE",
   },
   {
-    path: "screenshots/",
-    title: "Screenshots | sf2-themes",
-    description: "Standard captures of every playable sf2-themes cabinet fighter.",
-    canonical: `${origin}/sf2-themes/screenshots/`,
-    heading: "SCREENSHOT LIBRARY",
+    path: "preview/",
+    title: "Palette Preview | sf2-themes",
+    description: "Canonical sf2-themes palettes shown in gameplay, code, and terminal surfaces.",
+    canonical: `${origin}/sf2-themes/preview/`,
+    heading: "PALETTE PREVIEW",
   },
   {
     path: "install/",
@@ -81,7 +81,7 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", async ({ reques
     "https://douglasjarquin.github.io/sf2-themes/",
     "https://douglasjarquin.github.io/sf2-themes/themes/",
     "https://douglasjarquin.github.io/sf2-themes/palette/",
-    "https://douglasjarquin.github.io/sf2-themes/screenshots/",
+    "https://douglasjarquin.github.io/sf2-themes/preview/",
     "https://douglasjarquin.github.io/sf2-themes/install/",
   ]);
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
@@ -187,9 +187,9 @@ test("the footer exposes internal IA and the skip link reaches main content", as
     "href",
     "/sf2-themes/palette/",
   );
-  await expect(footer.getByRole("link", { name: "Screenshots", exact: true })).toHaveAttribute(
+  await expect(footer.getByRole("link", { name: "Preview", exact: true })).toHaveAttribute(
     "href",
-    "/sf2-themes/screenshots/",
+    "/sf2-themes/preview/",
   );
   await expect(footer.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
     "href",

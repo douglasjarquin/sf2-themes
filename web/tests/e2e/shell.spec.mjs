@@ -4,6 +4,7 @@ const routes = [
   { label: "HOME", pathname: "/sf2-themes/" },
   { label: "THEMES", pathname: "/sf2-themes/themes/" },
   { label: "PALETTE", pathname: "/sf2-themes/palette/" },
+  { label: "PREVIEW", pathname: "/sf2-themes/preview/" },
   { label: "INSTALL", pathname: "/sf2-themes/install/" },
 ];
 
