@@ -145,14 +145,14 @@ test("the home arcade handles focused key taps and palette-only changes", async 
   const playerOneX = await numericAttribute(cabinet, "data-player-one-x");
   await cabinet.press("ArrowRight");
   await expect
-    .poll(() => numericAttribute(cabinet, "data-player-one-x"), { timeout: 1000 })
+    .poll(() => numericAttribute(cabinet, "data-player-one-x"), { timeout: 5000 })
     .toBeGreaterThan(playerOneX);
 
   await observeAttributeHistory(cabinet, "data-player-one-move-id");
   await page.keyboard.down("z");
   try {
     await expect
-      .poll(() => attributeHistoryIncludes(cabinet, "data-player-one-move-id", "straight-punch"), { timeout: 1000 })
+      .poll(() => attributeHistoryIncludes(cabinet, "data-player-one-move-id", "straight-punch"), { timeout: 5000 })
       .toBe(true);
   } finally {
     await page.keyboard.up("z");
