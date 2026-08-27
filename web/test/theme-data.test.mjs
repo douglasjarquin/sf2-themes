@@ -246,6 +246,17 @@ test("reports a missing required field with its path", async (t) => {
   assert.throws(() => loadThemeData(paths), /main\.toml\.semantic\.red: required/);
 });
 
+test("rejects a theme without the canonical schema version", async (t) => {
+  const paths = await fixture(t);
+  const malformed = themeToml("main", { kind: "main" }).replace(
+    "schema_version = 1\n\n",
+    "",
+  );
+  await writeFile(paths.mainPath, malformed);
+
+  assert.throws(() => loadThemeData(paths), /main\.toml\.schema_version: required integer/);
+});
+
 test("reports an invalid hex color with its path", async (t) => {
   const paths = await fixture(t);
   await writeFile(paths.mainPath, themeToml("main", { kind: "main", invalidHex: true }));

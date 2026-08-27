@@ -93,6 +93,16 @@ function requiredString(value, source) {
   return value;
 }
 
+function requiredSchemaVersion(value, source) {
+  if (!Number.isInteger(value)) {
+    throw new Error(`${source}: required integer`);
+  }
+  if (value !== 1) {
+    throw new Error(`${source}: unsupported schema version ${value}`);
+  }
+  return value;
+}
+
 function validateColorTable(table, fields, source) {
   const colors = requiredTable(table, source);
   for (const field of fields) {
@@ -111,6 +121,7 @@ function validateColorTable(table, fields, source) {
 
 function validateTheme(raw, source) {
   const theme = requiredTable(raw, source);
+  requiredSchemaVersion(theme.schema_version, `${source}.schema_version`);
   const meta = requiredTable(theme.meta, `${source}.meta`);
   for (const field of META_FIELDS) {
     if (!(field in meta)) {
