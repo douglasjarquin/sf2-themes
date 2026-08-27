@@ -87,6 +87,32 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", async ({ reques
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
 });
 
+test("public preview route is separate from the preserved gameplay asset namespace", async ({
+  page,
+  request,
+}) => {
+  await page.goto("./");
+
+  const primaryPreview = page
+    .getByRole("navigation", { name: "Primary" })
+    .getByRole("link", { name: "PREVIEW", exact: true });
+  const footerPreview = page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "Preview", exact: true });
+
+  await expect(primaryPreview).toHaveCount(1);
+  await expect(primaryPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+  await expect(footerPreview).toHaveCount(1);
+  await expect(footerPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+
+  const oldPageRoute = await request.get("screenshots/");
+  const gameplayAsset = await request.get("screenshots/game/ryu.png");
+
+  expect(oldPageRoute.status()).toBe(404);
+  expect(gameplayAsset.status()).toBe(200);
+  expect(gameplayAsset.headers()["content-type"]).toMatch(/image\/png/);
+});
+
 test("every indexable route has unique metadata, a self-canonical, and JSON-LD", async ({
   page,
   request,
