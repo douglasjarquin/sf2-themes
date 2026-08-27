@@ -20,11 +20,11 @@ import tomllib
 config = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert config["ui"]["theme"] == "follow-system"
 custom = config["theme"]["custom"]
-assert custom["accent"] == "#f2b134"
-assert custom["text"] == "#fff4d6"
-assert custom["active_row_bg"] == "#124158"
-assert custom["selection_bg"] == "#423b39"
-assert custom["overlay0"] == "#7f89aa"
+assert custom["accent"] == "#ad8705"
+assert custom["text"] == "#cad1de"
+assert custom["active_row_bg"] == "#453714"
+assert custom["selection_bg"] == "#2a3243"
+assert custom["overlay0"] == "#2a3243"
 assert custom["mauve"]
 assert custom["peach"]
 assert config["theme"]["name"] == "terminal"
@@ -52,14 +52,14 @@ test -f "$test_dir/installed-codex/themes/sf2-main.tmTheme"
 test -f "$test_dir/installed-codex/themes/sf2-main-light.tmTheme"
 test -f "$test_dir/installed-codex/themes/sf2-ryu-light.tmTheme"
 grep -q 'theme = "sf2-ryu-light"' "$test_dir/installed-codex/config.toml"
-grep -q '#101a3a' "$test_dir/installed-codex/themes/sf2-main.tmTheme"
+grep -q '#131927' "$test_dir/installed-codex/themes/sf2-main.tmTheme"
 test "$("$repo_dir/sf2-themes" current codex --config-dir "$test_dir/installed-codex")" = "sf2-ryu-light"
 printf '%s\n' 'Copy-only installed Codex: PASS'
-grep -q 'background = "#101a3a"' "$test_dir/wezterm/colors/sf2-main.toml"
+grep -q 'background = "#131927"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'name = "sf2-main"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'sf2-street-fighter-2' "$test_dir/wezterm/colors/sf2-main.toml"
-grep -q 'ansi = \["#101a3a", "#e8565f", "#6ecb78", "#f2b134", "#4aa5ff"' "$test_dir/wezterm/colors/sf2-main.toml"
-grep -q 'accent = "#f2b134"' "$test_dir/installed-herdr/config.toml"
+grep -q 'ansi = \["#2b323f", "#c86e67", "#4e975b", "#a58324", "#5b89cc"' "$test_dir/wezterm/colors/sf2-main.toml"
+grep -q 'accent = "#ad8705"' "$test_dir/installed-herdr/config.toml"
 test -f "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 grep -q 'sf2-themes: sf2-main' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 printf '%s\n' 'Copy-only installed CLI: PASS'
