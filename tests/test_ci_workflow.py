@@ -1,13 +1,13 @@
 import subprocess
 from pathlib import Path
 
-import yaml
+from _workflow_yaml import load as _load_yaml
 
 WORKFLOW_DIR = Path(__file__).parents[1] / ".github" / "workflows"
 
 
 def _load(name: str) -> dict:
-    return yaml.safe_load((WORKFLOW_DIR / name).read_text())
+    return _load_yaml((WORKFLOW_DIR / name).read_text())
 
 
 def test_verify_workflow_remains_the_authoritative_pull_request_workflow() -> None:

@@ -11,7 +11,7 @@ authors = [{ name = "Douglas Jarquin" }]
 sf2-themes = "sf2_theme.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.6", "pyyaml>=6"]
+dev = ["pytest>=8", "ruff>=0.6"]
 
 [build-system]
 requires = ["setuptools>=68"]

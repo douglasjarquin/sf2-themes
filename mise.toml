@@ -6,7 +6,7 @@ aube = "2.1"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
-run = ["uv run --with pytest --with pyyaml pytest -q", "bash tests/test_cli.sh"]
+run = ["uv run --with pytest pytest -q", "bash tests/test_cli.sh"]
 
 [tasks."web:dev"]
 description = "Start the Astro development server"
