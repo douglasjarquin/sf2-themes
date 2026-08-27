@@ -128,7 +128,7 @@ test("every indexable route has unique metadata, a self-canonical, and JSON-LD",
     );
     await expect(ogImage).toHaveAttribute(
       "content",
-      "https://douglasjarquin.github.io/sf2-themes/screenshots/ryu.png",
+      "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png",
     );
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
@@ -136,11 +136,11 @@ test("every indexable route has unique metadata, a self-canonical, and JSON-LD",
     );
     await expect(twitterImage).toHaveAttribute(
       "content",
-      "https://douglasjarquin.github.io/sf2-themes/screenshots/ryu.png",
+      "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png",
     );
-    await expect(icon).toHaveAttribute("href", "/sf2-themes/screenshots/ryu.png");
+    await expect(icon).toHaveAttribute("href", "/sf2-themes/screenshots/game/ryu.png");
 
-    const imageResponse = await request.get("/sf2-themes/screenshots/ryu.png");
+    const imageResponse = await request.get("/sf2-themes/screenshots/game/ryu.png");
     expect(imageResponse.ok()).toBe(true);
     expect(imageResponse.headers()["content-type"]).toMatch(/image\/png/);
 

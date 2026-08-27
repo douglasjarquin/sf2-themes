@@ -5,7 +5,7 @@ export const SITE_BASE = `${astroConfig.base.replace(/\/+$/, "")}/`;
 export const PRODUCT_NAME = "sf2-themes";
 export const PRODUCT_DESCRIPTION =
   "Street Fighter II color themes for WezTerm, Herdr, Neovim, and Codex.";
-export const CABINET_IMAGE_PATH = `${SITE_BASE}screenshots/ryu.png`;
+export const CABINET_IMAGE_PATH = `${SITE_BASE}screenshots/game/ryu.png`;
 
 export const INDEXABLE_PATHS = Object.freeze([
   SITE_BASE,

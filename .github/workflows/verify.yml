@@ -129,31 +129,31 @@ jobs:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
       - name: Install dependencies
-        run: aube -C web ci
+        run: npm --prefix web ci
       - name: Install Chromium
-        run: aube -C web exec playwright install --with-deps chromium
+        run: npx --prefix web playwright install --with-deps chromium
       - name: Build
-        run: aube -C web run build
+        run: npm --prefix web run build
       - name: Check
-        run: aube -C web run check
+        run: npm --prefix web run check
       - name: Unit tests
-        run: aube -C web run test:unit
+        run: npm --prefix web run test:unit
       - name: End-to-end tests
-        run: aube -C web run test:e2e
+        run: npm --prefix web run test:e2e
       - name: Verify screenshot archive
         if: needs.changes.outputs.web_screenshots == 'true'
-        run: aube -C web run screenshots:verify
+        run: npm --prefix web run screenshots:verify
       - name: Run deterministic screenshot smoke
         if: needs.changes.outputs.web_screenshots == 'true'
         run: |
-          aube -C web run screenshots:game -- --theme main --seed ci-smoke --output "$RUNNER_TEMP/sf2-game-smoke"
+          node scripts/capture-game-screenshots.mjs --theme main --seed ci-smoke --output "$RUNNER_TEMP/sf2-game-smoke"
           test -f "$RUNNER_TEMP/sf2-game-smoke/manifest.json"
           test -f "$RUNNER_TEMP/sf2-game-smoke/game/main.png"
       - name: Regenerate and verify screenshot archive
         if: needs.changes.outputs.web_screenshots == 'true'
         run: |
-          aube -C web run screenshots:game
-          aube -C web run screenshots:verify
+          node scripts/capture-game-screenshots.mjs
+          npm --prefix web run screenshots:verify
           git diff --exit-code -- web/public/screenshots
       - name: Upload screenshot diagnostics
         if: always() && needs.changes.outputs.web_screenshots == 'true'
