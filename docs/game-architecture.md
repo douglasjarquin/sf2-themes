@@ -70,7 +70,7 @@ The strict verifier checks catalog order, image set, source and recipe fingerpri
 
 `/game/` renders the full cabinet with independent theme and P1/P2 fighter controls, keyboard help, and fullscreen affordance.
 
-`/screenshots/` renders the 36 generated game captures from the strict manifest.
+`/preview/` renders the 36 generated game captures from the strict manifest.
 
 `/palette/` renders every palette variant with its matching generated game capture and source swatches.
 
