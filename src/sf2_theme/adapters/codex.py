@@ -7,7 +7,7 @@ from xml.sax.saxutils import escape
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme
+from sf2_theme.model import AdapterColors, Theme, project_adapter_colors
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.toml"
@@ -18,16 +18,16 @@ SECTION = re.compile(r"^\s*\[([^]]+)\]\s*$")
 GLOBAL_COLORS = (
     ("background", "ui", "background"),
     ("foreground", "ui", "foreground"),
-    ("caret", "ui", "cursor_bg"),
-    ("invisibles", "ui", "overlay0"),
-    ("lineHighlight", "ui", "surface0"),
-    ("selection", "ui", "selection_bg"),
+    ("caret", "adapter", "cursor_bg"),
+    ("invisibles", "adapter", "overlay0"),
+    ("lineHighlight", "adapter", "surface0"),
+    ("selection", "adapter", "selection_bg"),
     ("findHighlight", "semantic", "yellow"),
     ("findHighlightForeground", "ui", "background"),
 )
 
 SYNTAX_COLORS = (
-    ("comment", "ui", "subtext"),
+    ("comment", "adapter", "subtext"),
     ("string", "semantic", "green"),
     ("constant.numeric", "semantic", "orange"),
     ("constant.language", "semantic", "orange"),
@@ -62,8 +62,8 @@ def theme_path(theme: Theme, config_dir: Path | None) -> Path:
     return themes_dir(config_dir) / f"{theme.metadata.selectable_id}{THEME_SUFFIX}"
 
 
-def _color(theme: Theme, group: str, field: str) -> str:
-    source = theme.ui if group == "ui" else theme.semantic
+def _color(theme: Theme, adapter: AdapterColors, group: str, field: str) -> str:
+    source = adapter if group == "adapter" else theme.ui if group == "ui" else theme.semantic
     return str(getattr(source, field))
 
 
@@ -72,6 +72,7 @@ def _setting(key: str, value: str) -> str:
 
 
 def render_theme(theme: Theme) -> str:
+    adapter = project_adapter_colors(theme.ui)
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
@@ -84,7 +85,7 @@ def render_theme(theme: Theme) -> str:
         "<key>settings</key>",
         "<dict>",
     ]
-    lines.extend(_setting(key, _color(theme, group, field)) for key, group, field in GLOBAL_COLORS)
+    lines.extend(_setting(key, _color(theme, adapter, group, field)) for key, group, field in GLOBAL_COLORS)
     lines.extend(("</dict>", "</dict>"))
     for scope, group, field in SYNTAX_COLORS:
         lines.extend(
@@ -93,7 +94,7 @@ def render_theme(theme: Theme) -> str:
                 _setting("scope", scope),
                 "<key>settings</key>",
                 "<dict>",
-                _setting("foreground", _color(theme, group, field)),
+                _setting("foreground", _color(theme, adapter, group, field)),
                 "</dict>",
                 "</dict>",
             )

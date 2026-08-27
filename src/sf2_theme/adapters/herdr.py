@@ -7,23 +7,23 @@ from pathlib import Path
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme
+from sf2_theme.model import Theme, project_adapter_colors
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
 ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
 HERDR_TOKENS = (
-    ("sidebar_bg", "ui", "sidebar_bg"),
-    ("panel_bg", "ui", "panel_bg"),
-    ("active_row_bg", "ui", "active_row_bg"),
-    ("selection_bg", "ui", "navigate_row_bg"),
-    ("surface0", "ui", "surface0"),
-    ("surface1", "ui", "surface1"),
-    ("surface_dim", "ui", "surface_dim"),
-    ("overlay0", "ui", "overlay0"),
-    ("overlay1", "ui", "overlay1"),
+    ("sidebar_bg", "adapter", "sidebar_bg"),
+    ("panel_bg", "adapter", "panel_bg"),
+    ("active_row_bg", "adapter", "active_row_bg"),
+    ("selection_bg", "adapter", "navigate_row_bg"),
+    ("surface0", "adapter", "surface0"),
+    ("surface1", "adapter", "surface1"),
+    ("surface_dim", "adapter", "surface_dim"),
+    ("overlay0", "adapter", "overlay0"),
+    ("overlay1", "adapter", "overlay1"),
     ("text", "ui", "foreground"),
-    ("subtext0", "ui", "subtext"),
+    ("subtext0", "adapter", "subtext"),
     ("accent", "ui", "accent"),
     ("mauve", "semantic", "magenta"),
     ("green", "semantic", "green"),
@@ -49,6 +49,7 @@ def herdr_path(config_dir: Path | None) -> Path:
 
 def render_block(theme: Theme) -> str:
     """Render a fully resolved, marked Herdr theme block."""
+    adapter = project_adapter_colors(theme.ui)
     lines = [
         MANAGED_START,
         f"# sf2-themes: {theme.metadata.selectable_id}",
@@ -58,7 +59,7 @@ def render_block(theme: Theme) -> str:
         "[theme.custom]",
     ]
     for token, group, field in HERDR_TOKENS:
-        source = theme.ui if group == "ui" else theme.semantic
+        source = adapter if group == "adapter" else theme.ui if group == "ui" else theme.semantic
         lines.append(f'{token} = "{getattr(source, field)}"')
     lines.append(MANAGED_END)
     lines.append("")
