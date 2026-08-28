@@ -106,6 +106,17 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Motion**: no decorative motion; copy controls use the shared micro transition only for feedback.
 - **Layout**: mode panels sit side by side on wide screens and stack below 720px; swatch grids reflow below 620px.
 
+### Featured Palette Preview
+
+- **Structure**: one featured `article` contains an identity header, paired syntax-highlighted code and terminal panes, and 25 individually labeled swatches grouped as six neutral, three accent, eight normal ANSI, and eight bright ANSI colors.
+- **Variants**: the server-rendered fallback is the canonical Main palette, and the browser selects one canonical `paletteVariants` entry at runtime after its serialized payload has parsed successfully.
+- **Static fallback**: JavaScript-disabled, malformed-payload, and missing-payload sessions retain the complete server-rendered Main preview instead of replacing it.
+- **Syntax**: code tokens expose semantic kinds for comments, keywords, properties, strings, numbers, punctuation, and plain text, with colors derived from the selected canonical palette.
+- **Spacing**: the primitive uses shared typography, spacing, border, radius, and shadow tokens, while canonical palette CSS custom properties supply all preview colors.
+- **Accessibility**: the preview has a descriptive article label, semantic section headings for code and terminal content, readable text labels and values for every swatch, and complete useful content before client JavaScript runs.
+- **Motion**: the preview has no decorative animation, so reduced-motion users see the same static fallback and no runtime transition is required.
+- **Layout**: code and terminal panes plus swatch ramps use two columns above 980px, one column from 761px through 980px, two compact columns from 521px through 760px, and one readable column at 520px and below without horizontal overflow.
+
 ### Palette Mode Panel
 
 - **Structure**: mode header, live code preview, truthful `sf2-themes show` terminal preview, six neutral swatches, three accent swatches, and two eight-color ANSI rows.
