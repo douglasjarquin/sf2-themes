@@ -28,7 +28,7 @@ test("preview route renders a useful palette surface for every canonical variant
     expectedIds,
   );
   await expect(page.locator("[data-preview-image]")).toHaveCount(0);
-  await expect(variants.locator("[data-code-pane] .preview-code-lines")).toHaveCount(36);
+  await expect(variants.locator("[data-code-pane] .palette-preview__code-lines")).toHaveCount(36);
   await expect(variants.locator("[data-terminal-pane] pre")).toHaveCount(36);
   await expect(variants.locator("[data-command-copy]")).toHaveCount(36);
   await expect(variants.locator("[data-preview-swatch]")).toHaveCount(36 * 25);
@@ -82,7 +82,7 @@ test("preview content remains available without client JavaScript", async ({ bro
 
   // Then: all families, code panes, and terminal commands remain readable.
   await expect(page.locator("[data-preview-family]")).toHaveCount(18);
-  await expect(page.locator("[data-code-pane] .preview-code-lines")).toHaveCount(36);
+  await expect(page.locator("[data-code-pane] .palette-preview__code-lines")).toHaveCount(36);
   await expect(page.locator("[data-terminal-pane] pre")).toHaveCount(36);
   await expect(page.locator('[data-preview-id="ryu"] [data-terminal-pane]')).toContainText("sf2-themes show ryu");
   await context.close();
