@@ -8,6 +8,11 @@ type Swatch = {
   readonly token: string;
   readonly value: string;
 };
+type SyntaxTokenKind = "comment" | "keyword" | "number" | "plain" | "property" | "punctuation" | "string";
+type SyntaxToken = {
+  readonly kind: SyntaxTokenKind;
+  readonly text: string;
+};
 
 const neutralSwatches = (variant: PreviewVariant): readonly Swatch[] => [
   { label: "BACKGROUND", token: "ui.background", value: variant.tokens.ui.background },
@@ -68,6 +73,28 @@ function codeLines(variant: PreviewVariant): readonly string[] {
   ];
 }
 
+const syntaxPattern = /\/\/.*$|"(?:\\.|[^"])*"|\b(?:const|as)\b|\b(?:id|mode|ui|background|foreground|accent|semantic|red|green|cyan)(?=\s*:)|\b\d+(?:\.\d+)?\b|[{}(),:.;]/g;
+
+function highlightCodeLine(line: string): readonly SyntaxToken[] {
+  const tokens: SyntaxToken[] = [];
+  let cursor = 0;
+  for (const match of line.matchAll(syntaxPattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) tokens.push({ kind: "plain", text: line.slice(cursor, index) });
+    const text = match[0];
+    let kind: SyntaxTokenKind = "punctuation";
+    if (text.startsWith("//")) kind = "comment";
+    else if (text.startsWith("\"")) kind = "string";
+    else if (/^(const|as)$/.test(text)) kind = "keyword";
+    else if (/^(id|mode|ui|background|foreground|accent|semantic|red|green|cyan)$/.test(text)) kind = "property";
+    else if (/^\d/.test(text)) kind = "number";
+    tokens.push({ kind, text });
+    cursor = index + text.length;
+  }
+  if (cursor < line.length) tokens.push({ kind: "plain", text: line.slice(cursor) });
+  return tokens;
+}
+
 function terminalLines(variant: PreviewVariant): readonly string[] {
   return [
     "$ sf2-themes show " + variant.id,
@@ -91,6 +118,12 @@ function cardStyle(variant: PreviewVariant): string {
     "--preview-subtle: " + variant.tokens.ui.subtle,
     "--preview-accent: " + variant.tokens.ui.accent,
     "--preview-secondary: " + variant.tokens.ui.accent_secondary,
+    "--preview-code-keyword: " + variant.tokens.semantic.magenta,
+    "--preview-code-property: " + variant.tokens.ui.accent,
+    "--preview-code-string: " + variant.tokens.semantic.green,
+    "--preview-code-number: " + variant.tokens.semantic.yellow,
+    "--preview-code-comment: " + variant.tokens.ui.subtle,
+    "--preview-code-punctuation: " + variant.tokens.ui.muted,
   ].join("; ");
 }
 ---
@@ -191,7 +224,17 @@ function cardStyle(variant: PreviewVariant): string {
                               codeLines(variant).map((line, lineIndex) => (
                                 <li>
                                   <span aria-hidden="true">{String(lineIndex + 1).padStart(2, "0")}</span>
-                                  <code>{line}</code>
+                                  <code>
+                                    {
+                                      highlightCodeLine(line).map((token) => (
+                                        <span
+                                          class={"syntax-token syntax-token--" + token.kind}
+                                          data-syntax-kind={token.kind}
+                                          data-syntax-token
+                                        >{token.text}</span>
+                                      ))
+                                    }
+                                  </code>
                                 </li>
                               ))
                             }
@@ -370,6 +413,12 @@ function cardStyle(variant: PreviewVariant): string {
   .preview-code-lines li { display: grid; grid-template-columns: var(--code-line-number-width) minmax(0, 1fr); gap: var(--space-2); min-inline-size: 0; }
   .preview-code-lines li > span { color: var(--preview-muted); opacity: .7; }
   .preview-code-lines code { min-inline-size: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .syntax-token--keyword { color: var(--preview-code-keyword); font-weight: 700; }
+  .syntax-token--property { color: var(--preview-code-property); }
+  .syntax-token--string { color: var(--preview-code-string); }
+  .syntax-token--number { color: var(--preview-code-number); }
+  .syntax-token--comment { color: var(--preview-code-comment); font-style: italic; }
+  .syntax-token--punctuation { color: var(--preview-code-punctuation); }
   .preview-pane--terminal { background: var(--preview-surface); }
   .preview-pane--terminal pre { margin: 0; padding: var(--space-3); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
   .preview-pane--terminal pre code { color: var(--preview-accent); }

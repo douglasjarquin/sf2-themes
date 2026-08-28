@@ -32,6 +32,12 @@ test("preview route renders a useful palette surface for every canonical variant
   await expect(variants.locator("[data-terminal-pane] pre")).toHaveCount(36);
   await expect(variants.locator("[data-command-copy]")).toHaveCount(36);
   await expect(variants.locator("[data-preview-swatch]")).toHaveCount(36 * 25);
+  const syntaxTokens = variants.locator("[data-code-pane] [data-syntax-token]");
+  expect(await syntaxTokens.count()).toBeGreaterThan(36);
+  const syntaxKinds = new Set(await syntaxTokens.evaluateAll((items) => items.map((item) => item.dataset.syntaxKind)));
+  for (const kind of ["keyword", "property", "string", "punctuation"]) {
+    expect(syntaxKinds.has(kind)).toBe(true);
+  }
 
   for (const variant of paletteVariants) {
     const card = page.locator(`[data-preview-id="${variant.id}"]`);
