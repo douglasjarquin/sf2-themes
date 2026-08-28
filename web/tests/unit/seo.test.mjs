@@ -54,7 +54,7 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", () => {
       "https://douglasjarquin.github.io/sf2-themes/",
       "https://douglasjarquin.github.io/sf2-themes/themes/",
       "https://douglasjarquin.github.io/sf2-themes/palette/",
-      "https://douglasjarquin.github.io/sf2-themes/screenshots/",
+      "https://douglasjarquin.github.io/sf2-themes/preview/",
       "https://douglasjarquin.github.io/sf2-themes/install/",
     ],
   );

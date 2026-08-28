@@ -4,12 +4,14 @@ const routes = [
   { label: "HOME", pathname: "/sf2-themes/" },
   { label: "THEMES", pathname: "/sf2-themes/themes/" },
   { label: "PALETTE", pathname: "/sf2-themes/palette/" },
+  { label: "PREVIEW", pathname: "/sf2-themes/preview/" },
   { label: "INSTALL", pathname: "/sf2-themes/install/" },
 ];
+const publicRoutes = [...routes, { label: "GAME", pathname: "/sf2-themes/game/" }];
 
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
-  { name: "mobile", width: 390, height: 844 },
+  { name: "mobile", width: 375, height: 844 },
 ];
 
 for (const viewport of viewports) {
@@ -20,11 +22,15 @@ for (const viewport of viewports) {
 
     // When: keyboard focus enters the page.
     await page.keyboard.press("Tab");
+    await page.waitForTimeout(150);
 
     // Then: the skip link is focused first, then the document does not overflow horizontally.
     const focusedLink = page.locator(":focus-visible");
     await expect(focusedLink).toHaveAttribute("href", "#main-content");
     await expect(focusedLink).toHaveText("Skip to main content");
+    const focusedBox = await focusedLink.boundingBox();
+    expect(focusedBox).not.toBeNull();
+    expect(focusedBox?.y ?? -1).toBeGreaterThanOrEqual(8);
     await expect
       .poll(() => focusedLink.evaluate((element) => getComputedStyle(element).outlineStyle))
       .not.toBe("none");
@@ -65,3 +71,52 @@ for (const viewport of viewports) {
     }
   });
 }
+
+const readShell = () => {
+  const readStyles = (selector, pseudo) => {
+    const element = document.querySelector(selector);
+    if (!(element instanceof Element)) throw new Error(`Missing ${selector}`);
+    const styles = getComputedStyle(element, pseudo);
+    return {
+      backgroundColor: styles.backgroundColor,
+      borderBlockEndColor: styles.borderBlockEndColor,
+      borderBlockEndWidth: styles.borderBlockEndWidth,
+      borderColor: styles.borderColor,
+      borderRadius: styles.borderRadius,
+      boxShadow: styles.boxShadow,
+      color: styles.color,
+      display: styles.display,
+      fontFamily: styles.fontFamily,
+      fontSize: styles.fontSize,
+      fontWeight: styles.fontWeight,
+      letterSpacing: styles.letterSpacing,
+      textShadow: styles.textShadow,
+    };
+  };
+  const current = document.querySelector('.primary-nav__link[aria-current="page"]');
+  return {
+    bodyBackground: readStyles("body").backgroundColor,
+    bodyScanlines: readStyles("body", "::before").display,
+    brand: readStyles(".site-brand"),
+    footer: readStyles(".site-footer"),
+    nav: readStyles(".primary-nav__link:not([aria-current])"),
+    navAction: readStyles(".primary-nav__link--action"),
+    navCurrent: current ? readStyles('.primary-nav__link[aria-current="page"]') : null,
+  };
+};
+
+test("all public routes use the preview page shell", async ({ page }) => {
+  // Given: the preview page is the visual source of truth for shared site chrome.
+  await page.goto("preview/");
+  const previewShell = await page.evaluate(readShell);
+
+  // When: a visitor opens every public route directly.
+  for (const route of publicRoutes) {
+    await page.goto(route.pathname);
+
+    // Then: the shared shell computes to the same values as the preview template.
+    const shell = await page.evaluate(readShell);
+    const expectedShell = route.label === "GAME" ? { ...previewShell, navCurrent: null } : previewShell;
+    expect(shell, route.pathname).toEqual(expectedShell);
+  }
+});

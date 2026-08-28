@@ -5,11 +5,31 @@ from dataclasses import dataclass
 from enum import StrEnum, unique
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.model import ANSI_ORDER, HexColor, Theme
+from sf2_theme.model import ANSI_ORDER, HexColor, Theme, ThemeKind, ThemeVariant, project_adapter_colors
 
 PRIMARY_CONTRAST: float = 7.0
 TEXT_CONTRAST: float = 4.5
 NONTEXT_CONTRAST: float = 3.0
+EXPECTED_DARK_IDS: tuple[str, ...] = (
+    "main",
+    "akuma",
+    "balrog",
+    "blanka",
+    "cammy",
+    "chun-li",
+    "dee-jay",
+    "dhalsim",
+    "e-honda",
+    "fei-long",
+    "guile",
+    "ken",
+    "m-bison",
+    "ryu",
+    "sagat",
+    "t-hawk",
+    "vega",
+    "zangief",
+)
 
 
 @unique
@@ -73,19 +93,20 @@ def validate_theme(theme: Theme) -> tuple[Issue, ...]:
         ("selection", ui.selection_fg, ui.selection_bg, TEXT_CONTRAST),
         ("cursor", ui.cursor_fg, ui.cursor_bg, TEXT_CONTRAST),
         ("accent/background", ui.accent, ui.background, NONTEXT_CONTRAST),
+        ("accent_secondary/background", ui.accent_secondary, ui.background, NONTEXT_CONTRAST),
     )
     for label, fg, bg, minimum in required:
         issue = _pair(theme_id, label, fg, bg, minimum)
         if issue is not None:
             issues.append(issue)
-    subtext_ratio = contrast_ratio(ui.subtext, ui.background)
-    if subtext_ratio < TEXT_CONTRAST:
-        issues.append(
-            Issue(
-                Severity.WARNING,
-                f"{theme_id}: subtext on background is {subtext_ratio:.2f}:1 (secondary only)",
+    for label, color in (("muted", ui.muted), ("subtle", ui.subtle)):
+        ratio = contrast_ratio(color, ui.background)
+        if ratio < TEXT_CONTRAST:
+            issues.append(
+                Issue(Severity.WARNING, f"{theme_id}: {label} on background is {ratio:.2f}:1 (secondary only)")
             )
-        )
+    issues.extend(_projection_issues(theme))
+    issues.extend(_semantic_issues(theme))
     issues.extend(_ansi_issues(theme))
     seen: dict[HexColor, list[str]] = {}
     for slot, color in _all_slots(theme):
@@ -108,7 +129,52 @@ def _ansi_issues(theme: Theme) -> list[Issue]:
     for name, left, right in zip(ANSI_ORDER, normal, bright, strict=True):
         if left == right:
             issues.append(Issue(Severity.ERROR, f"{theme_id}: ansi.bright.{name} matches ansi.normal.{name}"))
+    for row_name, row in (("normal", theme.ansi_normal), ("bright", theme.ansi_bright)):
+        for name in ANSI_ORDER[1:7]:
+            issue = _pair(
+                theme_id,
+                f"ansi.{row_name}.{name}/background",
+                getattr(row, name),
+                theme.ui.background,
+                TEXT_CONTRAST,
+            )
+            if issue is not None:
+                issues.append(issue)
     return issues
+
+
+def _projection_issues(theme: Theme) -> list[Issue]:
+    ui = theme.ui
+    projection = project_adapter_colors(ui)
+    expected = (
+        ("cursor_bg", ui.cursor),
+        ("cursor_fg", ui.cursor_text),
+        ("selection_bg", ui.selection_background),
+        ("selection_fg", ui.selection_foreground),
+        ("panel_bg", ui.surface),
+        ("sidebar_bg", ui.background),
+        ("active_row_bg", ui.selection_background),
+        ("navigate_row_bg", ui.overlay),
+        ("surface_dim", ui.background),
+        ("surface0", ui.surface),
+        ("surface1", ui.overlay),
+        ("overlay0", ui.border),
+        ("overlay1", ui.muted),
+        ("subtext", ui.subtle),
+    )
+    return [
+        Issue(Severity.ERROR, f"{theme.metadata.id}: adapter projection {role} does not match canonical source")
+        for role, color in expected
+        if getattr(projection, role) != color
+    ]
+
+
+def _semantic_issues(theme: Theme) -> list[Issue]:
+    return [
+        Issue(Severity.ERROR, f"{theme.metadata.id}: semantic.{name} must match ansi.normal.{name}")
+        for name in ANSI_ORDER[1:7]
+        if getattr(theme.semantic, name) != getattr(theme.ansi_normal, name)
+    ]
 
 
 def _all_slots(theme: Theme) -> list[tuple[str, HexColor]]:
@@ -131,10 +197,25 @@ def require_valid(theme: Theme) -> None:
 
 
 def validate_catalog(themes: Sequence[Theme]) -> tuple[Issue, ...]:
-    """Check uniqueness of ids and aliases across the catalog."""
+    """Check the exact roster, paired metadata, ids, and aliases."""
     issues: list[Issue] = []
     claimed: dict[str, str] = {}
+    by_id = {theme.metadata.id: theme for theme in themes}
+    expected_ids = {theme_id for dark_id in EXPECTED_DARK_IDS for theme_id in (dark_id, f"{dark_id}-light")}
+    for theme_id in sorted(expected_ids - set(by_id)):
+        issues.append(Issue(Severity.ERROR, f"missing expected theme {theme_id}"))
+    for theme_id in sorted(set(by_id) - expected_ids):
+        issues.append(Issue(Severity.ERROR, f"unexpected theme {theme_id}"))
     for theme in themes:
+        meta = theme.metadata
+        expected_variant = ThemeVariant.LIGHT if meta.id.endswith("-light") else ThemeVariant.DARK
+        if meta.variant is not expected_variant:
+            issues.append(Issue(Severity.ERROR, f"{meta.id}: variant must be {expected_variant.value}"))
+        if meta.family != "sf2":
+            issues.append(Issue(Severity.ERROR, f"{meta.id}: family must be sf2"))
+        expected_kind = ThemeKind.MAIN if meta.id in {"main", "main-light"} else ThemeKind.CHARACTER
+        if meta.kind is not expected_kind:
+            issues.append(Issue(Severity.ERROR, f"{meta.id}: kind must be {expected_kind.value}"))
         for key in theme.lookup_keys():
             owner = claimed.get(key)
             if owner is not None:
@@ -143,4 +224,35 @@ def validate_catalog(themes: Sequence[Theme]) -> tuple[Issue, ...]:
                 claimed[key] = theme.metadata.id
         if "bison" in theme.lookup_keys():
             issues.append(Issue(Severity.ERROR, f"{theme.metadata.id}: alias 'bison' is regionally ambiguous"))
+    for dark_id in EXPECTED_DARK_IDS:
+        dark = by_id.get(dark_id)
+        light = by_id.get(f"{dark_id}-light")
+        if dark is not None and light is not None:
+            issues.extend(_pairing_issues(dark, light))
+    return issues
+
+
+def _pairing_issues(dark: Theme, light: Theme) -> list[Issue]:
+    dark_meta = dark.metadata
+    light_meta = light.metadata
+    expected = (
+        ("display_name", f"{dark_meta.display_name} Light"),
+        ("kind", dark_meta.kind),
+        ("introduced_in", dark_meta.introduced_in),
+        ("character", dark_meta.character),
+        ("name", dark_meta.name),
+        ("family", dark_meta.family),
+        ("stage", dark_meta.stage),
+    )
+    issues = [
+        Issue(Severity.ERROR, f"{light_meta.id}: {field} must match dark variant")
+        for field, value in expected
+        if getattr(light_meta, field) != value
+    ]
+    if light_meta.aliases:
+        issues.append(Issue(Severity.ERROR, f"{light_meta.id}: light variant aliases must be empty"))
+    if light.ui.background == dark.ui.background:
+        issues.append(Issue(Severity.ERROR, f"{light_meta.id}: background must differ from dark variant"))
+    if light.ui.foreground == dark.ui.foreground:
+        issues.append(Issue(Severity.ERROR, f"{light_meta.id}: foreground must differ from dark variant"))
     return issues

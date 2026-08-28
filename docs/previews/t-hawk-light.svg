@@ -1,26 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="176" viewBox="0 0 320 176">
-<rect width="320" height="176" fill="#e8e1d1"/>
-<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#1b1e2d">Street Fighter II - T. Hawk Light</text>
-<rect x="16" y="36" width="48" height="40" fill="#e8e1d1"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">background</text>
-<rect x="68" y="36" width="48" height="40" fill="#1b1e2d"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">foreground</text>
-<rect x="120" y="36" width="48" height="40" fill="#3f6a96"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">accent</text>
-<rect x="172" y="36" width="48" height="40" fill="#d4d3ca"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">active row</text>
-<rect x="224" y="36" width="48" height="40" fill="#e0d6c0"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">navigate</text>
-<rect x="276" y="36" width="48" height="40" fill="#1b1e2d"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#1b1e2d">selection</text>
-<rect x="16" y="92" width="32" height="32" fill="#1b1e2d"/>
-<rect x="52" y="92" width="32" height="32" fill="#c34850"/>
-<rect x="88" y="92" width="32" height="32" fill="#4b8a52"/>
-<rect x="124" y="92" width="32" height="32" fill="#b38326"/>
-<rect x="160" y="92" width="32" height="32" fill="#4394e6"/>
-<rect x="196" y="92" width="32" height="32" fill="#af73bf"/>
-<rect x="232" y="92" width="32" height="32" fill="#2ba19f"/>
-<rect x="268" y="92" width="32" height="32" fill="#e0d9ca"/>
-<rect x="16" y="128" width="32" height="32" fill="#717072"/>
-<rect x="52" y="128" width="32" height="32" fill="#df535b"/>
-<rect x="88" y="128" width="32" height="32" fill="#5aa662"/>
-<rect x="124" y="128" width="32" height="32" fill="#dfa330"/>
-<rect x="160" y="128" width="32" height="32" fill="#49a2fa"/>
-<rect x="196" y="128" width="32" height="32" fill="#c380d5"/>
-<rect x="232" y="128" width="32" height="32" fill="#32b8b6"/>
-<rect x="268" y="128" width="32" height="32" fill="#cfcabd"/>
+<rect width="320" height="176" fill="#f9efea"/>
+<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#3c2e29">Street Fighter II - T. Hawk Light</text>
+<rect x="16" y="36" width="48" height="40" fill="#f9efea"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">background</text>
+<rect x="68" y="36" width="48" height="40" fill="#3c2e29"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">foreground</text>
+<rect x="120" y="36" width="48" height="40" fill="#0a706c"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">accent</text>
+<rect x="172" y="36" width="48" height="40" fill="#b0e0dc"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">active row</text>
+<rect x="224" y="36" width="48" height="40" fill="#e6d6cf"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">navigate</text>
+<rect x="276" y="36" width="48" height="40" fill="#b0e0dc"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#3c2e29">selection</text>
+<rect x="16" y="92" width="32" height="32" fill="#4a3a34"/>
+<rect x="52" y="92" width="32" height="32" fill="#a94b47"/>
+<rect x="88" y="92" width="32" height="32" fill="#39752b"/>
+<rect x="124" y="92" width="32" height="32" fill="#856302"/>
+<rect x="160" y="92" width="32" height="32" fill="#0f6daa"/>
+<rect x="196" y="92" width="32" height="32" fill="#9b4d83"/>
+<rect x="232" y="92" width="32" height="32" fill="#067570"/>
+<rect x="268" y="92" width="32" height="32" fill="#e7dbd6"/>
+<rect x="16" y="128" width="32" height="32" fill="#655149"/>
+<rect x="52" y="128" width="32" height="32" fill="#9c3332"/>
+<rect x="88" y="128" width="32" height="32" fill="#1e6506"/>
+<rect x="124" y="128" width="32" height="32" fill="#705304"/>
+<rect x="160" y="128" width="32" height="32" fill="#025b92"/>
+<rect x="196" y="128" width="32" height="32" fill="#8e3675"/>
+<rect x="232" y="128" width="32" height="32" fill="#07625f"/>
+<rect x="268" y="128" width="32" height="32" fill="#f9f3f0"/>
 </svg>

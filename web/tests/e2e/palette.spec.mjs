@@ -27,19 +27,19 @@ const terminalColors = [...mainColors];
 const variants = [
   {
     name: "Ryu",
-    colors: ["#101522", "#e24c52", "#f2b134", "#d83a3a", "#fff4d6"],
+    colors: ["#141a23", "#c86e6c", "#9e8625", "#da6a6a", "#cad2df"],
   },
   {
     name: "Ken",
-    colors: ["#1a1014", "#e64d52", "#f2b134", "#e23b3b", "#fff4d6"],
+    colors: ["#221616", "#c76e67", "#a88225", "#de6767", "#decdcc"],
   },
   {
     name: "Chun-Li",
-    colors: ["#0e1530", "#e8565f", "#f2b134", "#2f5bd6", "#fff4d6"],
+    colors: ["#131a23", "#c86e67", "#a38424", "#498ee2", "#c8d2de"],
   },
   {
     name: "Guile",
-    colors: ["#101820", "#e8565f", "#f2b134", "#537244", "#fff4d6"],
+    colors: ["#151c12", "#c96e68", "#9e8726", "#769746", "#cbd4c7"],
   },
 ];
 
@@ -83,23 +83,8 @@ test("renders every catalog palette from the theme source", async ({ page }) => 
   await expect(
     palettes.evaluateAll((items) => items.map((item) => item.getAttribute("data-palette-id"))),
   ).resolves.toEqual(paletteIds);
-  const screenshots = page.locator("[data-game-screenshot]");
-  await expect(screenshots).toHaveCount(paletteIds.length);
-  const screenshotAttributes = await screenshots.evaluateAll((items) => items.map((image) => ({
-    src: image.getAttribute("src"),
-    width: image.getAttribute("width"),
-    height: image.getAttribute("height"),
-    alt: image.getAttribute("alt"),
-    loading: image.getAttribute("loading"),
-  })));
-  expect(screenshotAttributes.every((entry) =>
-    entry.src?.includes("/sf2-themes/screenshots/game/")
-    && entry.src?.endsWith(".png")
-    && entry.width === "1280"
-    && entry.height === "720"
-    && entry.alt?.includes("gameplay")
-    && entry.loading === "lazy")).toBe(true);
-  await expect.poll(() => screenshots.first().evaluate((image) => image.complete && image.naturalWidth)).toBe(1280);
+  await expect(palettes.locator("[data-game-screenshot]")).toHaveCount(0);
+  await expect(palettes.locator("[data-character-swatch]")).toHaveCount(paletteIds.length * 5);
 });
 
 test("renders the exact TOML source cards and terminal mapping", async ({ page }) => {
@@ -164,8 +149,8 @@ test("copies the exact selected color and confirms it", async ({ context, page }
   await page.locator('[data-palette-id="ryu"] [data-character-swatch]').first().click();
 
   // Then: the clipboard and live feedback contain the exact color.
-  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("#101522");
-  await expect(page.locator("[data-copy-feedback]")).toHaveText("COPIED #101522");
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe("#141a23");
+  await expect(page.locator("[data-copy-feedback]")).toHaveText("COPIED #141a23");
 });
 
 test("reports clipboard rejection without a false success message", async ({ page }) => {

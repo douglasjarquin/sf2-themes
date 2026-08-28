@@ -1,26 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="176" viewBox="0 0 320 176">
-<rect width="320" height="176" fill="#140a12"/>
-<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#fff4d6">Street Fighter II - M. Bison</text>
-<rect x="16" y="36" width="48" height="40" fill="#140a12"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">background</text>
-<rect x="68" y="36" width="48" height="40" fill="#fff4d6"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">foreground</text>
-<rect x="120" y="36" width="48" height="40" fill="#c41e3a"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">accent</text>
-<rect x="172" y="36" width="48" height="40" fill="#1d3e43"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">active row</text>
-<rect x="224" y="36" width="48" height="40" fill="#452f19"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">navigate</text>
-<rect x="276" y="36" width="48" height="40" fill="#f2b134"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#fff4d6">selection</text>
-<rect x="16" y="92" width="32" height="32" fill="#140a12"/>
-<rect x="52" y="92" width="32" height="32" fill="#db4252"/>
-<rect x="88" y="92" width="32" height="32" fill="#6ecb78"/>
-<rect x="124" y="92" width="32" height="32" fill="#f2b134"/>
-<rect x="160" y="92" width="32" height="32" fill="#4aa5ff"/>
-<rect x="196" y="92" width="32" height="32" fill="#c783d9"/>
-<rect x="232" y="92" width="32" height="32" fill="#35c4c2"/>
-<rect x="268" y="92" width="32" height="32" fill="#e3d8be"/>
-<rect x="16" y="128" width="32" height="32" fill="#6d635c"/>
-<rect x="52" y="128" width="32" height="32" fill="#e16471"/>
-<rect x="88" y="128" width="32" height="32" fill="#88d490"/>
-<rect x="124" y="128" width="32" height="32" fill="#f4bf59"/>
-<rect x="160" y="128" width="32" height="32" fill="#6bb5ff"/>
-<rect x="196" y="128" width="32" height="32" fill="#d199e0"/>
-<rect x="232" y="128" width="32" height="32" fill="#59cfcd"/>
-<rect x="268" y="128" width="32" height="32" fill="#fffaf0"/>
+<rect width="320" height="176" fill="#1c1721"/>
+<text x="16" y="22" font-family="ui-monospace, monospace" font-size="12" fill="#d3cedb">Street Fighter II - M. Bison</text>
+<rect x="16" y="36" width="48" height="40" fill="#1c1721"/><text x="40" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">background</text>
+<rect x="68" y="36" width="48" height="40" fill="#d3cedb"/><text x="92" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">foreground</text>
+<rect x="120" y="36" width="48" height="40" fill="#b771cc"/><text x="144" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">accent</text>
+<rect x="172" y="36" width="48" height="40" fill="#45304c"/><text x="196" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">active row</text>
+<rect x="224" y="36" width="48" height="40" fill="#352f3d"/><text x="248" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">navigate</text>
+<rect x="276" y="36" width="48" height="40" fill="#45304c"/><text x="300" y="88" text-anchor="middle" font-size="7" fill="#d3cedb">selection</text>
+<rect x="16" y="92" width="32" height="32" fill="#342e3c"/>
+<rect x="52" y="92" width="32" height="32" fill="#c86d6b"/>
+<rect x="88" y="92" width="32" height="32" fill="#4e975b"/>
+<rect x="124" y="92" width="32" height="32" fill="#a48324"/>
+<rect x="160" y="92" width="32" height="32" fill="#6187cd"/>
+<rect x="196" y="92" width="32" height="32" fill="#a874b8"/>
+<rect x="232" y="92" width="32" height="32" fill="#1396a1"/>
+<rect x="268" y="92" width="32" height="32" fill="#b8b2bf"/>
+<rect x="16" y="128" width="32" height="32" fill="#898194"/>
+<rect x="52" y="128" width="32" height="32" fill="#ee8482"/>
+<rect x="88" y="128" width="32" height="32" fill="#60b46e"/>
+<rect x="124" y="128" width="32" height="32" fill="#c59d30"/>
+<rect x="160" y="128" width="32" height="32" fill="#76a2f4"/>
+<rect x="196" y="128" width="32" height="32" fill="#c98cdb"/>
+<rect x="232" y="128" width="32" height="32" fill="#1db3c0"/>
+<rect x="268" y="128" width="32" height="32" fill="#ddd9e3"/>
 </svg>

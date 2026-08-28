@@ -1,6 +1,9 @@
 """WezTerm rendering, Lua safety, and path discovery."""
 
+import tomllib
 from pathlib import Path
+
+import pytest
 
 from sf2_theme.adapters.wezterm import (
     apply_wezterm,
@@ -11,20 +14,50 @@ from sf2_theme.adapters.wezterm import (
 )
 from sf2_theme.adapters.wezterm_lua import setup_lua
 from sf2_theme.catalog import get_theme, parse_catalog
+from sf2_theme.errors import ThemeError
+from sf2_theme.parse import parse_theme
 
 
 def test_ansi_order_and_distinct_brights() -> None:
     theme = get_theme("main", parse_catalog())
     rendered = render_scheme(theme)
-    assert 'selection_bg = "#f2b134"' in rendered
-    assert 'selection_fg = "#101a3a"' in rendered
+    assert 'selection_bg = "#453714"' in rendered
+    assert 'selection_fg = "#cad1de"' in rendered
     assert theme.ansi_normal.green != theme.ansi_normal.yellow
-    assert theme.ansi_normal.blue.startswith("#4a")
+    assert theme.ansi_normal.blue.startswith("#5b")
     assert theme.ansi_bright.red != theme.ansi_normal.red
     assert 'name = "sf2-main"' in rendered
     assert '"sf2-street-fighter-2"' in rendered
     expected = ", ".join(f'"{color}"' for color in theme.ansi_normal.as_tuple())
     assert f"ansi = [{expected}]" in rendered
+
+
+def test_future_palette_token_is_retained_without_unsupported_wezterm_output() -> None:
+    theme = get_theme("main", parse_catalog())
+
+    rendered = render_scheme(theme)
+
+    assert theme.ui.accent_secondary == "#cf6a63"
+    assert theme.ui.accent_secondary not in rendered
+
+
+@pytest.mark.parametrize("missing_field", ["accent_secondary", "border"])
+def test_incomplete_palette_fails_before_wezterm_write(tmp_path: Path, missing_field: str) -> None:
+    raw = tomllib.loads(Path("themes/main.toml").read_text(encoding="utf-8"))
+    raw["ui"].pop(missing_field)
+    config_dir = tmp_path / "wezterm"
+
+    with pytest.raises(ThemeError, match=rf"ui\.{missing_field}"):
+        theme = parse_theme(raw, source="incomplete.toml")
+        apply_wezterm(
+            theme,
+            (theme,),
+            config_dir=config_dir,
+            dry_run=False,
+            follow_symlinks=False,
+        )
+
+    assert not config_dir.exists()
 
 
 def test_light_variant_resolves_and_renders_light_metadata() -> None:

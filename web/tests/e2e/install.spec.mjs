@@ -15,8 +15,14 @@ test("install route gives the real setup then apply commands", async ({ page }) 
 
   // When: they read the installation route.
   const installBlock = page.getByLabel("Install script");
+  const installHeadings = page.locator(".install-moves__heading h2, .adapter-notes h2");
 
   // Then: it preserves the README script and presents uv-backed adapter commands only.
+  await expect(page.getByText("READY PLAYER ONE", { exact: true })).toHaveCount(0);
+  await expect(installHeadings).toHaveCount(2);
+  await expect(installHeadings.first()).toHaveCSS("color", "rgb(202, 209, 222)");
+  await expect(installHeadings.first()).toHaveCSS("font-weight", "700");
+  await expect(installHeadings.first()).toHaveCSS("text-shadow", "none");
   await expect(installBlock).toHaveText(installScript);
   await expect(installBlock).toHaveText(`${uvCommand} --version`);
   await expect(page.getByText(`${uvCommand} setup wezterm`, { exact: true })).toBeVisible();

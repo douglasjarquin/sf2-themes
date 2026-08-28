@@ -1,0 +1,8 @@
+---
+import PalettePreview from "./PalettePreview.astro";
+import { paletteVariants } from "../data/theme-data.mjs";
+
+const initialPalette = paletteVariants[0];
+---
+
+<PalettePreview variant={initialPalette} compact featured randomize />

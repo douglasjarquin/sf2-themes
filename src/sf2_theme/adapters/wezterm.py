@@ -7,7 +7,7 @@ from pathlib import Path
 from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme, selectable_id
+from sf2_theme.model import Theme, project_adapter_colors, selectable_id
 
 LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
 
@@ -68,19 +68,20 @@ def scheme_filename(theme: Theme) -> str:
 def render_scheme(theme: Theme) -> str:
     """Render a WezTerm color scheme TOML file."""
     ui = theme.ui
+    adapter = project_adapter_colors(ui)
     ansi = ", ".join(f'"{color}"' for color in theme.ansi_normal.as_tuple())
     brights = ", ".join(f'"{color}"' for color in theme.ansi_bright.as_tuple())
     lines = [
         "[colors]",
         f'foreground = "{ui.foreground}"',
         f'background = "{ui.background}"',
-        f'cursor_bg = "{ui.cursor_bg}"',
-        f'cursor_fg = "{ui.cursor_fg}"',
-        f'cursor_border = "{ui.cursor_bg}"',
-        f'selection_bg = "{ui.selection_bg}"',
-        f'selection_fg = "{ui.selection_fg}"',
-        f'split = "{ui.surface1}"',
-        f'scrollbar_thumb = "{ui.overlay0}"',
+        f'cursor_bg = "{adapter.cursor_bg}"',
+        f'cursor_fg = "{adapter.cursor_fg}"',
+        f'cursor_border = "{adapter.cursor_bg}"',
+        f'selection_bg = "{adapter.selection_bg}"',
+        f'selection_fg = "{adapter.selection_fg}"',
+        f'split = "{adapter.surface1}"',
+        f'scrollbar_thumb = "{adapter.overlay0}"',
         f"ansi = [{ansi}]",
         f"brights = [{brights}]",
         "",

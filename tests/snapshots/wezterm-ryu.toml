@@ -1,15 +1,15 @@
 [colors]
-foreground = "#fff4d6"
-background = "#101522"
-cursor_bg = "#f2b134"
-cursor_fg = "#101522"
-cursor_border = "#f2b134"
-selection_bg = "#d8cab0"
-selection_fg = "#101522"
-split = "#36393f"
-scrollbar_thumb = "#74736e"
-ansi = ["#101522", "#e24c52", "#6ecb78", "#f2b134", "#4aa5ff", "#c783d9", "#35c4c2", "#e2d9c0"]
-brights = ["#6b6a66", "#e76c71", "#88d490", "#f4bf59", "#6bb5ff", "#d199e0", "#59cfcd", "#fffaf0"]
+foreground = "#cad2df"
+background = "#141a23"
+cursor_bg = "#da6a6a"
+cursor_fg = "#141a23"
+cursor_border = "#da6a6a"
+selection_bg = "#522d2c"
+selection_fg = "#cad2df"
+split = "#2b333f"
+scrollbar_thumb = "#2b333f"
+ansi = ["#2b323f", "#c86e6c", "#5e9465", "#9e8625", "#558acc", "#a278b5", "#1195ad", "#aeb6c2"]
+brights = ["#7b8598", "#ee8582", "#70b27a", "#bda131", "#69a6f3", "#c291d9", "#1bb2ce", "#d6dce5"]
 
 [metadata]
 name = "sf2-ryu"

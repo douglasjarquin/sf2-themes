@@ -6,7 +6,7 @@ from typing import Final
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme
+from sf2_theme.model import Theme, project_adapter_colors
 
 LEGACY_SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
 CURRENT_DIR_NAME: Final = "sf2-theme"
@@ -55,25 +55,26 @@ def scheme_name(theme: Theme) -> str:
 
 def render_scheme(theme: Theme) -> str:
     ui = theme.ui
+    adapter = project_adapter_colors(ui)
     ansi_normal = theme.ansi_normal
     ansi_bright = theme.ansi_bright
     colors = (
         ("background", ui.background),
         ("foreground", ui.foreground),
-        ("cursor_bg", ui.cursor_bg),
-        ("cursor_fg", ui.cursor_fg),
-        ("selection_bg", ui.selection_bg),
-        ("selection_fg", ui.selection_fg),
-        ("panel_bg", ui.panel_bg),
-        ("sidebar_bg", ui.sidebar_bg),
-        ("active_row_bg", ui.active_row_bg),
-        ("navigate_row_bg", ui.navigate_row_bg),
-        ("surface_dim", ui.surface_dim),
-        ("surface0", ui.surface0),
-        ("surface1", ui.surface1),
-        ("overlay0", ui.overlay0),
-        ("overlay1", ui.overlay1),
-        ("subtext", ui.subtext),
+        ("cursor_bg", adapter.cursor_bg),
+        ("cursor_fg", adapter.cursor_fg),
+        ("selection_bg", adapter.selection_bg),
+        ("selection_fg", adapter.selection_fg),
+        ("panel_bg", adapter.panel_bg),
+        ("sidebar_bg", adapter.sidebar_bg),
+        ("active_row_bg", adapter.active_row_bg),
+        ("navigate_row_bg", adapter.navigate_row_bg),
+        ("surface_dim", adapter.surface_dim),
+        ("surface0", adapter.surface0),
+        ("surface1", adapter.surface1),
+        ("overlay0", adapter.overlay0),
+        ("overlay1", adapter.overlay1),
+        ("subtext", adapter.subtext),
         ("accent", ui.accent),
         ("red", theme.semantic.red),
         ("green", theme.semantic.green),

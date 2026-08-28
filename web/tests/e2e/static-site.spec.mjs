@@ -7,7 +7,7 @@ const routes = [
     title: "Street Fighter II terminal themes | sf2-themes",
     description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, and Codex.",
     canonical: `${origin}/sf2-themes/`,
-    heading: "FIGHT FOR YOUR TERMINAL",
+    heading: "Fight for your terminal.",
   },
   {
     path: "themes/",
@@ -26,11 +26,11 @@ const routes = [
     heading: "PALETTE",
   },
   {
-    path: "screenshots/",
-    title: "Screenshots | sf2-themes",
-    description: "Standard captures of every playable sf2-themes cabinet fighter.",
-    canonical: `${origin}/sf2-themes/screenshots/`,
-    heading: "SCREENSHOT LIBRARY",
+    path: "preview/",
+    title: "Palette Preview | sf2-themes",
+    description: "Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews.",
+    canonical: `${origin}/sf2-themes/preview/`,
+    heading: "PREVIEW",
   },
   {
     path: "install/",
@@ -81,10 +81,36 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", async ({ reques
     "https://douglasjarquin.github.io/sf2-themes/",
     "https://douglasjarquin.github.io/sf2-themes/themes/",
     "https://douglasjarquin.github.io/sf2-themes/palette/",
-    "https://douglasjarquin.github.io/sf2-themes/screenshots/",
+    "https://douglasjarquin.github.io/sf2-themes/preview/",
     "https://douglasjarquin.github.io/sf2-themes/install/",
   ]);
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
+});
+
+test("public preview route is separate from the preserved gameplay asset namespace", async ({
+  page,
+  request,
+}) => {
+  await page.goto("./");
+
+  const primaryPreview = page
+    .getByRole("navigation", { name: "Primary" })
+    .getByRole("link", { name: "PREVIEW", exact: true });
+  const footerPreview = page
+    .getByRole("contentinfo")
+    .getByRole("link", { name: "Preview", exact: true });
+
+  await expect(primaryPreview).toHaveCount(1);
+  await expect(primaryPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+  await expect(footerPreview).toHaveCount(1);
+  await expect(footerPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+
+  const oldPageRoute = await request.get("screenshots/");
+  const gameplayAsset = await request.get("screenshots/game/ryu.png");
+
+  expect(oldPageRoute.status()).toBe(404);
+  expect(gameplayAsset.status()).toBe(200);
+  expect(gameplayAsset.headers()["content-type"]).toMatch(/image\/png/);
 });
 
 test("every indexable route has unique metadata, a self-canonical, and JSON-LD", async ({
@@ -187,9 +213,9 @@ test("the footer exposes internal IA and the skip link reaches main content", as
     "href",
     "/sf2-themes/palette/",
   );
-  await expect(footer.getByRole("link", { name: "Screenshots", exact: true })).toHaveAttribute(
+  await expect(footer.getByRole("link", { name: "Preview", exact: true })).toHaveAttribute(
     "href",
-    "/sf2-themes/screenshots/",
+    "/sf2-themes/preview/",
   );
   await expect(footer.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
     "href",

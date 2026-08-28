@@ -53,6 +53,10 @@ All spacing derives from a base unit of 4px.
 
 The shared spacing tokens are defined in `web/src/styles/global.css` from `--space-1` through `--space-20`.
 
+The shared radius tokens are `--radius-panel` for substantial surfaces and `--radius-control` for compact controls.
+
+Preview-specific geometry tokens such as `--swatch-height` and `--code-line-number-width` are defined alongside the shared tokens so the audit surface does not introduce one-off spacing values.
+
 ### Grid
 
 The content width is `1180px` plus responsive horizontal padding.
@@ -71,6 +75,16 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Accessibility**: semantic landmarks and keyboard-visible focus.
 - **Motion**: micro transitions on links and controls.
 - **Layout**: full-height grid shell.
+
+### Page Breadcrumb
+
+- **Structure**: a compact current-route path with a home link, current-page label, and optional route detail.
+- **Variants**: route-specific context for themes, palette, preview, install, and arcade pages.
+- **Spacing**: shared overline typography and spacing tokens.
+- **States**: default home link, hover, focus-visible, and current-page text.
+- **Accessibility**: semantic breadcrumb navigation with an explicit label and `aria-current` on the active page.
+- **Motion**: home link uses the shared micro transition only for interactive feedback.
+- **Layout**: wraps naturally above route titles without horizontal overflow at mobile widths.
 
 ### Palette Card
 
@@ -91,6 +105,37 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Accessibility**: native buttons, visible focus, and named swatches.
 - **Motion**: no decorative motion.
 - **Layout**: two-column row on wide screens and a single-column stack on mobile.
+
+### Palette Preview Family
+
+- **Structure**: a family identity row followed by paired dark and light palette mode panels.
+- **Variants**: one family section for Main and each TOML-backed fighter, with every canonical mode rendered in source order.
+- **Spacing**: wide family sections with breathable separators and compact mode-panel internals.
+- **States**: default, focused code/terminal surfaces, and copy feedback for commands and color values.
+- **Accessibility**: semantic headings, native copy buttons, labeled swatch groups, and readable static content without JavaScript.
+- **Motion**: no decorative motion; copy controls use the shared micro transition only for feedback.
+- **Layout**: mode panels sit side by side on wide screens and stack below 720px; swatch grids reflow below 620px.
+
+### Featured Palette Preview
+
+- **Structure**: one featured `article` contains an identity header, paired syntax-highlighted code and terminal panes, and 25 individually labeled swatches grouped as six neutral, three accent, eight normal ANSI, and eight bright ANSI colors.
+- **Variants**: the server-rendered fallback is the canonical Main palette, and the browser selects one canonical `paletteVariants` entry at runtime after its serialized payload has parsed successfully.
+- **Static fallback**: JavaScript-disabled, malformed-payload, and missing-payload sessions retain the complete server-rendered Main preview instead of replacing it.
+- **Syntax**: code tokens expose semantic kinds for comments, keywords, properties, strings, numbers, punctuation, and plain text, with colors derived from the selected canonical palette.
+- **Spacing**: the primitive uses shared typography, spacing, border, radius, and shadow tokens, while canonical palette CSS custom properties supply all preview colors.
+- **Accessibility**: the preview has a descriptive article label, semantic section headings for code and terminal content, readable text labels and values for every swatch, and complete useful content before client JavaScript runs.
+- **Motion**: the preview has no decorative animation, so reduced-motion users see the same static fallback and no runtime transition is required.
+- **Layout**: code and terminal panes plus swatch ramps use two columns above 980px, one column from 761px through 980px, two compact columns from 521px through 760px, and one readable column at 520px and below without horizontal overflow.
+
+### Palette Mode Panel
+
+- **Structure**: mode header, live code preview, truthful `sf2-themes show` terminal preview, six neutral swatches, three accent swatches, and two eight-color ANSI rows.
+- **Variants**: dark and light, each styled from its canonical TOML-backed UI and semantic tokens.
+- **Spacing**: 12px panel padding with 4px-derived internal gaps and a 12px radius from the revised reference direction.
+- **States**: default, hover/focus copy controls, and polite per-panel copy status.
+- **Accessibility**: mode labels, explicit color names and values, visible focus, and no image-only information.
+- **Motion**: color and border feedback only, with reduced-motion support inherited from the shared shell.
+- **Layout**: code and terminal previews stack inside each mode panel; palette ramps remain readable at 375px.
 
 ### Palette Mode Filter
 

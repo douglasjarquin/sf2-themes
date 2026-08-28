@@ -24,22 +24,18 @@ SELECTABLE_PREFIX: Final = "sf2-"
 
 UI_COLOR_FIELDS: Final[tuple[str, ...]] = (
     "background",
+    "surface",
+    "overlay",
+    "border",
     "foreground",
-    "cursor_bg",
-    "cursor_fg",
-    "selection_bg",
-    "selection_fg",
-    "panel_bg",
-    "sidebar_bg",
-    "active_row_bg",
-    "navigate_row_bg",
-    "surface_dim",
-    "surface0",
-    "surface1",
-    "overlay0",
-    "overlay1",
-    "subtext",
+    "muted",
+    "subtle",
     "accent",
+    "accent_secondary",
+    "cursor",
+    "cursor_text",
+    "selection_background",
+    "selection_foreground",
 )
 SEMANTIC_FIELDS: Final[tuple[str, ...]] = (
     "red",
@@ -67,6 +63,12 @@ class IntroducedIn(StrEnum):
     SUPER_TURBO = "super-turbo"
 
 
+@unique
+class ThemeVariant(StrEnum):
+    DARK = "dark"
+    LIGHT = "light"
+
+
 @dataclass(frozen=True, slots=True)
 class ThemeMetadata:
     """Identity and catalog lookup keys for one theme."""
@@ -77,6 +79,10 @@ class ThemeMetadata:
     introduced_in: IntroducedIn
     character: str | None
     aliases: tuple[str, ...]
+    name: str
+    variant: ThemeVariant
+    family: str
+    stage: str
 
     @property
     def selectable_id(self) -> str:
@@ -86,10 +92,83 @@ class ThemeMetadata:
 
 @dataclass(frozen=True, slots=True)
 class UiColors:
-    """Application chrome, selection, and surface colors."""
+    """Canonical designer palette colors."""
 
     background: HexColor
+    surface: HexColor
+    overlay: HexColor
+    border: HexColor
     foreground: HexColor
+    muted: HexColor
+    subtle: HexColor
+    accent: HexColor
+    accent_secondary: HexColor
+    cursor: HexColor
+    cursor_text: HexColor
+    selection_background: HexColor
+    selection_foreground: HexColor
+
+    @property
+    def cursor_bg(self) -> HexColor:
+        return project_adapter_colors(self).cursor_bg
+
+    @property
+    def cursor_fg(self) -> HexColor:
+        return project_adapter_colors(self).cursor_fg
+
+    @property
+    def selection_bg(self) -> HexColor:
+        return project_adapter_colors(self).selection_bg
+
+    @property
+    def selection_fg(self) -> HexColor:
+        return project_adapter_colors(self).selection_fg
+
+    @property
+    def panel_bg(self) -> HexColor:
+        return project_adapter_colors(self).panel_bg
+
+    @property
+    def sidebar_bg(self) -> HexColor:
+        return project_adapter_colors(self).sidebar_bg
+
+    @property
+    def active_row_bg(self) -> HexColor:
+        return project_adapter_colors(self).active_row_bg
+
+    @property
+    def navigate_row_bg(self) -> HexColor:
+        return project_adapter_colors(self).navigate_row_bg
+
+    @property
+    def surface_dim(self) -> HexColor:
+        return project_adapter_colors(self).surface_dim
+
+    @property
+    def surface0(self) -> HexColor:
+        return project_adapter_colors(self).surface0
+
+    @property
+    def surface1(self) -> HexColor:
+        return project_adapter_colors(self).surface1
+
+    @property
+    def overlay0(self) -> HexColor:
+        return project_adapter_colors(self).overlay0
+
+    @property
+    def overlay1(self) -> HexColor:
+        return project_adapter_colors(self).overlay1
+
+    @property
+    def subtext(self) -> HexColor:
+        return project_adapter_colors(self).subtext
+
+
+@dataclass(frozen=True, slots=True)
+class AdapterColors:
+    """Current operational roles derived from the canonical designer palette."""
+
     cursor_bg: HexColor
     cursor_fg: HexColor
     selection_bg: HexColor
@@ -104,7 +183,26 @@ class UiColors:
     overlay0: HexColor
     overlay1: HexColor
     subtext: HexColor
-    accent: HexColor
+
+
+def project_adapter_colors(ui: UiColors) -> AdapterColors:
+    """Map canonical tokens to every current adapter role deterministically."""
+    return AdapterColors(
+        cursor_bg=ui.cursor,
+        cursor_fg=ui.cursor_text,
+        selection_bg=ui.selection_background,
+        selection_fg=ui.selection_foreground,
+        panel_bg=ui.surface,
+        sidebar_bg=ui.background,
+        active_row_bg=ui.selection_background,
+        navigate_row_bg=ui.overlay,
+        surface_dim=ui.background,
+        surface0=ui.surface,
+        surface1=ui.overlay,
+        overlay0=ui.border,
+        overlay1=ui.muted,
+        subtext=ui.subtle,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,6 +289,14 @@ def theme_to_toml(theme: Theme) -> str:
         lines.append(f'character = "{meta.character}"')
     alias_items = ", ".join(f'"{alias}"' for alias in meta.aliases)
     lines.append(f"aliases = [{alias_items}]")
+    lines.extend(
+        (
+            f'name = "{meta.name}"',
+            f'variant = "{meta.variant.value}"',
+            f'family = "{meta.family}"',
+            f'stage = "{meta.stage}"',
+        )
+    )
     lines.extend(["", "[ui]"])
     for name in UI_COLOR_FIELDS:
         lines.append(f'{name} = "{getattr(theme.ui, name)}"')

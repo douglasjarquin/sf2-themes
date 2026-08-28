@@ -1,0 +1,129 @@
+---
+import PalettePreview from "../../components/PalettePreview.astro";
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
+import { paletteVariants } from "../../data/theme-data.mjs";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+
+const familyMap = new Map<string, typeof paletteVariants>();
+for (const variant of paletteVariants) {
+  const family = variant.character;
+  const variants = familyMap.get(family) ?? [];
+  variants.push(variant);
+  familyMap.set(family, variants);
+}
+
+const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
+  id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  name,
+  variants: [...variants].sort((left, right) => {
+    if (left.tokens.meta.variant === right.tokens.meta.variant) return 0;
+    return left.tokens.meta.variant === "dark" ? -1 : 1;
+  }),
+}));
+---
+
+<SiteLayout
+  title="Palette Preview"
+  description="Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews."
+>
+  <section class="preview-page">
+    <header class="preview-hero site-frame">
+      <div class="preview-hero__intro">
+        <PageBreadcrumb current="PREVIEW" detail="18 FAMILIES / DARK + LIGHT" />
+        <h1 class="page-title">PREVIEW</h1>
+        <p>
+          Every fighter gets a real palette. Explore every canonical palette as it will appear in a developer workflow.
+          Each mode keeps its own neutral ramp, fighter accents, and complete ANSI set,
+          with the source colors visible beside the code and terminal previews.
+        </p>
+      </div>
+      <div class="preview-gates" aria-label="Palette quality gates">
+        <div class="preview-gate"><span>GATE 1 / SOURCE</span><strong>{paletteVariants.length} CANONICAL MODES</strong></div>
+        <div class="preview-gate"><span>GATE 2 / SURFACES</span><strong>CODE + TERMINAL</strong></div>
+        <div class="preview-gate"><span>GATE 3 / RAMPS</span><strong>NEUTRALS + ACCENTS</strong></div>
+        <div class="preview-gate"><span>GATE 4 / ANSI</span><strong>16 COLORS / MODE</strong></div>
+      </div>
+    </header>
+
+    <section class="preview-catalog site-frame" aria-labelledby="preview-catalog-heading">
+      <header class="preview-catalog__heading">
+        <div>
+          <p class="preview-kicker">FULL CATALOG / TOML-BACKED</p>
+          <h2 id="preview-catalog-heading">Choose a palette to inspect.</h2>
+        </div>
+        <p>{previewFamilies.length} families / {paletteVariants.length} modes</p>
+      </header>
+
+      <div class="preview-family-list">
+        {previewFamilies.map((family, familyIndex) => (
+          <section aria-labelledby={`family-${family.id}`} class="preview-family" data-preview-family={family.id}>
+            <header class="preview-family__header">
+              <div>
+                <p class="preview-family__index">{String(familyIndex + 1).padStart(2, "0")} / FAMILY</p>
+                <h3 id={`family-${family.id}`}>{family.name}</h3>
+                <p>{family.variants[0]?.tokens.meta.stage}</p>
+              </div>
+              <code>{family.variants.length} MODES</code>
+            </header>
+            <div class="preview-mode-list">
+              {family.variants.map((variant) => <PalettePreview variant={variant} />)}
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
+  </section>
+</SiteLayout>
+
+<script>
+  const announce = (button: HTMLButtonElement, value: string) => {
+    const status = button.closest("[data-preview-variant]")?.querySelector("[data-copy-status]");
+    if (!status) return;
+    navigator.clipboard.writeText(value)
+      .then(() => { status.textContent = "COPIED " + value; })
+      .catch(() => { status.textContent = "COPY FAILED"; });
+  };
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-command-copy]")) {
+    if (!navigator.clipboard) {
+      button.hidden = true;
+      continue;
+    }
+    button.addEventListener("click", () => announce(button, button.dataset.command ?? ""));
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-color]")) {
+    if (!navigator.clipboard) continue;
+    button.addEventListener("click", () => announce(button, button.dataset.copyColor ?? ""));
+  }
+</script>
+
+<style>
+  .preview-page { padding-block: var(--space-12) var(--space-20); background: var(--color-background); }
+  .preview-hero { display: grid; gap: var(--space-8); padding-block-end: var(--space-10); }
+  .preview-hero__intro { display: grid; gap: var(--space-4); max-inline-size: 900px; }
+  .preview-kicker { margin: 0; color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; line-height: 1.9; }
+  .preview-hero__intro > p:last-child { max-inline-size: 72ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
+  .preview-gates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+  .preview-gate { display: grid; gap: var(--space-2); min-inline-size: 0; padding: var(--space-4); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 12%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-panel) 58%, transparent); }
+  .preview-gate span, .preview-gate strong { min-inline-size: 0; overflow-wrap: anywhere; }
+  .preview-gate span { color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .08em; }
+  .preview-gate strong { color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-caption); font-weight: 600; }
+  .preview-catalog { padding-block: var(--space-8) var(--space-15); }
+  .preview-catalog__heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-5); padding-block: var(--space-6); border-block: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 12%, transparent); }
+  .preview-catalog__heading h2 { margin: var(--space-2) 0 0; color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-section); line-height: 1.2; }
+  .preview-catalog__heading > p { flex: none; margin: 0; color: color-mix(in srgb, var(--color-foreground) 52%, transparent); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-family-list { display: grid; gap: var(--space-12); }
+  .preview-family { min-inline-size: 0; padding-block-start: var(--space-8); }
+  .preview-family__header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-5); padding-block-end: var(--space-4); }
+  .preview-family__header > div { min-inline-size: 0; }
+  .preview-family__header p, .preview-family__header h3 { margin: 0; }
+  .preview-family__index { color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; }
+  .preview-family__header h3 { margin-block: var(--space-2); color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-family); font-weight: 700; line-height: 1.1; }
+  .preview-family__header p:last-child { color: color-mix(in srgb, var(--color-foreground) 55%, transparent); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-family__header > code { flex: none; padding: var(--space-1) var(--space-2); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 18%, transparent); border-radius: var(--radius-control); color: color-mix(in srgb, var(--color-foreground) 60%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); }
+  .preview-mode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+  @media (max-width: 900px) { .preview-mode-list { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .preview-gates { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-catalog__heading { align-items: start; flex-direction: column; } }
+  @media (max-width: 620px) { .preview-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } }
+</style>
