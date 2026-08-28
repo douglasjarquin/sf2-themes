@@ -1,0 +1,105 @@
+---
+import { paletteVariants } from "../data/theme-data.mjs";
+import "../styles/palette-preview.css";
+
+type PreviewVariant = (typeof paletteVariants)[number];
+type SyntaxTokenKind = "comment" | "keyword" | "number" | "plain" | "property" | "punctuation" | "string";
+type SyntaxToken = { readonly kind: SyntaxTokenKind; readonly text: string };
+type SwatchGroup = "accent" | "bright" | "neutral" | "normal";
+type Swatch = { readonly group: SwatchGroup; readonly label: string; readonly token: string; readonly value: string };
+
+interface Props {
+  readonly compact?: boolean;
+  readonly featured?: boolean;
+  readonly randomize?: boolean;
+  readonly variant: PreviewVariant;
+}
+
+const { compact = false, featured = false, randomize = false, variant } = Astro.props;
+const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
+const groups = ["neutral", "accent", "normal", "bright"] as const;
+const groupLabels = { accent: "ACCENTS", bright: "ANSI BRIGHT", neutral: "NEUTRALS", normal: "ANSI" } as const;
+
+function codeLines(previewVariant: PreviewVariant): readonly string[] {
+  const lines = [
+    "const theme = {", `  id: "${previewVariant.id}",`, `  mode: "${previewVariant.tokens.meta.variant}",`, "  ui: {",
+    `    background: "${previewVariant.tokens.ui.background}",`, `    foreground: "${previewVariant.tokens.ui.foreground}",`, `    accent: "${previewVariant.tokens.ui.accent}",`, "  },",
+  ];
+  if (compact) return [...lines, "} as const;"];
+  return [...lines, "  semantic: {", `    red: "${previewVariant.tokens.semantic.red}",`, `    green: "${previewVariant.tokens.semantic.green}",`, `    cyan: "${previewVariant.tokens.semantic.cyan}",`, "  },", "} as const;"];
+}
+
+const syntaxPattern = /\/\/.*$|"(?:\\.|[^"])*"|\b(?:const|as)\b|\b(?:id|mode|ui|background|foreground|accent|semantic|red|green|cyan)(?=\s*:)|\b\d+(?:\.\d+)?\b|[{}(),:.;]/g;
+function highlightCodeLine(line: string): readonly SyntaxToken[] {
+  const tokens: SyntaxToken[] = [];
+  let cursor = 0;
+  for (const match of line.matchAll(syntaxPattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) tokens.push({ kind: "plain", text: line.slice(cursor, index) });
+    const text = match[0];
+    let kind: SyntaxTokenKind = "punctuation";
+    if (text.startsWith("//")) kind = "comment";
+    else if (text.startsWith('"')) kind = "string";
+    else if (/^(const|as)$/.test(text)) kind = "keyword";
+    else if (/^(id|mode|ui|background|foreground|accent|semantic|red|green|cyan)$/.test(text)) kind = "property";
+    else if (/^\d/.test(text)) kind = "number";
+    tokens.push({ kind, text });
+    cursor = index + text.length;
+  }
+  if (cursor < line.length) tokens.push({ kind: "plain", text: line.slice(cursor) });
+  return tokens;
+}
+
+function terminalLines(previewVariant: PreviewVariant): readonly string[] {
+  return [`$ sf2-themes show ${previewVariant.id}`, `theme       ${previewVariant.id}`, `mode        ${previewVariant.tokens.meta.variant}`, `background  ${previewVariant.tokens.ui.background}`, `foreground  ${previewVariant.tokens.ui.foreground}`, `accent      ${previewVariant.tokens.ui.accent}`, `ansi.white  ${previewVariant.tokens.ansi.normal.white}`];
+}
+function swatches(previewVariant: PreviewVariant): readonly Swatch[] {
+  return [
+    { group: "neutral", label: "BACKGROUND", token: "ui.background", value: previewVariant.tokens.ui.background }, { group: "neutral", label: "SURFACE DIM", token: "ui.surface_dim", value: previewVariant.tokens.ui.surface_dim }, { group: "neutral", label: "SURFACE", token: "ui.surface", value: previewVariant.tokens.ui.surface }, { group: "neutral", label: "OVERLAY", token: "ui.overlay", value: previewVariant.tokens.ui.overlay }, { group: "neutral", label: "MUTED", token: "ui.muted", value: previewVariant.tokens.ui.muted }, { group: "neutral", label: "FOREGROUND", token: "ui.foreground", value: previewVariant.tokens.ui.foreground },
+    { group: "accent", label: "ACCENT", token: "ui.accent", value: previewVariant.tokens.ui.accent }, { group: "accent", label: "SECONDARY", token: "ui.accent_secondary", value: previewVariant.tokens.ui.accent_secondary }, { group: "accent", label: "YELLOW", token: "semantic.yellow", value: previewVariant.tokens.semantic.yellow },
+    ...ansiRoles.map((role) => ({ group: "normal" as const, label: role.toUpperCase(), token: `ansi.normal.${role}`, value: previewVariant.tokens.ansi.normal[role] })),
+    ...ansiRoles.map((role) => ({ group: "bright" as const, label: `BR ${role.toUpperCase()}`, token: `ansi.bright.${role}`, value: previewVariant.tokens.ansi.bright[role] })),
+  ];
+}
+function previewStyle(previewVariant: PreviewVariant): string {
+  return [["--preview-bg", previewVariant.tokens.ui.background], ["--preview-surface", previewVariant.tokens.ui.surface], ["--preview-overlay", previewVariant.tokens.ui.overlay], ["--preview-border", previewVariant.tokens.ui.border], ["--preview-fg", previewVariant.tokens.ui.foreground], ["--preview-muted", previewVariant.tokens.ui.muted], ["--preview-subtle", previewVariant.tokens.ui.subtle], ["--preview-accent", previewVariant.tokens.ui.accent], ["--preview-secondary", previewVariant.tokens.ui.accent_secondary], ["--preview-code-keyword", previewVariant.tokens.semantic.magenta], ["--preview-code-property", previewVariant.tokens.ui.accent], ["--preview-code-string", previewVariant.tokens.semantic.green], ["--preview-code-number", previewVariant.tokens.semantic.yellow], ["--preview-code-comment", previewVariant.tokens.ui.subtle], ["--preview-code-punctuation", previewVariant.tokens.ui.muted]].map(([property, value]) => `${property}: ${value}`).join("; ");
+}
+
+const initialSwatches = swatches(variant);
+const previewPayload = JSON.stringify(paletteVariants).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
+---
+
+<article aria-label={`${compact ? "Featured palette" : "Palette"}: ${variant.name}`} class:list={["palette-preview", { "palette-preview--compact": compact }]} data-featured-palette-preview={featured ? true : undefined} data-preview-id={variant.id} data-preview-layout={compact ? "compact" : "full"} data-preview-variant data-selected-palette={featured ? variant.id : undefined} style={previewStyle(variant)}>
+  <header class="palette-preview__header">
+    <div>
+      {compact ? <p>FEATURED PALETTE / <span data-preview-mode>{variant.tokens.meta.variant.toUpperCase()}</span></p> : <p>{variant.tokens.meta.variant.toUpperCase()} MODE</p>}
+      {compact ? <h2 data-preview-name>{variant.name}</h2> : <h4 data-preview-name>{variant.name}</h4>}
+    </div>
+    <code data-preview-id>{variant.id}</code>
+  </header>
+  {!compact && <div class="palette-preview__meta"><span>BG {variant.tokens.ui.background}</span><span>FG {variant.tokens.ui.foreground}</span><span>ACCENT {variant.tokens.ui.accent}</span></div>}
+  <div class="palette-preview__panes">
+    <section aria-labelledby={`code-${variant.id}`} class="palette-preview__pane palette-preview__pane--code" data-code-pane>
+      {compact ? <h3 id={`code-${variant.id}`}><span data-preview-id>{variant.id}</span>/preview.ts</h3> : <h5 id={`code-${variant.id}`}>{variant.id}/preview.ts <span>DATA PREVIEW</span></h5>}
+      <ol class="palette-preview__code-lines" data-code-content>
+        {codeLines(variant).map((line, lineIndex) => <li><span aria-hidden="true">{String(lineIndex + 1).padStart(2, "0")}</span><code>{highlightCodeLine(line).map((token) => <span class={`syntax-token syntax-token--${token.kind}`} data-syntax-kind={token.kind} data-syntax-token>{token.text}</span>)}</code></li>)}
+      </ol>
+    </section>
+    <section aria-labelledby={`terminal-${variant.id}`} class="palette-preview__pane palette-preview__pane--terminal" data-terminal-pane>
+      {compact ? <h3 id={`terminal-${variant.id}`}>TERMINAL / <span data-preview-id>{variant.id}</span></h3> : <div class="palette-preview__heading"><h5 id={`terminal-${variant.id}`}>TERMINAL / {variant.id}</h5><button aria-label={`Copy terminal command for ${variant.name}`} data-command={`sf2-themes show ${variant.id}`} data-command-copy type="button">COPY</button></div>}
+      <pre><code data-terminal-content>{terminalLines(variant).join("\n")}</code></pre>
+      {!compact && <p aria-live="polite" data-copy-status role="status"></p>}
+    </section>
+  </div>
+  {compact ? <div class="palette-preview__ramps">{groups.map((group) => <section class:list={["palette-preview__ramp", `palette-preview__ramp--${group}`]}><h3>{groupLabels[group]}</h3><div class="palette-preview__swatches">{initialSwatches.filter((swatch) => swatch.group === group).map((swatch) => <div aria-label={`${swatch.label} ${swatch.value}`} class="palette-preview__swatch" data-preview-swatch data-swatch-group={swatch.group} data-swatch-token={swatch.token} style={`--swatch: ${swatch.value}`}><span aria-hidden="true"></span><strong data-swatch-label>{swatch.label}</strong><code data-swatch-value>{swatch.value}</code></div>)}</div></section>)}</div> : <div class="palette-preview__ramps">
+    <section class="palette-preview__ramp-section" aria-labelledby={`neutrals-${variant.id}`}><h5 id={`neutrals-${variant.id}`}>NEUTRALS</h5><div class="palette-preview__swatch-grid palette-preview__swatch-grid--neutrals">{initialSwatches.filter((swatch) => swatch.group === "neutral").map((swatch) => <button aria-label={`Copy ${swatch.label} ${swatch.value}`} data-copy-color={swatch.value} data-preview-swatch data-swatch-token={swatch.token} style={`--swatch: ${swatch.value}`} type="button"><span aria-hidden="true"></span><strong>{swatch.label}</strong><code>{swatch.value}</code><small>{swatch.token}</small></button>)}</div></section>
+    <section class="palette-preview__ramp-section" aria-labelledby={`accents-${variant.id}`}><h5 id={`accents-${variant.id}`}>ACCENTS</h5><div class="palette-preview__swatch-grid palette-preview__swatch-grid--accents">{initialSwatches.filter((swatch) => swatch.group === "accent").map((swatch) => <button aria-label={`Copy ${swatch.label} ${swatch.value}`} data-copy-color={swatch.value} data-preview-swatch data-swatch-token={swatch.token} style={`--swatch: ${swatch.value}`} type="button"><span aria-hidden="true"></span><strong>{swatch.label}</strong><code>{swatch.value}</code><small>{swatch.token}</small></button>)}</div></section>
+    <section class="palette-preview__ramp-section" aria-labelledby={`ansi-${variant.id}`}><div class="palette-preview__ramp-title"><h5 id={`ansi-${variant.id}`}>ANSI 16</h5><span>normal / bright</span></div><div class="palette-preview__ansi-rows">{(["normal", "bright"] as const).map((level) => <div class="palette-preview__swatch-grid palette-preview__swatch-grid--ansi">{initialSwatches.filter((swatch) => swatch.group === level).map((swatch) => <button aria-label={`Copy ${swatch.label} ${swatch.value}`} data-copy-color={swatch.value} data-preview-swatch data-swatch-token={swatch.token} style={`--swatch: ${swatch.value}`} type="button"><span aria-hidden="true"></span><strong>{swatch.label}</strong><code>{swatch.value}</code></button>)}</div>)}</div></section>
+  </div>}
+</article>
+
+{randomize && <script is:inline type="application/json" data-featured-palette-data set:html={previewPayload}></script>}
+{randomize && <script>
+  import { initializeFeaturedPalettePreview } from "../scripts/palette-preview-runtime.mjs";
+  initializeFeaturedPalettePreview();
+</script>}

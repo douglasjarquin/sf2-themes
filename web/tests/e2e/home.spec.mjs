@@ -36,6 +36,37 @@ test("the home features one canonical palette preview instead of the arcade", as
   await expect(page.locator("[data-arcade-game]")).toHaveCount(0);
 });
 
+test("the home preview uses the canonical code pane syntax contract", async ({ page }) => {
+  // Given: the home preview and canonical Main preview are rendered from the same production build.
+  await page.goto("./");
+  const homePreview = page.locator("[data-featured-palette-preview]");
+  const homeCodePane = homePreview.locator("[data-code-pane]");
+  const homeStyles = await homeCodePane.evaluate((pane) => {
+    const preview = pane.closest("[data-featured-palette-preview]");
+    const plainToken = pane.querySelector(".syntax-token--plain");
+    const keywordToken = pane.querySelector(".syntax-token--keyword");
+    return {
+      codePaneBackground: getComputedStyle(pane).backgroundColor,
+      foreground: preview ? getComputedStyle(preview).color : "",
+      plain: plainToken ? getComputedStyle(plainToken).color : "",
+      keywordWeight: keywordToken ? getComputedStyle(keywordToken).fontWeight : "",
+    };
+  });
+
+  // When: the canonical Main preview is inspected as the reference family surface.
+  await page.goto("preview/");
+  const referenceCard = page.locator('[data-preview-variant][data-preview-id="main"]');
+  const referenceStyles = await referenceCard.locator("[data-code-pane]").evaluate((pane) => ({
+    codePaneBackground: getComputedStyle(pane).backgroundColor,
+    keywordWeight: getComputedStyle(pane.querySelector(".syntax-token--keyword") ?? pane).fontWeight,
+  }));
+
+  // Then: home plain text, keyword hierarchy, and code-pane surface match the canonical preview.
+  expect(homeStyles.plain).toBe(homeStyles.foreground);
+  expect(homeStyles.keywordWeight).toBe(referenceStyles.keywordWeight);
+  expect(homeStyles.codePaneBackground).toBe(referenceStyles.codePaneBackground);
+});
+
 test("distinct controlled page loads select distinct canonical featured palettes", async ({ browser }) => {
   // Given: independent browser contexts provide distinct random draws before the route loads.
   const cases = [

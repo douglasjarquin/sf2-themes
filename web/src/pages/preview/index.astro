@@ -1,43 +1,9 @@
 ---
+import PalettePreview from "../../components/PalettePreview.astro";
 import { paletteVariants } from "../../data/theme-data.mjs";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
-type PreviewVariant = (typeof paletteVariants)[number];
-type Swatch = {
-  readonly label: string;
-  readonly token: string;
-  readonly value: string;
-};
-type SyntaxTokenKind = "comment" | "keyword" | "number" | "plain" | "property" | "punctuation" | "string";
-type SyntaxToken = {
-  readonly kind: SyntaxTokenKind;
-  readonly text: string;
-};
-
-const neutralSwatches = (variant: PreviewVariant): readonly Swatch[] => [
-  { label: "BACKGROUND", token: "ui.background", value: variant.tokens.ui.background },
-  { label: "SURFACE DIM", token: "ui.surface_dim", value: variant.tokens.ui.surface_dim },
-  { label: "SURFACE", token: "ui.surface", value: variant.tokens.ui.surface },
-  { label: "OVERLAY", token: "ui.overlay", value: variant.tokens.ui.overlay },
-  { label: "MUTED", token: "ui.muted", value: variant.tokens.ui.muted },
-  { label: "FOREGROUND", token: "ui.foreground", value: variant.tokens.ui.foreground },
-];
-
-const accentSwatches = (variant: PreviewVariant): readonly Swatch[] => [
-  { label: "ACCENT", token: "ui.accent", value: variant.tokens.ui.accent },
-  { label: "SECONDARY", token: "ui.accent_secondary", value: variant.tokens.ui.accent_secondary },
-  { label: "YELLOW", token: "semantic.yellow", value: variant.tokens.semantic.yellow },
-];
-
-const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
-const ansiSwatches = (variant: PreviewVariant, level: "normal" | "bright"): readonly Swatch[] =>
-  ansiRoles.map((role) => ({
-    label: level === "bright" ? "BR " + role.toUpperCase() : role.toUpperCase(),
-    token: "ansi." + level + "." + role,
-    value: variant.tokens.ansi[level][role],
-  }));
-
-const familyMap = new Map<string, PreviewVariant[]>();
+const familyMap = new Map<string, typeof paletteVariants>();
 for (const variant of paletteVariants) {
   const family = variant.character;
   const variants = familyMap.get(family) ?? [];
@@ -53,79 +19,6 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
     return left.tokens.meta.variant === "dark" ? -1 : 1;
   }),
 }));
-
-function codeLines(variant: PreviewVariant): readonly string[] {
-  return [
-    "const theme = {",
-    "  id: \"" + variant.id + "\",",
-    "  mode: \"" + variant.tokens.meta.variant + "\",",
-    "  ui: {",
-    "    background: \"" + variant.tokens.ui.background + "\",",
-    "    foreground: \"" + variant.tokens.ui.foreground + "\",",
-    "    accent: \"" + variant.tokens.ui.accent + "\",",
-    "  },",
-    "  semantic: {",
-    "    red: \"" + variant.tokens.semantic.red + "\",",
-    "    green: \"" + variant.tokens.semantic.green + "\",",
-    "    cyan: \"" + variant.tokens.semantic.cyan + "\",",
-    "  },",
-    "} as const;",
-  ];
-}
-
-const syntaxPattern = /\/\/.*$|"(?:\\.|[^"])*"|\b(?:const|as)\b|\b(?:id|mode|ui|background|foreground|accent|semantic|red|green|cyan)(?=\s*:)|\b\d+(?:\.\d+)?\b|[{}(),:.;]/g;
-
-function highlightCodeLine(line: string): readonly SyntaxToken[] {
-  const tokens: SyntaxToken[] = [];
-  let cursor = 0;
-  for (const match of line.matchAll(syntaxPattern)) {
-    const index = match.index ?? 0;
-    if (index > cursor) tokens.push({ kind: "plain", text: line.slice(cursor, index) });
-    const text = match[0];
-    let kind: SyntaxTokenKind = "punctuation";
-    if (text.startsWith("//")) kind = "comment";
-    else if (text.startsWith("\"")) kind = "string";
-    else if (/^(const|as)$/.test(text)) kind = "keyword";
-    else if (/^(id|mode|ui|background|foreground|accent|semantic|red|green|cyan)$/.test(text)) kind = "property";
-    else if (/^\d/.test(text)) kind = "number";
-    tokens.push({ kind, text });
-    cursor = index + text.length;
-  }
-  if (cursor < line.length) tokens.push({ kind: "plain", text: line.slice(cursor) });
-  return tokens;
-}
-
-function terminalLines(variant: PreviewVariant): readonly string[] {
-  return [
-    "$ sf2-themes show " + variant.id,
-    "theme       " + variant.id,
-    "mode        " + variant.tokens.meta.variant,
-    "background  " + variant.tokens.ui.background,
-    "foreground  " + variant.tokens.ui.foreground,
-    "accent      " + variant.tokens.ui.accent,
-    "ansi.white  " + variant.tokens.ansi.normal.white,
-  ];
-}
-
-function cardStyle(variant: PreviewVariant): string {
-  return [
-    "--preview-bg: " + variant.tokens.ui.background,
-    "--preview-surface: " + variant.tokens.ui.surface,
-    "--preview-overlay: " + variant.tokens.ui.overlay,
-    "--preview-border: " + variant.tokens.ui.border,
-    "--preview-fg: " + variant.tokens.ui.foreground,
-    "--preview-muted: " + variant.tokens.ui.muted,
-    "--preview-subtle: " + variant.tokens.ui.subtle,
-    "--preview-accent: " + variant.tokens.ui.accent,
-    "--preview-secondary: " + variant.tokens.ui.accent_secondary,
-    "--preview-code-keyword: " + variant.tokens.semantic.magenta,
-    "--preview-code-property: " + variant.tokens.ui.accent,
-    "--preview-code-string: " + variant.tokens.semantic.green,
-    "--preview-code-number: " + variant.tokens.semantic.yellow,
-    "--preview-code-comment: " + variant.tokens.ui.subtle,
-    "--preview-code-punctuation: " + variant.tokens.ui.muted,
-  ].join("; ");
-}
 ---
 
 <SiteLayout
@@ -144,22 +37,10 @@ function cardStyle(variant: PreviewVariant): string {
         </p>
       </div>
       <div class="preview-gates" aria-label="Palette quality gates">
-        <div class="preview-gate">
-          <span>GATE 1 / SOURCE</span>
-          <strong>{paletteVariants.length} CANONICAL MODES</strong>
-        </div>
-        <div class="preview-gate">
-          <span>GATE 2 / SURFACES</span>
-          <strong>CODE + TERMINAL</strong>
-        </div>
-        <div class="preview-gate">
-          <span>GATE 3 / RAMPS</span>
-          <strong>NEUTRALS + ACCENTS</strong>
-        </div>
-        <div class="preview-gate">
-          <span>GATE 4 / ANSI</span>
-          <strong>16 COLORS / MODE</strong>
-        </div>
+        <div class="preview-gate"><span>GATE 1 / SOURCE</span><strong>{paletteVariants.length} CANONICAL MODES</strong></div>
+        <div class="preview-gate"><span>GATE 2 / SURFACES</span><strong>CODE + TERMINAL</strong></div>
+        <div class="preview-gate"><span>GATE 3 / RAMPS</span><strong>NEUTRALS + ACCENTS</strong></div>
+        <div class="preview-gate"><span>GATE 4 / ANSI</span><strong>16 COLORS / MODE</strong></div>
       </div>
     </header>
 
@@ -173,174 +54,21 @@ function cardStyle(variant: PreviewVariant): string {
       </header>
 
       <div class="preview-family-list">
-        {
-          previewFamilies.map((family, familyIndex) => (
-            <section
-              aria-labelledby={"family-" + family.id}
-              class="preview-family"
-              data-preview-family={family.id}
-            >
-              <header class="preview-family__header">
-                <div>
-                  <p class="preview-family__index">{String(familyIndex + 1).padStart(2, "0")} / FAMILY</p>
-                  <h3 id={"family-" + family.id}>{family.name}</h3>
-                  <p>{family.variants[0]?.tokens.meta.stage}</p>
-                </div>
-                <code>{family.variants.length} MODES</code>
-              </header>
-
-              <div class="preview-mode-list">
-                {
-                  family.variants.map((variant) => (
-                    <article
-                      class="preview-mode"
-                      data-preview-id={variant.id}
-                      data-preview-variant
-                      style={cardStyle(variant)}
-                    >
-                      <header class="preview-mode__header">
-                        <div>
-                          <p>{variant.tokens.meta.variant.toUpperCase()} MODE</p>
-                          <h4>{variant.name}</h4>
-                        </div>
-                        <code>{variant.id}</code>
-                      </header>
-
-                      <div class="preview-mode__meta">
-                        <span>BG {variant.tokens.ui.background}</span>
-                        <span>FG {variant.tokens.ui.foreground}</span>
-                        <span>ACCENT {variant.tokens.ui.accent}</span>
-                      </div>
-
-                      <div class="preview-mockups">
-                        <section
-                          aria-labelledby={"code-" + variant.id}
-                          class="preview-pane preview-pane--code"
-                          data-code-pane
-                        >
-                          <h5 id={"code-" + variant.id}>{variant.id}/preview.ts <span>DATA PREVIEW</span></h5>
-                          <ol class="preview-code-lines">
-                            {
-                              codeLines(variant).map((line, lineIndex) => (
-                                <li>
-                                  <span aria-hidden="true">{String(lineIndex + 1).padStart(2, "0")}</span>
-                                  <code>
-                                    {
-                                      highlightCodeLine(line).map((token) => (
-                                        <span
-                                          class={"syntax-token syntax-token--" + token.kind}
-                                          data-syntax-kind={token.kind}
-                                          data-syntax-token
-                                        >{token.text}</span>
-                                      ))
-                                    }
-                                  </code>
-                                </li>
-                              ))
-                            }
-                          </ol>
-                        </section>
-                        <section
-                          aria-labelledby={"terminal-" + variant.id}
-                          class="preview-pane preview-pane--terminal"
-                          data-terminal-pane
-                        >
-                          <div class="preview-pane__heading">
-                            <h5 id={"terminal-" + variant.id}>TERMINAL / {variant.id}</h5>
-                            <button
-                              aria-label={"Copy terminal command for " + variant.name}
-                              data-command={"sf2-themes show " + variant.id}
-                              data-command-copy
-                              type="button"
-                            >COPY</button>
-                          </div>
-                          <pre><code>{terminalLines(variant).join("\n")}</code></pre>
-                          <p aria-live="polite" data-copy-status role="status"></p>
-                        </section>
-                      </div>
-
-                      <div class="preview-ramp">
-                        <section class="preview-ramp__section" aria-labelledby={"neutrals-" + variant.id}>
-                          <h5 id={"neutrals-" + variant.id}>NEUTRALS</h5>
-                          <div class="preview-swatch-grid preview-swatch-grid--neutrals">
-                            {
-                              neutralSwatches(variant).map((swatch) => (
-                                <button
-                                  aria-label={"Copy " + swatch.label + " " + swatch.value}
-                                  data-copy-color={swatch.value}
-                                  data-preview-swatch
-                                  style={"--swatch: " + swatch.value}
-                                  type="button"
-                                >
-                                  <span aria-hidden="true"></span>
-                                  <strong>{swatch.label}</strong>
-                                  <code>{swatch.value}</code>
-                                  <small>{swatch.token}</small>
-                                </button>
-                              ))
-                            }
-                          </div>
-                        </section>
-
-                        <section class="preview-ramp__section" aria-labelledby={"accents-" + variant.id}>
-                          <h5 id={"accents-" + variant.id}>ACCENTS</h5>
-                          <div class="preview-swatch-grid preview-swatch-grid--accents">
-                            {
-                              accentSwatches(variant).map((swatch) => (
-                                <button
-                                  aria-label={"Copy " + swatch.label + " " + swatch.value}
-                                  data-copy-color={swatch.value}
-                                  data-preview-swatch
-                                  style={"--swatch: " + swatch.value}
-                                  type="button"
-                                >
-                                  <span aria-hidden="true"></span>
-                                  <strong>{swatch.label}</strong>
-                                  <code>{swatch.value}</code>
-                                  <small>{swatch.token}</small>
-                                </button>
-                              ))
-                            }
-                          </div>
-                        </section>
-
-                        <section class="preview-ramp__section" aria-labelledby={"ansi-" + variant.id}>
-                          <div class="preview-ramp__title">
-                            <h5 id={"ansi-" + variant.id}>ANSI 16</h5>
-                            <span>normal / bright</span>
-                          </div>
-                          <div class="preview-ansi-rows">
-                            {
-                              (["normal", "bright"] as const).map((level) => (
-                                <div class="preview-swatch-grid preview-swatch-grid--ansi">
-                                  {
-                                    ansiSwatches(variant, level).map((swatch) => (
-                                      <button
-                                        aria-label={"Copy " + swatch.label + " " + swatch.value}
-                                        data-copy-color={swatch.value}
-                                        data-preview-swatch
-                                        style={"--swatch: " + swatch.value}
-                                        type="button"
-                                      >
-                                        <span aria-hidden="true"></span>
-                                        <strong>{swatch.label}</strong>
-                                        <code>{swatch.value}</code>
-                                      </button>
-                                    ))
-                                  }
-                                </div>
-                              ))
-                            }
-                          </div>
-                        </section>
-                      </div>
-                    </article>
-                  ))
-                }
+        {previewFamilies.map((family, familyIndex) => (
+          <section aria-labelledby={`family-${family.id}`} class="preview-family" data-preview-family={family.id}>
+            <header class="preview-family__header">
+              <div>
+                <p class="preview-family__index">{String(familyIndex + 1).padStart(2, "0")} / FAMILY</p>
+                <h3 id={`family-${family.id}`}>{family.name}</h3>
+                <p>{family.variants[0]?.tokens.meta.stage}</p>
               </div>
-            </section>
-          ))
-        }
+              <code>{family.variants.length} MODES</code>
+            </header>
+            <div class="preview-mode-list">
+              {family.variants.map((variant) => <PalettePreview variant={variant} />)}
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   </section>
@@ -395,54 +123,7 @@ function cardStyle(variant: PreviewVariant): string {
   .preview-family__header p:last-child { color: color-mix(in srgb, var(--color-foreground) 55%, transparent); font-family: var(--font-mono); font-size: var(--text-caption); }
   .preview-family__header > code { flex: none; padding: var(--space-1) var(--space-2); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 18%, transparent); border-radius: var(--radius-control); color: color-mix(in srgb, var(--color-foreground) 60%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); }
   .preview-mode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
-  .preview-mode { min-inline-size: 0; overflow: hidden; border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-panel); background: var(--preview-bg); color: var(--preview-fg); }
-  .preview-mode__header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); padding: var(--space-5); border-block-end: var(--border-thin) solid var(--preview-overlay); }
-  .preview-mode__header p, .preview-mode__header h4 { margin: 0; }
-  .preview-mode__header p { color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); font-weight: 700; letter-spacing: .16em; }
-  .preview-mode__header h4 { margin-block-start: var(--space-2); color: var(--preview-fg); font-family: var(--font-body); font-size: var(--text-body-lg); font-weight: 700; }
-  .preview-mode__header > code { flex: none; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-caption); }
-  .preview-mode__meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-5); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); }
-  .preview-mockups { display: grid; gap: var(--space-3); padding: 0 var(--space-5) var(--space-5); }
-  .preview-pane { min-inline-size: 0; overflow: hidden; border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-control); }
-  .preview-pane h5, .preview-pane__heading { margin: 0; padding: var(--space-2) var(--space-3); border-block-end: var(--border-thin) solid var(--preview-overlay); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .06em; }
-  .preview-pane h5 span { color: var(--preview-secondary); }
-  .preview-pane__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-  .preview-pane button { flex: none; padding: var(--space-1) var(--space-2); border: var(--border-thin) solid var(--preview-accent); border-radius: var(--radius-control); background: transparent; color: var(--preview-accent); font-family: var(--font-mono); font-size: var(--text-overline); cursor: copy; transition: color var(--duration-micro) ease-out, background-color var(--duration-micro) ease-out; }
-  .preview-pane button:hover, .preview-pane button:focus-visible { background: var(--preview-accent); color: var(--preview-bg); }
-  .preview-code-lines { display: grid; gap: 0; margin: 0; padding: var(--space-3) var(--space-3) var(--space-3) var(--space-12); background: color-mix(in srgb, var(--preview-surface) 70%, var(--preview-bg)); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); list-style: none; }
-  .preview-code-lines li { display: grid; grid-template-columns: var(--code-line-number-width) minmax(0, 1fr); gap: var(--space-2); min-inline-size: 0; }
-  .preview-code-lines li > span { color: var(--preview-muted); opacity: .7; }
-  .preview-code-lines code { min-inline-size: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
-  .syntax-token--keyword { color: var(--preview-code-keyword); font-weight: 700; }
-  .syntax-token--property { color: var(--preview-code-property); }
-  .syntax-token--string { color: var(--preview-code-string); }
-  .syntax-token--number { color: var(--preview-code-number); }
-  .syntax-token--comment { color: var(--preview-code-comment); font-style: italic; }
-  .syntax-token--punctuation { color: var(--preview-code-punctuation); }
-  .preview-pane--terminal { background: var(--preview-surface); }
-  .preview-pane--terminal pre { margin: 0; padding: var(--space-3); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .preview-pane--terminal pre code { color: var(--preview-accent); }
-  .preview-pane [data-copy-status] { min-block-size: 1.5em; margin: 0; padding: 0 var(--space-3) var(--space-2); color: var(--preview-secondary); font: var(--text-overline)/1.5 var(--font-mono); }
-  .preview-ramp { display: grid; gap: var(--space-5); padding: var(--space-5); border-block-start: var(--border-thin) solid var(--preview-overlay); }
-  .preview-ramp__section { min-inline-size: 0; }
-  .preview-ramp__section h5, .preview-ramp__title { margin: 0 0 var(--space-2); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .12em; }
-  .preview-ramp__title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
-  .preview-ramp__title span { font-size: var(--text-overline); font-weight: 400; letter-spacing: 0; }
-  .preview-swatch-grid { display: grid; gap: var(--space-2); }
-  .preview-swatch-grid--neutrals { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  .preview-swatch-grid--accents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .preview-swatch-grid--ansi { grid-template-columns: repeat(8, minmax(0, 1fr)); }
-  .preview-ansi-rows { display: grid; gap: var(--space-2); }
-  .preview-swatch-grid button { display: grid; min-inline-size: 0; gap: var(--space-1); padding: 0; border: 0; background: transparent; color: var(--preview-fg); text-align: start; cursor: copy; }
-  .preview-swatch-grid button > span { display: block; block-size: var(--swatch-height); border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-swatch); background: var(--swatch); transition: transform var(--duration-micro) ease-out, border-color var(--duration-micro) ease-out; }
-  .preview-swatch-grid button:hover > span, .preview-swatch-grid button:focus-visible > span { border-color: var(--preview-fg); transform: translateY(-1px); }
-  .preview-swatch-grid strong, .preview-swatch-grid code, .preview-swatch-grid small { min-inline-size: 0; overflow-wrap: anywhere; }
-  .preview-swatch-grid strong { margin-block-start: var(--space-1); color: var(--preview-fg); font-family: var(--font-mono); font-size: var(--text-overline); font-weight: 700; }
-  .preview-swatch-grid code, .preview-swatch-grid small { color: var(--preview-muted); font: var(--text-overline)/1.5 var(--font-mono); }
-  .preview-swatch-grid small { opacity: .8; }
-  .preview-swatch-grid--ansi strong { font-size: var(--text-overline); }
   @media (max-width: 900px) { .preview-mode-list { grid-template-columns: 1fr; } }
   @media (max-width: 720px) { .preview-gates { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-catalog__heading { align-items: start; flex-direction: column; } }
-  @media (max-width: 620px) { .preview-page { padding-block-start: var(--space-5); } .preview-hero { padding-block-start: var(--space-5); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } .preview-mode__header, .preview-mode__meta, .preview-mockups, .preview-ramp { padding-inline: var(--space-4); } .preview-swatch-grid--neutrals { grid-template-columns: repeat(3, minmax(0, 1fr)); } .preview-swatch-grid--ansi { grid-template-columns: repeat(4, minmax(0, 1fr)); } .preview-code-lines { padding-inline-start: var(--space-2); } }
-  @media (prefers-reduced-motion: reduce) { .preview-pane button, .preview-swatch-grid button > span { transition: none; } }
+  @media (max-width: 620px) { .preview-page { padding-block-start: var(--space-5); } .preview-hero { padding-block-start: var(--space-5); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } }
 </style>
