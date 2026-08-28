@@ -1,5 +1,5 @@
 ---
-import ArcadeGame from "../components/ArcadeGame.astro";
+import FeaturedPalettePreview from "../components/FeaturedPalettePreview.astro";
 import { themeTokens } from "../data/theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { sitePath } from "../lib/site-path.mjs";
@@ -39,7 +39,7 @@ const homeStyle = [
         </div>
       </div>
 
-      <ArcadeGame compact initialThemeId="ryu" captureMode={false} />
+      <FeaturedPalettePreview />
     </section>
 
     <section class="home-menu site-frame" aria-labelledby="menu-heading">
