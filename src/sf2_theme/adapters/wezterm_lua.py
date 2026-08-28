@@ -9,6 +9,10 @@ RETURN_NAME = re.compile(r"^return\s+(\w+)\s*$", re.MULTILINE)
 COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=")
 SF2_SCHEME_VALUE = re.compile(r'"(?:sf2-[^"]*|street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"')
 TERM_THEME_GUARD = "TERM_THEME"
+TERM_THEME_ASSIGN = (
+    'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and '
+    'sf2_scheme:find("-light", 1, true)) and "light" or "dark"'
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,7 +43,7 @@ def integration_snippet(pointer: Path, builder: str = "config") -> str:
             "local sf2_scheme = dofile(sf2_current)",
             f"{builder}.color_scheme = sf2_scheme",
             f"local sf2_env = {builder}.set_environment_variables or {{}}",
-            'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"',
+            TERM_THEME_ASSIGN,
             f"{builder}.set_environment_variables = sf2_env",
             "",
         )
@@ -95,7 +99,7 @@ def _upgrade_term_theme_guard(existing: str, pointer: Path) -> str | None:
         f"{indent}local sf2_scheme = dofile(sf2_current)\n",
         f"{indent}{name}.color_scheme = sf2_scheme\n",
         f"{indent}local sf2_env = {name}.set_environment_variables or {{}}\n",
-        f'{indent}sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"\n',
+        f"{indent}{TERM_THEME_ASSIGN}\n",
         f"{indent}{name}.set_environment_variables = sf2_env\n",
     ]
     # Drop a bare `local sf2_current` watch/assignment block's old one-line scheme set.
