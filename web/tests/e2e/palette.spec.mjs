@@ -83,23 +83,8 @@ test("renders every catalog palette from the theme source", async ({ page }) => 
   await expect(
     palettes.evaluateAll((items) => items.map((item) => item.getAttribute("data-palette-id"))),
   ).resolves.toEqual(paletteIds);
-  const screenshots = page.locator("[data-game-screenshot]");
-  await expect(screenshots).toHaveCount(paletteIds.length);
-  const screenshotAttributes = await screenshots.evaluateAll((items) => items.map((image) => ({
-    src: image.getAttribute("src"),
-    width: image.getAttribute("width"),
-    height: image.getAttribute("height"),
-    alt: image.getAttribute("alt"),
-    loading: image.getAttribute("loading"),
-  })));
-  expect(screenshotAttributes.every((entry) =>
-    entry.src?.includes("/sf2-themes/screenshots/game/")
-    && entry.src?.endsWith(".png")
-    && entry.width === "1280"
-    && entry.height === "720"
-    && entry.alt?.includes("gameplay")
-    && entry.loading === "lazy")).toBe(true);
-  await expect.poll(() => screenshots.first().evaluate((image) => image.complete && image.naturalWidth)).toBe(1280);
+  await expect(palettes.locator("[data-game-screenshot]")).toHaveCount(0);
+  await expect(palettes.locator("[data-character-swatch]")).toHaveCount(paletteIds.length * 5);
 });
 
 test("renders the exact TOML source cards and terminal mapping", async ({ page }) => {
