@@ -1,22 +1,22 @@
 # >>> sf2-themes managed theme
 # sf2-themes: sf2-main
 [theme]
-name = "terminal"
+name = "catppuccin"
 
 [theme.custom]
 sidebar_bg = "#131927"
 panel_bg = "#1d2433"
-active_row_bg = "#453714"
+active_row_bg = "#1d2433"
 selection_bg = "#2a3243"
 surface0 = "#1d2433"
 surface1 = "#2a3243"
 surface_dim = "#131927"
-overlay0 = "#2a3243"
-overlay1 = "#7c8597"
+overlay0 = "#7c8597"
+overlay1 = "#9ca7bd"
 text = "#cad1de"
 subtext0 = "#9ca7bd"
 accent = "#ad8705"
-mauve = "#b371ad"
+mauve = "#cf6a63"
 green = "#4e975b"
 yellow = "#a58324"
 red = "#c86e67"

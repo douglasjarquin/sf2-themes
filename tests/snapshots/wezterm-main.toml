@@ -7,9 +7,59 @@ cursor_border = "#ad8705"
 selection_bg = "#453714"
 selection_fg = "#cad1de"
 split = "#2a3243"
-scrollbar_thumb = "#2a3243"
+scrollbar_thumb = "#7c8597"
+compose_cursor = "#cf6a63"
+visual_bell = "#2a3243"
 ansi = ["#2b323f", "#c86e67", "#4e975b", "#a58324", "#5b89cc", "#b371ad", "#1396a1", "#aeb5c2"]
 brights = ["#7c8597", "#ee857d", "#60b46f", "#c59e30", "#6ea4f3", "#d589cf", "#1db3c0", "#d6dbe5"]
+
+[colors.indexed]
+16 = "#c1753c"
+17 = "#ad8705"
+
+[colors.tab_bar]
+background = "#131927"
+inactive_tab_edge = "#2a3243"
+
+[colors.tab_bar.active_tab]
+bg_color = "#ad8705"
+fg_color = "#131927"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab]
+bg_color = "#1d2433"
+fg_color = "#7c8597"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab_hover]
+bg_color = "#2a3243"
+fg_color = "#cad1de"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab]
+bg_color = "#1d2433"
+fg_color = "#7c8597"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab_hover]
+bg_color = "#2a3243"
+fg_color = "#cad1de"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
 
 [metadata]
 name = "sf2-main"

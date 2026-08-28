@@ -7,9 +7,59 @@ cursor_border = "#da6a6a"
 selection_bg = "#522d2c"
 selection_fg = "#cad2df"
 split = "#2b333f"
-scrollbar_thumb = "#2b333f"
+scrollbar_thumb = "#7b8598"
+compose_cursor = "#5b8ac6"
+visual_bell = "#2b333f"
 ansi = ["#2b323f", "#c86e6c", "#5e9465", "#9e8625", "#558acc", "#a278b5", "#1195ad", "#aeb6c2"]
 brights = ["#7b8598", "#ee8582", "#70b27a", "#bda131", "#69a6f3", "#c291d9", "#1bb2ce", "#d6dce5"]
+
+[colors.indexed]
+16 = "#c2753c"
+17 = "#da6a6a"
+
+[colors.tab_bar]
+background = "#141a23"
+inactive_tab_edge = "#2b333f"
+
+[colors.tab_bar.active_tab]
+bg_color = "#da6a6a"
+fg_color = "#141a23"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab]
+bg_color = "#1f252f"
+fg_color = "#7b8598"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab_hover]
+bg_color = "#2b333f"
+fg_color = "#cad2df"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab]
+bg_color = "#1f252f"
+fg_color = "#7b8598"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab_hover]
+bg_color = "#2b333f"
+fg_color = "#cad2df"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
 
 [metadata]
 name = "sf2-ryu"

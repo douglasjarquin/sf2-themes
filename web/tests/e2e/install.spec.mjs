@@ -7,7 +7,7 @@ const readmeInstallBlock = readFileSync(new URL("../../../README.md", import.met
 );
 if (!readmeInstallBlock) throw new Error("README install script not found");
 const installScript = readmeInstallBlock[1].trim();
-const uvCommand = "uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
+const uvCommand = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
 
 test("install route gives the real setup then apply commands", async ({ page }) => {
   // Given: a visitor needs to install the CLI from the project site.

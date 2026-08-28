@@ -66,9 +66,15 @@ def scheme_filename(theme: Theme) -> str:
 
 
 def render_scheme(theme: Theme) -> str:
-    """Render a WezTerm color scheme TOML file."""
+    """Render a WezTerm color scheme TOML file.
+
+    Covers every key Catppuccin-style schemes ship in TOML: core chrome, ANSI,
+    indexed extras, compose/bell cues, and retro tab_bar. Fancy-tab window_frame
+    colors are Lua-only and stay out of scheme files.
+    """
     ui = theme.ui
     adapter = project_adapter_colors(ui)
+    semantic = theme.semantic
     ansi = ", ".join(f'"{color}"' for color in theme.ansi_normal.as_tuple())
     brights = ", ".join(f'"{color}"' for color in theme.ansi_bright.as_tuple())
     lines = [
@@ -81,9 +87,60 @@ def render_scheme(theme: Theme) -> str:
         f'selection_bg = "{adapter.selection_bg}"',
         f'selection_fg = "{adapter.selection_fg}"',
         f'split = "{adapter.surface1}"',
-        f'scrollbar_thumb = "{adapter.overlay0}"',
+        # Muted reads as a real thumb; border is often identical to the track.
+        f'scrollbar_thumb = "{ui.muted}"',
+        f'compose_cursor = "{ui.accent_secondary}"',
+        f'visual_bell = "{ui.overlay}"',
         f"ansi = [{ansi}]",
         f"brights = [{brights}]",
+        "",
+        "[colors.indexed]",
+        f'16 = "{semantic.orange}"',
+        f'17 = "{ui.accent}"',
+        "",
+        "[colors.tab_bar]",
+        f'background = "{ui.background}"',
+        f'inactive_tab_edge = "{ui.border}"',
+        "",
+        "[colors.tab_bar.active_tab]",
+        f'bg_color = "{ui.accent}"',
+        f'fg_color = "{ui.cursor_text}"',
+        'intensity = "Normal"',
+        "italic = false",
+        "strikethrough = false",
+        'underline = "None"',
+        "",
+        "[colors.tab_bar.inactive_tab]",
+        f'bg_color = "{ui.surface}"',
+        f'fg_color = "{ui.muted}"',
+        'intensity = "Normal"',
+        "italic = false",
+        "strikethrough = false",
+        'underline = "None"',
+        "",
+        "[colors.tab_bar.inactive_tab_hover]",
+        f'bg_color = "{ui.overlay}"',
+        f'fg_color = "{ui.foreground}"',
+        'intensity = "Normal"',
+        "italic = false",
+        "strikethrough = false",
+        'underline = "None"',
+        "",
+        "[colors.tab_bar.new_tab]",
+        f'bg_color = "{ui.surface}"',
+        f'fg_color = "{ui.muted}"',
+        'intensity = "Normal"',
+        "italic = false",
+        "strikethrough = false",
+        'underline = "None"',
+        "",
+        "[colors.tab_bar.new_tab_hover]",
+        f'bg_color = "{ui.overlay}"',
+        f'fg_color = "{ui.foreground}"',
+        'intensity = "Normal"',
+        "italic = false",
+        "strikethrough = false",
+        'underline = "None"',
         "",
         "[metadata]",
         f'name = "{theme.metadata.selectable_id}"',

@@ -8,6 +8,16 @@ aube = "2.1"
 description = "Run Python and standalone CLI tests"
 run = ["uv run --with pytest pytest -q", "bash tests/test_cli.sh"]
 
+[tasks.apply]
+description = "Apply a theme with the project CLI"
+raw_args = true
+run = "uv run --project . sf2-themes apply"
+
+[tasks.setup]
+description = "Set up an adapter with the project CLI"
+raw_args = true
+run = "uv run --project . sf2-themes setup"
+
 [tasks."web:dev"]
 description = "Start the Astro development server"
 run = "aube -C web run dev -- --host 127.0.0.1"

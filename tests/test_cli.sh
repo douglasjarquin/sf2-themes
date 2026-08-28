@@ -22,12 +22,12 @@ assert config["ui"]["theme"] == "follow-system"
 custom = config["theme"]["custom"]
 assert custom["accent"] == "#ad8705"
 assert custom["text"] == "#cad1de"
-assert custom["active_row_bg"] == "#453714"
+assert custom["active_row_bg"] == "#1d2433"
 assert custom["selection_bg"] == "#2a3243"
-assert custom["overlay0"] == "#2a3243"
+assert custom["overlay0"] == "#7c8597"
 assert custom["mauve"]
 assert custom["peach"]
-assert config["theme"]["name"] == "terminal"
+assert config["theme"]["name"] == "catppuccin"
 print("Herdr merge preservation: PASS")
 PY
 
@@ -88,6 +88,8 @@ return config
 LUA
 
 "$repo_dir/sf2-themes" setup wezterm --config-dir "$test_dir/wezterm-safe"
-grep -q 'config.color_scheme = dofile(sf2_current)' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'local sf2_scheme = dofile(sf2_current)' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'config.color_scheme = sf2_scheme' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'TERM_THEME' "$test_dir/wezterm-safe/wezterm.lua"
 grep -q 'return config' "$test_dir/wezterm-safe/wezterm.lua"
 printf '%s\n' 'WezTerm safe builder integration: PASS'

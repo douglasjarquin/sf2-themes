@@ -7,25 +7,36 @@ from pathlib import Path
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme, project_adapter_colors
+from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
 ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
+# Herdr paints the active tab chip and the focused split border with the same
+# `accent` token. Prefer primary accent for both; `name = "terminal"` left those
+# as ANSI Blue (WezTerm's semantic blue), which is wrong for SF2 palettes.
+#
+# Do not map Herdr row fills to ui.selection_background: that token is a punchy
+# terminal-selection tint and reads as an off-palette purple slab in the sidebar.
+# Use surface steps instead (active = surface, navigate cursor = overlay).
+#
+# Herdr's overlay0/overlay1 are muted *text* roles (catppuccin #6c7086/#7f849c),
+# not chrome borders. Shared adapter.overlay0 is ui.border for WezTerm/nvim/codex;
+# remap here only so dim sidebar labels stay readable.
 HERDR_TOKENS = (
     ("sidebar_bg", "adapter", "sidebar_bg"),
     ("panel_bg", "adapter", "panel_bg"),
-    ("active_row_bg", "adapter", "active_row_bg"),
-    ("selection_bg", "adapter", "navigate_row_bg"),
+    ("active_row_bg", "adapter", "surface0"),
+    ("selection_bg", "adapter", "surface1"),
     ("surface0", "adapter", "surface0"),
     ("surface1", "adapter", "surface1"),
     ("surface_dim", "adapter", "surface_dim"),
-    ("overlay0", "adapter", "overlay0"),
-    ("overlay1", "adapter", "overlay1"),
+    ("overlay0", "ui", "muted"),
+    ("overlay1", "ui", "subtle"),
     ("text", "ui", "foreground"),
     ("subtext0", "adapter", "subtext"),
     ("accent", "ui", "accent"),
-    ("mauve", "semantic", "magenta"),
+    ("mauve", "ui", "accent_secondary"),
     ("green", "semantic", "green"),
     ("yellow", "semantic", "yellow"),
     ("red", "semantic", "red"),
@@ -33,6 +44,13 @@ HERDR_TOKENS = (
     ("teal", "semantic", "cyan"),
     ("peach", "semantic", "orange"),
 )
+
+
+def herdr_base_theme_name(theme: Theme) -> str:
+    """Return a concrete Herdr base so ANSI Blue never leaks into chrome."""
+    if theme.metadata.variant is ThemeVariant.LIGHT:
+        return "catppuccin-latte"
+    return "catppuccin"
 
 
 def herdr_path(config_dir: Path | None) -> Path:
@@ -54,7 +72,7 @@ def render_block(theme: Theme) -> str:
         MANAGED_START,
         f"# sf2-themes: {theme.metadata.selectable_id}",
         "[theme]",
-        'name = "terminal"',
+        f'name = "{herdr_base_theme_name(theme)}"',
         "",
         "[theme.custom]",
     ]

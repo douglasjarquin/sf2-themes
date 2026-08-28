@@ -11,6 +11,7 @@ def test_apps_and_version(capsys) -> None:
     assert "wezterm" in apps
     assert "herdr" in apps
     assert "nvim" in apps
+    assert "starship" in apps
     assert dispatch(["--version"]) == 0
     assert capsys.readouterr().out.strip() == "1.0.1"
 
