@@ -201,13 +201,34 @@ const initialSwatches = swatches(initialPalette);
       // The complete static palette remains visible when serialized data cannot be read.
       return;
     }
-    if (!Array.isArray(palettes) || palettes.length === 0) return;
+    const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    const hasStringProperties = (value, properties) =>
+      value !== null &&
+      typeof value === "object" &&
+      properties.every((property) => typeof value[property] === "string");
+    const isPalette = (value) => {
+      if (value === null || typeof value !== "object") return false;
+      const tokens = value.tokens;
+      if (tokens === null || typeof tokens !== "object") return false;
+      const ansi = tokens.ansi;
+      return (
+        hasStringProperties(value, ["id", "name"]) &&
+        hasStringProperties(tokens.meta, ["variant"]) &&
+        hasStringProperties(tokens.ui, [
+          "background", "surface_dim", "surface", "overlay", "border", "foreground", "muted", "subtle", "accent", "accent_secondary",
+        ]) &&
+        ansi !== null &&
+        typeof ansi === "object" &&
+        hasStringProperties(ansi.normal, ansiRoles) &&
+        hasStringProperties(ansi.bright, ansiRoles) &&
+        hasStringProperties(tokens.semantic, ["green", "yellow", "magenta"])
+      );
+    };
+    if (!Array.isArray(palettes) || palettes.length === 0 || !palettes.every(isPalette)) return;
       const palette = palettes[Math.floor(Math.random() * palettes.length)];
-      if (!palette?.tokens?.ui || !palette?.tokens?.ansi || !palette?.tokens?.semantic) return;
 
       const nextPreview = currentPreview.cloneNode(true);
       if (!(nextPreview instanceof HTMLElement)) return;
-      const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
       const nextSwatches = [
         ["neutral", "BACKGROUND", "ui.background", palette.tokens.ui.background],
         ["neutral", "SURFACE DIM", "ui.surface_dim", palette.tokens.ui.surface_dim],

@@ -138,6 +138,36 @@ test("malformed featured palette data preserves the static fallback", async ({ p
   expect(runtimeErrors).toEqual([]);
 });
 
+test("structurally malformed featured palette data preserves the static fallback", async ({ page }) => {
+  // Given: the serialized payload is valid JSON but lacks required nested palette values.
+  const runtimeErrors = [];
+  page.on("pageerror", (error) => runtimeErrors.push(`page: ${error.message}`));
+  page.on("console", (message) => {
+    if (message.type() === "error") runtimeErrors.push(`console: ${message.text()}`);
+  });
+  await page.route("**/sf2-themes/", async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const corrupted = body.replace(
+      /(<script[^>]*data-featured-palette-data[^>]*>)[\s\S]*?(<\/script>)/,
+      '$1[{"id":"malformed","name":"Malformed","tokens":{"ui":{},"ansi":{},"semantic":{}}}]$2',
+    );
+    expect(corrupted).not.toBe(body);
+    await route.fulfill({ response, body: corrupted });
+  });
+
+  // When: the production-built home route opens.
+  await page.goto("./");
+  const preview = page.locator("[data-featured-palette-preview]");
+
+  // Then: the complete static first palette remains visible without uncaught errors.
+  await expect(preview).toHaveAttribute("data-selected-palette", initialPalette.id);
+  await expect(preview.locator("[data-code-pane]")).toContainText(`id: \"${initialPalette.id}\"`);
+  await expect(preview.locator("[data-terminal-pane]")).toContainText(`sf2-themes show ${initialPalette.id}`);
+  await expect(preview.locator("[data-preview-swatch]")).toHaveCount(25);
+  expect(runtimeErrors).toEqual([]);
+});
+
 test("unexpected featured palette rendering errors are not swallowed", async ({ browser }) => {
   // Given: a DOM update fails after the payload has parsed successfully.
   const context = await browser.newContext({

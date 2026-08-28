@@ -325,16 +325,18 @@ test("game palette changes preserve fighters and outside text input keeps native
   await expect(cabinet).toHaveAttribute("data-player-two", "ken");
   await page.evaluate(() => {
     const input = document.createElement("input");
+    input.dataset.nativeInputProbe = "";
     input.value = "native";
     document.body.append(input);
     input.focus();
     input.setSelectionRange(6, 6);
   });
-  await page.locator("input").press("ArrowLeft");
+  const nativeInput = page.locator("[data-native-input-probe]");
+  await nativeInput.press("ArrowLeft");
 
   // Then: the native control consumes its own keypress instead of the game.
   await expect
-    .poll(() => page.locator("input").evaluate((input) => (input instanceof HTMLInputElement ? input.selectionStart : null)))
+    .poll(() => nativeInput.evaluate((input) => (input instanceof HTMLInputElement ? input.selectionStart : null)))
     .toBe(5);
   await expect(cabinet).not.toBeFocused();
   expect(runtimeErrors).toEqual([]);
