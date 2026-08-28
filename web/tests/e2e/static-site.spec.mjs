@@ -7,7 +7,7 @@ const routes = [
     title: "Street Fighter II terminal themes | sf2-themes",
     description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, and Codex.",
     canonical: `${origin}/sf2-themes/`,
-    heading: "FIGHT FOR YOUR TERMINAL",
+    heading: "Fight for your terminal.",
   },
   {
     path: "themes/",
