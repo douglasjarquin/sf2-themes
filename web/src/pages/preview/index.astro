@@ -30,9 +30,9 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
     <header class="preview-hero site-frame">
       <div class="preview-hero__intro">
         <PageBreadcrumb current="PREVIEW" detail="18 FAMILIES / DARK + LIGHT" />
-        <h1>Every fighter gets a real palette.</h1>
+        <h1 class="page-title">PREVIEW</h1>
         <p>
-          Explore every canonical palette as it will appear in a developer workflow.
+          Every fighter gets a real palette. Explore every canonical palette as it will appear in a developer workflow.
           Each mode keeps its own neutral ramp, fighter accents, and complete ANSI set,
           with the source colors visible beside the code and terminal previews.
         </p>
@@ -103,7 +103,6 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
   .preview-hero { display: grid; gap: var(--space-8); padding-block: var(--space-8) var(--space-10); }
   .preview-hero__intro { display: grid; gap: var(--space-4); max-inline-size: 900px; }
   .preview-kicker { margin: 0; color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; line-height: 1.9; }
-  .preview-hero h1 { max-inline-size: 760px; margin: 0; color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-hero); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
   .preview-hero__intro > p:last-child { max-inline-size: 72ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
   .preview-gates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
   .preview-gate { display: grid; gap: var(--space-2); min-inline-size: 0; padding: var(--space-4); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 12%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-panel) 58%, transparent); }

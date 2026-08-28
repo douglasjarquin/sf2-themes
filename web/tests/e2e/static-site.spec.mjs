@@ -30,7 +30,7 @@ const routes = [
     title: "Palette Preview | sf2-themes",
     description: "Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews.",
     canonical: `${origin}/sf2-themes/preview/`,
-    heading: "Every fighter gets a real palette.",
+    heading: "PREVIEW",
   },
   {
     path: "install/",

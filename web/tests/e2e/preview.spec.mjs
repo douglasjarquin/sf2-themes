@@ -21,7 +21,7 @@ test("preview route renders a useful palette surface for every canonical variant
   const variants = page.locator("[data-preview-variant]");
 
   // Then: the reference layout presents 18 families and 36 paired palette variants.
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every fighter gets a real palette.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("PREVIEW");
   await expect(families).toHaveCount(18);
   await expect(variants).toHaveCount(36);
   await expect(variants.evaluateAll((items) => items.map((item) => item.dataset.previewId))).resolves.toEqual(
