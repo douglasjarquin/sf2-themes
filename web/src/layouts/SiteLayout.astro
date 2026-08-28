@@ -2,7 +2,6 @@
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { characterVariants, themeTokens } from "../data/theme-data.mjs";
-import { sitePath } from "../lib/site-path.mjs";
 import {
   CABINET_IMAGE_PATH,
   PRODUCT_DESCRIPTION,
@@ -68,7 +67,7 @@ const customProperties = [...colorVariables]
     <title>{pageTitle}</title>
     <script is:inline type="application/ld+json" set:html={jsonLd} />
   </head>
-  <body data-page={Astro.url.pathname === sitePath("preview") ? "preview" : undefined}>
+  <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="site-shell">
       <SiteHeader currentPath={Astro.url.pathname} />
