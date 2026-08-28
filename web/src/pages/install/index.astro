@@ -2,7 +2,7 @@
 import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
-const uvCommand = "uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
+const uvCommand = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
 const installScript = `${uvCommand} --version`;
 
 const moves = [
@@ -14,6 +14,7 @@ const moves = [
   ["NVIM", `${uvCommand} apply nvim --theme ryu-light`, "Apply Ryu Light, or replace the theme name with your fighter."],
   ["CODEX", `${uvCommand} setup codex`, "Set up the one-time Codex custom theme directory."],
   ["CODEX", `${uvCommand} apply codex --theme ryu-light`, "Apply Ryu Light, then restart Codex or reselect it with /theme."],
+  ["STARSHIP", `${uvCommand} apply starship --theme vega`, "Apply Vega to Starship and refresh the zsh-syntax highlight snippet."],
 ];
 ---
 

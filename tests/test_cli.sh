@@ -22,12 +22,12 @@ assert config["ui"]["theme"] == "follow-system"
 custom = config["theme"]["custom"]
 assert custom["accent"] == "#ad8705"
 assert custom["text"] == "#cad1de"
-assert custom["active_row_bg"] == "#453714"
+assert custom["active_row_bg"] == "#1d2433"
 assert custom["selection_bg"] == "#2a3243"
-assert custom["overlay0"] == "#2a3243"
+assert custom["overlay0"] == "#7c8597"
 assert custom["mauve"]
 assert custom["peach"]
-assert config["theme"]["name"] == "terminal"
+assert config["theme"]["name"] == "catppuccin"
 print("Herdr merge preservation: PASS")
 PY
 
