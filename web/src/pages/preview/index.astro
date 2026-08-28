@@ -99,8 +99,8 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
 </script>
 
 <style>
-  .preview-page { padding-block: var(--space-10) var(--space-20); background: var(--color-background); }
-  .preview-hero { display: grid; gap: var(--space-8); padding-block: var(--space-8) var(--space-10); }
+  .preview-page { padding-block: var(--space-12) var(--space-20); background: var(--color-background); }
+  .preview-hero { display: grid; gap: var(--space-8); padding-block-end: var(--space-10); }
   .preview-hero__intro { display: grid; gap: var(--space-4); max-inline-size: 900px; }
   .preview-kicker { margin: 0; color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; line-height: 1.9; }
   .preview-hero__intro > p:last-child { max-inline-size: 72ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
@@ -125,5 +125,5 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
   .preview-mode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
   @media (max-width: 900px) { .preview-mode-list { grid-template-columns: 1fr; } }
   @media (max-width: 720px) { .preview-gates { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-catalog__heading { align-items: start; flex-direction: column; } }
-  @media (max-width: 620px) { .preview-page { padding-block-start: var(--space-5); } .preview-hero { padding-block-start: var(--space-5); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } }
+  @media (max-width: 620px) { .preview-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } }
 </style>

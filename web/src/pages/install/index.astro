@@ -25,7 +25,6 @@ const moves = [
     <div class="site-frame install-page__inner">
       <header class="install-page__header">
         <PageBreadcrumb current="INSTALL" detail="SETUP + APPLY" />
-        <p>READY PLAYER ONE</p>
         <h1 class="page-title">INSTALL</h1>
         <p class="install-page__lede">
           Run the CLI directly from GitHub with uv, then set up each terminal once.
@@ -125,11 +124,10 @@ const moves = [
   .sr-only { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
   .install-page__header, .adapter-notes { grid-column: 1 / -1; }
   .install-page__header { display: grid; gap: var(--space-4); max-inline-size: 760px; }
-  .install-page__header > p:first-child { display: none; }
-  .install-page__header > p:first-child, .install-panel__eyebrow, .install-moves__heading > p, .adapter-notes > p, .install-moves li > span { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
+  .install-panel__eyebrow, .install-moves__heading > p, .adapter-notes > p, .install-moves li > span { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
   .install-moves li p { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 14px; line-height: 1.45; }
-  h2 { margin: 0; color: var(--color-accent); font-family: var(--font-display); font-weight: 400; text-shadow: 4px 4px 0 var(--color-red); }
-  h2 { font-size: clamp(16px, 3vw, 20px); line-height: 1.6; }
+  h2 { margin: 0; color: var(--color-foreground); font-family: var(--font-display); font-weight: 700; }
+  h2 { font-size: var(--text-section); line-height: 1.5; }
   .install-page__lede, .install-panel__meta, .install-moves small, .adapter-notes li { color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 16px; line-height: 1.7; }
   .install-page__lede, .install-panel__meta { margin: 0; }
   .install-panel, .adapter-notes { border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-background) 72%, black); }
