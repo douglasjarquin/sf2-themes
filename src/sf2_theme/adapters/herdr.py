@@ -19,6 +19,10 @@ ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
 # Do not map Herdr row fills to ui.selection_background: that token is a punchy
 # terminal-selection tint and reads as an off-palette purple slab in the sidebar.
 # Use surface steps instead (active = surface, navigate cursor = overlay).
+#
+# Herdr's overlay0/overlay1 are muted *text* roles (catppuccin #6c7086/#7f849c),
+# not chrome borders. Shared adapter.overlay0 is ui.border for WezTerm/nvim/codex;
+# remap here only so dim sidebar labels stay readable.
 HERDR_TOKENS = (
     ("sidebar_bg", "adapter", "sidebar_bg"),
     ("panel_bg", "adapter", "panel_bg"),
@@ -27,8 +31,8 @@ HERDR_TOKENS = (
     ("surface0", "adapter", "surface0"),
     ("surface1", "adapter", "surface1"),
     ("surface_dim", "adapter", "surface_dim"),
-    ("overlay0", "adapter", "overlay0"),
-    ("overlay1", "adapter", "overlay1"),
+    ("overlay0", "ui", "muted"),
+    ("overlay1", "ui", "subtle"),
     ("text", "ui", "foreground"),
     ("subtext0", "adapter", "subtext"),
     ("accent", "ui", "accent"),

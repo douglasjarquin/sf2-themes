@@ -33,6 +33,15 @@ def test_sidebar_rows_use_surfaces_not_selection_tint() -> None:
     assert f'active_row_bg = "{theme.ui.selection_background}"' not in block
 
 
+def test_overlay_tokens_are_muted_text_not_border() -> None:
+    # Herdr uses overlay0/1 as dim fg; shared adapter.overlay0 is border chrome.
+    theme = get_theme("vega", parse_catalog())
+    block = render_block(theme)
+    assert f'overlay0 = "{theme.ui.muted}"' in block
+    assert f'overlay1 = "{theme.ui.subtle}"' in block
+    assert f'overlay0 = "{theme.ui.border}"' not in block
+
+
 def test_herdr_managed_identity_is_prefixed() -> None:
     theme = get_theme("main", parse_catalog())
 
