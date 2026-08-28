@@ -2,6 +2,11 @@
 import { paletteVariants } from "../data/theme-data.mjs";
 
 type PreviewVariant = (typeof paletteVariants)[number];
+type SyntaxTokenKind = "comment" | "keyword" | "number" | "plain" | "property" | "punctuation" | "string";
+type SyntaxToken = {
+  readonly kind: SyntaxTokenKind;
+  readonly text: string;
+};
 type Swatch = {
   readonly group: "accent" | "bright" | "neutral" | "normal";
   readonly label: string;
@@ -24,6 +29,28 @@ function codeLines(variant: PreviewVariant): readonly string[] {
     "  },",
     "} as const;",
   ];
+}
+
+const syntaxPattern = /\/\/.*$|"(?:\\.|[^"])*"|\b(?:const|as)\b|\b(?:id|mode|ui|background|foreground|accent)(?=\s*:)|\b\d+(?:\.\d+)?\b|[{}(),:.;]/g;
+
+function highlightCodeLine(line: string): readonly SyntaxToken[] {
+  const tokens: SyntaxToken[] = [];
+  let cursor = 0;
+  for (const match of line.matchAll(syntaxPattern)) {
+    const index = match.index ?? 0;
+    if (index > cursor) tokens.push({ kind: "plain", text: line.slice(cursor, index) });
+    const text = match[0];
+    let kind: SyntaxTokenKind = "punctuation";
+    if (text.startsWith("//")) kind = "comment";
+    else if (text.startsWith("\"")) kind = "string";
+    else if (/^(const|as)$/.test(text)) kind = "keyword";
+    else if (/^(id|mode|ui|background|foreground|accent)$/.test(text)) kind = "property";
+    else if (/^\d/.test(text)) kind = "number";
+    tokens.push({ kind, text });
+    cursor = index + text.length;
+  }
+  if (cursor < line.length) tokens.push({ kind: "plain", text: line.slice(cursor) });
+  return tokens;
 }
 
 function terminalLines(variant: PreviewVariant): readonly string[] {
@@ -75,6 +102,12 @@ function previewStyle(variant: PreviewVariant): string {
     ["--preview-subtle", variant.tokens.ui.subtle],
     ["--preview-accent", variant.tokens.ui.accent],
     ["--preview-secondary", variant.tokens.ui.accent_secondary],
+    ["--preview-code-keyword", variant.tokens.semantic.magenta],
+    ["--preview-code-property", variant.tokens.ui.accent],
+    ["--preview-code-string", variant.tokens.semantic.green],
+    ["--preview-code-number", variant.tokens.semantic.yellow],
+    ["--preview-code-comment", variant.tokens.ui.subtle],
+    ["--preview-code-punctuation", variant.tokens.ui.muted],
   ]
     .map(([property, value]) => `${property}: ${value}`)
     .join("; ");
@@ -106,7 +139,18 @@ const initialSwatches = swatches(initialPalette);
   <div class="featured-preview__panes">
     <section class="featured-preview__pane featured-preview__pane--code" data-code-pane>
       <h3><span data-preview-id>{initialPalette.id}</span>/preview.ts</h3>
-      <pre><code data-code-content>{codeLines(initialPalette).join("\n")}</code></pre>
+      <ol class="featured-preview__code-lines" data-code-content>
+        {codeLines(initialPalette).map((line, lineIndex) => (
+          <li>
+            <span aria-hidden="true">{String(lineIndex + 1).padStart(2, "0")}</span>
+            <code>
+              {highlightCodeLine(line).map((token) => (
+                <span class={`syntax-token syntax-token--${token.kind}`} data-syntax-kind={token.kind} data-syntax-token>{token.text}</span>
+              ))}
+            </code>
+          </li>
+        ))}
+      </ol>
     </section>
     <section class="featured-preview__pane featured-preview__pane--terminal" data-terminal-pane>
       <h3>TERMINAL / <span data-preview-id>{initialPalette.id}</span></h3>
@@ -193,6 +237,49 @@ const initialSwatches = swatches(initialPalette);
         `ansi.white  ${palette.tokens.ansi.normal.white}`,
       ];
 
+      const syntaxPattern = /\/\/.*$|"(?:\\.|[^"])*"|\b(?:const|as)\b|\b(?:id|mode|ui|background|foreground|accent)(?=\s*:)|\b\d+(?:\.\d+)?\b|[{}(),:.;]/g;
+      const highlightCodeLine = (line) => {
+        const tokens = [];
+        let cursor = 0;
+        for (const match of line.matchAll(syntaxPattern)) {
+          const index = match.index ?? 0;
+          if (index > cursor) tokens.push(["plain", line.slice(cursor, index)]);
+          const text = match[0];
+          let kind = "punctuation";
+          if (text.startsWith("//")) kind = "comment";
+          else if (text.startsWith("\"")) kind = "string";
+          else if (/^(const|as)$/.test(text)) kind = "keyword";
+          else if (/^(id|mode|ui|background|foreground|accent)$/.test(text)) kind = "property";
+          else if (/^\d/.test(text)) kind = "number";
+          tokens.push([kind, text]);
+          cursor = index + text.length;
+        }
+        if (cursor < line.length) tokens.push(["plain", line.slice(cursor)]);
+        return tokens;
+      };
+
+      const renderCode = (codeContent, lines) => {
+        codeContent.replaceChildren();
+        lines.forEach((line, lineIndex) => {
+          const lineNode = document.createElement("li");
+          const numberNode = document.createElement("span");
+          numberNode.setAttribute("aria-hidden", "true");
+          numberNode.textContent = String(lineIndex + 1).padStart(2, "0");
+          lineNode.append(numberNode);
+          const textNode = document.createElement("code");
+          for (const [kind, text] of highlightCodeLine(line)) {
+            const tokenNode = document.createElement("span");
+            tokenNode.className = `syntax-token syntax-token--${kind}`;
+            tokenNode.dataset.syntaxKind = kind;
+            tokenNode.dataset.syntaxToken = "";
+            tokenNode.textContent = text;
+            textNode.append(tokenNode);
+          }
+          lineNode.append(textNode);
+          codeContent.append(lineNode);
+        });
+      };
+
       nextPreview.dataset.selectedPalette = palette.id;
       nextPreview.setAttribute("aria-label", `Featured palette: ${palette.name}`);
       for (const [property, value] of [
@@ -205,6 +292,12 @@ const initialSwatches = swatches(initialPalette);
         ["--preview-subtle", palette.tokens.ui.subtle],
         ["--preview-accent", palette.tokens.ui.accent],
         ["--preview-secondary", palette.tokens.ui.accent_secondary],
+        ["--preview-code-keyword", palette.tokens.semantic.magenta],
+        ["--preview-code-property", palette.tokens.ui.accent],
+        ["--preview-code-string", palette.tokens.semantic.green],
+        ["--preview-code-number", palette.tokens.semantic.yellow],
+        ["--preview-code-comment", palette.tokens.ui.subtle],
+        ["--preview-code-punctuation", palette.tokens.ui.muted],
       ]) nextPreview.style.setProperty(property, value);
       for (const node of nextPreview.querySelectorAll("[data-preview-id]")) node.textContent = palette.id;
       const name = nextPreview.querySelector("[data-preview-name]");
@@ -213,7 +306,7 @@ const initialSwatches = swatches(initialPalette);
       const terminalContent = nextPreview.querySelector("[data-terminal-content]");
       if (name) name.textContent = palette.name;
       if (mode) mode.textContent = palette.tokens.meta.variant.toUpperCase();
-      if (codeContent) codeContent.textContent = code.join("\n");
+      if (codeContent instanceof HTMLElement) renderCode(codeContent, code);
       if (terminalContent) terminalContent.textContent = terminal.join("\n");
 
       const swatchNodes = nextPreview.querySelectorAll("[data-preview-swatch]");
@@ -248,9 +341,17 @@ const initialSwatches = swatches(initialPalette);
   .featured-preview__panes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-3); }
   .featured-preview__pane { min-inline-size: 0; overflow: hidden; border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-control); background: var(--preview-surface); }
   .featured-preview__pane h3 { margin: 0; padding: var(--space-2); border-block-end: var(--border-thin) solid var(--preview-overlay); color: var(--preview-subtle); font: var(--text-label)/1.5 var(--font-mono); letter-spacing: .06em; }
-  .featured-preview__pane pre { margin: 0; padding: var(--space-2); color: var(--preview-fg); font: var(--text-caption)/1.65 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
-  .featured-preview__pane--code pre { background: color-mix(in srgb, var(--preview-surface) 70%, var(--preview-bg)); }
-  .featured-preview__pane--code code { color: var(--preview-secondary); }
+  .featured-preview__code-lines { display: grid; gap: 0; margin: 0; padding: var(--space-2); background: color-mix(in srgb, var(--preview-surface) 70%, var(--preview-bg)); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); list-style: none; }
+  .featured-preview__code-lines :global(li) { display: grid; grid-template-columns: var(--code-line-number-width) minmax(0, 1fr); gap: var(--space-2); min-inline-size: 0; }
+  .featured-preview__code-lines :global(li > span) { color: var(--preview-subtle); opacity: .7; }
+  .featured-preview__code-lines :global(code) { min-inline-size: 0; overflow-wrap: anywhere; white-space: pre-wrap; color: var(--preview-secondary); }
+  :global(.syntax-token--keyword) { color: var(--preview-code-keyword); }
+  :global(.syntax-token--property) { color: var(--preview-code-property); }
+  :global(.syntax-token--string) { color: var(--preview-code-string); }
+  :global(.syntax-token--number) { color: var(--preview-code-number); }
+  :global(.syntax-token--comment) { color: var(--preview-code-comment); }
+  :global(.syntax-token--punctuation) { color: var(--preview-code-punctuation); }
+  :global(.syntax-token--plain) { color: inherit; }
   .featured-preview__pane--terminal code { color: var(--preview-accent); }
   .featured-preview__ramps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); padding: 0 var(--space-3) var(--space-3); }
   .featured-preview__ramp { min-inline-size: 0; }

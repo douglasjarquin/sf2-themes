@@ -18,6 +18,12 @@ test("the home features one canonical palette preview instead of the arcade", as
   expect(selectedPalette).toBeDefined();
   await expect(preview.locator("[data-code-pane]")).toContainText(`id: \"${selectedPalette?.id}\"`);
   await expect(preview.locator("[data-code-pane]")).toContainText(selectedPalette?.tokens.ui.accent ?? "");
+  const highlightedTokens = await preview.locator("[data-code-pane] [data-syntax-token]").evaluateAll(
+    (tokens) => tokens.map((token) => ({ text: token.textContent, className: token.className })),
+  );
+  expect(highlightedTokens.length).toBeGreaterThan(0);
+  expect(highlightedTokens.some(({ text, className }) => text === "const" && className.includes("syntax-token--keyword"))).toBe(true);
+  expect(highlightedTokens.some(({ text, className }) => text === `\"${selectedPalette?.id}\"` && className.includes("syntax-token--string"))).toBe(true);
   await expect(preview.locator("[data-terminal-pane]")).toContainText(
     `sf2-themes show ${selectedPalette?.id}`,
   );
@@ -53,6 +59,23 @@ test("distinct controlled page loads select distinct canonical featured palettes
 
       // Then: the controlled draw selects its distinct canonical palette at the real route boundary.
       await expect(preview).toHaveAttribute("data-selected-palette", palette?.id ?? "");
+      const highlightedTokens = await preview.locator("[data-code-pane] [data-syntax-token]").evaluateAll(
+        (tokens) => tokens.map((token) => ({ text: token.textContent, className: token.className })),
+      );
+      expect(highlightedTokens.length).toBeGreaterThan(0);
+      expect(highlightedTokens.some(({ text, className }) => text === `\"${palette?.id}\"` && className.includes("syntax-token--string"))).toBe(true);
+      const syntaxColors = await preview.locator("[data-code-pane] [data-syntax-token]").evaluateAll((tokens) => {
+        const keyword = tokens.find((token) => token.classList.contains("syntax-token--keyword"));
+        const string = tokens.find((token) => token.classList.contains("syntax-token--string"));
+        const code = tokens[0]?.closest("code");
+        return {
+          keyword: keyword ? getComputedStyle(keyword).color : "",
+          string: string ? getComputedStyle(string).color : "",
+          code: code ? getComputedStyle(code).color : "",
+        };
+      });
+      expect(syntaxColors.keyword).not.toBe(syntaxColors.code);
+      expect(syntaxColors.string).not.toBe(syntaxColors.code);
     } finally {
       await context.close();
     }
@@ -78,6 +101,7 @@ test("the home featured palette remains useful without client JavaScript", async
     await expect(preview.locator("[data-terminal-pane]")).toContainText(
       `sf2-themes show ${initialPalette.id}`,
     );
+    await expect(preview.locator("[data-code-pane] [data-syntax-token]")).not.toHaveCount(0);
     await expect(preview.locator("[data-preview-swatch]")).toHaveCount(25);
   } finally {
     await context.close();
