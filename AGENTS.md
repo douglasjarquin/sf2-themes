@@ -84,6 +84,8 @@ docs/                Authored contracts and generated SVG previews
 
 ```bash
 mise run test
+mise run apply -- wezterm --theme vega
+./sf2-themes --version
 python3 scripts/build-standalone.py
 mise run web:install
 mise run web:check
