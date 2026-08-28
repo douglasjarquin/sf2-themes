@@ -13,8 +13,11 @@ from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
 from sf2_theme.adapters.nvim import apply_nvim, setup_nvim
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
+from sf2_theme.adapters.starship import apply_starship
+from sf2_theme.adapters.starship import read_current_id as starship_current
 from sf2_theme.adapters.wezterm import apply_wezterm, setup_wezterm
 from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
+from sf2_theme.adapters.zsh_syntax import SOURCE_HINT, apply_zsh_syntax
 from sf2_theme.catalog import (
     catalog_issues,
     default_theme,
@@ -25,9 +28,10 @@ from sf2_theme.catalog import (
 )
 from sf2_theme.errors import CliError, ThemeError
 from sf2_theme.filesystem import WriteResult
+from sf2_theme.model import Theme
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "nvim", "codex")
+APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship")
 HELP_TEXT = """Street Fighter II theme pack
 
 Usage:
@@ -43,6 +47,7 @@ Usage:
 setup performs one-time application integration.
 apply writes or selects the active theme (default: main).
 install is a deprecated alias for apply.
+starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
 """
 
 
@@ -114,7 +119,7 @@ def _need_value(arguments: Sequence[str], index: int, flag: str) -> str:
 
 def _app(name: str) -> str:
     if name not in APP_NAMES:
-        raise CliError(f"unsupported app: {name}; choose wezterm, herdr, nvim, or codex")
+        raise CliError(f"unsupported app: {name}; choose {', '.join(APP_NAMES)}")
     return name
 
 
@@ -123,6 +128,22 @@ def _report(results: Sequence[WriteResult]) -> None:
         print(f"{result.action.value}: {result.path}")
         if result.diff and result.action.value.startswith("would_"):
             print(result.diff, end="")
+
+
+def _apply_starship(theme: Theme, options: Options) -> list[WriteResult]:
+    return [
+        apply_starship(
+            theme,
+            config_dir=options.config_dir,
+            dry_run=options.dry_run,
+            follow_symlinks=options.follow_symlinks,
+        ),
+        apply_zsh_syntax(
+            theme,
+            dry_run=options.dry_run,
+            follow_symlinks=options.follow_symlinks,
+        ),
+    ]
 
 
 def _setup(app: str, options: Options) -> None:
@@ -178,6 +199,13 @@ def _setup(app: str, options: Options) -> None:
                     replace_theme=options.theme is not None,
                 )
             )
+        case "starship":
+            _report(_apply_starship(theme, options))
+            print(
+                "Source the zsh highlight snippet after zsh-syntax-highlighting:\n"
+                f"  {SOURCE_HINT}\n",
+                file=sys.stderr,
+            )
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -228,6 +256,8 @@ def _apply(app: str, options: Options) -> None:
                     follow_symlinks=options.follow_symlinks,
                 )
             )
+        case "starship":
+            _report(_apply_starship(theme, options))
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -266,6 +296,8 @@ def _current(app: str, options: Options) -> None:
             print(nvim_current(options.config_dir))
         case "codex":
             print(codex_current(options.config_dir))
+        case "starship":
+            print(starship_current(options.config_dir))
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -279,6 +311,7 @@ def dispatch(arguments: list[str]) -> int:
         print(__version__)
         return 0
     command, *rest = arguments
+    apps_hint = ", ".join(APP_NAMES)
     try:
         match command:
             case "apps":
@@ -300,23 +333,23 @@ def dispatch(arguments: list[str]) -> int:
             case "setup":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("setup requires an app: wezterm, herdr, nvim, or codex")
+                    raise CliError(f"setup requires an app: {apps_hint}")
                 _setup(_app(options.rest[0]), options)
             case "apply":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("apply requires an app: wezterm, herdr, nvim, or codex")
+                    raise CliError(f"apply requires an app: {apps_hint}")
                 _apply(_app(options.rest[0]), options)
             case "install":
                 print("warning: install is deprecated; use apply", file=sys.stderr)
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("install requires an app: wezterm, herdr, nvim, or codex")
+                    raise CliError(f"install requires an app: {apps_hint}")
                 _apply(_app(options.rest[0]), options)
             case "current":
                 options = parse_options(rest)
                 if len(options.rest) != 1:
-                    raise CliError("current requires an app: wezterm, herdr, nvim, or codex")
+                    raise CliError(f"current requires an app: {apps_hint}")
                 _current(_app(options.rest[0]), options)
             case _:
                 raise CliError(f"unknown command: {command}; run sf2-themes --help")
@@ -324,7 +357,6 @@ def dispatch(arguments: list[str]) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0
-
 
 def main(arguments: list[str] | None = None) -> int:
     """CLI entry point."""

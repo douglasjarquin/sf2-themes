@@ -17,6 +17,13 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - A foreign `color_scheme` remains untouched unless `--adopt` is explicit.
 - Adoption may remove recognized color-scheme assignments from a safe builder but must preserve every other Lua line.
 - A known legacy SF2 assignment may be upgraded without adoption while preserving unrelated Lua.
+- Scheme files include compose_cursor, visual_bell, indexed 16/17, and retro `tab_bar` colors; fancy-tab `window_frame` stays Lua-only.
+
+## Starship
+
+- `apply starship` owns the marked palette block in `starship.toml` and refreshes `sf2-theme/zsh-syntax-highlighting.zsh`.
+- Named Starship styles (`blue`, `purple`, …) resolve through the managed `sf2` palette onto accent and semantic tokens.
+- The zsh snippet must be sourced after `zsh-syntax-highlighting.zsh`; setup prints the one-line hint.
 
 ## Herdr
 

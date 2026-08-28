@@ -118,7 +118,10 @@ Each adapter must map the complete semantic theme contract.
 
 Herdr receives every current theme token, including overlays, mauve, and peach.
 
-WezTerm receives foreground, background, cursor, selection, split, scrollbar, ANSI, and bright colors.
+WezTerm receives foreground, background, cursor, selection, split, scrollbar, compose, visual bell, ANSI, bright, indexed 16/17, and retro tab_bar colors.
+
+Starship receives a managed palette that remaps named prompt styles (blue, purple, green, …) onto accent and semantic tokens, plus a sourcable zsh-syntax-highlighting snippet for command chrome.
+
 
 Neovim receives every current theme token, including overlays and subtext, mapped onto both `colors` values and editor highlight groups.
 

@@ -32,13 +32,17 @@ def test_ansi_order_and_distinct_brights() -> None:
     assert f"ansi = [{expected}]" in rendered
 
 
-def test_future_palette_token_is_retained_without_unsupported_wezterm_output() -> None:
+def test_scheme_covers_compose_tab_bar_and_indexed_slots() -> None:
     theme = get_theme("main", parse_catalog())
-
     rendered = render_scheme(theme)
 
-    assert theme.ui.accent_secondary == "#cf6a63"
-    assert theme.ui.accent_secondary not in rendered
+    assert f'compose_cursor = "{theme.ui.accent_secondary}"' in rendered
+    assert f'visual_bell = "{theme.ui.overlay}"' in rendered
+    assert f'scrollbar_thumb = "{theme.ui.muted}"' in rendered
+    assert f'16 = "{theme.semantic.orange}"' in rendered
+    assert f'17 = "{theme.ui.accent}"' in rendered
+    assert "[colors.tab_bar.active_tab]" in rendered
+    assert f'bg_color = "{theme.ui.accent}"' in rendered
 
 
 @pytest.mark.parametrize("missing_field", ["accent_secondary", "border"])

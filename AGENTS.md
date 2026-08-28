@@ -44,6 +44,7 @@ docs/                Authored contracts and generated SVG previews
 | Screenshot archive | `scripts/capture-game-screenshots.mjs`, `verify-game-screenshots.mjs` | Generated manifest plus 36 PNGs |
 | Python verification | `tests/`, `mise.toml` | Pytest plus the copied standalone CLI harness |
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
+| Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
 
 ## CODE MAP
 
