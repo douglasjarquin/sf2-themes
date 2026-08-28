@@ -1,5 +1,6 @@
 ---
 import ArcadeGame from "../../components/ArcadeGame.astro";
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import { paletteVariants } from "../../data/theme-data.mjs";
 import { FIGHTER_ROSTER } from "../../game/content/fighters/index.ts";
 import SiteLayout from "../../layouts/SiteLayout.astro";
@@ -19,6 +20,7 @@ if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlaye
 >
   <div class="game-page" data-game-route>
     <section class="game-intro site-frame" aria-labelledby="game-heading">
+      <PageBreadcrumb current="ARCADE" detail="LIVE CABINET" />
       <p class="game-kicker">PLAYER SELECT - FULL CABINET</p>
       <h1 id="game-heading" class="page-title">ENTER THE ARCADE</h1>
       <p>

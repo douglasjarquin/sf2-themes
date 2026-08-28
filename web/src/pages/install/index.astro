@@ -1,4 +1,5 @@
 ---
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
 const uvCommand = "uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
@@ -23,8 +24,9 @@ const moves = [
   <section class="install-page">
     <div class="site-frame install-page__inner">
       <header class="install-page__header">
+        <PageBreadcrumb current="INSTALL" detail="SETUP + APPLY" />
         <p>READY PLAYER ONE</p>
-      <h1 class="page-title">INSTALL</h1>
+        <h1 class="page-title">INSTALL</h1>
         <p class="install-page__lede">
           Run the CLI directly from GitHub with uv, then set up each terminal once.
         </p>

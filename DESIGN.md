@@ -76,6 +76,16 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Motion**: micro transitions on links and controls.
 - **Layout**: full-height grid shell.
 
+### Page Breadcrumb
+
+- **Structure**: a compact current-route path with a home link, current-page label, and optional route detail.
+- **Variants**: route-specific context for themes, palette, preview, install, and arcade pages.
+- **Spacing**: shared overline typography and spacing tokens.
+- **States**: default home link, hover, focus-visible, and current-page text.
+- **Accessibility**: semantic breadcrumb navigation with an explicit label and `aria-current` on the active page.
+- **Motion**: home link uses the shared micro transition only for interactive feedback.
+- **Layout**: wraps naturally above route titles without horizontal overflow at mobile widths.
+
 ### Palette Card
 
 - **Structure**: interactive button, color block, name, hex value, and token label.

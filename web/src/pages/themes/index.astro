@@ -1,4 +1,5 @@
 ---
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
 const adapters = [
@@ -34,6 +35,7 @@ const adapters = [
   description="Install Street Fighter II colors in WezTerm, Herdr, Neovim, and Codex with one CLI."
 >
   <section class="themes-hero site-frame" aria-labelledby="themes-title">
+    <PageBreadcrumb current="THEMES" detail="4 PORTS / 1 CLI" />
     <h1 id="themes-title" class="page-title">THEMES</h1>
     <p>
       Every port lives in this repo and installs with one command. WezTerm, Herdr, Neovim,

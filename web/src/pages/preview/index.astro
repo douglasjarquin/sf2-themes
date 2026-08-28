@@ -1,5 +1,6 @@
 ---
 import PalettePreview from "../../components/PalettePreview.astro";
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import { paletteVariants } from "../../data/theme-data.mjs";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
@@ -28,7 +29,7 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
   <section class="preview-page">
     <header class="preview-hero site-frame">
       <div class="preview-hero__intro">
-        <p class="preview-kicker">SF2 PALETTE SWEEP / 18 FAMILIES / DARK + LIGHT</p>
+        <PageBreadcrumb current="PREVIEW" detail="18 FAMILIES / DARK + LIGHT" />
         <h1>Every fighter gets a real palette.</h1>
         <p>
           Explore every canonical palette as it will appear in a developer workflow.

@@ -1,4 +1,5 @@
 ---
+import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { mainCards, paletteVariants, themeTokens } from "../../data/theme-data.mjs";
 
@@ -36,6 +37,7 @@ const paletteModes = [
 >
   <section class="palette-page">
     <header class="palette-hero site-frame">
+      <PageBreadcrumb current="PALETTE" detail={`${paletteVariants.length} MODES`} />
       <p class="palette-eyebrow">TOML-BACKED SOURCE COLORS</p>
       <h1 class="page-title">PALETTE</h1>
       <p>

@@ -1,0 +1,11 @@
+---
+import { sitePath } from "../lib/site-path.mjs";
+
+const { current, detail } = Astro.props;
+---
+
+<nav class="page-breadcrumb" aria-label="Breadcrumb">
+  <a href={sitePath()}>SF2 THEMES</a>
+  <span aria-hidden="true">/</span>
+  <span aria-current="page">{current}{detail ? ` / ${detail}` : ""}</span>
+</nav>

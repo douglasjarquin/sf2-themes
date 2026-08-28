@@ -157,6 +157,29 @@ html[data-capture-mode="cabinet"] body {
   text-shadow: var(--space-1) var(--space-1) 0 var(--color-red);
 }
 
+.page-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin: 0;
+  color: color-mix(in srgb, var(--color-foreground) 52%, transparent);
+  font: var(--text-overline)/1.9 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
+.page-breadcrumb a {
+  color: var(--color-foreground);
+}
+
+.page-breadcrumb a:hover {
+  color: var(--color-accent);
+}
+
+.page-breadcrumb span:last-child {
+  color: var(--color-cyan);
+}
+
 .primary-nav {
   display: flex;
   flex-wrap: wrap;
