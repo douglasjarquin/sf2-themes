@@ -20,7 +20,7 @@ if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlaye
   <div class="game-page" data-game-route>
     <section class="game-intro site-frame" aria-labelledby="game-heading">
       <p class="game-kicker">PLAYER SELECT - FULL CABINET</p>
-      <h1 id="game-heading">ENTER THE ARCADE</h1>
+      <h1 id="game-heading" class="page-title">ENTER THE ARCADE</h1>
       <p>
         Tune the palette, choose the next matchup, and take the terminal edition into a live
         round. Theme changes recolor the current fight; fighter choices load on the next match.
@@ -195,7 +195,6 @@ if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlaye
   .game-page { min-block-size: 100%; padding-block-end: var(--space-20); background-image: radial-gradient(color-mix(in srgb, var(--color-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
   .game-intro { display: grid; gap: var(--space-5); padding-block: var(--space-15) var(--space-10); }
   .game-intro h1, .game-intro p { margin: 0; }
-  .game-intro h1 { color: var(--color-accent); font-family: var(--font-display); font-size: clamp(24px, 4vw, 40px); line-height: 1.5; text-shadow: 4px 4px 0 var(--color-red); }
   .game-intro > p:not(.game-kicker) { max-inline-size: 62ch; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 17px; line-height: 1.7; }
   .game-kicker { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
   .game-back-link { justify-self: start; color: var(--color-foreground); font-family: var(--font-display); font-size: 9px; }

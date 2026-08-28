@@ -139,18 +139,22 @@ html[data-capture-mode="cabinet"] body {
 .site-footer__brand {
   flex: none;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: var(--text-caption);
   line-height: 1.5;
-  text-shadow: 2px 2px 0 var(--color-red);
+  text-shadow: var(--space-1) var(--space-1) 0 var(--color-red);
 }
 
 .site-brand {
   color: var(--color-foreground);
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-shadow: none;
+}
+
+.page-title {
+  margin: 0;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: 1.5;
+  text-shadow: var(--space-1) var(--space-1) 0 var(--color-red);
 }
 
 .primary-nav {
