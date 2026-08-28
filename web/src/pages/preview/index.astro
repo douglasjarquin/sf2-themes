@@ -1,257 +1,399 @@
 ---
-import { readFileSync } from "node:fs";
-
 import { paletteVariants } from "../../data/theme-data.mjs";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { sitePath } from "../../lib/site-path.mjs";
 
-type PreviewImage = {
-  readonly id: string;
-  readonly image: string;
-  readonly moment: string;
-  readonly width: number;
-  readonly height: number;
+type PreviewVariant = (typeof paletteVariants)[number];
+type Swatch = {
+  readonly label: string;
+  readonly token: string;
+  readonly value: string;
 };
 
-const uiRoles = [
-  "background", "surface", "overlay", "border", "foreground", "muted", "subtle",
-  "accent", "accent_secondary", "cursor", "cursor_text", "selection_background",
-  "selection_foreground",
-] as const;
+const neutralSwatches = (variant: PreviewVariant): readonly Swatch[] => [
+  { label: "BACKGROUND", token: "ui.background", value: variant.tokens.ui.background },
+  { label: "SURFACE DIM", token: "ui.surface_dim", value: variant.tokens.ui.surface_dim },
+  { label: "SURFACE", token: "ui.surface", value: variant.tokens.ui.surface },
+  { label: "OVERLAY", token: "ui.overlay", value: variant.tokens.ui.overlay },
+  { label: "MUTED", token: "ui.muted", value: variant.tokens.ui.muted },
+  { label: "FOREGROUND", token: "ui.foreground", value: variant.tokens.ui.foreground },
+];
+
+const accentSwatches = (variant: PreviewVariant): readonly Swatch[] => [
+  { label: "ACCENT", token: "ui.accent", value: variant.tokens.ui.accent },
+  { label: "SECONDARY", token: "ui.accent_secondary", value: variant.tokens.ui.accent_secondary },
+  { label: "YELLOW", token: "semantic.yellow", value: variant.tokens.semantic.yellow },
+];
+
 const ansiRoles = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"] as const;
+const ansiSwatches = (variant: PreviewVariant, level: "normal" | "bright"): readonly Swatch[] =>
+  ansiRoles.map((role) => ({
+    label: level === "bright" ? "BR " + role.toUpperCase() : role.toUpperCase(),
+    token: "ansi." + level + "." + role,
+    value: variant.tokens.ansi[level][role],
+  }));
 
-function requiredString(value: unknown, label: string): string {
-  if (typeof value !== "string" || value.length === 0) throw new TypeError(`${label} must be a non-empty string`);
-  return value;
-}
-
-function requiredDimension(value: unknown, label: string): number {
-  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0) {
-    throw new TypeError(`${label} must be a positive integer`);
-  }
-  return value;
-}
-
-const parsedManifest: unknown = JSON.parse(
-  readFileSync(new URL("../../../public/screenshots/manifest.json", import.meta.url), "utf8"),
-);
-if (typeof parsedManifest !== "object" || parsedManifest === null || Array.isArray(parsedManifest)) {
-  throw new TypeError("Screenshot manifest must be an object");
-}
-const parsedEntries: unknown = Reflect.get(parsedManifest, "entries");
-if (!Array.isArray(parsedEntries) || parsedEntries.length !== paletteVariants.length) {
-  throw new TypeError(`Screenshot manifest must contain ${paletteVariants.length} entries`);
-}
-const previewImages = new Map<string, PreviewImage>();
-for (const [index, entry] of parsedEntries.entries()) {
-  if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
-    throw new TypeError(`Screenshot manifest entry ${index} is invalid`);
-  }
-  const id = requiredString(Reflect.get(entry, "id"), `Screenshot manifest entry ${index} id`);
-  const image = requiredString(Reflect.get(entry, "image"), `Screenshot manifest entry ${index} image`);
-  const previewImage = {
-    id,
-    image,
-    moment: requiredString(Reflect.get(entry, "moment"), `Screenshot manifest entry ${index} moment`),
-    width: requiredDimension(Reflect.get(entry, "width"), `Screenshot manifest entry ${index} width`),
-    height: requiredDimension(Reflect.get(entry, "height"), `Screenshot manifest entry ${index} height`),
-  };
-  const variant = paletteVariants[index];
-  if (variant?.id !== id || image !== `game/${id}.png`) {
-    throw new TypeError(`Screenshot manifest is missing canonical theme ${variant?.id ?? index}`);
-  }
-  previewImages.set(id, previewImage);
+const familyMap = new Map<string, PreviewVariant[]>();
+for (const variant of paletteVariants) {
+  const family = variant.character;
+  const variants = familyMap.get(family) ?? [];
+  variants.push(variant);
+  familyMap.set(family, variants);
 }
 
-const screenshotBase = sitePath("screenshots");
+const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
+  id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+  name,
+  variants: [...variants].sort((left, right) => {
+    if (left.tokens.meta.variant === right.tokens.meta.variant) return 0;
+    return left.tokens.meta.variant === "dark" ? -1 : 1;
+  }),
+}));
+
+function codeLines(variant: PreviewVariant): readonly string[] {
+  return [
+    "const theme = {",
+    "  id: \"" + variant.id + "\",",
+    "  mode: \"" + variant.tokens.meta.variant + "\",",
+    "  ui: {",
+    "    background: \"" + variant.tokens.ui.background + "\",",
+    "    foreground: \"" + variant.tokens.ui.foreground + "\",",
+    "    accent: \"" + variant.tokens.ui.accent + "\",",
+    "  },",
+    "  semantic: {",
+    "    red: \"" + variant.tokens.semantic.red + "\",",
+    "    green: \"" + variant.tokens.semantic.green + "\",",
+    "    cyan: \"" + variant.tokens.semantic.cyan + "\",",
+    "  },",
+    "} as const;",
+  ];
+}
+
+function terminalLines(variant: PreviewVariant): readonly string[] {
+  return [
+    "$ sf2-themes show " + variant.id,
+    "theme       " + variant.id,
+    "mode        " + variant.tokens.meta.variant,
+    "background  " + variant.tokens.ui.background,
+    "foreground  " + variant.tokens.ui.foreground,
+    "accent      " + variant.tokens.ui.accent,
+    "ansi.white  " + variant.tokens.ansi.normal.white,
+  ];
+}
+
+function cardStyle(variant: PreviewVariant): string {
+  return [
+    "--preview-bg: " + variant.tokens.ui.background,
+    "--preview-surface: " + variant.tokens.ui.surface,
+    "--preview-overlay: " + variant.tokens.ui.overlay,
+    "--preview-border: " + variant.tokens.ui.border,
+    "--preview-fg: " + variant.tokens.ui.foreground,
+    "--preview-muted: " + variant.tokens.ui.muted,
+    "--preview-subtle: " + variant.tokens.ui.subtle,
+    "--preview-accent: " + variant.tokens.ui.accent,
+    "--preview-secondary: " + variant.tokens.ui.accent_secondary,
+  ].join("; ");
+}
 ---
 
-<SiteLayout title="Palette Preview" description="Canonical sf2-themes palettes shown in gameplay, code, and terminal surfaces.">
+<SiteLayout
+  title="Palette Preview"
+  description="Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews."
+>
   <section class="preview-page">
     <header class="preview-hero site-frame">
-      <p class="preview-eyebrow">CANONICAL TOKENS / REAL SURFACES</p>
-      <h1>PALETTE PREVIEW</h1>
-      <p>
-        Thirty-six dark and light variants, each projected from its TOML source into gameplay,
-        an illustrative TypeScript object, and a real sf2-themes terminal command.
-      </p>
+      <div class="preview-hero__intro">
+        <p class="preview-kicker">SF2 PALETTE SWEEP / 18 FAMILIES / DARK + LIGHT</p>
+        <h1>Every fighter gets a real palette.</h1>
+        <p>
+          Explore every canonical palette as it will appear in a developer workflow.
+          Each mode keeps its own neutral ramp, fighter accents, and complete ANSI set,
+          with the source colors visible beside the code and terminal previews.
+        </p>
+      </div>
+      <div class="preview-gates" aria-label="Palette quality gates">
+        <div class="preview-gate">
+          <span>GATE 1 / SOURCE</span>
+          <strong>{paletteVariants.length} CANONICAL MODES</strong>
+        </div>
+        <div class="preview-gate">
+          <span>GATE 2 / SURFACES</span>
+          <strong>CODE + TERMINAL</strong>
+        </div>
+        <div class="preview-gate">
+          <span>GATE 3 / RAMPS</span>
+          <strong>NEUTRALS + ACCENTS</strong>
+        </div>
+        <div class="preview-gate">
+          <span>GATE 4 / ANSI</span>
+          <strong>16 COLORS / MODE</strong>
+        </div>
+      </div>
     </header>
 
-    <section class="preview-list site-frame" aria-label="Palette previews">
-      {
-        paletteVariants.map((variant) => {
-          const screenshot = previewImages.get(variant.id);
-          const command = `sf2-themes show ${variant.id}`;
-          const code = [
-            `const theme = {`,
-            `  id: "${variant.id}",`,
-            `  ui: {`,
-            `    background: "${variant.tokens.ui.background}",`,
-            `    surface: "${variant.tokens.ui.surface}",`,
-            `    foreground: "${variant.tokens.ui.foreground}",`,
-            `    accent: "${variant.tokens.ui.accent}",`,
-            `  },`,
-            `  semantic: {`,
-            `    red: "${variant.tokens.semantic.red}",`,
-            `    green: "${variant.tokens.semantic.green}",`,
-            `    cyan: "${variant.tokens.semantic.cyan}",`,
-            `  },`,
-            `} as const;`,
-          ].join("\n");
-          const terminal = [
-            `$ ${command}`,
-            `theme       ${variant.id}`,
-            `background  ${variant.tokens.ui.background}`,
-            `foreground  ${variant.tokens.ui.foreground}`,
-            `accent      ${variant.tokens.ui.accent}`,
-            `ansi.black  ${variant.tokens.ansi.normal.black}`,
-          ].join("\n");
-          const cardStyle = [
-            `--preview-bg: ${variant.tokens.ui.background}`,
-            `--preview-surface: ${variant.tokens.ui.surface}`,
-            `--preview-overlay: ${variant.tokens.ui.overlay}`,
-            `--preview-border: ${variant.tokens.ui.border}`,
-            `--preview-fg: ${variant.tokens.ui.foreground}`,
-            `--preview-muted: ${variant.tokens.ui.muted}`,
-            `--preview-accent: ${variant.tokens.ui.accent}`,
-            `--preview-secondary: ${variant.tokens.ui.accent_secondary}`,
-          ].join("; ");
+    <section class="preview-catalog site-frame" aria-labelledby="preview-catalog-heading">
+      <header class="preview-catalog__heading">
+        <div>
+          <p class="preview-kicker">FULL CATALOG / TOML-BACKED</p>
+          <h2 id="preview-catalog-heading">Choose a palette to inspect.</h2>
+        </div>
+        <p>{previewFamilies.length} families / {paletteVariants.length} modes</p>
+      </header>
 
-          return (
-            <article class="preview-card" data-preview-card data-preview-id={variant.id} style={cardStyle}>
-              <header class="preview-card__header">
+      <div class="preview-family-list">
+        {
+          previewFamilies.map((family, familyIndex) => (
+            <section
+              aria-labelledby={"family-" + family.id}
+              class="preview-family"
+              data-preview-family={family.id}
+            >
+              <header class="preview-family__header">
                 <div>
-                  <p>{variant.tokens.meta.variant.toUpperCase()} / {variant.tokens.meta.family.toUpperCase()}</p>
-                  <h2>{variant.name}</h2>
+                  <p class="preview-family__index">{String(familyIndex + 1).padStart(2, "0")} / FAMILY</p>
+                  <h3 id={"family-" + family.id}>{family.name}</h3>
+                  <p>{family.variants[0]?.tokens.meta.stage}</p>
                 </div>
-                <code>{variant.id}</code>
+                <code>{family.variants.length} MODES</code>
               </header>
 
-              <div class="preview-card__surface">
-                <figure class="preview-card__gameplay">
-                  <img
-                    alt={`${variant.name} gameplay capture in the ASCII fighting game cabinet`}
-                    data-preview-image
-                    height={screenshot?.height}
-                    loading="lazy"
-                    src={`${screenshotBase}${screenshot?.image}`}
-                    width={screenshot?.width}
-                  />
-                  <figcaption>GAMEPLAY / FRAME {screenshot?.moment.toUpperCase()}</figcaption>
-                </figure>
+              <div class="preview-mode-list">
+                {
+                  family.variants.map((variant) => (
+                    <article
+                      class="preview-mode"
+                      data-preview-id={variant.id}
+                      data-preview-variant
+                      style={cardStyle(variant)}
+                    >
+                      <header class="preview-mode__header">
+                        <div>
+                          <p>{variant.tokens.meta.variant.toUpperCase()} MODE</p>
+                          <h4>{variant.name}</h4>
+                        </div>
+                        <code>{variant.id}</code>
+                      </header>
 
-                <div class="preview-card__panes">
-                  <section class="preview-pane" data-code-pane aria-labelledby={`code-${variant.id}`}>
-                    <h3 id={`code-${variant.id}`}>{variant.id}/apply.ts <span>ILLUSTRATIVE</span></h3>
-                    <pre tabindex="0"><code>{code}</code></pre>
-                  </section>
-                  <section class="preview-pane preview-pane--terminal" data-terminal-pane aria-labelledby={`terminal-${variant.id}`}>
-                    <div class="preview-pane__heading">
-                      <h3 id={`terminal-${variant.id}`}>TERMINAL / {variant.id}</h3>
-                      <button
-                        aria-label={`Copy terminal command for ${variant.name}`}
-                        data-command={command}
-                        data-command-copy
-                        type="button"
-                      >COPY COMMAND</button>
-                    </div>
-                    <pre tabindex="0"><code>{terminal}</code></pre>
-                    <p aria-live="polite" data-copy-status role="status"></p>
-                  </section>
-                </div>
+                      <div class="preview-mode__meta">
+                        <span>BG {variant.tokens.ui.background}</span>
+                        <span>FG {variant.tokens.ui.foreground}</span>
+                        <span>ACCENT {variant.tokens.ui.accent}</span>
+                      </div>
+
+                      <div class="preview-mockups">
+                        <section
+                          aria-labelledby={"code-" + variant.id}
+                          class="preview-pane preview-pane--code"
+                          data-code-pane
+                        >
+                          <h5 id={"code-" + variant.id}>{variant.id}/preview.ts <span>DATA PREVIEW</span></h5>
+                          <ol class="preview-code-lines">
+                            {
+                              codeLines(variant).map((line, lineIndex) => (
+                                <li>
+                                  <span aria-hidden="true">{String(lineIndex + 1).padStart(2, "0")}</span>
+                                  <code>{line}</code>
+                                </li>
+                              ))
+                            }
+                          </ol>
+                        </section>
+                        <section
+                          aria-labelledby={"terminal-" + variant.id}
+                          class="preview-pane preview-pane--terminal"
+                          data-terminal-pane
+                        >
+                          <div class="preview-pane__heading">
+                            <h5 id={"terminal-" + variant.id}>TERMINAL / {variant.id}</h5>
+                            <button
+                              aria-label={"Copy terminal command for " + variant.name}
+                              data-command={"sf2-themes show " + variant.id}
+                              data-command-copy
+                              type="button"
+                            >COPY</button>
+                          </div>
+                          <pre><code>{terminalLines(variant).join("\n")}</code></pre>
+                          <p aria-live="polite" data-copy-status role="status"></p>
+                        </section>
+                      </div>
+
+                      <div class="preview-ramp">
+                        <section class="preview-ramp__section" aria-labelledby={"neutrals-" + variant.id}>
+                          <h5 id={"neutrals-" + variant.id}>NEUTRALS</h5>
+                          <div class="preview-swatch-grid preview-swatch-grid--neutrals">
+                            {
+                              neutralSwatches(variant).map((swatch) => (
+                                <button
+                                  aria-label={"Copy " + swatch.label + " " + swatch.value}
+                                  data-copy-color={swatch.value}
+                                  data-preview-swatch
+                                  style={"--swatch: " + swatch.value}
+                                  type="button"
+                                >
+                                  <span aria-hidden="true"></span>
+                                  <strong>{swatch.label}</strong>
+                                  <code>{swatch.value}</code>
+                                  <small>{swatch.token}</small>
+                                </button>
+                              ))
+                            }
+                          </div>
+                        </section>
+
+                        <section class="preview-ramp__section" aria-labelledby={"accents-" + variant.id}>
+                          <h5 id={"accents-" + variant.id}>ACCENTS</h5>
+                          <div class="preview-swatch-grid preview-swatch-grid--accents">
+                            {
+                              accentSwatches(variant).map((swatch) => (
+                                <button
+                                  aria-label={"Copy " + swatch.label + " " + swatch.value}
+                                  data-copy-color={swatch.value}
+                                  data-preview-swatch
+                                  style={"--swatch: " + swatch.value}
+                                  type="button"
+                                >
+                                  <span aria-hidden="true"></span>
+                                  <strong>{swatch.label}</strong>
+                                  <code>{swatch.value}</code>
+                                  <small>{swatch.token}</small>
+                                </button>
+                              ))
+                            }
+                          </div>
+                        </section>
+
+                        <section class="preview-ramp__section" aria-labelledby={"ansi-" + variant.id}>
+                          <div class="preview-ramp__title">
+                            <h5 id={"ansi-" + variant.id}>ANSI 16</h5>
+                            <span>normal / bright</span>
+                          </div>
+                          <div class="preview-ansi-rows">
+                            {
+                              (["normal", "bright"] as const).map((level) => (
+                                <div class="preview-swatch-grid preview-swatch-grid--ansi">
+                                  {
+                                    ansiSwatches(variant, level).map((swatch) => (
+                                      <button
+                                        aria-label={"Copy " + swatch.label + " " + swatch.value}
+                                        data-copy-color={swatch.value}
+                                        data-preview-swatch
+                                        style={"--swatch: " + swatch.value}
+                                        type="button"
+                                      >
+                                        <span aria-hidden="true"></span>
+                                        <strong>{swatch.label}</strong>
+                                        <code>{swatch.value}</code>
+                                      </button>
+                                    ))
+                                  }
+                                </div>
+                              ))
+                            }
+                          </div>
+                        </section>
+                      </div>
+                    </article>
+                  ))
+                }
               </div>
-
-              <section class="preview-swatches" aria-label={`${variant.name} canonical UI and ANSI colors`}>
-                <div>
-                  <h3>UI TOKENS</h3>
-                  <ul class="preview-swatch-grid preview-swatch-grid--ui">
-                    {uiRoles.map((role) => (
-                      <li title={`${role}: ${variant.tokens.ui[role]}`}>
-                        <span style={`--swatch: ${variant.tokens.ui[role]}`} aria-hidden="true"></span>
-                        <code>{role}<br />{variant.tokens.ui[role]}</code>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <h3>ANSI 16</h3>
-                  <ul class="preview-swatch-grid preview-swatch-grid--ansi">
-                    {(["normal", "bright"] as const).flatMap((level) => ansiRoles.map((role) => (
-                      <li title={`${level}.${role}: ${variant.tokens.ansi[level][role]}`}>
-                        <span style={`--swatch: ${variant.tokens.ansi[level][role]}`} aria-hidden="true"></span>
-                        <code>{level === "bright" ? "BR " : ""}{role}<br />{variant.tokens.ansi[level][role]}</code>
-                      </li>
-                    )))}
-                  </ul>
-                </div>
-              </section>
-            </article>
-          );
-        })
-      }
+            </section>
+          ))
+        }
+      </div>
     </section>
   </section>
 </SiteLayout>
 
 <script>
+  const announce = (button: HTMLButtonElement, value: string) => {
+    const status = button.closest("[data-preview-variant]")?.querySelector("[data-copy-status]");
+    if (!status) return;
+    navigator.clipboard.writeText(value)
+      .then(() => { status.textContent = "COPIED " + value; })
+      .catch(() => { status.textContent = "COPY FAILED"; });
+  };
+
   for (const button of document.querySelectorAll<HTMLButtonElement>("[data-command-copy]")) {
     if (!navigator.clipboard) {
       button.hidden = true;
       continue;
     }
-    button.addEventListener("click", async () => {
-      const command = button.dataset.command;
-      const status = button.closest("[data-terminal-pane]")?.querySelector<HTMLElement>("[data-copy-status]");
-      if (!command || !status) return;
-      try {
-        await navigator.clipboard.writeText(command);
-        status.textContent = "COMMAND COPIED";
-      } catch (error) {
-        status.textContent = "COPY FAILED";
-        if (!(error instanceof Error)) throw error;
-      }
-    });
+    button.addEventListener("click", () => announce(button, button.dataset.command ?? ""));
+  }
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-color]")) {
+    if (!navigator.clipboard) continue;
+    button.addEventListener("click", () => announce(button, button.dataset.copyColor ?? ""));
   }
 </script>
 
 <style>
-  .preview-page { padding-block: var(--space-12) var(--space-20); }
-  .preview-hero { display: grid; gap: var(--space-4); padding-block-end: var(--space-8); }
-  .preview-eyebrow { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.9; }
-  .preview-hero h1 { margin: 0; color: var(--color-accent); font-family: var(--font-display); font-size: var(--text-display); line-height: 1.5; text-shadow: var(--shadow-card) var(--shadow-card) 0 var(--color-red); }
-  .preview-hero > p:last-child { max-inline-size: 66ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
-  .preview-list { display: grid; gap: var(--space-12); border-block-start: var(--border-strong) solid color-mix(in srgb, var(--color-foreground) 8%, transparent); padding-block-start: var(--space-8); }
-  .preview-card { min-inline-size: 0; overflow: hidden; border: var(--border-strong) solid var(--preview-border); background: var(--preview-bg); box-shadow: var(--shadow-card) var(--shadow-card) 0 color-mix(in srgb, var(--color-background) 70%, black); color: var(--preview-fg); content-visibility: auto; contain-intrinsic-size: auto 1160px; }
-  .preview-card__header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--space-5); border-block-end: 1px solid var(--preview-border); }
-  .preview-card__header div { display: grid; gap: var(--space-2); }
-  .preview-card__header p, .preview-card__header h2 { margin: 0; }
-  .preview-card__header p { color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; }
-  .preview-card__header h2 { color: var(--preview-accent); font-family: var(--font-display); font-size: clamp(var(--text-body-lg), 3vw, var(--text-display)); line-height: 1.5; }
-  .preview-card__header > code { flex: none; padding: var(--space-1) var(--space-2); border: 1px solid var(--preview-border); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-caption); }
-  .preview-card__surface { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: var(--space-5); padding: var(--space-5); background: var(--preview-surface); }
-  .preview-card__gameplay { min-inline-size: 0; margin: 0; }
-  .preview-card__gameplay img { display: block; inline-size: 100%; block-size: auto; aspect-ratio: 16 / 9; border: 1px solid var(--preview-border); object-fit: cover; }
-  .preview-card__gameplay figcaption { margin-block-start: var(--space-2); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .08em; }
-  .preview-card__panes { display: grid; min-inline-size: 0; gap: var(--space-3); }
-  .preview-pane { min-inline-size: 0; overflow: hidden; border: 1px solid var(--preview-border); background: var(--preview-bg); }
-  .preview-pane h3 { margin: 0; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .06em; }
-  .preview-pane h3 span { color: var(--preview-secondary); }
-  .preview-pane > h3, .preview-pane__heading { padding: var(--space-2) var(--space-3); border-block-end: 1px solid var(--preview-border); }
+  .preview-page { padding-block: var(--space-10) var(--space-20); background: var(--color-background); }
+  .preview-hero { display: grid; gap: var(--space-8); padding-block: var(--space-8) var(--space-10); }
+  .preview-hero__intro { display: grid; gap: var(--space-4); max-inline-size: 900px; }
+  .preview-kicker { margin: 0; color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; line-height: 1.9; }
+  .preview-hero h1 { max-inline-size: 760px; margin: 0; color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-hero); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  .preview-hero__intro > p:last-child { max-inline-size: 72ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 68%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
+  .preview-gates { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
+  .preview-gate { display: grid; gap: var(--space-2); min-inline-size: 0; padding: var(--space-4); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 12%, transparent); border-radius: var(--radius-control); background: color-mix(in srgb, var(--color-panel) 58%, transparent); }
+  .preview-gate span, .preview-gate strong { min-inline-size: 0; overflow-wrap: anywhere; }
+  .preview-gate span { color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .08em; }
+  .preview-gate strong { color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-caption); font-weight: 600; }
+  .preview-catalog { padding-block: var(--space-8) var(--space-15); }
+  .preview-catalog__heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-5); padding-block: var(--space-6); border-block: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 12%, transparent); }
+  .preview-catalog__heading h2 { margin: var(--space-2) 0 0; color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-section); line-height: 1.2; }
+  .preview-catalog__heading > p { flex: none; margin: 0; color: color-mix(in srgb, var(--color-foreground) 52%, transparent); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-family-list { display: grid; gap: var(--space-12); }
+  .preview-family { min-inline-size: 0; padding-block-start: var(--space-8); }
+  .preview-family__header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-5); padding-block-end: var(--space-4); }
+  .preview-family__header > div { min-inline-size: 0; }
+  .preview-family__header p, .preview-family__header h3 { margin: 0; }
+  .preview-family__index { color: color-mix(in srgb, var(--color-foreground) 56%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .12em; }
+  .preview-family__header h3 { margin-block: var(--space-2); color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-family); font-weight: 700; line-height: 1.1; }
+  .preview-family__header p:last-child { color: color-mix(in srgb, var(--color-foreground) 55%, transparent); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-family__header > code { flex: none; padding: var(--space-1) var(--space-2); border: var(--border-thin) solid color-mix(in srgb, var(--color-foreground) 18%, transparent); border-radius: var(--radius-control); color: color-mix(in srgb, var(--color-foreground) 60%, transparent); font-family: var(--font-mono); font-size: var(--text-overline); }
+  .preview-mode-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+  .preview-mode { min-inline-size: 0; overflow: hidden; border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-panel); background: var(--preview-bg); color: var(--preview-fg); }
+  .preview-mode__header { display: flex; align-items: start; justify-content: space-between; gap: var(--space-4); padding: var(--space-5); border-block-end: var(--border-thin) solid var(--preview-overlay); }
+  .preview-mode__header p, .preview-mode__header h4 { margin: 0; }
+  .preview-mode__header p { color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); font-weight: 700; letter-spacing: .16em; }
+  .preview-mode__header h4 { margin-block-start: var(--space-2); color: var(--preview-fg); font-family: var(--font-body); font-size: var(--text-body-lg); font-weight: 700; }
+  .preview-mode__header > code { flex: none; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-caption); }
+  .preview-mode__meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding: var(--space-3) var(--space-5); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); }
+  .preview-mockups { display: grid; gap: var(--space-3); padding: 0 var(--space-5) var(--space-5); }
+  .preview-pane { min-inline-size: 0; overflow: hidden; border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-control); }
+  .preview-pane h5, .preview-pane__heading { margin: 0; padding: var(--space-2) var(--space-3); border-block-end: var(--border-thin) solid var(--preview-overlay); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .06em; }
+  .preview-pane h5 span { color: var(--preview-secondary); }
   .preview-pane__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-  .preview-pane button { flex: none; padding: var(--space-1) var(--space-2); border: 1px solid var(--preview-accent); background: transparent; color: var(--preview-accent); font-family: var(--font-mono); font-size: var(--text-overline); cursor: pointer; }
-  .preview-pane button:hover { background: var(--preview-accent); color: var(--preview-bg); }
-  .preview-pane pre { max-inline-size: 100%; margin: 0; padding: var(--space-3); overflow-wrap: anywhere; color: var(--preview-fg); font-family: var(--font-mono); font-size: var(--text-caption); line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
-  .preview-pane--terminal { background: var(--preview-overlay); }
-  .preview-pane--terminal pre { color: var(--preview-accent); }
-  .preview-pane [data-copy-status] { min-block-size: 1.5em; margin: 0; padding-inline: var(--space-3); color: var(--preview-secondary); font-family: var(--font-mono); font-size: var(--text-overline); }
-  .preview-swatches { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: var(--space-5); padding: var(--space-5); border-block-start: 1px solid var(--preview-border); }
-  .preview-swatches > div { min-inline-size: 0; }
-  .preview-swatches h3 { margin: 0 0 var(--space-3); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .12em; }
-  .preview-swatch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(68px, 1fr)); gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
-  .preview-swatch-grid--ui { grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); }
-  .preview-swatch-grid li { min-inline-size: 0; }
-  .preview-swatch-grid li > span { display: block; block-size: var(--space-6); border: 1px solid var(--preview-border); background: var(--swatch); }
-  .preview-swatch-grid code { display: block; margin-block-start: var(--space-1); overflow-wrap: anywhere; color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-overline); line-height: 1.5; }
-  @media (max-width: 720px) { .preview-card__surface, .preview-swatches { grid-template-columns: 1fr; } }
-  @media (max-width: 620px) { .preview-page { padding-block-start: calc(var(--space-12) + var(--space-1)); } .preview-list { gap: var(--space-8); padding-block-start: var(--space-6); } .preview-card__header, .preview-card__surface, .preview-swatches { padding: var(--space-4); } .preview-card__header { align-items: start; } .preview-card__header > code { max-inline-size: 44%; overflow-wrap: anywhere; } .preview-pane__heading { align-items: start; flex-direction: column; } .preview-swatch-grid--ui { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-swatch-grid--ansi { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .preview-pane button { flex: none; padding: var(--space-1) var(--space-2); border: var(--border-thin) solid var(--preview-accent); border-radius: var(--radius-control); background: transparent; color: var(--preview-accent); font-family: var(--font-mono); font-size: var(--text-overline); cursor: copy; transition: color var(--duration-micro) ease-out, background-color var(--duration-micro) ease-out; }
+  .preview-pane button:hover, .preview-pane button:focus-visible { background: var(--preview-accent); color: var(--preview-bg); }
+  .preview-code-lines { display: grid; gap: 0; margin: 0; padding: var(--space-3) var(--space-3) var(--space-3) var(--space-12); background: color-mix(in srgb, var(--preview-surface) 70%, var(--preview-bg)); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); list-style: none; }
+  .preview-code-lines li { display: grid; grid-template-columns: var(--code-line-number-width) minmax(0, 1fr); gap: var(--space-2); min-inline-size: 0; }
+  .preview-code-lines li > span { color: var(--preview-muted); opacity: .7; }
+  .preview-code-lines code { min-inline-size: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .preview-pane--terminal { background: var(--preview-surface); }
+  .preview-pane--terminal pre { margin: 0; padding: var(--space-3); color: var(--preview-fg); font: var(--text-caption)/1.75 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+  .preview-pane--terminal pre code { color: var(--preview-accent); }
+  .preview-pane [data-copy-status] { min-block-size: 1.5em; margin: 0; padding: 0 var(--space-3) var(--space-2); color: var(--preview-secondary); font: var(--text-overline)/1.5 var(--font-mono); }
+  .preview-ramp { display: grid; gap: var(--space-5); padding: var(--space-5); border-block-start: var(--border-thin) solid var(--preview-overlay); }
+  .preview-ramp__section { min-inline-size: 0; }
+  .preview-ramp__section h5, .preview-ramp__title { margin: 0 0 var(--space-2); color: var(--preview-muted); font-family: var(--font-mono); font-size: var(--text-label); letter-spacing: .12em; }
+  .preview-ramp__title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+  .preview-ramp__title span { font-size: var(--text-overline); font-weight: 400; letter-spacing: 0; }
+  .preview-swatch-grid { display: grid; gap: var(--space-2); }
+  .preview-swatch-grid--neutrals { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .preview-swatch-grid--accents { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .preview-swatch-grid--ansi { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .preview-ansi-rows { display: grid; gap: var(--space-2); }
+  .preview-swatch-grid button { display: grid; min-inline-size: 0; gap: var(--space-1); padding: 0; border: 0; background: transparent; color: var(--preview-fg); text-align: start; cursor: copy; }
+  .preview-swatch-grid button > span { display: block; block-size: var(--swatch-height); border: var(--border-thin) solid var(--preview-overlay); border-radius: var(--radius-swatch); background: var(--swatch); transition: transform var(--duration-micro) ease-out, border-color var(--duration-micro) ease-out; }
+  .preview-swatch-grid button:hover > span, .preview-swatch-grid button:focus-visible > span { border-color: var(--preview-fg); transform: translateY(-1px); }
+  .preview-swatch-grid strong, .preview-swatch-grid code, .preview-swatch-grid small { min-inline-size: 0; overflow-wrap: anywhere; }
+  .preview-swatch-grid strong { margin-block-start: var(--space-1); color: var(--preview-fg); font-family: var(--font-mono); font-size: var(--text-overline); font-weight: 700; }
+  .preview-swatch-grid code, .preview-swatch-grid small { color: var(--preview-muted); font: var(--text-overline)/1.5 var(--font-mono); }
+  .preview-swatch-grid small { opacity: .8; }
+  .preview-swatch-grid--ansi strong { font-size: var(--text-overline); }
+  @media (max-width: 900px) { .preview-mode-list { grid-template-columns: 1fr; } }
+  @media (max-width: 720px) { .preview-gates { grid-template-columns: repeat(2, minmax(0, 1fr)); } .preview-catalog__heading { align-items: start; flex-direction: column; } }
+  @media (max-width: 620px) { .preview-page { padding-block-start: var(--space-5); } .preview-hero { padding-block-start: var(--space-5); } .preview-family-list { gap: var(--space-8); } .preview-family { padding-block-start: var(--space-6); } .preview-family__header { align-items: start; flex-direction: column; } .preview-mode__header, .preview-mode__meta, .preview-mockups, .preview-ramp { padding-inline: var(--space-4); } .preview-swatch-grid--neutrals { grid-template-columns: repeat(3, minmax(0, 1fr)); } .preview-swatch-grid--ansi { grid-template-columns: repeat(4, minmax(0, 1fr)); } .preview-code-lines { padding-inline-start: var(--space-2); } }
+  @media (prefers-reduced-motion: reduce) { .preview-pane button, .preview-swatch-grid button > span { transition: none; } }
 </style>

@@ -2,25 +2,36 @@ import { expect, test } from "@playwright/test";
 
 import { paletteVariants } from "../../src/data/theme-data.mjs";
 
-const expectedIds = paletteVariants.map((variant) => variant.id);
+const expectedIds = [];
+for (const family of [...new Set(paletteVariants.map((variant) => variant.character))]) {
+  for (const mode of ["dark", "light"]) {
+    const variant = paletteVariants.find((candidate) =>
+      candidate.character === family && candidate.tokens.meta.variant === mode,
+    );
+    if (variant) expectedIds.push(variant.id);
+  }
+}
 
-test("preview route renders every canonical palette surface", async ({ page }) => {
+test("preview route renders a useful palette surface for every canonical variant", async ({ page }) => {
   // Given: a visitor opens the production palette preview route.
   await page.goto("preview/");
 
-  // When: the complete static preview surface renders.
-  const cards = page.locator("[data-preview-card]");
+  // When: the complete family-by-family palette surface renders.
+  const families = page.locator("[data-preview-family]");
+  const variants = page.locator("[data-preview-variant]");
 
-  // Then: every canonical variant appears in order with its image and two labelled panes.
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("PALETTE PREVIEW");
-  await expect(cards).toHaveCount(36);
-  await expect(cards.evaluateAll((items) => items.map((item) => item.dataset.previewId))).resolves.toEqual(
+  // Then: the reference layout presents 18 families and 36 paired palette variants.
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Every fighter gets a real palette.");
+  await expect(families).toHaveCount(18);
+  await expect(variants).toHaveCount(36);
+  await expect(variants.evaluateAll((items) => items.map((item) => item.dataset.previewId))).resolves.toEqual(
     expectedIds,
   );
-  await expect(cards.locator("[data-preview-image]")).toHaveCount(36);
-  await expect(cards.locator("[data-code-pane] pre code")).toHaveCount(36);
-  await expect(cards.locator("[data-terminal-pane] pre code")).toHaveCount(36);
-  await expect(cards.locator("[data-command-copy]")).toHaveCount(36);
+  await expect(page.locator("[data-preview-image]")).toHaveCount(0);
+  await expect(variants.locator("[data-code-pane] .preview-code-lines")).toHaveCount(36);
+  await expect(variants.locator("[data-terminal-pane] pre")).toHaveCount(36);
+  await expect(variants.locator("[data-command-copy]")).toHaveCount(36);
+  await expect(variants.locator("[data-preview-swatch]")).toHaveCount(36 * 25);
 
   for (const variant of paletteVariants) {
     const card = page.locator(`[data-preview-id="${variant.id}"]`);
@@ -28,26 +39,10 @@ test("preview route renders every canonical palette surface", async ({ page }) =
     await expect(card.locator("[data-code-pane]")).toContainText(variant.tokens.ui.accent);
     await expect(card.locator("[data-terminal-pane]")).toContainText(`sf2-themes show ${variant.id}`);
     await expect(card.locator("[data-terminal-pane]")).toContainText(variant.id);
+    expect((await card.locator("[data-preview-swatch]").allTextContents()).join(" ")).toContain(
+      variant.tokens.ansi.bright.white,
+    );
   }
-
-  const images = cards.locator("[data-preview-image]");
-  const imageAttributes = await images.evaluateAll((items) => items.map((image) => ({
-    src: image.getAttribute("src"),
-    width: image.getAttribute("width"),
-    height: image.getAttribute("height"),
-    alt: image.getAttribute("alt"),
-    loading: image.getAttribute("loading"),
-  })));
-  expect(imageAttributes.every((entry) =>
-    entry.src?.includes("/sf2-themes/screenshots/game/")
-    && entry.src?.endsWith(".png")
-    && entry.width === "1280"
-    && entry.height === "720"
-    && entry.alt?.includes("gameplay")
-    && entry.loading === "lazy")).toBe(true);
-  for (const image of await images.all()) await image.scrollIntoViewIfNeeded();
-  await expect.poll(() => images.evaluateAll((items) =>
-    items.filter((image) => image.complete && image.naturalWidth === 1280).length)).toBe(36);
 });
 
 test("preview route keeps truthful snippets and keyboard-visible controls", async ({ page }) => {
@@ -79,10 +74,10 @@ test("preview content remains available without client JavaScript", async ({ bro
   // When: a visitor opens the statically generated preview route.
   await page.goto("preview/");
 
-  // Then: all cards, code panes, and terminal commands remain readable.
-  await expect(page.locator("[data-preview-card]")).toHaveCount(36);
-  await expect(page.locator("[data-code-pane] pre code")).toHaveCount(36);
-  await expect(page.locator("[data-terminal-pane] pre code")).toHaveCount(36);
+  // Then: all families, code panes, and terminal commands remain readable.
+  await expect(page.locator("[data-preview-family]")).toHaveCount(18);
+  await expect(page.locator("[data-code-pane] .preview-code-lines")).toHaveCount(36);
+  await expect(page.locator("[data-terminal-pane] pre")).toHaveCount(36);
   await expect(page.locator('[data-preview-id="ryu"] [data-terminal-pane]')).toContainText("sf2-themes show ryu");
   await context.close();
 });

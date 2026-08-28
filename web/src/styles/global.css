@@ -15,7 +15,17 @@
   --space-15: 60px;
   --space-20: 80px;
   --duration-micro: 120ms;
+  --border-thin: 1px;
+  --radius-panel: 12px;
+  --radius-control: 4px;
+  --radius-swatch: 4px;
+  --swatch-height: 34px;
+  --code-line-number-width: 22px;
   --text-display: 26px;
+  --text-body: 14px;
+  --text-hero: clamp(30px, 5vw, 52px);
+  --text-section: clamp(20px, 3vw, 28px);
+  --text-family: clamp(28px, 4vw, 42px);
   --text-body-lg: 17px;
   --text-caption: 12px;
   --text-label: 10px;
@@ -60,6 +70,10 @@ body::before {
     transparent 4px
   );
   mix-blend-mode: multiply;
+}
+
+body[data-page="preview"]::before {
+  display: none;
 }
 
 ::selection {
@@ -144,6 +158,41 @@ html[data-capture-mode="cabinet"] body {
   font-size: 12px;
   line-height: 1.5;
   text-shadow: 2px 2px 0 var(--color-red);
+}
+
+body[data-page="preview"] .site-brand {
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-shadow: none;
+}
+
+body[data-page="preview"] .primary-nav__link {
+  color: color-mix(in srgb, var(--color-foreground) 58%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.08em;
+}
+
+body[data-page="preview"] .primary-nav__link[aria-current="page"] {
+  border-block-end-color: var(--color-accent);
+  color: var(--color-foreground);
+}
+
+body[data-page="preview"] .primary-nav__link--action {
+  padding: var(--space-2) var(--space-3);
+  border: var(--border-thin) solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-accent);
+}
+
+body[data-page="preview"] .primary-nav__link--action:hover {
+  background: var(--color-accent);
+  color: var(--color-background);
 }
 
 .primary-nav {

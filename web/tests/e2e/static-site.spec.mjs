@@ -28,9 +28,9 @@ const routes = [
   {
     path: "preview/",
     title: "Palette Preview | sf2-themes",
-    description: "Canonical sf2-themes palettes shown in gameplay, code, and terminal surfaces.",
+    description: "Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews.",
     canonical: `${origin}/sf2-themes/preview/`,
-    heading: "PALETTE PREVIEW",
+    heading: "Every fighter gets a real palette.",
   },
   {
     path: "install/",

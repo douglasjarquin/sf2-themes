@@ -53,6 +53,10 @@ All spacing derives from a base unit of 4px.
 
 The shared spacing tokens are defined in `web/src/styles/global.css` from `--space-1` through `--space-20`.
 
+The shared radius tokens are `--radius-panel` for substantial surfaces and `--radius-control` for compact controls.
+
+Preview-specific geometry tokens such as `--swatch-height` and `--code-line-number-width` are defined alongside the shared tokens so the audit surface does not introduce one-off spacing values.
+
 ### Grid
 
 The content width is `1180px` plus responsive horizontal padding.
@@ -91,6 +95,26 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Accessibility**: native buttons, visible focus, and named swatches.
 - **Motion**: no decorative motion.
 - **Layout**: two-column row on wide screens and a single-column stack on mobile.
+
+### Palette Preview Family
+
+- **Structure**: a family identity row followed by paired dark and light palette mode panels.
+- **Variants**: one family section for Main and each TOML-backed fighter, with every canonical mode rendered in source order.
+- **Spacing**: wide family sections with breathable separators and compact mode-panel internals.
+- **States**: default, focused code/terminal surfaces, and copy feedback for commands and color values.
+- **Accessibility**: semantic headings, native copy buttons, labeled swatch groups, and readable static content without JavaScript.
+- **Motion**: no decorative motion; copy controls use the shared micro transition only for feedback.
+- **Layout**: mode panels sit side by side on wide screens and stack below 720px; swatch grids reflow below 620px.
+
+### Palette Mode Panel
+
+- **Structure**: mode header, live code preview, truthful `sf2-themes show` terminal preview, six neutral swatches, three accent swatches, and two eight-color ANSI rows.
+- **Variants**: dark and light, each styled from its canonical TOML-backed UI and semantic tokens.
+- **Spacing**: 12px panel padding with 4px-derived internal gaps and a 12px radius from the revised reference direction.
+- **States**: default, hover/focus copy controls, and polite per-panel copy status.
+- **Accessibility**: mode labels, explicit color names and values, visible focus, and no image-only information.
+- **Motion**: color and border feedback only, with reduced-motion support inherited from the shared shell.
+- **Layout**: code and terminal previews stack inside each mode panel; palette ramps remain readable at 375px.
 
 ### Palette Mode Filter
 
