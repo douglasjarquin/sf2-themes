@@ -194,9 +194,14 @@ const initialSwatches = swatches(initialPalette);
     if (!(dataNode instanceof HTMLScriptElement) || !dataNode.matches("[data-featured-palette-data]")) return;
     if (!(currentPreview instanceof HTMLElement) || !currentPreview.matches("[data-featured-palette-preview]")) return;
 
+    let palettes;
     try {
-      const palettes = JSON.parse(dataNode.textContent ?? "");
-      if (!Array.isArray(palettes) || palettes.length === 0) return;
+      palettes = JSON.parse(dataNode.textContent ?? "");
+    } catch {
+      // The complete static palette remains visible when serialized data cannot be read.
+      return;
+    }
+    if (!Array.isArray(palettes) || palettes.length === 0) return;
       const palette = palettes[Math.floor(Math.random() * palettes.length)];
       if (!palette?.tokens?.ui || !palette?.tokens?.ansi || !palette?.tokens?.semantic) return;
 
@@ -325,9 +330,6 @@ const initialSwatches = swatches(initialPalette);
       });
 
       currentPreview.replaceWith(nextPreview);
-    } catch {
-      // The complete static palette remains visible when serialized data cannot be read.
-    }
   })();
 </script>
 

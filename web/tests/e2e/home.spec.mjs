@@ -137,3 +137,33 @@ test("malformed featured palette data preserves the static fallback", async ({ p
   await expect(preview.locator("[data-preview-swatch]")).toHaveCount(25);
   expect(runtimeErrors).toEqual([]);
 });
+
+test("unexpected featured palette rendering errors are not swallowed", async ({ browser }) => {
+  // Given: a DOM update fails after the payload has parsed successfully.
+  const context = await browser.newContext({
+    baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}/sf2-themes/`,
+  });
+  const page = await context.newPage();
+  const runtimeErrors = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  await page.addInitScript(() => {
+    const replaceWith = HTMLElement.prototype.replaceWith;
+    HTMLElement.prototype.replaceWith = function (...nodes) {
+      if (this.matches("[data-featured-palette-preview]")) {
+        throw new Error("featured preview DOM update probe");
+      }
+      return replaceWith.apply(this, nodes);
+    };
+  });
+
+  try {
+    // When: the production-built home route performs its runtime randomization.
+    await page.goto("./");
+
+    // Then: an unrelated DOM failure remains observable to browser error reporting.
+    await expect(page.locator("[data-featured-palette-preview]")).toHaveCount(1);
+    expect(runtimeErrors).toContain("featured preview DOM update probe");
+  } finally {
+    await context.close();
+  }
+});
