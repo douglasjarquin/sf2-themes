@@ -88,6 +88,8 @@ return config
 LUA
 
 "$repo_dir/sf2-themes" setup wezterm --config-dir "$test_dir/wezterm-safe"
-grep -q 'config.color_scheme = dofile(sf2_current)' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'local sf2_scheme = dofile(sf2_current)' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'config.color_scheme = sf2_scheme' "$test_dir/wezterm-safe/wezterm.lua"
+grep -q 'TERM_THEME' "$test_dir/wezterm-safe/wezterm.lua"
 grep -q 'return config' "$test_dir/wezterm-safe/wezterm.lua"
 printf '%s\n' 'WezTerm safe builder integration: PASS'
