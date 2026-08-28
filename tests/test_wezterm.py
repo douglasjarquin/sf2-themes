@@ -68,21 +68,6 @@ def test_light_variant_resolves_and_renders_light_metadata() -> None:
     assert 'background = "#' in rendered
 
 
-def test_return_cfg_uses_discovered_builder_name() -> None:
-    existing = "\n".join(
-        (
-            'local wezterm = require("wezterm")',
-            "local cfg = wezterm.config_builder()",
-            "return cfg",
-            "",
-        )
-    )
-    result = setup_lua(existing, Path("/tmp/sf2-theme/wezterm-current.lua"))
-    assert result.mutated is True
-    assert "cfg.color_scheme = dofile(sf2_current)" in result.content
-    assert "config.color_scheme" not in result.content
-
-
 def test_safe_config_builder_gets_dofile() -> None:
     existing = "\n".join(
         (
@@ -95,9 +80,46 @@ def test_safe_config_builder_gets_dofile() -> None:
     pointer = Path("/tmp/xdg/sf2-theme/wezterm-current.lua")
     result = setup_lua(existing, pointer)
     assert result.mutated is True
-    assert "dofile(sf2_current)" in result.content
-    assert "config.color_scheme = dofile" in result.content
+    assert "local sf2_scheme = dofile(sf2_current)" in result.content
+    assert "config.color_scheme = sf2_scheme" in result.content
+    assert "TERM_THEME" in result.content
     assert result.snippet is None
+
+
+def test_existing_integration_gains_term_theme_guard() -> None:
+    pointer = Path("/tmp/xdg/sf2-theme/wezterm-current.lua")
+    existing = "\n".join(
+        (
+            'local wezterm = require("wezterm")',
+            "local config = wezterm.config_builder()",
+            f'local sf2_current = "{pointer}"',
+            "wezterm.add_to_config_reload_watch_list(sf2_current)",
+            "config.color_scheme = dofile(sf2_current)",
+            "return config",
+            "",
+        )
+    )
+    result = setup_lua(existing, pointer)
+    assert result.mutated is True
+    assert "TERM_THEME" in result.content
+    assert "config.color_scheme = sf2_scheme" in result.content
+    assert 'config.font' not in result.content
+
+
+def test_return_cfg_uses_discovered_builder_name() -> None:
+    existing = "\n".join(
+        (
+            'local wezterm = require("wezterm")',
+            "local cfg = wezterm.config_builder()",
+            "return cfg",
+            "",
+        )
+    )
+    result = setup_lua(existing, Path("/tmp/sf2-theme/wezterm-current.lua"))
+    assert result.mutated is True
+    assert "cfg.color_scheme = sf2_scheme" in result.content
+    assert "config.color_scheme" not in result.content
+    assert "TERM_THEME" in result.content
 
 
 def test_existing_color_scheme_is_not_stolen() -> None:
@@ -122,7 +144,8 @@ def test_previous_sf2_scheme_assignment_is_upgraded() -> None:
     assert result.mutated is True
     assert result.snippet is None
     assert 'config.color_scheme = "street-fighter-2"' not in result.content
-    assert "config.color_scheme = dofile(sf2_current)" in result.content
+    assert "config.color_scheme = sf2_scheme" in result.content
+    assert "TERM_THEME" in result.content
     assert "wezterm.add_to_config_reload_watch_list(sf2_current)" in result.content
     assert 'config.font = wezterm.font("Monaspace Neon")' in result.content
     assert "scheme_for_appearance" in result.content
@@ -141,7 +164,8 @@ def test_adopt_replaces_foreign_color_scheme() -> None:
     result = setup_lua(existing, Path("/tmp/pointer.lua"), adopt=True)
     assert result.mutated is True
     assert "Catppuccin Mocha" not in result.content
-    assert "config.color_scheme = dofile(sf2_current)" in result.content
+    assert "config.color_scheme = sf2_scheme" in result.content
+    assert "TERM_THEME" in result.content
 
 
 def test_apply_does_not_touch_lua(tmp_path: Path, monkeypatch) -> None:
@@ -205,6 +229,7 @@ def test_setup_writes_starter_when_missing(tmp_path: Path, monkeypatch) -> None:
     assert lua.mutated is True
     written = (tmp_path / "xdg" / "wezterm" / "wezterm.lua").read_text(encoding="utf-8")
     assert "dofile(sf2_current)" in written
+    assert "TERM_THEME" in written
     assert any(result.path.name == "sf2-main.toml" for result in results)
 
 

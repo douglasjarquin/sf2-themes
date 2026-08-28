@@ -8,6 +8,7 @@ BUILDER = re.compile(r"^local\s+(\w+)\s*=\s*wezterm\.config_builder\(\)\s*$", re
 RETURN_NAME = re.compile(r"^return\s+(\w+)\s*$", re.MULTILINE)
 COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=")
 SF2_SCHEME_VALUE = re.compile(r'"(?:sf2-[^"]*|street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"')
+TERM_THEME_GUARD = "TERM_THEME"
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,13 +26,21 @@ def lua_path_literal(path: Path) -> str:
 
 
 def integration_snippet(pointer: Path, builder: str = "config") -> str:
-    """Return the exact Lua block a human should paste."""
+    """Return the exact Lua block a human should paste.
+
+    TERM_THEME follows the selected sf2 scheme so Cursor Agent and similar TUIs
+    do not guess light chrome against a dark scheme (or the reverse).
+    """
     literal = lua_path_literal(pointer)
     return "\n".join(
         (
             f'local sf2_current = "{literal}"',
             "wezterm.add_to_config_reload_watch_list(sf2_current)",
-            f"{builder}.color_scheme = dofile(sf2_current)",
+            "local sf2_scheme = dofile(sf2_current)",
+            f"{builder}.color_scheme = sf2_scheme",
+            f"local sf2_env = {builder}.set_environment_variables or {{}}",
+            'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"',
+            f"{builder}.set_environment_variables = sf2_env",
             "",
         )
     )
@@ -51,9 +60,47 @@ def starter_config(pointer: Path) -> str:
 
 
 def already_integrated(existing: str, pointer: Path) -> bool:
-    """True when the file already dofiles the managed pointer."""
+    """True when the file already dofiles the managed pointer with TERM_THEME."""
     marker = str(pointer)
-    return "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
+    has_pointer = "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
+    return has_pointer and TERM_THEME_GUARD in existing
+
+
+def needs_term_theme_upgrade(existing: str, pointer: Path) -> bool:
+    """True when sf2 integration exists but the Cursor Agent TERM_THEME guard does not."""
+    marker = str(pointer)
+    has_pointer = "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
+    return has_pointer and TERM_THEME_GUARD not in existing
+
+
+def _upgrade_term_theme_guard(existing: str, pointer: Path) -> str | None:
+    """Insert TERM_THEME wiring after the managed color_scheme assignment when possible."""
+    builder = BUILDER.search(existing)
+    if builder is None:
+        return None
+    name = builder.group(1)
+    lines = existing.splitlines(keepends=True)
+    scheme_idx = next(
+        (
+            index
+            for index, line in enumerate(lines)
+            if "dofile(sf2_current)" in line and "color_scheme" in line
+        ),
+        None,
+    )
+    if scheme_idx is None:
+        return None
+    indent = re.match(r"^(\s*)", lines[scheme_idx]).group(1)
+    replacement = [
+        f"{indent}local sf2_scheme = dofile(sf2_current)\n",
+        f"{indent}{name}.color_scheme = sf2_scheme\n",
+        f"{indent}local sf2_env = {name}.set_environment_variables or {{}}\n",
+        f'{indent}sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"\n',
+        f"{indent}{name}.set_environment_variables = sf2_env\n",
+    ]
+    # Drop a bare `local sf2_current` watch/assignment block's old one-line scheme set.
+    new_lines = lines[:scheme_idx] + replacement + lines[scheme_idx + 1 :]
+    return "".join(new_lines)
 
 
 def _scheme_kind(line: str) -> str | None:
@@ -81,6 +128,11 @@ def setup_lua(existing: str, pointer: Path, *, adopt: bool = False) -> LuaSetup:
         return LuaSetup(content=starter_config(pointer), mutated=True, snippet=None)
     if already_integrated(existing, pointer):
         return LuaSetup(content=existing, mutated=False, snippet=None)
+    if needs_term_theme_upgrade(existing, pointer):
+        upgraded = _upgrade_term_theme_guard(existing, pointer)
+        if upgraded is not None:
+            return LuaSetup(content=upgraded, mutated=True, snippet=None)
+        return LuaSetup(content=existing, mutated=False, snippet=snippet)
     builder = BUILDER.search(existing)
     returned = RETURN_NAME.search(existing)
     if builder is None or returned is None or builder.group(1) != returned.group(1):

@@ -7,11 +7,14 @@ from pathlib import Path
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme, project_adapter_colors
+from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
 ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
+# Herdr paints the active tab chip and the focused split border with the same
+# `accent` token. Prefer primary accent for both; `name = "terminal"` left those
+# as ANSI Blue (WezTerm's semantic blue), which is wrong for SF2 palettes.
 HERDR_TOKENS = (
     ("sidebar_bg", "adapter", "sidebar_bg"),
     ("panel_bg", "adapter", "panel_bg"),
@@ -25,7 +28,7 @@ HERDR_TOKENS = (
     ("text", "ui", "foreground"),
     ("subtext0", "adapter", "subtext"),
     ("accent", "ui", "accent"),
-    ("mauve", "semantic", "magenta"),
+    ("mauve", "ui", "accent_secondary"),
     ("green", "semantic", "green"),
     ("yellow", "semantic", "yellow"),
     ("red", "semantic", "red"),
@@ -33,6 +36,13 @@ HERDR_TOKENS = (
     ("teal", "semantic", "cyan"),
     ("peach", "semantic", "orange"),
 )
+
+
+def herdr_base_theme_name(theme: Theme) -> str:
+    """Return a concrete Herdr base so ANSI Blue never leaks into chrome."""
+    if theme.metadata.variant is ThemeVariant.LIGHT:
+        return "catppuccin-latte"
+    return "catppuccin"
 
 
 def herdr_path(config_dir: Path | None) -> Path:
@@ -54,7 +64,7 @@ def render_block(theme: Theme) -> str:
         MANAGED_START,
         f"# sf2-themes: {theme.metadata.selectable_id}",
         "[theme]",
-        'name = "terminal"',
+        f'name = "{herdr_base_theme_name(theme)}"',
         "",
         "[theme.custom]",
     ]

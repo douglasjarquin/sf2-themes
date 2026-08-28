@@ -1,7 +1,7 @@
 # >>> sf2-themes managed theme
 # sf2-themes: sf2-main
 [theme]
-name = "terminal"
+name = "catppuccin"
 
 [theme.custom]
 sidebar_bg = "#131927"
@@ -16,7 +16,7 @@ overlay1 = "#7c8597"
 text = "#cad1de"
 subtext0 = "#9ca7bd"
 accent = "#ad8705"
-mauve = "#b371ad"
+mauve = "#cf6a63"
 green = "#4e975b"
 yellow = "#a58324"
 red = "#c86e67"
