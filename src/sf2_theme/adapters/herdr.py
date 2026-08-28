@@ -15,11 +15,15 @@ ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
 # Herdr paints the active tab chip and the focused split border with the same
 # `accent` token. Prefer primary accent for both; `name = "terminal"` left those
 # as ANSI Blue (WezTerm's semantic blue), which is wrong for SF2 palettes.
+#
+# Do not map Herdr row fills to ui.selection_background: that token is a punchy
+# terminal-selection tint and reads as an off-palette purple slab in the sidebar.
+# Use surface steps instead (active = surface, navigate cursor = overlay).
 HERDR_TOKENS = (
     ("sidebar_bg", "adapter", "sidebar_bg"),
     ("panel_bg", "adapter", "panel_bg"),
-    ("active_row_bg", "adapter", "active_row_bg"),
-    ("selection_bg", "adapter", "navigate_row_bg"),
+    ("active_row_bg", "adapter", "surface0"),
+    ("selection_bg", "adapter", "surface1"),
     ("surface0", "adapter", "surface0"),
     ("surface1", "adapter", "surface1"),
     ("surface_dim", "adapter", "surface_dim"),

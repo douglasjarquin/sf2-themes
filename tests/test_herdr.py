@@ -25,6 +25,14 @@ def test_light_variant_uses_latte_base() -> None:
     assert 'name = "catppuccin-latte"' in render_block(theme)
 
 
+def test_sidebar_rows_use_surfaces_not_selection_tint() -> None:
+    theme = get_theme("vega", parse_catalog())
+    block = render_block(theme)
+    assert f'active_row_bg = "{theme.ui.surface}"' in block
+    assert f'selection_bg = "{theme.ui.overlay}"' in block
+    assert f'active_row_bg = "{theme.ui.selection_background}"' not in block
+
+
 def test_herdr_managed_identity_is_prefixed() -> None:
     theme = get_theme("main", parse_catalog())
 

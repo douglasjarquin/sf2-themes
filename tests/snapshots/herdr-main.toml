@@ -6,7 +6,7 @@ name = "catppuccin"
 [theme.custom]
 sidebar_bg = "#131927"
 panel_bg = "#1d2433"
-active_row_bg = "#453714"
+active_row_bg = "#1d2433"
 selection_bg = "#2a3243"
 surface0 = "#1d2433"
 surface1 = "#2a3243"
