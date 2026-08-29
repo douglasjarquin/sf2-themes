@@ -48,6 +48,13 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Setup without an explicit theme preserves an existing selection and normalizes only recognized legacy short IDs, while apply selects the requested or default theme.
 - Limit legacy cleanup to unprefixed `<catalog-id>.tmTheme` files represented by the current catalog.
 
+## Lazygit
+
+- `apply_lazygit` and `setup_lazygit` own `<lazygit-config>/themes/sf2-<catalog-id>.yml` for every catalog entry and the selected theme sections in `<lazygit-config>/config.yml`.
+- Theme fragments must cover every current Lazygit `gui.theme` key plus wildcard `authorColors['*']`, with SF2 semantic roles rather than Catppuccin hues.
+- Preserve unrelated `gui` settings and named author colors, refuse an unmarked existing `gui.theme` unless `--adopt` is explicit, and keep the managed blocks idempotent.
+- Resolve the config directory from `--config-dir`, `LAZYGIT_CONFIG_DIR`, or the platform's Lazygit default, and route every write through `write_file`.
+
 ## Shared write contract
 
 - Route managed text writes through `write_file` so every adapter shares one mutation contract.
@@ -62,6 +69,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Run `uv run --with pytest pytest -q tests/test_herdr.py tests/test_snapshots.py` for Herdr merge or rendering changes.
 - Run `uv run --with pytest pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
 - Run `uv run --with pytest pytest -q tests/test_codex.py` for Codex theme or config changes.
+- Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
 - Run `uv run --with pytest pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
 - After adapter behavior changes, follow the inherited standalone regeneration rule and run `bash tests/test_cli.sh` to exercise the copied CLI across all adapters.
 - Completion requires focused tests to pass with dry-run, backup, symlink, preservation, and exact-path ownership expectations intact.

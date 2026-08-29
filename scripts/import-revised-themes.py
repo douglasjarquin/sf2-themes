@@ -136,8 +136,7 @@ def transformed_catalog(source: Path, destination: Path) -> tuple[tuple[str, str
 
 def destination_matches(destination: Path, transformed: tuple[tuple[str, str], ...]) -> bool:
     return all(
-        destination_path(destination, name).read_text(encoding="utf-8") == content
-        for name, content in transformed
+        destination_path(destination, name).read_text(encoding="utf-8") == content for name, content in transformed
     )
 
 

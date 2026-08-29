@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), and [Starship](https://starship.rs/).
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit).
 
 The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
@@ -99,9 +99,15 @@ sf2-themes apply codex --theme ryu-light
 
 sf2-themes setup starship
 sf2-themes apply starship --theme vega
+
+sf2-themes setup lazygit
+sf2-themes apply lazygit --theme vega
 ```
 
 Starship apply also refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
+
+Lazygit setup and apply install all 36 complete theme fragments under its `themes/` directory and select the requested theme in `config.yml`.
+Use `--adopt` when an existing `gui.theme` section is not managed by sf2-themes.
 
 Neovim setup installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
 The loader applies the selected theme automatically when Neovim starts.
@@ -131,6 +137,7 @@ sf2-themes apply herdr --theme boxer --dry-run
 sf2-themes current nvim
 sf2-themes current codex
 sf2-themes current starship
+sf2-themes current lazygit
 ```
 
 From a checkout the same commands work as `scripts/sf2 …` or `./sf2-themes …`.
@@ -147,6 +154,7 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
 - Starship updates the marked palette in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
+- Lazygit themes go in its `themes/` directory, and the selected `gui.theme` plus wildcard author color are managed in `config.yml`.
 - Symlinks are refused unless you pass `--follow-symlinks`.
 - Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
@@ -154,7 +162,7 @@ Override locations with `--config-dir`, `CODEX_HOME`, `WEZTERM_CONFIG_FILE`, `WE
 
 ## Uninstall
 
-Remove `~/.config/wezterm/colors/sf2-*.toml` and any remaining `street-fighter-ii-*.toml`, `~/.config/nvim/colors/sf2-*.lua` and any remaining `street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/sf2-*.tmTheme`, the Codex `[tui]` theme setting, the WezTerm integration snippet, and the marked Herdr theme block.
+Remove `~/.config/wezterm/colors/sf2-*.toml` and any remaining `street-fighter-ii-*.toml`, `~/.config/nvim/colors/sf2-*.lua` and any remaining `street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/sf2-*.tmTheme`, the Lazygit `themes/sf2-*.yml` files and marked config sections, the Codex `[tui]` theme setting, the WezTerm integration snippet, and the marked Herdr theme block.
 
 ## Design
 

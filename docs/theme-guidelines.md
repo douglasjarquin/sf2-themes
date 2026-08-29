@@ -127,6 +127,8 @@ Neovim receives every current theme token, including overlays and subtext, mappe
 
 Codex receives the current UI and semantic colors through its supported Syntect/TextMate `.tmTheme` surface under `$CODEX_HOME/themes/`.
 
+Lazygit receives every current `gui.theme` key plus the wildcard `gui.authorColors` entry, mapped from accent and semantic tokens, as YAML fragments under its `themes/` directory.
+
 ## 10. Automated validation
 
 Every theme must pass schema validation, exact `#RRGGBB` validation, unique id and alias checks, contrast tests, ANSI completeness tests, renderer parsing, golden-output snapshots, and idempotent apply tests.

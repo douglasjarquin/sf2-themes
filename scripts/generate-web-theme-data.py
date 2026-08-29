@@ -58,9 +58,7 @@ def write_atomic(output: Path, content: str) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Generate browser theme data from the canonical Python model."
-    )
+    parser = argparse.ArgumentParser(description="Generate browser theme data from the canonical Python model.")
     parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--check", action="store_true")

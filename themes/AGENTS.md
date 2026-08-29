@@ -27,6 +27,7 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 - Provide exactly the eight named ANSI colors in both `ansi.normal` and `ansi.bright`.
 - Set `meta.character` for character themes and omit it for both main themes.
 - Commit every dark and light theme as a fully resolved document containing every required token.
+- Keep the catalog as the sole source for Lazygit output; do not add Catppuccin flavor or accent files under `themes/`.
 - Use literal reviewed `#RRGGBB` values in committed TOML.
 - Keep inheritance, `extends`, runtime inversion, and hidden production color generation out of the catalog.
 
@@ -56,6 +57,7 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 - Run `uv run --with pytest pytest -q tests/test_catalog.py tests/test_validation.py tests/test_snapshots.py` for catalog, contrast, and adapter-render coverage.
 - Run both `uv run sf2-themes validate --all` and `./sf2-themes validate --all` to prove source and embedded catalogs accept the same themes.
 - Run `bash tests/test_cli.sh` to exercise the copied standalone CLI and prefixed installed identities.
+- Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` to verify complete Lazygit key coverage and all 36 generated identities.
 - Run `aube -C web run test:unit`, `mise run web:check`, and `mise run web:build` for browser parsing, palette mapping, and static rendering.
 - Run `mise run web:screenshots` followed by `mise run web:screenshots:verify` whenever palette TOML changes.
 - Run `git diff --check` and inspect the scoped diff for the intended TOML and regenerated dependents.
