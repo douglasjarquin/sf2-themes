@@ -108,8 +108,12 @@ def _replace_marked(lines: list[str], start_marker: str, end_marker: str, replac
     return lines[: starts[0]] + replacement + lines[ends[0] + 1 :]
 
 
+def _normalized_key(line: str) -> str:
+    return line.split(" #", 1)[0].rstrip()
+
+
 def _top_level_section(lines: list[str], name: str) -> tuple[int, int] | None:
-    start = next((index for index, line in enumerate(lines) if line == f"{name}:"), None)
+    start = next((index for index, line in enumerate(lines) if _normalized_key(line) == f"{name}:"), None)
     if start is None:
         return None
     end = next((index for index in range(start + 1, len(lines)) if line_is_top_level(lines[index])), len(lines))
@@ -126,7 +130,7 @@ def _gui_subsection_bounds(lines: list[str], name: str) -> tuple[int, int] | Non
     if gui is None:
         return None
     start, end = gui
-    section = next((index for index in range(start + 1, end) if lines[index] == f"  {name}:"), None)
+    section = next((index for index in range(start + 1, end) if _normalized_key(lines[index]) == f"  {name}:"), None)
     if section is None:
         return None
     section_end = next(
