@@ -108,6 +108,12 @@ def _replace_marked(lines: list[str], start_marker: str, end_marker: str, replac
     return lines[: starts[0]] + replacement + lines[ends[0] + 1 :]
 
 
+def _is_wildcard_author_line(line: str) -> bool:
+    stripped = line.strip()
+    key, separator, _ = stripped.partition(":")
+    return bool(separator) and key.strip() in {"*", "'*'", '"*"'}
+
+
 def _normalized_key(line: str) -> str:
     return line.split(" #", 1)[0].rstrip()
 
@@ -214,7 +220,7 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
         elif not any(line.strip() == MANAGED_AUTHOR_START for line in lines[author[0] : author[1]]):
             start, end = author
             wildcard = next(
-                (index for index in range(start + 1, end) if lines[index].strip().startswith("'*':")),
+                (index for index in range(start + 1, end) if _is_wildcard_author_line(lines[index])),
                 None,
             )
             if wildcard is None:
