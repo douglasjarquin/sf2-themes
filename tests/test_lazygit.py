@@ -63,12 +63,12 @@ def test_merge_config_recognizes_sections_with_comments_and_trailing_whitespace(
 
 def test_merge_config_replaces_double_quoted_wildcard_author_entry() -> None:
     theme = get_theme("main", parse_catalog())
-    existing = 'gui:\n  authorColors:\n    Alice: \'#fff\'\n    "*": \'#abc\'\n'
+    existing = "gui:\n  authorColors:\n    Alice: '#fff'\n    \"*\": '#abc'\n"
 
     merged = merge_config(existing, theme, adopt=False)
 
     assert "Alice: '#fff'" in merged
-    assert '"*": \'#abc\'' not in merged
+    assert "\"*\": '#abc'" not in merged
     assert merged.count("'*':") == 1
 
 

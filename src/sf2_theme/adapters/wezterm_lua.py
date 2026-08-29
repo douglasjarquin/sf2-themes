@@ -10,8 +10,7 @@ COLOR_SCHEME_LINE = re.compile(r"^\s*(?:\w+\.)?color_scheme\s*=")
 SF2_SCHEME_VALUE = re.compile(r'"(?:sf2-[^"]*|street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"')
 TERM_THEME_GUARD = "TERM_THEME"
 TERM_THEME_ASSIGN = (
-    'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and '
-    'sf2_scheme:find("-light", 1, true)) and "light" or "dark"'
+    'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"'
 )
 
 
@@ -85,11 +84,7 @@ def _upgrade_term_theme_guard(existing: str, pointer: Path) -> str | None:
     name = builder.group(1)
     lines = existing.splitlines(keepends=True)
     scheme_idx = next(
-        (
-            index
-            for index, line in enumerate(lines)
-            if "dofile(sf2_current)" in line and "color_scheme" in line
-        ),
+        (index for index, line in enumerate(lines) if "dofile(sf2_current)" in line and "color_scheme" in line),
         None,
     )
     if scheme_idx is None:

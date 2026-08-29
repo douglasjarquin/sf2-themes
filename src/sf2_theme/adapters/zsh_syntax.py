@@ -56,6 +56,6 @@ def apply_zsh_syntax(
 
 
 SOURCE_HINT = (
-    "[[ -f \"$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh\" ]] && "
+    '[[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && '
     'source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"'
 )

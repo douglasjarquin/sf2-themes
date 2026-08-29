@@ -44,9 +44,7 @@ def test_apply_starship_writes_palette_and_zsh(tmp_path: Path, monkeypatch) -> N
     apply_zsh_syntax(theme, dry_run=False, follow_symlinks=False)
     starship = (config_dir / "starship.toml").read_text(encoding="utf-8")
     assert f'blue = "{theme.ui.accent}"' in starship
-    highlight = (tmp_path / "xdg" / "sf2-theme" / "zsh-syntax-highlighting.zsh").read_text(
-        encoding="utf-8"
-    )
+    highlight = (tmp_path / "xdg" / "sf2-theme" / "zsh-syntax-highlighting.zsh").read_text(encoding="utf-8")
     assert theme.ui.accent in highlight
 
 

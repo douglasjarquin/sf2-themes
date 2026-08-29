@@ -216,8 +216,7 @@ def _setup(app: str, options: Options) -> None:
         case "starship":
             _report(_apply_starship(theme, options))
             print(
-                "Source the zsh highlight snippet after zsh-syntax-highlighting:\n"
-                f"  {SOURCE_HINT}\n",
+                f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
                 file=sys.stderr,
             )
         case unreachable:
@@ -384,6 +383,7 @@ def dispatch(arguments: list[str]) -> int:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0
+
 
 def main(arguments: list[str] | None = None) -> int:
     """CLI entry point."""

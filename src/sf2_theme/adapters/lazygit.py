@@ -226,7 +226,7 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
             if wildcard is None:
                 lines[end:end] = _managed_author_entry_lines(theme)
             else:
-                lines[wildcard:wildcard + 1] = _managed_author_entry_lines(theme)
+                lines[wildcard : wildcard + 1] = _managed_author_entry_lines(theme)
     return "\n".join(lines).rstrip() + "\n"
 
 

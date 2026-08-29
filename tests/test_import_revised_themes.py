@@ -21,11 +21,7 @@ def load_importer() -> ModuleType:
 
 
 def catalog_snapshot(destination: Path) -> dict[Path, bytes]:
-    return {
-        path.relative_to(destination): path.read_bytes()
-        for path in destination.rglob("*")
-        if path.is_file()
-    }
+    return {path.relative_to(destination): path.read_bytes() for path in destination.rglob("*") if path.is_file()}
 
 
 def test_importer_fails_before_writes_when_source_file_is_missing(tmp_path: Path) -> None:

@@ -107,7 +107,7 @@ def test_existing_integration_gains_term_theme_guard() -> None:
     assert result.mutated is True
     assert "TERM_THEME" in result.content
     assert "config.color_scheme = sf2_scheme" in result.content
-    assert 'config.font' not in result.content
+    assert "config.font" not in result.content
 
 
 def test_return_cfg_uses_discovered_builder_name() -> None:
