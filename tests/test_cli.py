@@ -12,6 +12,7 @@ def test_apps_and_version(capsys) -> None:
     assert "herdr" in apps
     assert "nvim" in apps
     assert "starship" in apps
+    assert "lazygit" in apps
     assert dispatch(["--version"]) == 0
     assert capsys.readouterr().out.strip() == "1.0.1"
 
@@ -60,3 +61,47 @@ def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:
     assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
     captured = capsys.readouterr()
     assert "WezTerm config was left unchanged" in captured.err
+
+
+def test_apply_lazygit_writes_all_catalog_themes_and_preserves_config(tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / "lazygit"
+    config_dir.mkdir()
+    (config_dir / "config.yml").write_text(
+        "gui:\n  sidePanelWidth: 0.3\n\nnotATheme: true\n",
+        encoding="utf-8",
+    )
+
+    assert dispatch(["apply", "lazygit", "--theme", "vega", "--config-dir", str(config_dir)]) == 0
+
+    theme_files = sorted((config_dir / "themes").glob("sf2-*.yml"))
+    assert len(theme_files) == 36
+    selected = (config_dir / "themes" / "sf2-vega.yml").read_text(encoding="utf-8")
+    for key in (
+        "activeBorderColor",
+        "inactiveBorderColor",
+        "searchingActiveBorderColor",
+        "optionsTextColor",
+        "selectedLineBgColor",
+        "inactiveViewSelectedLineBgColor",
+        "cherryPickedCommitFgColor",
+        "cherryPickedCommitBgColor",
+        "markedBaseCommitFgColor",
+        "markedBaseCommitBgColor",
+        "unstagedChangesColor",
+        "defaultFgColor",
+        "authorColors",
+    ):
+        assert key in selected
+    config = (config_dir / "config.yml").read_text(encoding="utf-8")
+    assert "sidePanelWidth: 0.3" in config
+    assert "notATheme: true" in config
+    assert "# sf2-themes: sf2-vega" in config
+    assert "sf2-vega.yml" in capsys.readouterr().out
+
+
+def test_setup_lazygit_selects_light_theme_and_current_reads_it(tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / "lazygit"
+
+    assert dispatch(["setup", "lazygit", "--theme", "ryu-light", "--config-dir", str(config_dir)]) == 0
+    assert dispatch(["current", "lazygit", "--config-dir", str(config_dir)]) == 0
+    assert capsys.readouterr().out.strip().endswith("sf2-ryu-light")

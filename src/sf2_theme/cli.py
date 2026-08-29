@@ -11,6 +11,8 @@ from sf2_theme.adapters.codex import apply_codex, setup_codex
 from sf2_theme.adapters.codex import read_current_id as codex_current
 from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
+from sf2_theme.adapters.lazygit import apply_lazygit, setup_lazygit
+from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
 from sf2_theme.adapters.nvim import apply_nvim, setup_nvim
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
 from sf2_theme.adapters.starship import apply_starship
@@ -31,7 +33,7 @@ from sf2_theme.filesystem import WriteResult
 from sf2_theme.model import Theme
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship")
+APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit")
 HELP_TEXT = """Street Fighter II theme pack
 
 Usage:
@@ -48,6 +50,7 @@ setup performs one-time application integration.
 apply writes or selects the active theme (default: main).
 install is a deprecated alias for apply.
 starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
+Lazygit installs one YAML fragment per catalog theme under its themes directory.
 """
 
 
@@ -199,6 +202,17 @@ def _setup(app: str, options: Options) -> None:
                     replace_theme=options.theme is not None,
                 )
             )
+        case "lazygit":
+            _report(
+                setup_lazygit(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
+                    adopt=options.adopt,
+                )
+            )
         case "starship":
             _report(_apply_starship(theme, options))
             print(
@@ -256,6 +270,17 @@ def _apply(app: str, options: Options) -> None:
                     follow_symlinks=options.follow_symlinks,
                 )
             )
+        case "lazygit":
+            _report(
+                apply_lazygit(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
+                    adopt=options.adopt,
+                )
+            )
         case "starship":
             _report(_apply_starship(theme, options))
         case unreachable:
@@ -296,6 +321,8 @@ def _current(app: str, options: Options) -> None:
             print(nvim_current(options.config_dir))
         case "codex":
             print(codex_current(options.config_dir))
+        case "lazygit":
+            print(lazygit_current(options.config_dir))
         case "starship":
             print(starship_current(options.config_dir))
         case unreachable:

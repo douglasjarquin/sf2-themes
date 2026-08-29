@@ -55,6 +55,16 @@ grep -q 'theme = "sf2-ryu-light"' "$test_dir/installed-codex/config.toml"
 grep -q '#131927' "$test_dir/installed-codex/themes/sf2-main.tmTheme"
 test "$("$repo_dir/sf2-themes" current codex --config-dir "$test_dir/installed-codex")" = "sf2-ryu-light"
 printf '%s\n' 'Copy-only installed Codex: PASS'
+"$repo_dir/sf2-themes" setup lazygit --config-dir "$test_dir/installed-lazygit"
+"$repo_dir/sf2-themes" apply lazygit --theme ryu-light --config-dir "$test_dir/installed-lazygit"
+test "$(find "$test_dir/installed-lazygit/themes" -type f -name 'sf2-*.yml' | wc -l | tr -d ' ')" -eq 36
+test -f "$test_dir/installed-lazygit/themes/sf2-main.yml"
+test -f "$test_dir/installed-lazygit/themes/sf2-ryu-light.yml"
+grep -q 'activeBorderColor:' "$test_dir/installed-lazygit/themes/sf2-main.yml"
+grep -q 'authorColors:' "$test_dir/installed-lazygit/themes/sf2-main.yml"
+grep -q '# sf2-themes: sf2-ryu-light' "$test_dir/installed-lazygit/config.yml"
+test "$("$repo_dir/sf2-themes" current lazygit --config-dir "$test_dir/installed-lazygit")" = "sf2-ryu-light"
+printf '%s\n' 'Copy-only installed Lazygit: PASS'
 grep -q 'background = "#131927"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'name = "sf2-main"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'sf2-street-fighter-2' "$test_dir/wezterm/colors/sf2-main.toml"
