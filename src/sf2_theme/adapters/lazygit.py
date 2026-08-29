@@ -76,8 +76,8 @@ def _theme_lines(theme: Theme, *, indent: str = "") -> list[str]:
             lines.append(f"{indent}      - bold")
     lines.extend(
         (
-            f"{indent}authorColors:",
-            f"{indent}  '*': '{theme.ui.accent_secondary}'",
+            f"{indent}  authorColors:",
+            f"{indent}    '*': '{theme.ui.accent_secondary}'",
         )
     )
     return lines
@@ -121,23 +121,23 @@ def line_is_top_level(line: str) -> bool:
     return bool(line.strip()) and not line.startswith((" ", "\t", "#"))
 
 
-def _gui_theme_bounds(lines: list[str]) -> tuple[int, int] | None:
+def _gui_subsection_bounds(lines: list[str], name: str) -> tuple[int, int] | None:
     gui = _top_level_section(lines, "gui")
     if gui is None:
         return None
     start, end = gui
-    theme = next((index for index in range(start + 1, end) if lines[index] == "  theme:"), None)
-    if theme is None:
+    section = next((index for index in range(start + 1, end) if lines[index] == f"  {name}:"), None)
+    if section is None:
         return None
-    theme_end = next(
+    section_end = next(
         (
             index
-            for index in range(theme + 1, end)
+            for index in range(section + 1, end)
             if lines[index].startswith("  ") and not lines[index].startswith("    ")
         ),
         end,
     )
-    return theme, theme_end
+    return section, section_end
 
 
 def _managed_theme_lines(theme: Theme) -> list[str]:
@@ -151,16 +151,16 @@ def _managed_theme_lines(theme: Theme) -> list[str]:
 
 def _managed_author_lines(theme: Theme) -> list[str]:
     return [
-        MANAGED_AUTHOR_START,
-        f"# sf2-themes: {theme.metadata.selectable_id}",
-        "authorColors:",
-        f"  '*': '{theme.ui.accent_secondary}'",
-        MANAGED_AUTHOR_END,
+        f"  {MANAGED_AUTHOR_START}",
+        f"  # sf2-themes: {theme.metadata.selectable_id}",
+        "  authorColors:",
+        f"    '*': '{theme.ui.accent_secondary}'",
+        f"  {MANAGED_AUTHOR_END}",
     ]
 
 
 def _managed_author_entry_lines(theme: Theme) -> list[str]:
-    indent = "  "
+    indent = "    "
     return [
         f"{indent}{MANAGED_AUTHOR_START}",
         f"{indent}# sf2-themes: {theme.metadata.selectable_id}",
@@ -177,10 +177,10 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
     had_managed_author = author_marker is not None
     if author_marker is not None:
         indent = author_marker[: len(author_marker) - len(author_marker.lstrip())]
-        author_replacement = _managed_author_lines(theme) if not indent else _managed_author_entry_lines(theme)
+        author_replacement = _managed_author_entry_lines(theme) if len(indent) >= 4 else _managed_author_lines(theme)
         lines = _replace_marked(lines, MANAGED_AUTHOR_START, MANAGED_AUTHOR_END, author_replacement)
 
-    theme_bounds = _gui_theme_bounds(lines)
+    theme_bounds = _gui_subsection_bounds(lines, "theme")
     if theme_bounds is not None:
         start, end = theme_bounds
         gui = _top_level_section(lines, "gui")
@@ -202,9 +202,11 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
             lines[end:end] = _managed_theme_lines(theme)
 
     if not had_managed_author:
-        author = _top_level_section(lines, "authorColors")
+        author = _gui_subsection_bounds(lines, "authorColors")
         if author is None:
-            lines.extend(["", *_managed_author_lines(theme)])
+            gui = _top_level_section(lines, "gui")
+            _, end = gui
+            lines[end:end] = _managed_author_lines(theme)
         elif not any(line.strip() == MANAGED_AUTHOR_START for line in lines[author[0] : author[1]]):
             start, end = author
             wildcard = next(

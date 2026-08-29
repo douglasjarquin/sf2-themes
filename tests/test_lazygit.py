@@ -28,7 +28,7 @@ def test_render_theme_covers_current_lazygit_schema() -> None:
         "defaultFgColor",
     ):
         assert rendered.count(f"    {key}:") == 1
-    assert "authorColors:\n  '*':" in rendered
+    assert "  authorColors:\n    '*':" in rendered
     assert "      - bold" in rendered
     assert str(theme.ui.accent) in rendered
     assert str(theme.semantic.red) in rendered
@@ -36,7 +36,7 @@ def test_render_theme_covers_current_lazygit_schema() -> None:
 
 def test_merge_config_preserves_unrelated_gui_and_author_settings() -> None:
     theme = get_theme("main", parse_catalog())
-    existing = "gui:\n  sidePanelWidth: 0.3\n\nauthorColors:\n  Alice: '#fff'\n"
+    existing = "gui:\n  sidePanelWidth: 0.3\n  authorColors:\n    Alice: '#fff'\n"
 
     merged = merge_config(existing, theme, adopt=False)
 
