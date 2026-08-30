@@ -2,6 +2,7 @@
 import FeaturedPalettePreview from "../components/FeaturedPalettePreview.astro";
 import { themeTokens } from "../data/theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
+import { PRODUCT_DESCRIPTION } from "../lib/seo.mjs";
 import { sitePath } from "../lib/site-path.mjs";
 
 const main = themeTokens.main;
@@ -22,7 +23,7 @@ const homeStyle = [
 
 <SiteLayout
   title="Street Fighter II terminal themes"
-  description="Street Fighter II color themes for WezTerm, Herdr, Neovim, and Codex."
+  description={PRODUCT_DESCRIPTION}
 >
   <div class="home-page" style={homeStyle}>
     <section class="home-hero site-frame" aria-labelledby="home-heading">
@@ -30,8 +31,8 @@ const homeStyle = [
         <p class="home-kicker">ROUND ONE - TERMINAL EDITION</p>
         <h1 id="home-heading">Fight for your terminal.</h1>
         <p class="home-lede">
-          A complete Street Fighter II color pack for WezTerm, Herdr, Neovim, and Codex, tuned from
-          the arcade floor to your command line.
+          A complete Street Fighter II color pack for WezTerm, Herdr, Neovim, Codex, and Starship,
+          tuned from the arcade floor to your command line.
         </p>
         <div class="home-actions">
           <a class="home-action home-action--primary" href={sitePath("themes")}>VIEW THE ROSTER</a>
@@ -61,9 +62,9 @@ const homeStyle = [
         <p>Dark and light main variants plus the Super Street Fighter II Turbo roster.</p>
       </article>
       <article>
-        <span>04</span>
+        <span>05</span>
         <h2>SUPPORTED TERMINALS</h2>
-        <p>Install a matching palette in WezTerm, Herdr, Neovim, or Codex with the same command.</p>
+        <p>Install a matching palette in WezTerm, Herdr, Neovim, Codex, or Starship with the same command.</p>
       </article>
       <article>
         <span>00</span>

@@ -1,0 +1,48 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+import { sitePath } from "../lib/site-path.mjs";
+
+const recoveryLinks = [
+  { label: "Home", href: sitePath() },
+  { label: "Themes", href: sitePath("themes") },
+  { label: "Palette", href: sitePath("palette") },
+  { label: "Preview", href: sitePath("preview") },
+  { label: "Install", href: sitePath("install") },
+  { label: "Arcade", href: sitePath("game") },
+];
+---
+
+<SiteLayout
+  description="This path is not part of the sf2-themes site. Choose a known route or open the GitHub repository."
+  noindex
+  title="Page not found"
+>
+  <section class="missing-page site-frame" data-testid="project-404">
+    <p class="missing-page__kicker">ROUND OVER</p>
+    <h1 class="page-title">CONTINUE?</h1>
+    <p>
+      This URL is not a page in sf2-themes. The cabinet is still online: pick a known route
+      or open the repository.
+    </p>
+    <nav aria-label="Known routes" class="missing-page__links">
+      {
+        recoveryLinks.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))
+      }
+      <a href="https://github.com/douglasjarquin/sf2-themes" rel="noreferrer" target="_blank">
+        GitHub repository <span aria-hidden="true">↗</span>
+      </a>
+    </nav>
+  </section>
+</SiteLayout>
+
+<style>
+  .missing-page { display: grid; gap: var(--space-5); padding-block: var(--space-15) var(--space-20); }
+  .missing-page__kicker { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.9; }
+  .missing-page > p:not(.missing-page__kicker) { max-inline-size: 62ch; margin: 0; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
+  .missing-page__links { display: grid; gap: var(--space-3); justify-items: start; }
+  .missing-page__links a { border-inline-start: var(--border-strong) solid var(--color-red); color: var(--color-foreground); font-family: var(--font-display); font-size: var(--text-label); line-height: 1.6; padding: var(--space-3) var(--space-4); }
+  .missing-page__links a:hover { border-color: var(--color-cyan); background: var(--color-panel); color: var(--color-cyan); transform: translateX(3px); }
+  @media (prefers-reduced-motion: reduce) { .missing-page__links a { transition: none; } }
+</style>

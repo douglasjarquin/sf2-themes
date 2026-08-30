@@ -27,21 +27,27 @@ const adapters = [
     description:
       "Writes every catalog theme as a custom .tmTheme and selects it through Codex's config.toml.",
   },
+  {
+    name: "starship",
+    command: "sf2-themes setup starship",
+    description:
+      "Writes a managed palette to starship.toml and refreshes the zsh-syntax highlight snippet.",
+  },
 ];
 ---
 
 <SiteLayout
-  title="WezTerm, Herdr, Neovim, and Codex adapters"
-  description="Install Street Fighter II colors in WezTerm, Herdr, Neovim, and Codex with one CLI."
+  title="WezTerm, Herdr, Neovim, Codex, and Starship adapters"
+  description="Install Street Fighter II colors in WezTerm, Herdr, Neovim, Codex, and Starship with one CLI."
 >
   <section class="themes-hero site-frame" aria-labelledby="themes-title">
-    <PageBreadcrumb current="THEMES" detail="4 PORTS / 1 CLI" />
+    <PageBreadcrumb current="THEMES" detail="5 PORTS / 1 CLI" />
     <h1 id="themes-title" class="page-title">THEMES</h1>
     <p>
       Every port lives in this repo and installs with one command. WezTerm, Herdr, Neovim,
-      and Codex are in the ring today.
+      Codex, and Starship are in the ring today.
     </p>
-    <p class="themes-stats" data-testid="themes-stats">4 PORTS · 4 READY · 1 CLI</p>
+    <p class="themes-stats" data-testid="themes-stats">5 PORTS · 5 READY · 1 CLI</p>
   </section>
 
   <section class="themes-catalog site-frame" aria-label="Theme adapters">
@@ -214,7 +220,7 @@ const adapters = [
 
   .themes-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 14px;
   }
 

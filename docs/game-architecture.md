@@ -74,7 +74,7 @@ The strict verifier checks catalog order, image set, source and recipe fingerpri
 
 `/palette/` renders every palette variant with its matching generated game capture and source swatches.
 
-`/themes/` remains the four-adapter catalog and is independent of the game screenshot archive.
+`/themes/` remains the adapter catalog and is independent of the game screenshot archive.
 
 Use `mise run web:check`, `mise run web:test`, and `mise run web:build` for the normal web gates.
 
