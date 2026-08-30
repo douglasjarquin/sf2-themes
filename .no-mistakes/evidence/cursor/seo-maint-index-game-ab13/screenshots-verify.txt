@@ -1,0 +1,2 @@
+$ node ../scripts/verify-game-screenshots.mjs
+Verified 36 deterministic game screenshot(s) in /Users/douglasjarquin/.no-mistakes/worktrees/82160e29939d/01M18M72S84RPTEZXBBYH2ACTB/web/public/screenshots; seed=sf2-themes-screenshots-v1
