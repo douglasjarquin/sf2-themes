@@ -9,10 +9,13 @@ import {
   INDEXABLE_PATHS,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
+  PRODUCT_OPERATING_SYSTEM,
+  REPOSITORY_URL,
   SITE_BASE,
   SITE_ORIGIN,
   absoluteUrl,
   canonicalUrl,
+  llmsTxt,
   productJsonLd,
   robotsTxt,
   sitemapLocation,
@@ -45,7 +48,7 @@ test("robots.txt allows the project path and points at the project sitemap", () 
   assert.doesNotMatch(committed, /Allow: \/\n/);
 });
 
-test("sitemap.xml lists the five indexable trailing-slash URLs", () => {
+test("sitemap.xml lists the six indexable trailing-slash URLs", () => {
   const committed = readFileSync(path.join(publicDirectory, "sitemap.xml"), "utf8");
   assert.equal(committed, sitemapXml());
   assert.deepEqual(
@@ -56,8 +59,20 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", () => {
       "https://douglasjarquin.github.io/sf2-themes/palette/",
       "https://douglasjarquin.github.io/sf2-themes/preview/",
       "https://douglasjarquin.github.io/sf2-themes/install/",
+      "https://douglasjarquin.github.io/sf2-themes/game/",
     ],
   );
+});
+
+test("llms.txt names the CLI, catalog size, live site, and repository", () => {
+  const committed = readFileSync(path.join(publicDirectory, "llms.txt"), "utf8");
+  assert.equal(committed, llmsTxt());
+  assert.match(committed, /^# sf2-themes\n/);
+  assert.match(committed, /Python 3\.11 CLI named `sf2-themes`/);
+  assert.match(committed, /36-theme TOML catalog/);
+  assert.match(committed, /Live site: https:\/\/douglasjarquin\.github\.io\/sf2-themes\//);
+  assert.match(committed, /Repository: https:\/\/github\.com\/douglasjarquin\/sf2-themes/);
+  assert.doesNotMatch(committed, /Lazygit/);
 });
 
 test("JSON-LD describes the visible site and software without ratings or offers", () => {
@@ -68,6 +83,7 @@ test("JSON-LD describes the visible site and software without ratings or offers"
     jsonLd["@graph"].map((node) => node["@type"]),
     ["WebSite", "SoftwareApplication"],
   );
+  const [website, software] = jsonLd["@graph"];
   for (const node of jsonLd["@graph"]) {
     assert.equal(node.name, PRODUCT_NAME);
     assert.equal(node.description, PRODUCT_DESCRIPTION);
@@ -75,6 +91,12 @@ test("JSON-LD describes the visible site and software without ratings or offers"
     assert.equal("aggregateRating" in node, false);
     assert.equal("offers" in node, false);
   }
+  assert.equal("operatingSystem" in website, false);
+  assert.equal("downloadUrl" in website, false);
+  assert.equal("codeRepository" in website, false);
+  assert.equal(software.operatingSystem, PRODUCT_OPERATING_SYSTEM);
+  assert.equal(software.downloadUrl, REPOSITORY_URL);
+  assert.equal(software.codeRepository, REPOSITORY_URL);
   assert.doesNotMatch(serialized, /aggregateRating|offers|"ratingValue"/);
   assert.equal(absoluteUrl(CABINET_IMAGE_PATH), "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png");
 });

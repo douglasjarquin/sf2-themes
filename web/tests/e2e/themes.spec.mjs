@@ -6,10 +6,10 @@ test("themes catalog truthfully lists the supported adapters", async ({ page }) 
   await page.goto(themesPath);
 
   await expect(page.getByRole("heading", { name: "THEMES" })).toBeVisible();
-  await expect(page.getByTestId("themes-stats")).toHaveText("4 PORTS · 4 READY · 1 CLI");
+  await expect(page.getByTestId("themes-stats")).toHaveText("5 PORTS · 5 READY · 1 CLI");
 
   const cards = page.getByTestId("adapter-card");
-  await expect(cards).toHaveCount(4);
+  await expect(cards).toHaveCount(5);
   await expect(cards.nth(0)).toContainText("wezterm");
   await expect(cards.nth(0)).toContainText("READY");
   await expect(cards.nth(0).locator("code")).toHaveText("sf2-themes setup wezterm");
@@ -20,6 +20,9 @@ test("themes catalog truthfully lists the supported adapters", async ({ page }) 
   await expect(cards.nth(2).locator("code")).toHaveText("sf2-themes setup nvim");
   await expect(cards.nth(3)).toContainText("codex");
   await expect(cards.nth(3).locator("code")).toHaveText("sf2-themes setup codex");
+  await expect(cards.nth(4)).toContainText("starship");
+  await expect(cards.nth(4)).toContainText("READY");
+  await expect(cards.nth(4).locator("code")).toHaveText("sf2-themes setup starship");
 });
 
 test("themes catalog filters, trims searches, and shows the empty state", async ({ page }) => {
@@ -27,7 +30,7 @@ test("themes catalog filters, trims searches, and shows the empty state", async 
   const visibleCards = page.locator('[data-testid="adapter-card"]:visible');
 
   await page.getByRole("button", { name: "READY", exact: true }).click();
-  await expect(visibleCards).toHaveCount(4);
+  await expect(visibleCards).toHaveCount(5);
 
   await page.getByRole("button", { name: "PLANNED", exact: true }).click();
   await expect(visibleCards).toHaveCount(0);

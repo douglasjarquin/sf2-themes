@@ -5,15 +5,15 @@ const routes = [
   {
     path: "./",
     title: "Street Fighter II terminal themes | sf2-themes",
-    description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, and Codex.",
+    description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, and Starship.",
     canonical: `${origin}/sf2-themes/`,
     heading: "Fight for your terminal.",
   },
   {
     path: "themes/",
-    title: "WezTerm, Herdr, Neovim, and Codex adapters | sf2-themes",
+    title: "WezTerm, Herdr, Neovim, Codex, and Starship adapters | sf2-themes",
     description:
-      "Install Street Fighter II colors in WezTerm, Herdr, Neovim, and Codex with one CLI.",
+      "Install Street Fighter II colors in WezTerm, Herdr, Neovim, Codex, and Starship with one CLI.",
     canonical: `${origin}/sf2-themes/themes/`,
     heading: "THEMES",
   },
@@ -27,17 +27,25 @@ const routes = [
   },
   {
     path: "preview/",
-    title: "Palette Preview | sf2-themes",
+    title: "Street Fighter II palette preview | sf2-themes",
     description: "Explore all 36 canonical sf2-themes palettes through code, terminal, neutral, accent, and ANSI previews.",
     canonical: `${origin}/sf2-themes/preview/`,
     heading: "PREVIEW",
   },
   {
     path: "install/",
-    title: "Install | sf2-themes",
+    title: "Install Street Fighter II terminal themes | sf2-themes",
     description: "Install sf2-themes, then set up and apply Street Fighter II terminal colors.",
     canonical: `${origin}/sf2-themes/install/`,
     heading: "INSTALL",
+  },
+  {
+    path: "game/",
+    title: "Street Fighter II terminal arcade game | sf2-themes",
+    description:
+      "Play the deterministic SF2 Themes terminal arcade game with the full palette and fighter catalog.",
+    canonical: `${origin}/sf2-themes/game/`,
+    heading: "ENTER THE ARCADE",
   },
 ];
 
@@ -71,7 +79,62 @@ test("robots.txt allows the project path and names the sitemap", async ({ reques
   );
 });
 
-test("sitemap.xml lists the five indexable trailing-slash URLs", async ({ request }) => {
+test("llms.txt summarizes the CLI, catalog, live site, and repository", async ({ request }) => {
+  const response = await request.get("/sf2-themes/llms.txt");
+  const body = await response.text();
+
+  expect(response.ok()).toBe(true);
+  expect(body).toContain("sf2-themes is a Python 3.11 CLI named `sf2-themes`");
+  expect(body).toContain("36-theme TOML catalog");
+  expect(body).toContain("Live site: https://douglasjarquin.github.io/sf2-themes/");
+  expect(body).toContain("Repository: https://github.com/douglasjarquin/sf2-themes");
+  expect(body).not.toContain("Lazygit");
+});
+
+test("the project 404 page is branded, linked, and noindexed", async ({ page, request }) => {
+  const missing = await request.get("/sf2-themes/this-path-is-not-a-route/");
+  expect(missing.status()).toBe(404);
+
+  await page.goto("404.html");
+
+  await expect(page).toHaveTitle("Page not found | sf2-themes");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex");
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
+  await expect(page.getByTestId("project-404")).toContainText("This URL is not a page in sf2-themes.");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("CONTINUE?");
+
+  const recovery = page.getByRole("navigation", { name: "Known routes" });
+  await expect(recovery.getByRole("link", { name: "Home", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/",
+  );
+  await expect(recovery.getByRole("link", { name: "Themes", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/themes/",
+  );
+  await expect(recovery.getByRole("link", { name: "Palette", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/palette/",
+  );
+  await expect(recovery.getByRole("link", { name: "Preview", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/preview/",
+  );
+  await expect(recovery.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/install/",
+  );
+  await expect(recovery.getByRole("link", { name: "Arcade", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/game/",
+  );
+  await expect(recovery.getByRole("link", { name: /GitHub repository/ })).toHaveAttribute(
+    "href",
+    "https://github.com/douglasjarquin/sf2-themes",
+  );
+});
+
+test("sitemap.xml lists the six indexable trailing-slash URLs", async ({ request }) => {
   const response = await request.get("/sf2-themes/sitemap.xml");
   const body = await response.text();
   const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
@@ -83,6 +146,7 @@ test("sitemap.xml lists the five indexable trailing-slash URLs", async ({ reques
     "https://douglasjarquin.github.io/sf2-themes/palette/",
     "https://douglasjarquin.github.io/sf2-themes/preview/",
     "https://douglasjarquin.github.io/sf2-themes/install/",
+    "https://douglasjarquin.github.io/sf2-themes/game/",
   ]);
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
 });
@@ -139,6 +203,10 @@ test("every indexable route has unique metadata, a self-canonical, and JSON-LD",
       "SoftwareApplication",
     ]);
     expect(JSON.stringify(jsonLd)).not.toMatch(/aggregateRating|"offers"|ratingValue/);
+    const software = jsonLd["@graph"].find((node) => node["@type"] === "SoftwareApplication");
+    expect(software.operatingSystem).toBe("Linux, macOS, Windows");
+    expect(software.downloadUrl).toBe("https://github.com/douglasjarquin/sf2-themes");
+    expect(software.codeRepository).toBe("https://github.com/douglasjarquin/sf2-themes");
 
     const ogImage = page.locator('meta[property="og:image"]');
     const twitterImage = page.locator('meta[name="twitter:image"]');
@@ -220,5 +288,9 @@ test("the footer exposes internal IA and the skip link reaches main content", as
   await expect(footer.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
     "href",
     "/sf2-themes/install/",
+  );
+  await expect(footer.getByRole("link", { name: "Arcade", exact: true })).toHaveAttribute(
+    "href",
+    "/sf2-themes/game/",
   );
 });
