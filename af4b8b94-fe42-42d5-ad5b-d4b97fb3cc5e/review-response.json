@@ -1,0 +1,1 @@
+{"findings":[{"kind":"blocking","description":"The exact candidate diff could not be inspected because every local filesystem command failed before execution with `sandbox-exec: sandbox_apply: Operation not permitted`. A reliable candidate-defect review cannot be completed or declared empty without access to the specified diff.","patch":null,"paths":null}]}
