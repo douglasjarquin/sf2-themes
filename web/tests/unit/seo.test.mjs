@@ -60,7 +60,7 @@ test("sitemap.xml lists every indexable trailing-slash URL", () => {
       "https://douglasjarquin.github.io/sf2-themes/preview/",
       "https://douglasjarquin.github.io/sf2-themes/install/",
       "https://douglasjarquin.github.io/sf2-themes/game/",
-      ...["main", "ryu", "ken", "chun-li", "guile", "dhalsim", "e-honda", "blanka", "zangief", "m-bison", "sagat", "vega", "balrog", "fei-long", "t-hawk", "cammy", "dee-jay", "akuma"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
+      ...["main", "akuma", "balrog", "blanka", "cammy", "chun-li", "dee-jay", "dhalsim", "e-honda", "fei-long", "guile", "ken", "m-bison", "ryu", "sagat", "t-hawk", "vega", "zangief"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
     ],
   );
 });
