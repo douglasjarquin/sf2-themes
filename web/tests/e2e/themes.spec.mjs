@@ -72,3 +72,14 @@ test("theme detail scopes terminal preview colors to the selected canonical mode
   await expect(page.locator(".terminal-panel").first()).toHaveCSS("background-color", toRgb(ryuLight.ui.background));
   await expect(page.locator(".terminal-panel .terminal-accent").first()).toHaveCSS("color", toRgb(ryuLight.ui.accent));
 });
+
+test("roster cards retain canonical dark tokens without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("./themes/");
+
+  const card = page.locator('[data-theme-card="ryu"]');
+  await expect(card).toHaveCSS("color", toRgb(ryuDark.ui.foreground));
+  await expect(card.locator(".theme-card__swatches span").first()).toHaveCSS("background-color", toRgb(ryuDark.ui.accent));
+  await context.close();
+});
