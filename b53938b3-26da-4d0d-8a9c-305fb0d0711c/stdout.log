@@ -1,0 +1,427 @@
+........................................................................ [ 48%]
+........................................................................ [ 97%]
+....                                                                     [100%]
+148 passed in 1.29s
+updated: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/herdr/config.toml
+Herdr merge preservation: PASS
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-main.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-main-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-akuma-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-akuma.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-balrog-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-balrog.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-blanka-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-blanka.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-cammy-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-cammy.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-chun-li-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-chun-li.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-dee-jay-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-dee-jay.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-dhalsim-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-dhalsim.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-e-honda-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-e-honda.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-fei-long-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-fei-long.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-guile-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-guile.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-ken-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-ken.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-m-bison-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-m-bison.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-ryu-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-ryu.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-sagat-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-sagat.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-t-hawk-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-t-hawk.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-vega-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-vega.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-zangief-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm/colors/sf2-zangief.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/xdg/sf2-theme/wezterm-current.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-herdr/config.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-main.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-main-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-akuma-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-akuma.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-balrog-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-balrog.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-blanka-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-blanka.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-cammy-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-cammy.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-chun-li-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-chun-li.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dee-jay-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dee-jay.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dhalsim-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dhalsim.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-e-honda-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-e-honda.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-fei-long-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-fei-long.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-guile-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-guile.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ken-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ken.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-m-bison-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-m-bison.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ryu-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ryu.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-sagat-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-sagat.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-t-hawk-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-t-hawk.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-vega-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-vega.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-zangief-light.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-zangief.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/sf2-theme/current.lua
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/plugin/sf2-theme.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-main.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-main-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-akuma-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-akuma.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-balrog-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-balrog.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-blanka-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-blanka.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-cammy-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-cammy.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-chun-li-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-chun-li.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dee-jay-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dee-jay.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dhalsim-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-dhalsim.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-e-honda-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-e-honda.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-fei-long-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-fei-long.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-guile-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-guile.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ken-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ken.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-m-bison-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-m-bison.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ryu-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-ryu.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-sagat-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-sagat.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-t-hawk-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-t-hawk.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-vega-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-vega.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-zangief-light.lua
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/colors/sf2-zangief.lua
+updated: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-nvim/sf2-theme/current.lua
+Copy-only installed Neovim: PASS
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-main.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-main-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-akuma-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-akuma.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-balrog-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-balrog.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-blanka-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-blanka.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-cammy-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-cammy.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-chun-li-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-chun-li.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dee-jay-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dee-jay.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dhalsim-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dhalsim.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-e-honda-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-e-honda.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-fei-long-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-fei-long.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-guile-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-guile.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ken-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ken.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-m-bison-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-m-bison.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ryu-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ryu.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-sagat-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-sagat.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-t-hawk-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-t-hawk.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-vega-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-vega.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-zangief-light.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-zangief.tmTheme
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/config.toml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-main.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-main-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-akuma-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-akuma.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-balrog-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-balrog.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-blanka-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-blanka.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-cammy-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-cammy.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-chun-li-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-chun-li.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dee-jay-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dee-jay.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dhalsim-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-dhalsim.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-e-honda-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-e-honda.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-fei-long-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-fei-long.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-guile-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-guile.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ken-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ken.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-m-bison-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-m-bison.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ryu-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-ryu.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-sagat-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-sagat.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-t-hawk-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-t-hawk.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-vega-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-vega.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-zangief-light.tmTheme
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/themes/sf2-zangief.tmTheme
+updated: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-codex/config.toml
+Copy-only installed Codex: PASS
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-main.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-main-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-akuma-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-akuma.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-balrog-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-balrog.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-blanka-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-blanka.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-cammy-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-cammy.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-chun-li-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-chun-li.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dee-jay-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dee-jay.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dhalsim-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dhalsim.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-e-honda-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-e-honda.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-fei-long-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-fei-long.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-guile-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-guile.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ken-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ken.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-m-bison-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-m-bison.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ryu-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ryu.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-sagat-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-sagat.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-t-hawk-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-t-hawk.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-vega-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-vega.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-zangief-light.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-zangief.yml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/config.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-main.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-main-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-akuma-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-akuma.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-balrog-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-balrog.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-blanka-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-blanka.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-cammy-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-cammy.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-chun-li-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-chun-li.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dee-jay-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dee-jay.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dhalsim-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-dhalsim.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-e-honda-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-e-honda.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-fei-long-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-fei-long.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-guile-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-guile.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ken-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ken.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-m-bison-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-m-bison.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ryu-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-ryu.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-sagat-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-sagat.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-t-hawk-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-t-hawk.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-vega-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-vega.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-zangief-light.yml
+unchanged: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/themes/sf2-zangief.yml
+updated: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/installed-lazygit/config.yml
+Copy-only installed Lazygit: PASS
+Copy-only installed CLI: PASS
+WezTerm unknown lua left unchanged: PASS
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-main.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-main-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-akuma-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-akuma.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-balrog-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-balrog.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-blanka-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-blanka.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-cammy-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-cammy.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-chun-li-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-chun-li.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-dee-jay-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-dee-jay.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-dhalsim-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-dhalsim.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-e-honda-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-e-honda.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-fei-long-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-fei-long.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-guile-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-guile.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-ken-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-ken.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-m-bison-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-m-bison.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-ryu-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-ryu.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-sagat-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-sagat.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-t-hawk-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-t-hawk.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-vega-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-vega.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-zangief-light.toml
+created: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/colors/sf2-zangief.toml
+updated: /var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-themes-test.XXXXXX.HnERQlecGp/wezterm-safe/wezterm.lua
+WezTerm safe builder integration: PASS
+
+added 279 packages, and audited 280 packages in 2s
+
+87 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+verified generated theme data: /Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/src/data/generated-theme-data.json
+✔ homepage uses the live theme preview while the arcade host remains reusable (9.837917ms)
+Capture seed=capture-determinism-check; staging=/var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-capture-determinism-fQPkvG/.first.stage-DJkjq3
+✖ captureArchive renders byte-identical output across repeated runs of the same theme and seed (5.244791ms)
+✔ parseCaptureArguments rejects an existing non-archive output with a sentinel (4.808834ms)
+✔ parseCaptureArguments rejects a forged archive with a non-PNG image and preserves its sentinel (1.922458ms)
+✔ captureArchive rejects an existing custom output before promotion and preserves its sentinel (1.095333ms)
+Capture seed=boundary-v4-race; staging=/var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-sec1-v4-race-AOAF4o/.archive.stage-ekrvlJ
+✖ captureArchive refuses a custom target created after preflight without deleting its sentinel (2.707292ms)
+Capture seed=boundary-v5-empty; staging=/var/folders/5j/n805d0vn43g2bjt7ykqmyxmm0000gn/T/sf2-sec1-v5-empty-2556Kj/.archive.stage-GFJfQ5
+✖ captureArchive refuses an empty custom target created after preflight (1.455917ms)
+✔ parseCaptureArguments rejects an existing ancestor but accepts canonical and fresh outputs (0.62975ms)
+✔ the authored roster satisfies the closed fighter content contract in catalog order (1.662458ms)
+✔ every roster fighter uses a distinct original multi-cell silhouette with mapped palette regions (2.858209ms)
+✔ roster validation names the fighter, malformed field, and expected shape without mutating authored content (0.304875ms)
+✔ dojo provides ordered depth, floor, foreground, and deterministic restrained animation (0.131125ms)
+✔ fighter IDs are the exact closed arcade roster (0.783583ms)
+✔ main and light theme IDs cannot cross the fighter boundary (0.245125ms)
+✔ fighter definitions require authored animation, move, projectile, victory, and AI fields (0.601709ms)
+✔ malformed authored active frames fail at the registry boundary (0.150708ms)
+✔ a registry is accepted only when all 17 fighters appear exactly once (2.44725ms)
+✔ all 17 authored fighters run as P1 and P2 through the core combat snapshot lifecycle (17.543ms)
+✔ same seed and input frames produce equal snapshots and capture state (18.266333ms)
+✔ fixed-step clock makes render chunking independent and caps catch-up (0.422958ms)
+✔ fighters remain inside stage and on integer ground coordinates (0.4625ms)
+✔ pushboxes separate fighters after sustained opposing movement (0.296292ms)
+✔ authored active frames delay damage and one move cannot damage repeatedly (1.97875ms)
+✔ authored multi-hit moves can connect once per distinct hit ID (0.441334ms)
+✔ jump velocity and gravity return a fighter to the fixed ground plane (0.295ms)
+✔ blocking applies chip damage and blockstun instead of full damage and hitstun (0.316083ms)
+✔ hitstop preserves move and round timers until freeze expires (0.174917ms)
+✔ projectile hitboxes travel through the same damage and hitstop rules (0.286291ms)
+✔ KO enters result and result expiry resets health for the next intro (0.314375ms)
+✔ coin insertion immediately interrupts every attract state (12.361333ms)
+✔ attract loop resets repeatedly without stale round state (12.831083ms)
+✔ pause is explicit and preserves fight state until resumed (0.436875ms)
+✔ malformed input and invalid tick counts reject without mutating state (0.444709ms)
+✔ palette maps every game role from canonical designer tokens and derived web roles (3.255167ms)
+✔ palette rejects malformed theme colors at the adapter boundary (0.274ms)
+✔ renders the ui.accent terminal row from divergent fixture data (2476.336625ms)
+✔ renderer mounts a fixed 96x40 non-looping grid, resizes, redraws, and destroys (1.87175ms)
+✔ renderer rejects malformed lifecycle and snapshot input without leaking a loop (0.322916ms)
+✔ renderer keeps the complete fight scene inside its public cell grid (0.291958ms)
+✔ renderer draws every canonical fighter through the authored roster (0.78ms)
+✔ renderer fits a real locked 96x40 grid inside a compact canvas (0.239208ms)
+✔ screenshot manifest contains every cabinet fighter at the standard viewport (78.985708ms)
+✔ only TextmodeRenderer imports textmode.js (8.690667ms)
+✔ exports current cards, featured characters, and all designer fields (0.839709ms)
+✔ generated browser artifact is fresh and equals canonical source output (100.723666ms)
+✔ loads a complete canonical generated fixture (78.70375ms)
+✔ rejects missing schema_version before browser generation (68.210958ms)
+✔ rejects an unknown top-level key before browser generation (63.712125ms)
+✔ rejects malformed TOML before browser generation (64.743458ms)
+✔ rejects a missing canonical field before browser generation (65.3535ms)
+✔ rejects an invalid canonical color before browser generation (63.768583ms)
+✔ Astro config uses the GitHub Pages static deployment contract (846.01625ms)
+✔ canonical URLs are HTTPS trailing-slash addresses without index.html (0.505834ms)
+✔ robots.txt allows the project path and points at the project sitemap (0.241459ms)
+✔ sitemap.xml lists every indexable trailing-slash URL (0.521834ms)
+✔ llms.txt names the CLI, catalog size, live site, and repository (0.168625ms)
+✔ JSON-LD describes the visible site and software without ratings or offers (0.225084ms)
+ℹ tests 57
+ℹ suites 0
+ℹ pass 54
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2543.630625
+
+✖ failing tests:
+
+test at test/capture-determinism.test.mjs:14:1
+✖ captureArchive renders byte-identical output across repeated runs of the same theme and seed (5.244791ms)
+  Error: ENOENT: no such file or directory, access '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+      at async Object.access (node:internal/fs/promises:1317:10)
+      at async startStaticServer (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:118:3)
+      at async captureArchive (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:266:21)
+      at async TestContext.<anonymous> (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/test/capture-determinism.test.mjs:19:5)
+      at async Test.run (node:internal/test_runner/test:1404:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'access',
+    path: '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+  }
+
+test at test/capture-output-boundary.test.mjs:67:1
+✖ captureArchive refuses a custom target created after preflight without deleting its sentinel (2.707292ms)
+  Error: ENOENT: no such file or directory, access '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+      at async Object.access (node:internal/fs/promises:1317:10)
+      at async startStaticServer (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:118:3)
+      at async captureArchive (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:266:21) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'access',
+    path: '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+  }
+
+test at test/capture-output-boundary.test.mjs:93:1
+✖ captureArchive refuses an empty custom target created after preflight (1.455917ms)
+  Error: ENOENT: no such file or directory, access '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+      at async Object.access (node:internal/fs/promises:1317:10)
+      at async startStaticServer (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:118:3)
+      at async captureArchive (file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/scripts/capture-game-screenshots.mjs:266:21) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'access',
+    path: '/Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-4085142033/web/dist/game/index.html'
+  }
