@@ -17,9 +17,9 @@ html[data-capture-mode="cabinet"] .site-footer {
 .site-brand { color: var(--fg); }
 .site-brand span { color: var(--ac); }
 .primary-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-8); min-inline-size: 0; }
-.primary-nav__link { padding-block: var(--space-2); border-block-end: 2px solid transparent; color: var(--mu); font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.08em; line-height: 1.5; white-space: nowrap; }
+.primary-nav__link { padding-block: var(--space-2); border-block-end: 2px solid transparent; color: var(--fg); font-family: var(--font-mono); font-size: 15px; letter-spacing: 0.08em; line-height: 1.5; white-space: nowrap; }
 .primary-nav__link:hover { border-block-end-color: var(--se); color: var(--ac); }
-.primary-nav__link[aria-current="page"] { border-block-end-color: var(--ac); color: var(--fg); }
+.primary-nav__link[aria-current="page"] { border-block-end-color: var(--ac); color: var(--ac); }
 .primary-nav__link--github { color: var(--mu); }
 .site-picker { position: relative; flex: none; }
 .site-picker__toggle, .site-picker__modes button, .site-picker__option { min-block-size: 44px; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: var(--su); color: var(--fg); font: 600 15px/1.4 var(--font-mono); letter-spacing: 0.06em; cursor: pointer; }

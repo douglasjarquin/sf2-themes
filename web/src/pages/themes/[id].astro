@@ -21,15 +21,15 @@ const colors = (palette: PreviewPalette) => [
   ...palette.ansi,
 ];
 const darkColors = colors({
-  uiValues: [dark.ui.background, dark.ui.surface0, dark.ui.surface1, dark.ui.subtext, dark.ui.foreground],
+  uiValues: [dark.ui.background, dark.ui.surface0, dark.ui.surface1, dark.ui.muted, dark.ui.foreground],
   accent: dark.ui.accent,
-  secondary: dark.semantic.red,
+  secondary: dark.ui.accent_secondary,
   ansi: [...Object.values(dark.ansi.normal), ...Object.values(dark.ansi.bright)].map(String),
 });
 const lightColors = colors({
-  uiValues: [light.ui.background, light.ui.surface0, light.ui.surface1, light.ui.subtext, light.ui.foreground],
+  uiValues: [light.ui.background, light.ui.surface0, light.ui.surface1, light.ui.muted, light.ui.foreground],
   accent: light.ui.accent,
-  secondary: light.semantic.red,
+  secondary: light.ui.accent_secondary,
   ansi: [...Object.values(light.ansi.normal), ...Object.values(light.ansi.bright)].map(String),
 });
 const swatchLabels = [...labels, ...Array.from({ length: 16 }, (_, index) => `ANSI ${index < 8 ? "" : "BR "}${["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"][index % 8]}`)];

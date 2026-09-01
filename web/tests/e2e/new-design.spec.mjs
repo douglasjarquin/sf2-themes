@@ -7,7 +7,6 @@ const noOverflow = () => {
 
 test("home and shared chrome", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.addInitScript(() => { Math.random = () => 0; });
   await page.goto("./");
 
   await expect(page.getByRole("heading", { name: "FIGHT FOR YOUR TERMINAL." })).toBeVisible();

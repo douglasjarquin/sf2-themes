@@ -39,6 +39,7 @@ test("the home live preview remains useful without client JavaScript", async ({ 
     const preview = page.locator("[data-home-theme-preview]");
     await expect(preview).toContainText("sf2-themes show main");
     await expect(preview.locator("[data-home-ansi]")).toHaveCount(16);
+    await expect(page.locator("html")).toHaveAttribute("style", /--bg:/);
   } finally {
     await context.close();
   }
