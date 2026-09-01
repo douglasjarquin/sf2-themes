@@ -50,15 +50,15 @@ import { sitePath } from "../lib/site-path.mjs";
 </SiteLayout>
 
 <style>
-  .home-page { display: flex; flex-direction: column; padding-block-end: var(--space-20); }
-  .home-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: var(--space-20) 0; }
-  .home-hero__copy { display: grid; gap: var(--space-6); max-inline-size: 62ch; }
-  .home-kicker { margin: 0; color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
+  .home-page { display: flex; flex-direction: column; }
+  .home-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 110px 0; }
+  .home-hero__copy { max-inline-size: 62ch; }
+  .home-kicker { margin: 0 0 var(--space-7); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
   h1, h2 { margin: 0; font-family: var(--font-display); line-height: 0.95; text-transform: uppercase; }
   .home-hero h1 { max-inline-size: 100%; color: var(--fg); font-size: var(--text-hero); letter-spacing: -.02em; text-wrap: balance; }
   h2 { color: var(--fg); font-size: var(--text-section); }
-  .home-lede { max-inline-size: 760px; margin: 0; color: var(--mu); font-size: var(--text-body-lg); line-height: 1.5; }
-  .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  .home-lede { max-inline-size: 760px; margin: var(--space-10) 0 0; color: var(--mu); font-size: var(--text-body-lg); line-height: 1.5; }
+  .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-12); }
   .home-action { min-block-size: 60px; border: var(--border-thin) solid var(--ov); border-radius: 8px; color: var(--fg); font: 600 18px/1.4 var(--font-mono); letter-spacing: 0.08em; padding: var(--space-5) var(--space-8); }
   .home-action:hover { border-color: var(--ac); color: var(--ac); transform: translateY(-2px); }
   .home-action--primary { border-color: var(--ac); background: var(--ac); color: var(--bg); }
@@ -68,6 +68,6 @@ import { sitePath } from "../lib/site-path.mjs";
   .home-values span { color: var(--ac); font-family: var(--font-display); font-size: 96px; line-height: 1; }
   .home-values h2 { margin-block: var(--space-4) var(--space-3); font-family: var(--font-body); font-size: 26px; line-height: 1.15; letter-spacing: 0.04em; }
   .home-values p { max-inline-size: 32ch; margin: 0; color: var(--mu); font-size: 19px; line-height: 1.55; }
-  @media (max-width: 760px) { .home-hero { padding-block: var(--space-12) 0; } .home-hero__copy { gap: var(--space-5); } .home-hero .home-kicker { max-inline-size: 28ch; } .home-hero h1 { font-size: clamp(52px, 15vw, 164px); } .home-action { inline-size: 100%; } .home-values { grid-template-columns: 1fr; padding-block-end: var(--space-15); } .home-values span { font-size: var(--text-stat-mobile); } }
+  @media (max-width: 760px) { .home-hero { padding-block: var(--space-20) 0; } .home-hero .home-kicker { max-inline-size: 28ch; } .home-hero h1 { font-size: clamp(52px, 15vw, 164px); } .home-action { inline-size: 100%; } .home-values { grid-template-columns: 1fr; padding-block-end: var(--space-15); } .home-values span { font-size: var(--text-stat-mobile); } }
   @media (prefers-reduced-motion: reduce) { .home-action { transition: none; } }
 </style>
