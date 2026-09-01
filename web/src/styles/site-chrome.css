@@ -38,7 +38,7 @@ html[data-capture-mode="cabinet"] .site-footer {
 .site-picker__options button:hover, .site-picker__options button[aria-pressed="true"] { border-color: var(--ac); background: var(--ov); color: var(--ac); }
 .site-picker__option-swatch { inline-size: 22px; block-size: 22px; }
 .site-footer { border-block-start: var(--border-thin) solid var(--ov); background: var(--bg); }
-.site-footer__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-8); padding-block: var(--space-10) var(--space-12); }
+.site-footer__inner { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-8); padding-block: 50px; }
 .site-footer__identity { display: grid; gap: var(--space-3); max-inline-size: 54ch; }
 .site-footer__identity p { margin: 0; color: var(--mu); font-size: 16px; line-height: 1.7; }
 .site-footer__links { display: grid; align-content: start; gap: var(--space-2); font-size: 15px; }
