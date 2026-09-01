@@ -1,0 +1,1 @@
+{"findings":[{"kind":"blocking","description":"Unable to inspect the exact candidate diff 523e630197bf1a1fd47cef072d258a1ba73a3e2c..78c3ab71380807d9e6164dec658a797bc6daa549 because the local repository command runner failed with sandbox_apply: Operation not permitted.","patch":null,"paths":null}]}
