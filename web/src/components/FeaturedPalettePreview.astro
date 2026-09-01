@@ -33,15 +33,16 @@ const initialTheme = themeFamilies[0];
     if (!(preview instanceof HTMLElement) || !data) return;
     let themes;
     try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+    const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
     const validPalette = (palette) => palette
       && Array.isArray(palette.uiValues)
       && palette.uiValues.length === 5
-      && palette.uiValues.every((value) => typeof value === "string")
-      && typeof palette.accent === "string"
-      && typeof palette.secondary === "string"
+      && palette.uiValues.every(isColor)
+      && isColor(palette.accent)
+      && isColor(palette.secondary)
       && Array.isArray(palette.ansi)
       && palette.ansi.length === 16
-      && palette.ansi.every((value) => typeof value === "string");
+      && palette.ansi.every(isColor);
     if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
     const update = () => {
       const id = document.documentElement.dataset.siteTheme || "main";
