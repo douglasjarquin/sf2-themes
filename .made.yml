@@ -7,15 +7,15 @@ ci:
 commands:
   test: |
     set -e
-    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:$PATH"
-    mise run test
-    npm --prefix web ci
-    npm --prefix web run test
-    npm --prefix web run build
-    npm --prefix web run screenshots:verify
+    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"
+    /Users/douglasjarquin/.local/bin/mise run test || exit 101
+    /opt/homebrew/bin/npm --prefix web ci || exit 102
+    /opt/homebrew/bin/npm --prefix web run test || exit 103
+    /opt/homebrew/bin/npm --prefix web run build || exit 104
+    /opt/homebrew/bin/npm --prefix web run screenshots:verify || exit 105
   lint: |
     set -e
-    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:$PATH"
-    uv run ruff check src tests scripts
-    shellcheck tests/test_cli.sh
-    npm --prefix web run check
+    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"
+    /Users/douglasjarquin/.local/bin/uv run ruff check src tests scripts || exit 111
+    /opt/homebrew/bin/shellcheck tests/test_cli.sh || exit 112
+    /opt/homebrew/bin/npm --prefix web run check || exit 113
