@@ -11,11 +11,11 @@ const routes = [
   },
   {
     path: "themes/",
-    title: "WezTerm, Herdr, Neovim, Codex, and Starship adapters | sf2-themes",
+    title: "The roster - 18 theme families | sf2-themes",
     description:
-      "Install Street Fighter II colors in WezTerm, Herdr, Neovim, Codex, and Starship with one CLI.",
+      "Browse all 18 Street Fighter II theme families, each with dark and light modes for WezTerm, Herdr, Neovim, Codex, and Starship.",
     canonical: `${origin}/sf2-themes/themes/`,
-    heading: "THEMES",
+    heading: "CHOOSE YOUR FIGHTER.",
   },
   {
     path: "palette/",
@@ -164,8 +164,7 @@ test("public preview route is separate from the preserved gameplay asset namespa
     .getByRole("contentinfo")
     .getByRole("link", { name: "Preview", exact: true });
 
-  await expect(primaryPreview).toHaveCount(1);
-  await expect(primaryPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+  await expect(primaryPreview).toHaveCount(0);
   await expect(footerPreview).toHaveCount(1);
   await expect(footerPreview).toHaveAttribute("href", "/sf2-themes/preview/");
 

@@ -1,356 +1,117 @@
 ---
-import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+import { sitePath } from "../../lib/site-path.mjs";
+import { themeFamilies } from "../../data/site-theme-data.mjs";
 
-const adapters = [
-  {
-    name: "wezterm",
-    command: "sf2-themes setup wezterm",
-    description:
-      "Writes every scheme to the WezTerm colors directory and safely integrates the managed current-theme pointer into wezterm.lua.",
-  },
-  {
-    name: "herdr",
-    command: "sf2-themes setup herdr",
-    description:
-      "Writes the documented marked theme block to config.toml while preserving unrelated Herdr configuration.",
-  },
-  {
-    name: "nvim",
-    command: "sf2-themes setup nvim",
-    description:
-      "Installs every catalog colorscheme and a managed startup loader for the selected theme.",
-  },
-  {
-    name: "codex",
-    command: "sf2-themes setup codex",
-    description:
-      "Writes every catalog theme as a custom .tmTheme and selects it through Codex's config.toml.",
-  },
-  {
-    name: "starship",
-    command: "sf2-themes setup starship",
-    description:
-      "Writes a managed palette to starship.toml and refreshes the zsh-syntax highlight snippet.",
-  },
-];
+const cards = themeFamilies.map((theme, index) => ({
+  id: theme.id,
+  name: theme.name,
+  world: theme.world,
+  number: String(index + 1).padStart(2, "0"),
+  href: sitePath(`themes/${theme.id}`),
+  dark: theme.dark,
+  light: theme.light,
+}));
 ---
 
 <SiteLayout
-  title="WezTerm, Herdr, Neovim, Codex, and Starship adapters"
-  description="Install Street Fighter II colors in WezTerm, Herdr, Neovim, Codex, and Starship with one CLI."
+  title="The roster - 18 theme families"
+  description="Browse all 18 Street Fighter II theme families, each with dark and light modes for WezTerm, Herdr, Neovim, Codex, and Starship."
 >
-  <section class="themes-hero site-frame" aria-labelledby="themes-title">
-    <PageBreadcrumb current="THEMES" detail="5 PORTS / 1 CLI" />
-    <h1 id="themes-title" class="page-title">THEMES</h1>
-    <p>
-      Every port lives in this repo and installs with one command. WezTerm, Herdr, Neovim,
-      Codex, and Starship are in the ring today.
-    </p>
-    <p class="themes-stats" data-testid="themes-stats">5 PORTS · 5 READY · 1 CLI</p>
-  </section>
+  <div class="roster-page">
+    <section class="roster-hero site-frame" aria-labelledby="roster-title">
+      <p class="roster-eyebrow">18 FAMILIES / 36 MODES / TOML-BACKED</p>
+      <h1 id="roster-title" class="page-title">CHOOSE YOUR FIGHTER.</h1>
+      <p class="roster-lede">
+        Every fighter gets a real palette - its own neutral ramp, accents, and a complete ANSI set in dark and light.
+        Pick one to wear it sitewide, or open its page for the full breakdown.
+      </p>
+    </section>
 
-  <section class="themes-catalog site-frame" aria-label="Theme adapters">
-    <div class="themes-controls">
-      <div class="themes-filters" aria-label="Adapter status filter">
-        <button aria-pressed="true" data-filter="all" type="button">ALL</button>
-        <button aria-pressed="false" data-filter="ready" type="button">READY</button>
-        <button aria-pressed="false" data-filter="planned" type="button">PLANNED</button>
-      </div>
-      <label class="themes-search">
-        <span class="sr-only">Search ports</span>
-        <input aria-label="Search ports" placeholder="Search ports…" type="search" />
-      </label>
-    </div>
-
-    <div class="themes-grid" data-testid="themes-grid">
+    <section class="roster-grid site-frame" aria-label="Theme families">
       {
-        adapters.map((adapter) => (
-          <article class="adapter-card" data-adapter={adapter.name} data-status="ready" data-testid="adapter-card">
-            <div class="adapter-card__heading">
-              <h2>{adapter.name}</h2>
-              <span class="adapter-card__chip">READY</span>
+        cards.map((card) => (
+          <article
+            class="theme-card"
+            data-theme-card={card.id}
+            data-wearing={card.id === "main" ? "true" : undefined}
+            style={`--dark-bg: ${card.dark.ui.background}; --dark-surface: ${card.dark.ui.surface0}; --dark-overlay: ${card.dark.ui.surface1}; --dark-muted: ${card.dark.ui.subtext}; --dark-fg: ${card.dark.ui.foreground}; --dark-accent: ${card.dark.ui.accent}; --dark-secondary: ${card.dark.semantic.red}; --dark-s1: ${card.dark.ansi.normal.red}; --dark-s2: ${card.dark.ansi.normal.green}; --dark-s3: ${card.dark.ansi.normal.blue}; --dark-s4: ${card.dark.ansi.normal.magenta}; --light-bg: ${card.light.ui.background}; --light-surface: ${card.light.ui.surface0}; --light-overlay: ${card.light.ui.surface1}; --light-muted: ${card.light.ui.subtext}; --light-fg: ${card.light.ui.foreground}; --light-accent: ${card.light.ui.accent}; --light-secondary: ${card.light.semantic.red}; --light-s1: ${card.light.ansi.normal.red}; --light-s2: ${card.light.ansi.normal.green}; --light-s3: ${card.light.ansi.normal.blue}; --light-s4: ${card.light.ansi.normal.magenta}`}
+          >
+            <div class="theme-card__meta">
+              <span>{card.number} / FAMILY</span>
+              <span data-theme-card-tag>2 MODES</span>
             </div>
-            <p>{adapter.description}</p>
-            <div class="adapter-card__command">
-              <code>{adapter.command}</code>
-              <button data-command={adapter.command} type="button">COPY</button>
-            </div>
+            <a class="theme-card__detail" data-theme-detail href={card.href}>
+              <h2>{card.name}</h2>
+              <p>{card.world}</p>
+              <div class="theme-card__swatches" aria-label={`${card.name} palette preview`}>
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+              <span class="theme-card__link">FULL PALETTE <span aria-hidden="true">→</span></span>
+            </a>
+            <button class="theme-card__set" data-set-theme data-theme-id={card.id} type="button">SET THEME</button>
           </article>
         ))
       }
-    </div>
-
-    <p class="themes-empty" data-testid="themes-empty-state" hidden>
-      K.O. - NO PORT MATCHES. TRY ANOTHER NAME.
-    </p>
-    <p class="themes-request">
-      Missing your app? <a href="https://github.com/douglasjarquin/sf2-themes/issues" rel="noreferrer" target="_blank">Challenge us with an issue <span aria-hidden="true">↗</span></a>
-    </p>
-  </section>
+    </section>
+  </div>
 </SiteLayout>
 
-<script>
-  // allow: SIZE_OK - This scoped Astro route owns its markup, interaction, and page-only styling.
-  const filters = document.querySelectorAll<HTMLButtonElement>("[data-filter]");
-  const cards = document.querySelectorAll<HTMLElement>("[data-adapter]");
-  const search = document.querySelector<HTMLInputElement>("input[type=search]");
-  const empty = document.querySelector<HTMLElement>("[data-testid=themes-empty-state]");
-  let activeFilter = "all";
-
-  const applyFilters = () => {
-    const query = search?.value.trim().toLowerCase() ?? "";
-    let visible = 0;
-    for (const card of cards) {
-      const matchesFilter = activeFilter === "all" || card.dataset.status === activeFilter;
-      const matchesQuery = card.dataset.adapter?.includes(query) ?? false;
-      const matches = matchesFilter && matchesQuery;
-      card.hidden = !matches;
-      visible += Number(matches);
+<script is:inline>
+  (() => {
+    const update = (event) => {
+      const { id } = event.detail;
+      for (const card of document.querySelectorAll("[data-theme-card]")) {
+        const selected = card.dataset.themeCard === id;
+        card.dataset.wearing = String(selected);
+        const tag = card.querySelector("[data-theme-card-tag]");
+        const button = card.querySelector("[data-set-theme]");
+        if (tag) tag.textContent = selected ? "WEARING" : "2 MODES";
+        if (button) button.textContent = selected ? "ACTIVE" : "SET THEME";
+      }
+    };
+    for (const button of document.querySelectorAll("[data-set-theme]")) {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        window.dispatchEvent(new CustomEvent("sf2-theme-request", { detail: { id: button.dataset.themeId } }));
+      });
     }
-    if (empty) empty.hidden = visible !== 0;
-  };
-
-  for (const filter of filters) {
-    filter.addEventListener("click", () => {
-      activeFilter = filter.dataset.filter ?? "all";
-      for (const button of filters) {
-        button.setAttribute("aria-pressed", String(button === filter));
-      }
-      applyFilters();
+    window.addEventListener("sf2-theme-request", (event) => {
+      window.sf2ApplySiteTheme?.(event.detail.id, document.documentElement.dataset.siteMode || "dark");
     });
-  }
-
-  search?.addEventListener("input", applyFilters);
-
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-command]")) {
-    button.addEventListener("click", async () => {
-      const command = button.dataset.command;
-      if (!command || !navigator.clipboard?.writeText) return;
-      try {
-        await navigator.clipboard.writeText(command);
-        button.textContent = "COPIED";
-        window.setTimeout(() => {
-          button.textContent = "COPY";
-        }, 1400);
-      } catch {
-        // A rejected clipboard permission must not look successful.
-      }
-    });
-  }
+    window.addEventListener("sf2-theme", update);
+    update({ detail: { id: document.documentElement.dataset.siteTheme || "main" } });
+  })();
 </script>
 
 <style>
-  .themes-hero {
-    display: grid;
-    gap: var(--space-5);
-    padding-block: var(--space-12) var(--space-2);
-  }
-
-  .themes-hero p {
-    max-inline-size: 62ch;
-    margin: 0;
-    color: color-mix(in srgb, var(--color-foreground) 68%, transparent);
-    font-size: 16px;
-    line-height: 1.65;
-  }
-
-  .themes-hero .themes-stats {
-    color: var(--color-cyan);
-    font-family: var(--font-display);
-    font-size: 8px;
-    line-height: 1.9;
-  }
-
-  .themes-catalog {
-    min-block-size: 640px;
-    padding-block: var(--space-8) var(--space-15);
-  }
-
-  .themes-controls,
-  .themes-filters,
-  .adapter-card__heading,
-  .adapter-card__command {
-    display: flex;
-    align-items: center;
-  }
-
-  .themes-controls {
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: var(--space-5);
-    margin-block-end: var(--space-6);
-  }
-
-  .themes-filters {
-    flex-wrap: wrap;
-    gap: var(--space-3);
-  }
-
-  .themes-filters button {
-    border: 2px solid color-mix(in srgb, var(--color-foreground) 18%, transparent);
-    padding: 10px 14px;
-    background: transparent;
-    color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
-    cursor: pointer;
-    font-family: var(--font-display);
-    font-size: 8px;
-  }
-
-  .themes-filters button[aria-pressed="true"] {
-    border-color: var(--color-red);
-    background: var(--color-red);
-    color: var(--color-foreground);
-  }
-
-  .themes-search input {
-    inline-size: min(280px, 100%);
-    border: 2px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface-0);
-    color: var(--color-foreground);
-    font: inherit;
-    font-size: 14px;
-  }
-
-  .themes-search input:focus {
-    border-color: var(--color-accent);
-    outline: 0;
-  }
-
-  .themes-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 14px;
-  }
-
-  .adapter-card {
-    display: grid;
-    align-content: start;
-    gap: var(--space-2);
-    border: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent);
-    min-block-size: 164px;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface-0);
-  }
-
-  .adapter-card[hidden] {
-    display: none;
-  }
-
-  .adapter-card__heading,
-  .adapter-card__command {
-    justify-content: space-between;
-    gap: var(--space-3);
-  }
-
-  .adapter-card h2,
-  .adapter-card p {
-    margin: 0;
-  }
-
-  .adapter-card h2,
-  .adapter-card code {
-    font-family: var(--font-mono);
-  }
-
-  .adapter-card h2 {
-    color: var(--color-foreground);
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .adapter-card__chip {
-    border: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent);
-    padding: 5px 7px;
-    background: color-mix(in srgb, var(--color-cyan) 12%, transparent);
-    color: var(--color-cyan);
-    font-family: var(--font-display);
-    font-size: 6px;
-  }
-
-  .adapter-card p {
-    color: color-mix(in srgb, var(--color-foreground) 58%, transparent);
-    font-size: 14px;
-    line-height: 1.45;
-  }
-
-  .adapter-card__command {
-    min-inline-size: 0;
-    margin-block-start: auto;
-    padding: 8px var(--space-2);
-    background: var(--color-surface-dim);
-  }
-
-  .adapter-card code {
-    min-inline-size: 0;
-    overflow-wrap: anywhere;
-    color: var(--color-accent);
-    font-size: 12px;
-    white-space: normal;
-  }
-
-  .adapter-card__command button {
-    flex: none;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: color-mix(in srgb, var(--color-foreground) 50%, transparent);
-    cursor: pointer;
-    font: inherit;
-    font-size: 12px;
-  }
-
-  .adapter-card__command button:hover {
-    color: var(--color-accent);
-  }
-
-  .themes-empty {
-    margin: 0;
-    padding: var(--space-10) var(--space-1);
-    color: color-mix(in srgb, var(--color-foreground) 45%, transparent);
-    font-family: var(--font-display);
-    font-size: 10px;
-    line-height: 2;
-  }
-
-  .themes-request {
-    margin: var(--space-8) 0 0;
-    color: color-mix(in srgb, var(--color-foreground) 50%, transparent);
-    font-size: 14px;
-  }
-
-  .sr-only {
-    position: absolute;
-    inline-size: 1px;
-    block-size: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  @media (max-width: 720px) {
-    .themes-hero {
-      padding-block: calc(var(--space-12) + var(--space-1)) var(--space-4);
-    }
-
-    .themes-search,
-    .themes-search input {
-      inline-size: 100%;
-    }
-
-    .themes-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .adapter-card {
-      min-block-size: 0;
-    }
-  }
-
-  @media (min-width: 721px) and (max-width: 960px) {
-    .themes-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
+  .roster-page { padding-block-end: var(--space-20); }
+  .roster-hero { padding-block: var(--space-20) var(--space-12); }
+  .roster-eyebrow { margin: 0 0 var(--space-6); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
+  .roster-lede { max-inline-size: 720px; margin: var(--space-8) 0 0; color: var(--mu); font-size: var(--text-body-lg); font-weight: 500; line-height: 1.5; text-wrap: pretty; }
+  .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(400px, 100%), 1fr)); gap: var(--space-5); }
+  .theme-card { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3) var(--space-4); padding: var(--space-8); border: var(--border-thin) solid var(--card-overlay, var(--dark-overlay)); border-radius: var(--radius-panel); background: var(--card-bg, var(--dark-bg)); color: var(--card-fg, var(--dark-fg)); transition: border-color var(--duration-micro) ease-out, transform var(--duration-micro) ease-out; }
+  :root[data-site-mode="dark"] .theme-card { --card-bg: var(--dark-bg); --card-surface: var(--dark-surface); --card-overlay: var(--dark-overlay); --card-muted: var(--dark-muted); --card-fg: var(--dark-fg); --card-accent: var(--dark-accent); --card-secondary: var(--dark-secondary); --card-s1: var(--dark-s1); --card-s2: var(--dark-s2); --card-s3: var(--dark-s3); --card-s4: var(--dark-s4); }
+  :root[data-site-mode="light"] .theme-card { --card-bg: var(--light-bg); --card-surface: var(--light-surface); --card-overlay: var(--light-overlay); --card-muted: var(--light-muted); --card-fg: var(--light-fg); --card-accent: var(--light-accent); --card-secondary: var(--light-secondary); --card-s1: var(--light-s1); --card-s2: var(--light-s2); --card-s3: var(--light-s3); --card-s4: var(--light-s4); }
+  .theme-card:hover, .theme-card[data-wearing="true"] { border-color: var(--card-accent); transform: translateY(-2px); }
+  .theme-card__meta { display: flex; grid-column: 1 / -1; justify-content: space-between; gap: var(--space-3); color: var(--card-muted); font: 600 14px/1.4 var(--font-mono); letter-spacing: 0.16em; }
+  .theme-card__meta span:last-child { color: var(--card-accent); }
+  .theme-card__detail { display: block; min-inline-size: 0; grid-column: 1 / -1; color: var(--card-fg); }
+  .theme-card__detail:hover { color: var(--card-fg); }
+  .theme-card h2 { margin: var(--space-6) 0 var(--space-2); font-size: 44px; line-height: 1; }
+  .theme-card p { margin: 0 0 var(--space-6); color: var(--card-muted); font-size: 18px; }
+  .theme-card__swatches { display: flex; gap: 6px; margin-block-end: var(--space-6); }
+  .theme-card__swatches span { flex: 1; min-inline-size: 0; block-size: 34px; border-radius: 5px; background: var(--card-s1); }
+  .theme-card__swatches span:first-child { flex: 2; background: var(--card-accent); }
+  .theme-card__swatches span:nth-child(2) { background: var(--card-secondary); }
+  .theme-card__swatches span:nth-child(3) { background: var(--card-s2); }
+  .theme-card__swatches span:nth-child(4) { background: var(--card-s3); }
+  .theme-card__swatches span:nth-child(5) { background: var(--card-s4); }
+  .theme-card__swatches span:nth-child(6) { background: var(--card-fg); }
+  .theme-card__link { color: var(--card-accent); font: 600 15px/1.4 var(--font-mono); letter-spacing: 0.08em; }
+  .theme-card__set { justify-self: end; align-self: end; min-block-size: 44px; padding: var(--space-2) var(--space-4); border: var(--border-thin) solid var(--card-overlay); border-radius: var(--radius-control); background: transparent; color: var(--card-muted); font: 600 13px/1.4 var(--font-mono); letter-spacing: 0.08em; cursor: pointer; }
+  .theme-card__set:hover, .theme-card__set:focus-visible { border-color: var(--card-accent); color: var(--card-accent); }
+  @media (max-width: 640px) { .roster-hero { padding-block: var(--space-12) var(--space-10); } .theme-card { padding: var(--space-6); } .theme-card h2 { font-size: clamp(36px, 12vw, 44px); } .theme-card__set { grid-column: 1 / -1; justify-self: start; } }
+  @media (prefers-reduced-motion: reduce) { .theme-card { transition: none; } }
 </style>

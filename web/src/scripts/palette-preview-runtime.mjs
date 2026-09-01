@@ -1,6 +1,6 @@
 export function initializeFeaturedPalettePreview() {
   const dataNode = document.querySelector("[data-featured-palette-data]");
-  const currentPreview = dataNode?.previousElementSibling;
+  let currentPreview = dataNode?.previousElementSibling;
   if (!(dataNode instanceof HTMLScriptElement)) return;
   if (!(currentPreview instanceof HTMLElement) || !currentPreview.matches("[data-featured-palette-preview]")) return;
 
@@ -29,7 +29,14 @@ export function initializeFeaturedPalettePreview() {
   };
   if (!Array.isArray(palettes) || palettes.length === 0 || !palettes.every(isPalette)) return;
 
-  const palette = palettes[Math.floor(Math.random() * palettes.length)];
+  let saved = { id: "main", mode: "dark" };
+  try {
+    const candidate = JSON.parse(localStorage.getItem("sf2-site-theme") || "null");
+    if (candidate?.id) saved = candidate;
+  } catch {}
+  const selectedId = saved.mode === "light" ? `${saved.id}-light` : saved.id;
+  const palette = palettes.find((item) => item.id === selectedId) || palettes[0];
+  const render = (palette) => {
   const nextPreview = currentPreview.cloneNode(true);
   if (!(nextPreview instanceof HTMLElement)) return;
   const compact = nextPreview.dataset.previewLayout === "compact";
@@ -123,5 +130,13 @@ export function initializeFeaturedPalettePreview() {
     if (labelNode) labelNode.textContent = label;
     if (valueNode) valueNode.textContent = value;
   });
-  currentPreview.replaceWith(nextPreview);
+    currentPreview.replaceWith(nextPreview);
+    currentPreview = nextPreview;
+  };
+  render(palette);
+  window.addEventListener("sf2-theme", (event) => {
+    const nextId = event.detail.mode === "light" ? `${event.detail.id}-light` : event.detail.id;
+    const nextPalette = palettes.find((item) => item.id === nextId);
+    if (nextPalette) render(nextPalette);
+  });
 }

@@ -1,0 +1,210 @@
+---
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { sitePath } from "../../lib/site-path.mjs";
+import { themeFamilies } from "../../data/site-theme-data.mjs";
+
+type ThemeFamily = (typeof themeFamilies)[number];
+type PreviewPalette = { uiValues: string[]; accent: string; secondary: string; ansi: string[] };
+
+export function getStaticPaths() {
+  return themeFamilies.map((theme: ThemeFamily) => ({ params: { id: theme.id }, props: { theme } }));
+}
+
+const { theme } = Astro.props;
+const { id, name, world, dark, light } = theme;
+const adapters = ["wezterm", "herdr", "nvim", "codex", "starship"];
+const labels = ["BACKGROUND", "SURFACE", "OVERLAY", "MUTED", "FOREGROUND", "ACCENT", "SECONDARY"];
+const colors = (palette: PreviewPalette) => [
+  ...palette.uiValues,
+  palette.accent,
+  palette.secondary,
+  ...palette.ansi,
+];
+const darkColors = colors({
+  uiValues: [dark.ui.background, dark.ui.surface0, dark.ui.surface1, dark.ui.subtext, dark.ui.foreground],
+  accent: dark.ui.accent,
+  secondary: dark.semantic.red,
+  ansi: [...Object.values(dark.ansi.normal), ...Object.values(dark.ansi.bright)].map(String),
+});
+const lightColors = colors({
+  uiValues: [light.ui.background, light.ui.surface0, light.ui.surface1, light.ui.subtext, light.ui.foreground],
+  accent: light.ui.accent,
+  secondary: light.semantic.red,
+  ansi: [...Object.values(light.ansi.normal), ...Object.values(light.ansi.bright)].map(String),
+});
+const swatchLabels = [...labels, ...Array.from({ length: 16 }, (_, index) => `ANSI ${index < 8 ? "" : "BR "}${["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"][index % 8]}`)];
+const familyIndex = themeFamilies.findIndex((item: ThemeFamily) => item.id === id);
+const previous = themeFamilies[(familyIndex - 1 + themeFamilies.length) % themeFamilies.length];
+const next = themeFamilies[(familyIndex + 1) % themeFamilies.length];
+const screenshot = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/screenshots/game/${id}.png`;
+const command = (adapter: string, mode: string) => `uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply ${adapter} --theme ${id}${mode === "light" ? "-light" : ""}`;
+---
+
+<SiteLayout title={`${name} terminal theme`} description={`Palette, preview, install command, and screenshots for the ${name} Street Fighter II terminal theme.`}>
+  <div class="detail-page" data-theme-detail-preview data-preview-mode="dark" data-theme-id={id}>
+    <header class="detail-hero site-frame">
+      <p class="detail-breadcrumb"><a href={sitePath("themes")}>THE ROSTER</a> <span>/</span> {id.toUpperCase()}</p>
+      <div class="detail-hero__row">
+        <div>
+          <h1 class="page-title">{name}</h1>
+          <p class="detail-world">{world}</p>
+        </div>
+        <div class="detail-actions">
+          <div class="detail-modes" role="group" aria-label="Theme preview mode">
+            <button aria-pressed="true" data-detail-mode="dark" type="button">DARK</button>
+            <button aria-pressed="false" data-detail-mode="light" type="button">LIGHT</button>
+          </div>
+          <button class="detail-apply" data-detail-apply type="button">APPLY TO SITE</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="detail-content site-frame">
+      <section class="detail-install" aria-labelledby="detail-install-heading">
+        <div class="detail-adapters" role="group" aria-labelledby="detail-install-heading">
+          <span id="detail-install-heading">INSTALL /</span>
+          {
+            adapters.map((adapter, index) => <button aria-pressed={index === 0 ? "true" : "false"} data-adapter={adapter} type="button">{adapter.toUpperCase()}</button>)
+          }
+        </div>
+        <div class="detail-command command-bar">
+          <code><span class="command-prompt" aria-hidden="true">$</span> <span data-detail-command>{command("wezterm", "dark")}</span></code>
+          <button data-detail-copy type="button">COPY</button>
+        </div>
+        <p class="detail-status" aria-live="polite" data-detail-status role="status"></p>
+      </section>
+
+      <section class="detail-panels" aria-label="Theme previews">
+        <article class="terminal-panel">
+          <header>TERMINAL / {id}</header>
+          <pre><code><span class="terminal-accent">$</span> sf2-themes show {id}<br /><span class="terminal-muted">theme       </span><span data-terminal-id>{id}</span><br /><span class="terminal-muted">mode        </span><span data-terminal-mode>dark</span><br /><span class="terminal-muted">background  </span><span data-terminal-background data-dark-value={dark.ui.background} data-light-value={light.ui.background}>{dark.ui.background}</span><br /><span class="terminal-muted">foreground  </span><span data-terminal-foreground data-dark-value={dark.ui.foreground} data-light-value={light.ui.foreground}>{dark.ui.foreground}</span><br /><span class="terminal-muted">accent      </span><span class="terminal-accent" data-terminal-accent data-dark-value={dark.ui.accent} data-light-value={light.ui.accent}>{dark.ui.accent}</span><br /><span class="terminal-error">error</span> <span class="terminal-success">success</span> <span class="terminal-warning">warning</span> <span class="terminal-info">info</span> <span class="terminal-debug">debug</span> <span class="terminal-trace">trace</span></code></pre>
+        </article>
+        <article class="terminal-panel code-panel">
+          <header>{id}/preview.ts</header>
+          <pre><code><span class="syntax-keyword">const</span> <span class="syntax-property">theme</span> = {`{`}<br />  id: <span class="syntax-string">"{id}"</span>,<br />  mode: <span class="syntax-string" data-code-mode>"dark"</span>,<br />  accent: <span class="syntax-accent" data-code-accent data-dark-value={dark.ui.accent} data-light-value={light.ui.accent}>"{dark.ui.accent}"</span>,<br />  background: <span class="syntax-value" data-code-background data-dark-value={dark.ui.background} data-light-value={light.ui.background}>"{dark.ui.background}"</span>,<br />{`}`} <span class="syntax-keyword">as</span> <span class="syntax-keyword">const</span>;</code></pre>
+        </article>
+      </section>
+
+      <section aria-labelledby="palette-heading">
+        <h2 id="palette-heading">PALETTE</h2>
+        <div class="detail-swatches">
+          {
+            darkColors.map((color, index) => (
+              <article class="detail-swatch" data-detail-swatch data-dark-color={color} data-light-color={lightColors[index]}>
+                <span class="detail-swatch__color" aria-hidden="true" style={`background: ${color}`}></span>
+                <div><p>{swatchLabels[index]}</p><code data-swatch-hex>{color}</code></div>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="detail-screenshot" aria-labelledby="screenshot-heading">
+        <h2 id="screenshot-heading">SCREENSHOTS</h2>
+        <figure><img alt={`${name} arcade gameplay preview`} height="720" src={screenshot} width="1280" /></figure>
+      </section>
+
+      <nav class="detail-adjacent" data-adjacent-navigation aria-label="Adjacent themes">
+        <a href={sitePath(`themes/${previous.id}`)}><span>←</span> {previous.name.toUpperCase()}</a>
+        <a href={sitePath(`themes/${next.id}`)}>{next.name.toUpperCase()} <span>→</span></a>
+      </nav>
+    </div>
+  </div>
+</SiteLayout>
+
+<script is:inline>
+  (() => {
+    const page = document.querySelector("[data-theme-detail-preview]");
+    if (!(page instanceof HTMLElement)) return;
+    const id = page.dataset.themeId;
+    let mode = "dark";
+    let adapter = "wezterm";
+    const copyButton = page.querySelector("[data-detail-copy]");
+    const status = page.querySelector("[data-detail-status]");
+    const applyButton = page.querySelector("[data-detail-apply]");
+    const command = (nextAdapter, nextMode) => `uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply ${nextAdapter} --theme ${id}${nextMode === "light" ? "-light" : ""}`;
+    const update = () => {
+      page.dataset.previewMode = mode;
+      for (const button of page.querySelectorAll("[data-detail-mode]")) button.setAttribute("aria-pressed", String(button.dataset.detailMode === mode));
+      for (const button of page.querySelectorAll("[data-adapter]")) button.setAttribute("aria-pressed", String(button.dataset.adapter === adapter));
+      page.querySelector("[data-detail-command]").textContent = command(adapter, mode);
+      page.querySelector("[data-terminal-mode]").textContent = mode;
+      for (const item of page.querySelectorAll("[data-detail-swatch]")) {
+        const color = item.dataset[`${mode}Color`];
+        item.querySelector(".detail-swatch__color").style.background = color;
+        item.querySelector("[data-swatch-hex]").textContent = color;
+      }
+      for (const selector of ["[data-terminal-background]", "[data-terminal-foreground]", "[data-terminal-accent]", "[data-code-accent]", "[data-code-background]"]) {
+        const value = page.querySelector(selector);
+        if (value) value.textContent = `${value.dataset[`${mode}Value`]}`;
+      }
+      page.querySelector("[data-code-mode]").textContent = `"${mode}"`;
+    };
+    for (const button of page.querySelectorAll("[data-detail-mode]")) button.addEventListener("click", () => { mode = button.dataset.detailMode; update(); });
+    for (const button of page.querySelectorAll("[data-adapter]")) button.addEventListener("click", () => { adapter = button.dataset.adapter; update(); });
+    const updateApplyLabel = (event) => {
+      const selected = event.detail.id === id && event.detail.mode === mode;
+      applyButton.textContent = selected ? "SITE IS WEARING THIS ✓" : "APPLY TO SITE";
+    };
+    applyButton.addEventListener("click", () => window.sf2ApplySiteTheme?.(id, mode));
+    window.addEventListener("sf2-theme", updateApplyLabel);
+    copyButton.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(command(adapter, mode));
+        copyButton.textContent = "COPIED ✓";
+        status.textContent = "Command copied";
+        window.setTimeout(() => { copyButton.textContent = "COPY"; }, 1600);
+      } catch { status.textContent = "Copy failed"; }
+    });
+    updateApplyLabel({ detail: { id: document.documentElement.dataset.siteTheme || "main", mode: document.documentElement.dataset.siteMode || "dark" } });
+    update();
+  })();
+</script>
+
+<style>
+  .detail-page { padding-block-end: var(--space-20); }
+  .detail-hero { padding-block: var(--space-20) var(--space-12); }
+  .detail-breadcrumb { margin: 0 0 var(--space-6); color: var(--mu); font: 16px/1.4 var(--font-mono); letter-spacing: 0.14em; }
+  .detail-breadcrumb span { color: var(--ov); }
+  .detail-breadcrumb a { color: var(--mu); }
+  .detail-hero__row { display: flex; align-items: end; justify-content: space-between; gap: var(--space-8); }
+  .detail-world { margin: var(--space-5) 0 0; color: var(--mu); font-size: 24px; font-weight: 500; }
+  .detail-actions { display: flex; flex-direction: column; align-items: end; gap: var(--space-4); }
+  .detail-modes { display: flex; gap: var(--space-1); }
+  .detail-modes button, .detail-adapters button { min-block-size: 44px; padding: var(--space-2) var(--space-4); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: transparent; color: var(--mu); font: 600 15px/1.4 var(--font-mono); cursor: pointer; }
+  .detail-modes button:hover, .detail-modes button[aria-pressed="true"], .detail-adapters button:hover, .detail-adapters button[aria-pressed="true"] { background: var(--ov); color: var(--ac); }
+  .detail-apply { min-block-size: 60px; padding: var(--space-4) var(--space-8); border: 0; border-radius: 8px; background: var(--ac); color: var(--bg); font: 600 17px/1.4 var(--font-mono); letter-spacing: 0.08em; cursor: pointer; }
+  .detail-apply:hover { filter: brightness(1.1); transform: translateY(-2px); }
+  .detail-content { display: grid; gap: var(--space-8); }
+  .detail-adapters { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-2); }
+  .detail-adapters > span { margin-inline-end: var(--space-3); color: var(--mu); font: 600 15px/1.4 var(--font-mono); letter-spacing: 0.16em; }
+  .command-bar { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-6) var(--space-8); border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
+  .detail-command { margin-block-start: var(--space-4); }
+  .command-bar code { min-inline-size: 0; flex: 1; overflow-x: auto; color: var(--fg); font: 17px/1.6 var(--font-mono); white-space: nowrap; }
+  .command-prompt, .terminal-accent, .syntax-accent { color: var(--ac); }
+  .command-bar button { min-block-size: 44px; padding: var(--space-2) var(--space-4); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: transparent; color: var(--ac); font: 600 15px/1.4 var(--font-mono); cursor: pointer; }
+  .command-bar button:hover { border-color: var(--ac); }
+  .detail-status { min-block-size: 1.5em; margin: var(--space-2) 0 0; color: var(--ac); font-size: 16px; }
+  .detail-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
+  .terminal-panel { overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); background: var(--bg); }
+  .terminal-panel header { padding: var(--space-4) var(--space-6); border-block-end: var(--border-thin) solid var(--ov); color: var(--mu); font: 14px/1.4 var(--font-mono); letter-spacing: 0.12em; }
+  .terminal-panel pre { min-block-size: 280px; margin: 0; padding: var(--space-6); overflow: auto; color: var(--fg); font: 17px/1.8 var(--font-mono); }
+  .terminal-muted { color: var(--mu); }
+  .terminal-error { color: var(--se); }.terminal-success { color: var(--a2); }.terminal-warning { color: var(--a3); }.terminal-info { color: var(--a4); }.terminal-debug { color: var(--a5); }.terminal-trace { color: var(--a6); }
+  .syntax-keyword { color: var(--a5); }.syntax-property { color: var(--a4); }.syntax-string { color: var(--a2); }.syntax-value { color: var(--a6); }
+  .detail-page[data-preview-mode="light"] [data-dark-only], .detail-page:not([data-preview-mode="light"]) [data-light-only] { display: none; }
+  .detail-swatch { display: grid; grid-template-columns: 1fr; overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
+  .detail-swatch__color { display: block; min-block-size: 74px; }
+  .detail-swatch > div { padding: var(--space-3) var(--space-4); }
+  .detail-swatch p { margin: 0; color: var(--mu); font: 13px/1.4 var(--font-mono); letter-spacing: 0.1em; }
+  .detail-swatch code { display: block; margin-block-start: var(--space-2); color: var(--fg); font: 600 16px/1.4 var(--font-mono); }
+  .detail-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: var(--space-3); }
+  .detail-content h2 { margin: 0 0 var(--space-5); font-size: 34px; }
+  .detail-screenshot figure { margin: 0; overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); background: var(--su); }
+  .detail-screenshot img { display: block; inline-size: 100%; block-size: auto; }
+  .detail-adjacent { display: flex; justify-content: space-between; gap: var(--space-5); padding-block: var(--space-8); border-block-start: var(--border-thin) solid var(--ov); }
+  .detail-adjacent a { color: var(--mu); font: 600 17px/1.4 var(--font-mono); letter-spacing: 0.08em; }
+  .detail-adjacent a:hover { color: var(--ac); }
+  @media (max-width: 760px) { .detail-hero { padding-block: var(--space-12) var(--space-10); } .detail-hero__row { align-items: stretch; flex-direction: column; } .detail-actions { align-items: stretch; } .detail-apply { inline-size: 100%; } .detail-panels { grid-template-columns: 1fr; } .detail-swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 420px) { .detail-swatches { grid-template-columns: 1fr; } .detail-adjacent { align-items: stretch; flex-direction: column; } }
+</style>

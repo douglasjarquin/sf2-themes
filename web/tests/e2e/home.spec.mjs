@@ -67,50 +67,14 @@ test("the home preview uses the canonical code pane syntax contract", async ({ p
   expect(homeStyles.codePaneBackground).toBe(referenceStyles.codePaneBackground);
 });
 
-test("distinct controlled page loads select distinct canonical featured palettes", async ({ browser }) => {
-  // Given: independent browser contexts provide distinct random draws before the route loads.
-  const cases = [
-    { draw: 0, palette: paletteVariants[0] },
-    { draw: 0.999_999, palette: paletteVariants.at(-1) },
-  ];
-
-  // When: each visitor opens the production-built home route.
-  for (const { draw, palette } of cases) {
-    const context = await browser.newContext({
-      baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}/sf2-themes/`,
-    });
-    const page = await context.newPage();
-    await page.addInitScript((randomDraw) => {
-      Math.random = () => randomDraw;
-    }, draw);
-
-    try {
-      const preview = page.locator("[data-featured-palette-preview]");
-      await page.goto("./");
-
-      // Then: the controlled draw selects its distinct canonical palette at the real route boundary.
-      await expect(preview).toHaveAttribute("data-selected-palette", palette?.id ?? "");
-      const highlightedTokens = await preview.locator("[data-code-pane] [data-syntax-token]").evaluateAll(
-        (tokens) => tokens.map((token) => ({ text: token.textContent, className: token.className })),
-      );
-      expect(highlightedTokens.length).toBeGreaterThan(0);
-      expect(highlightedTokens.some(({ text, className }) => text === `\"${palette?.id}\"` && className.includes("syntax-token--string"))).toBe(true);
-      const syntaxColors = await preview.locator("[data-code-pane] [data-syntax-token]").evaluateAll((tokens) => {
-        const keyword = tokens.find((token) => token.classList.contains("syntax-token--keyword"));
-        const string = tokens.find((token) => token.classList.contains("syntax-token--string"));
-        const code = tokens[0]?.closest("code");
-        return {
-          keyword: keyword ? getComputedStyle(keyword).color : "",
-          string: string ? getComputedStyle(string).color : "",
-          code: code ? getComputedStyle(code).color : "",
-        };
-      });
-      expect(syntaxColors.keyword).not.toBe(syntaxColors.code);
-      expect(syntaxColors.string).not.toBe(syntaxColors.code);
-    } finally {
-      await context.close();
-    }
-  }
+test("the home featured palette follows the persisted site theme", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("sf2-site-theme", JSON.stringify({ id: "chun-li", mode: "light" }));
+  });
+  await page.goto("./");
+  const preview = page.locator("[data-featured-palette-preview]");
+  await expect(preview).toHaveAttribute("data-selected-palette", "chun-li-light");
+  await expect(preview.locator("[data-terminal-pane]")).toContainText("sf2-themes show chun-li-light");
 });
 
 test("the home featured palette remains useful without client JavaScript", async ({ browser }) => {
