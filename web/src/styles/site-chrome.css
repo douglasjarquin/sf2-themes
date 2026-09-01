@@ -42,6 +42,8 @@ html[data-capture-mode="cabinet"] .site-footer {
 .site-footer__identity { display: grid; gap: var(--space-3); max-inline-size: 54ch; }
 .site-footer__identity p { margin: 0; color: var(--mu); font-size: 16px; line-height: 1.7; }
 .site-footer__links { display: flex; flex-wrap: wrap; align-content: start; gap: var(--space-7); font-size: 15px; }
+.site-footer__links a { color: var(--mu); font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.site-footer__links a:hover { color: var(--ac); }
 
 @media (max-width: 720px) {
   .site-header__inner { align-items: flex-start; flex-direction: column; gap: var(--space-4); }
