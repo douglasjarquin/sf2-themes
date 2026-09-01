@@ -27,6 +27,16 @@ test("the site theme updates the home live preview", async ({ page }) => {
   await expect(preview).toContainText("sf2-themes show chun-li");
 });
 
+test("the home preview labels the canonical light theme id", async ({ page }) => {
+  await page.goto("./");
+  const preview = page.locator("[data-home-theme-preview]");
+  await page.locator("[data-site-picker-toggle]").click();
+  await page.locator('[data-site-mode="light"]').click();
+
+  await expect(preview).toContainText("sf2-themes show main-light");
+  await expect(preview.locator("[data-home-terminal-label]")).toHaveText("TERMINAL / main-light");
+});
+
 test("the home live preview remains useful without client JavaScript", async ({ browser }) => {
   const context = await browser.newContext({
     baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}/sf2-themes/`,
