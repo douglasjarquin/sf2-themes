@@ -120,3 +120,22 @@ test("object site theme data preserves the static home preview", async ({ page }
   await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
   expect(runtimeErrors).toEqual([]);
 });
+
+test("selected malformed site theme data preserves the static home preview", async ({ page }) => {
+  const runtimeErrors = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  await page.route("**/sf2-themes/", async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const marker = "id=\"site-theme-data\"";
+    const markerStart = body.indexOf(marker);
+    const openEnd = body.indexOf(">", markerStart) + 1;
+    const close = body.indexOf("</script>", openEnd);
+    await route.fulfill({ response, body: body.slice(0, openEnd) + "[{\"id\":\"main\",\"name\":\"MAIN\",\"dark\":{}}]" + body.slice(close) });
+  });
+  await page.goto("./");
+  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
+  await page.locator("[data-site-picker-toggle]").click();
+  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
+  expect(runtimeErrors).toEqual([]);
+});
