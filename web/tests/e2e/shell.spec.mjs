@@ -75,6 +75,16 @@ for (const viewport of viewports) {
   });
 }
 
+test("site picker mode controls keep the documented hit target", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("[data-site-picker-toggle]").click();
+
+  for (const mode of ["dark", "light"]) {
+    const box = await page.locator(`[data-site-picker] [data-site-mode="${mode}"]`).boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+});
+
 const readShell = () => {
   const readStyles = (selector, pseudo) => {
     const element = document.querySelector(selector);

@@ -31,7 +31,7 @@ html[data-capture-mode="cabinet"] .site-footer {
 .site-picker__controls { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-block-end: var(--space-4); }
 .site-picker__eyebrow { color: var(--mu); font: 600 13px/1.4 var(--font-mono); letter-spacing: 0.14em; }
 .site-picker__modes { display: flex; gap: var(--space-1); }
-.site-picker__modes button { min-block-size: 40px; padding: var(--space-2) var(--space-3); background: transparent; color: var(--mu); font-size: 13px; }
+.site-picker__modes button { min-block-size: 44px; padding: var(--space-2) var(--space-3); background: transparent; color: var(--mu); font-size: 13px; }
 .site-picker__modes button:hover, .site-picker__modes button[aria-pressed="true"] { background: var(--ov); color: var(--ac); }
 .site-picker__options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
 .site-picker__options button { display: flex; align-items: center; gap: var(--space-3); min-block-size: 44px; padding: var(--space-2) var(--space-3); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: transparent; color: var(--fg); font: 600 14px/1.4 var(--font-mono); letter-spacing: 0.04em; text-align: start; cursor: pointer; }
