@@ -19,17 +19,7 @@ const pageUrl = canonicalUrl(Astro.url.pathname);
 const shareImage = absoluteUrl(CABINET_IMAGE_PATH);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
 const main = themeTokens.main;
-const colorVariables = new Map([
-  ["--color-background", main.ui.background],
-  ["--color-foreground", main.ui.foreground],
-  ["--color-accent", main.ui.accent],
-  ["--color-red", main.semantic.red],
-  ["--color-cyan", main.semantic.cyan],
-  ["--color-surface-dim", main.ui.surface_dim],
-  ["--color-surface-0", main.ui.surface0],
-  ["--color-surface-1", main.ui.surface1],
-  ["--color-panel", main.ui.panel_bg],
-]);
+const colorVariables = new Map();
 
 for (const variant of characterVariants) {
   for (const [role, value] of Object.entries(variant.colors)) {

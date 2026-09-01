@@ -3,6 +3,7 @@ import generatedThemeData from "../../src/data/generated-theme-data.json" with {
 
 const ryuDark = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu");
 const ryuLight = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu-light");
+const chunLiDark = generatedThemeData.themes.find(({ meta }) => meta.id === "chun-li");
 const toRgb = (hex) => {
   const [, red, green, blue] = hex.match(/^#(..)(..)(..)$/).map((part) => Number.parseInt(part, 16));
   return `rgb(${red}, ${green}, ${blue})`;
@@ -97,4 +98,12 @@ test("roster cards retain canonical dark tokens without JavaScript", async ({ br
   await expect(card).toHaveCSS("color", toRgb(ryuDark.ui.foreground));
   await expect(card.locator(".theme-card__swatches span").first()).toHaveCSS("background-color", toRgb(ryuDark.ui.accent));
   await context.close();
+});
+
+test("preserved routes follow site theme selection through color aliases", async ({ page }) => {
+  await page.goto("./palette/");
+  await page.locator("[data-site-picker-toggle]").click();
+  await page.getByRole("button", { name: "CHUN-LI", exact: true }).click();
+
+  await expect(page.locator(".palette-variant").first()).toHaveCSS("background-color", toRgb(chunLiDark.ui.surface0));
 });
