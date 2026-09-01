@@ -114,7 +114,7 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
 
       <section class="detail-screenshot" aria-labelledby="screenshot-heading">
         <h2 id="screenshot-heading">SCREENSHOTS</h2>
-        <figure><img alt={`${name} arcade gameplay preview`} height="720" src={screenshot} width="1280" /></figure>
+        <figure><img alt={`${name} arcade gameplay preview`} data-dark-src={screenshot} data-light-src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/screenshots/game/${id}-light.png`} height="720" src={screenshot} width="1280" /></figure>
       </section>
 
       <nav class="detail-adjacent" data-adjacent-navigation aria-label="Adjacent themes">
@@ -135,6 +135,7 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
     const copyButton = page.querySelector("[data-detail-copy]");
     const status = page.querySelector("[data-detail-status]");
     const applyButton = page.querySelector("[data-detail-apply]");
+    const screenshotImage = page.querySelector(".detail-screenshot img");
     const command = (nextAdapter, nextMode) => `uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply ${nextAdapter} --theme ${id}${nextMode === "light" ? "-light" : ""}`;
     const update = () => {
       page.dataset.previewMode = mode;
@@ -157,6 +158,8 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         if (value) value.textContent = `"${value.dataset[`${mode}Value`]}"`;
       }
       page.querySelector("[data-code-mode]").textContent = `"${mode}"`;
+      const screenshotSrc = screenshotImage?.dataset[`${mode}Src`];
+      if (screenshotSrc) screenshotImage.setAttribute("src", screenshotSrc);
       updateApplyLabel();
     };
     for (const button of page.querySelectorAll("[data-detail-mode]")) button.addEventListener("click", () => { mode = button.dataset.detailMode; update(); });
