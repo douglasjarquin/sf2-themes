@@ -1,0 +1,20 @@
+[test] $ uv run --with pytest pytest -q
+Using CPython 3.12.13
+Creating virtual environment at: .venv
+   Building sf2-themes @ file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-1604344074
+      Built sf2-themes @ file:///Users/douglasjarquin/.made/gates/e4d63007cb071ff86c11f0577ee7f9b3c12dde0febbc24df4ae634a1cee78c3f/worktrees/run-1604344074
+Installed 1 package in 2ms
+[test] $ bash tests/test_cli.sh
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'sf2-theme-site@0.0.0',
+npm warn EBADENGINE   required: { node: '24.x' },
+npm warn EBADENGINE   current: { node: 'v26.7.0', npm: '12.0.2' }
+npm warn EBADENGINE }
+npm warn install-scripts 3 packages had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+npm warn install-scripts   fsevents@2.3.2 (install: (install scripts present))
+npm warn install-scripts   fsevents@2.3.3 (install: (install scripts present))
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+npm notice run sf2-theme-site@0.0.0 themes:check
+npm notice run python3 ../scripts/generate-web-theme-data.py --check
