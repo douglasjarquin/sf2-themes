@@ -84,6 +84,16 @@ const siteThemeOptions = themeFamilies.map(({ id, name, dark }) => ({
     if (!(picker instanceof HTMLElement) || !(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement) || !data) return;
     let themes;
     try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+    const validPalette = (palette) => palette
+      && Array.isArray(palette.uiValues)
+      && palette.uiValues.length === 5
+      && palette.uiValues.every((value) => typeof value === "string")
+      && typeof palette.accent === "string"
+      && typeof palette.secondary === "string"
+      && Array.isArray(palette.ansi)
+      && palette.ansi.length === 16
+      && palette.ansi.every((value) => typeof value === "string");
+    if (!Array.isArray(themes) || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
     let current = { id: document.documentElement.dataset.siteTheme || "main", mode: document.documentElement.dataset.siteMode || "dark" };
     const updateControls = () => {
       const theme = themes.find((item) => item.id === current.id) || themes[0];
