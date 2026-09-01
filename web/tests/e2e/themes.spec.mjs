@@ -1,4 +1,12 @@
 import { expect, test } from "@playwright/test";
+import generatedThemeData from "../../src/data/generated-theme-data.json" with { type: "json" };
+
+const ryuDark = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu");
+const ryuLight = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu-light");
+const toRgb = (hex) => {
+  const [, red, green, blue] = hex.match(/^#(..)(..)(..)$/).map((part) => Number.parseInt(part, 16));
+  return `rgb(${red}, ${green}, ${blue})`;
+};
 
 test("themes route lists generated roster families", async ({ page }) => {
   await page.goto("./themes/");
@@ -54,4 +62,13 @@ test("theme detail recomputes the apply state when preview mode changes", async 
   await expect(page.locator("[data-detail-apply]")).toHaveText("SITE IS WEARING THIS ✓");
   await page.locator('[data-detail-mode="light"]').click();
   await expect(page.locator("[data-detail-apply]")).toHaveText("APPLY TO SITE");
+});
+
+test("theme detail scopes terminal preview colors to the selected canonical mode", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+
+  await expect(page.locator(".terminal-panel").first()).toHaveCSS("background-color", toRgb(ryuDark.ui.background));
+  await page.locator('[data-detail-mode="light"]').click();
+  await expect(page.locator(".terminal-panel").first()).toHaveCSS("background-color", toRgb(ryuLight.ui.background));
+  await expect(page.locator(".terminal-panel .terminal-accent").first()).toHaveCSS("color", toRgb(ryuLight.ui.accent));
 });

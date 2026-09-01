@@ -32,6 +32,19 @@ const lightColors = colors({
   secondary: light.ui.accent_secondary,
   ansi: [...Object.values(light.ansi.normal), ...Object.values(light.ansi.bright)].map(String),
 });
+const previewCssVars = (prefix: string, palette: ThemeFamily["dark"]) => {
+  const ansi = [...Object.values(palette.ansi.normal), ...Object.values(palette.ansi.bright)].map(String);
+  return [
+    [`--${prefix}-bg`, palette.ui.background],
+    [`--${prefix}-surface`, palette.ui.surface0],
+    [`--${prefix}-overlay`, palette.ui.surface1],
+    [`--${prefix}-muted`, palette.ui.muted],
+    [`--${prefix}-fg`, palette.ui.foreground],
+    [`--${prefix}-accent`, palette.ui.accent],
+    ...ansi.map((color, index) => [`--${prefix}-a${index}`, color]),
+  ].map(([name, value]) => `${name}:${value}`).join(";");
+};
+const detailPreviewStyle = `${previewCssVars("detail-dark", dark)};${previewCssVars("detail-light", light)}`;
 const swatchLabels = [...labels, ...Array.from({ length: 16 }, (_, index) => `ANSI ${index < 8 ? "" : "BR "}${["BLACK", "RED", "GREEN", "YELLOW", "BLUE", "MAGENTA", "CYAN", "WHITE"][index % 8]}`)];
 const familyIndex = themeFamilies.findIndex((item: ThemeFamily) => item.id === id);
 const previous = themeFamilies[(familyIndex - 1 + themeFamilies.length) % themeFamilies.length];
@@ -41,7 +54,7 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
 ---
 
 <SiteLayout title={`${name} terminal theme`} description={`Palette, preview, install command, and screenshots for the ${name} Street Fighter II terminal theme.`}>
-  <div class="detail-page" data-theme-detail-preview data-preview-mode="dark" data-theme-id={id}>
+  <div class="detail-page" data-theme-detail-preview data-preview-mode="dark" data-theme-id={id} style={detailPreviewStyle}>
     <header class="detail-hero site-frame">
       <p class="detail-breadcrumb"><a href={sitePath("themes")}>THE ROSTER</a> <span>/</span> {id.toUpperCase()}</p>
       <div class="detail-hero__row">
@@ -163,7 +176,8 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
 </script>
 
 <style>
-  .detail-page { padding-block-end: var(--space-20); }
+  .detail-page { --detail-bg: var(--detail-dark-bg); --detail-surface: var(--detail-dark-surface); --detail-overlay: var(--detail-dark-overlay); --detail-muted: var(--detail-dark-muted); --detail-fg: var(--detail-dark-fg); --detail-accent: var(--detail-dark-accent); --detail-a0: var(--detail-dark-a0); --detail-a1: var(--detail-dark-a1); --detail-a2: var(--detail-dark-a2); --detail-a3: var(--detail-dark-a3); --detail-a4: var(--detail-dark-a4); --detail-a5: var(--detail-dark-a5); --detail-a6: var(--detail-dark-a6); padding-block-end: var(--space-20); }
+  .detail-page[data-preview-mode="light"] { --detail-bg: var(--detail-light-bg); --detail-surface: var(--detail-light-surface); --detail-overlay: var(--detail-light-overlay); --detail-muted: var(--detail-light-muted); --detail-fg: var(--detail-light-fg); --detail-accent: var(--detail-light-accent); --detail-a0: var(--detail-light-a0); --detail-a1: var(--detail-light-a1); --detail-a2: var(--detail-light-a2); --detail-a3: var(--detail-light-a3); --detail-a4: var(--detail-light-a4); --detail-a5: var(--detail-light-a5); --detail-a6: var(--detail-light-a6); }
   .detail-hero { padding-block: var(--space-20) var(--space-12); }
   .detail-breadcrumb { margin: 0 0 var(--space-6); color: var(--mu); font: 16px/1.4 var(--font-mono); letter-spacing: 0.14em; }
   .detail-breadcrumb span { color: var(--ov); }
@@ -183,17 +197,18 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
   .detail-command { margin-block-start: var(--space-4); }
   .command-bar code { display: block; min-inline-size: 0; flex: 1; overflow-wrap: anywhere; color: var(--fg); font: 17px/1.6 var(--font-mono); white-space: pre-wrap; }
   .detail-command [data-detail-command] { overflow-wrap: anywhere; white-space: inherit; }
-  .command-prompt, .terminal-accent, .syntax-accent { color: var(--ac); }
+  .command-prompt { color: var(--ac); }
   .command-bar button { min-block-size: 44px; padding: var(--space-2) var(--space-4); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: transparent; color: var(--ac); font: 600 15px/1.4 var(--font-mono); cursor: pointer; }
   .command-bar button:hover { border-color: var(--ac); }
   .detail-status { min-block-size: 1.5em; margin: var(--space-2) 0 0; color: var(--ac); font-size: 16px; }
   .detail-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-5); }
-  .terminal-panel { overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); background: var(--bg); }
-  .terminal-panel header { padding: var(--space-4) var(--space-6); border-block-end: var(--border-thin) solid var(--ov); color: var(--mu); font: 14px/1.4 var(--font-mono); letter-spacing: 0.12em; }
-  .terminal-panel pre { min-block-size: 280px; margin: 0; padding: var(--space-6); overflow: auto; overflow-wrap: anywhere; color: var(--fg); font: 17px/1.8 var(--font-mono); white-space: pre-wrap; }
-  .terminal-muted { color: var(--mu); }
-  .terminal-error { color: var(--se); }.terminal-success { color: var(--a2); }.terminal-warning { color: var(--a3); }.terminal-info { color: var(--a4); }.terminal-debug { color: var(--a5); }.terminal-trace { color: var(--a6); }
-  .syntax-keyword { color: var(--a5); }.syntax-property { color: var(--a4); }.syntax-string { color: var(--a2); }.syntax-value { color: var(--a6); }
+  .terminal-panel { overflow: hidden; border: var(--border-thin) solid var(--detail-overlay); border-radius: var(--radius-panel); background: var(--detail-bg); }
+  .terminal-panel header { padding: var(--space-4) var(--space-6); border-block-end: var(--border-thin) solid var(--detail-overlay); color: var(--detail-muted); font: 14px/1.4 var(--font-mono); letter-spacing: 0.12em; }
+  .terminal-panel pre { min-block-size: 280px; margin: 0; padding: var(--space-6); overflow: auto; overflow-wrap: anywhere; color: var(--detail-fg); font: 17px/1.8 var(--font-mono); white-space: pre-wrap; }
+  .terminal-muted { color: var(--detail-muted); }
+  .terminal-accent, .syntax-accent { color: var(--detail-accent); }
+  .terminal-error { color: var(--detail-a1); }.terminal-success { color: var(--detail-a2); }.terminal-warning { color: var(--detail-a3); }.terminal-info { color: var(--detail-a4); }.terminal-debug { color: var(--detail-a5); }.terminal-trace { color: var(--detail-a6); }
+  .syntax-keyword { color: var(--detail-a5); }.syntax-property { color: var(--detail-a4); }.syntax-string { color: var(--detail-a2); }.syntax-value { color: var(--detail-a6); }
   .detail-page[data-preview-mode="light"] [data-dark-only], .detail-page:not([data-preview-mode="light"]) [data-light-only] { display: none; }
   .detail-swatch { display: grid; grid-template-columns: 1fr; overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
   .detail-swatch__color { display: block; min-block-size: 74px; }
