@@ -139,11 +139,12 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         if (value) value.textContent = `${value.dataset[`${mode}Value`]}`;
       }
       page.querySelector("[data-code-mode]").textContent = `"${mode}"`;
+      updateApplyLabel();
     };
     for (const button of page.querySelectorAll("[data-detail-mode]")) button.addEventListener("click", () => { mode = button.dataset.detailMode; update(); });
     for (const button of page.querySelectorAll("[data-adapter]")) button.addEventListener("click", () => { adapter = button.dataset.adapter; update(); });
-    const updateApplyLabel = (event) => {
-      const selected = event.detail.id === id && event.detail.mode === mode;
+    const updateApplyLabel = () => {
+      const selected = document.documentElement.dataset.siteTheme === id && document.documentElement.dataset.siteMode === mode;
       applyButton.textContent = selected ? "SITE IS WEARING THIS ✓" : "APPLY TO SITE";
     };
     applyButton.addEventListener("click", () => window.sf2ApplySiteTheme?.(id, mode));
@@ -156,7 +157,7 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         window.setTimeout(() => { copyButton.textContent = "COPY"; }, 1600);
       } catch { status.textContent = "Copy failed"; }
     });
-    updateApplyLabel({ detail: { id: document.documentElement.dataset.siteTheme || "main", mode: document.documentElement.dataset.siteMode || "dark" } });
+    updateApplyLabel();
     update();
   })();
 </script>

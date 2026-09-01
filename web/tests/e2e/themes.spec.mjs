@@ -44,3 +44,14 @@ test("theme detail switches preview mode and copies its adapter command", async 
   await expect(page.locator(".detail-screenshot img")).toHaveAttribute("src", /screenshots\/game\/ryu\.png$/);
   await expect.poll(() => page.locator(".detail-screenshot img").evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
 });
+
+test("theme detail recomputes the apply state when preview mode changes", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("sf2-site-theme", JSON.stringify({ id: "ryu", mode: "dark" }));
+  });
+  await page.goto("./themes/ryu/");
+
+  await expect(page.locator("[data-detail-apply]")).toHaveText("SITE IS WEARING THIS ✓");
+  await page.locator('[data-detail-mode="light"]').click();
+  await expect(page.locator("[data-detail-apply]")).toHaveText("APPLY TO SITE");
+});
