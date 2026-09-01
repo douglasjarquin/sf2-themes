@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-const noOverflow = () =>
-  document.documentElement.scrollWidth <= document.documentElement.clientWidth;
+const noOverflow = () => {
+  const viewport = document.documentElement.clientWidth;
+  return [...document.querySelectorAll("body *")].every((element) => element.getBoundingClientRect().right <= viewport + 1);
+};
 
 test("home and shared chrome", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });

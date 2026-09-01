@@ -97,7 +97,7 @@ const moves = [
   .install-hero { padding-block: var(--space-20) var(--space-12); }
   .install-eyebrow { margin: 0 0 var(--space-6); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
   .install-lede { max-inline-size: 760px; margin: var(--space-8) 0 0; color: var(--mu); font-size: var(--text-body-lg); font-weight: 500; line-height: 1.5; text-wrap: pretty; }
-  .install-content { display: grid; gap: var(--space-16); }
+  .install-content { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-16); min-inline-size: 0; }
   .install-section h2 { margin: 0 0 var(--space-6); font-family: var(--font-display); font-size: 34px; }
   .command-bar { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-6) var(--space-8); border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
   .command-bar code { min-inline-size: 0; flex: 1; overflow-x: auto; color: var(--fg); font: 18px/1.6 var(--font-mono); white-space: nowrap; }

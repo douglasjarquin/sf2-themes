@@ -114,7 +114,13 @@ a:hover {
   display: grid;
   grid-template-rows: auto 1fr auto;
   min-block-size: 100dvh;
+  min-inline-size: 0;
   overflow: clip;
+}
+
+#main-content,
+.site-frame {
+  min-inline-size: 0;
 }
 
 html[data-capture-mode="cabinet"] .site-header,
