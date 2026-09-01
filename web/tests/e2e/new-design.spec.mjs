@@ -14,7 +14,7 @@ test("home and shared chrome", async ({ page }) => {
   await expect(page.locator(".site-brand")).toHaveText("SF2·THEMES");
   await expect(page.locator('[data-nav-link][aria-current="page"]')).toHaveText("HOME");
   await expect(page.locator("[data-site-picker]")).toHaveCount(1);
-  await expect(page.locator("[data-theme-preview]")).toHaveCount(1);
+  await expect(page.locator("[data-home-theme-preview]")).toHaveCount(1);
   await expect(page.locator("body")).toHaveCSS("font-family", /Archivo/);
 
   await page.locator("[data-site-picker-toggle]").click();
@@ -25,7 +25,7 @@ test("home and shared chrome", async ({ page }) => {
   await page.locator("[data-site-picker-toggle]").click();
   await page.getByRole("button", { name: "LIGHT", exact: true }).click();
   await expect(page.locator("[data-site-picker-toggle]")).toContainText("LIGHT");
-  await expect(page.locator("[data-featured-palette-preview]")).toHaveAttribute("data-selected-palette", "main");
+  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show chun-li");
 
   await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
   await page.setViewportSize({ width: 375, height: 844 });
