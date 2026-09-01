@@ -23,10 +23,10 @@ The site shell maps the selected canonical family/mode to these variables at run
 | Canvas | `--bg` | selected `ui.background` |
 | Surface | `--su` | selected `ui.surface0` |
 | Overlay | `--ov` | selected `ui.surface1` |
-| Muted text | `--mu` | selected `ui.subtext` |
+| Muted text | `--mu` | selected `ui.muted` |
 | Foreground | `--fg` | selected `ui.foreground` |
 | Primary accent | `--ac` | selected `ui.accent` |
-| Secondary accent | `--se` | selected `semantic.red` |
+| Secondary accent | `--se` | selected `ui.accent_secondary` |
 | ANSI slots | `--a0` through `--a15` | selected `ansi.normal` and `ansi.bright` |
 
 ### Rules
