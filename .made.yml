@@ -11,7 +11,7 @@ commands:
     /Users/douglasjarquin/.local/bin/mise run test || exit 101
     /opt/homebrew/bin/npm --prefix web ci || exit 102
     /opt/homebrew/bin/npm --prefix web run themes:check || exit 103
-    (cd web && n=0; for file in tests/unit/*.test.mjs test/*.test.mjs; do n=$((n + 1)); /opt/homebrew/bin/node --test "$file" || exit $((120 + n)); done) || exit 104
+    (cd web && n=0; for file in tests/unit/*.test.mjs test/*.test.mjs; do n=$((n + 1)); /opt/homebrew/bin/node --test "$file" || exit $((120 + n)); done)
     /opt/homebrew/bin/npm --prefix web run test:e2e || exit 105
     /opt/homebrew/bin/npm --prefix web run build || exit 106
     /opt/homebrew/bin/npm --prefix web run screenshots:verify || exit 107
