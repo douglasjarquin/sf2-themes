@@ -207,5 +207,5 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
   .detail-adjacent a { color: var(--mu); font: 600 17px/1.4 var(--font-mono); letter-spacing: 0.08em; }
   .detail-adjacent a:hover { color: var(--ac); }
   @media (max-width: 760px) { .detail-hero { padding-block: var(--space-12) var(--space-10); } .detail-hero__row { align-items: stretch; flex-direction: column; } .detail-actions { align-items: stretch; } .detail-apply { inline-size: 100%; } .detail-panels { grid-template-columns: 1fr; } .detail-swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 420px) { .detail-swatches { grid-template-columns: 1fr; } .detail-adjacent { align-items: stretch; flex-direction: column; } }
+  @media (max-width: 420px) { .detail-swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); } .detail-adjacent { align-items: stretch; flex-direction: column; } }
 </style>
