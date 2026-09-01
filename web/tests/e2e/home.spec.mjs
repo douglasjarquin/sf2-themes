@@ -67,14 +67,15 @@ test("the home preview uses the canonical code pane syntax contract", async ({ p
   expect(homeStyles.codePaneBackground).toBe(referenceStyles.codePaneBackground);
 });
 
-test("the home featured palette follows the persisted site theme", async ({ page }) => {
+test("the site theme stays separate from the featured palette", async ({ page }) => {
+  await page.addInitScript(() => { Math.random = () => 0; });
   await page.addInitScript(() => {
     localStorage.setItem("sf2-site-theme", JSON.stringify({ id: "chun-li", mode: "light" }));
   });
   await page.goto("./");
   const preview = page.locator("[data-featured-palette-preview]");
-  await expect(preview).toHaveAttribute("data-selected-palette", "chun-li-light");
-  await expect(preview.locator("[data-terminal-pane]")).toContainText("sf2-themes show chun-li-light");
+  await expect(preview).toHaveAttribute("data-selected-palette", initialPalette.id);
+  await expect(preview.locator("[data-terminal-pane]")).toContainText(`sf2-themes show ${initialPalette.id}`);
 });
 
 test("the home featured palette remains useful without client JavaScript", async ({ browser }) => {

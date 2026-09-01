@@ -48,7 +48,7 @@ test("robots.txt allows the project path and points at the project sitemap", () 
   assert.doesNotMatch(committed, /Allow: \/\n/);
 });
 
-test("sitemap.xml lists the six indexable trailing-slash URLs", () => {
+test("sitemap.xml lists every indexable trailing-slash URL", () => {
   const committed = readFileSync(path.join(publicDirectory, "sitemap.xml"), "utf8");
   assert.equal(committed, sitemapXml());
   assert.deepEqual(
@@ -60,6 +60,7 @@ test("sitemap.xml lists the six indexable trailing-slash URLs", () => {
       "https://douglasjarquin.github.io/sf2-themes/preview/",
       "https://douglasjarquin.github.io/sf2-themes/install/",
       "https://douglasjarquin.github.io/sf2-themes/game/",
+      ...["main", "ryu", "ken", "chun-li", "guile", "dhalsim", "e-honda", "blanka", "zangief", "m-bison", "sagat", "vega", "balrog", "fei-long", "t-hawk", "cammy", "dee-jay", "akuma"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
     ],
   );
 });

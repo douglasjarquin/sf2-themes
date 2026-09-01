@@ -1,6 +1,7 @@
 ---
 import { themeFamilies } from "../data/site-theme-data.mjs";
 import { sitePath } from "../lib/site-path.mjs";
+import "../styles/site-chrome.css";
 
 const { currentPath } = Astro.props;
 const navigation = [
@@ -107,12 +108,16 @@ const siteThemeOptions = themeFamilies.map(({ id, name, dark }) => ({
       updateControls();
     };
     window.sf2ApplySiteTheme = apply;
-    const close = () => { panel.hidden = true; toggle.setAttribute("aria-expanded", "false"); };
+    const close = (restoreFocus = false) => {
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (restoreFocus) toggle.focus();
+    };
     toggle.addEventListener("click", () => { panel.hidden = !panel.hidden; toggle.setAttribute("aria-expanded", String(!panel.hidden)); });
     for (const button of picker.querySelectorAll("[data-site-mode]")) button.addEventListener("click", () => apply(current.id, button.dataset.siteMode));
     for (const button of picker.querySelectorAll("[data-site-theme-option]")) button.addEventListener("click", () => { apply(button.dataset.themeId, current.mode); close(); });
     document.addEventListener("mousedown", (event) => { if (!picker.contains(event.target)) close(); });
-    document.addEventListener("keydown", (event) => { if (event.key === "Escape") close(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) close(true); });
     window.addEventListener("sf2-theme", (event) => { current = event.detail; updateControls(); });
     updateControls();
   })();

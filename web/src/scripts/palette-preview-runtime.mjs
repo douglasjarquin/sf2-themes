@@ -29,13 +29,7 @@ export function initializeFeaturedPalettePreview() {
   };
   if (!Array.isArray(palettes) || palettes.length === 0 || !palettes.every(isPalette)) return;
 
-  let saved = { id: "main", mode: "dark" };
-  try {
-    const candidate = JSON.parse(localStorage.getItem("sf2-site-theme") || "null");
-    if (candidate?.id) saved = candidate;
-  } catch {}
-  const selectedId = saved.mode === "light" ? `${saved.id}-light` : saved.id;
-  const palette = palettes.find((item) => item.id === selectedId) || palettes[0];
+  const palette = palettes[Math.floor(Math.random() * palettes.length)];
   const render = (palette) => {
   const nextPreview = currentPreview.cloneNode(true);
   if (!(nextPreview instanceof HTMLElement)) return;
@@ -134,9 +128,4 @@ export function initializeFeaturedPalettePreview() {
     currentPreview = nextPreview;
   };
   render(palette);
-  window.addEventListener("sf2-theme", (event) => {
-    const nextId = event.detail.mode === "light" ? `${event.detail.id}-light` : event.detail.id;
-    const nextPalette = palettes.find((item) => item.id === nextId);
-    if (nextPalette) render(nextPalette);
-  });
 }

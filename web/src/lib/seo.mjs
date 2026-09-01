@@ -1,4 +1,5 @@
 import astroConfig from "../../astro.config.mjs";
+import { themeFamilies } from "../data/site-theme-data.mjs";
 
 export const SITE_ORIGIN = astroConfig.site;
 export const SITE_BASE = `${astroConfig.base.replace(/\/+$/, "")}/`;
@@ -16,6 +17,7 @@ export const INDEXABLE_PATHS = Object.freeze([
   `${SITE_BASE}preview/`,
   `${SITE_BASE}install/`,
   `${SITE_BASE}game/`,
+  ...themeFamilies.map(({ id }) => `${SITE_BASE}themes/${id}/`),
 ]);
 
 export function withTrailingSlash(pathname) {

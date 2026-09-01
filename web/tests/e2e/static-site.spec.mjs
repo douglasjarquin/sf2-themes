@@ -134,7 +134,7 @@ test("the project 404 page is branded, linked, and noindexed", async ({ page, re
   );
 });
 
-test("sitemap.xml lists the six indexable trailing-slash URLs", async ({ request }) => {
+test("sitemap.xml lists every indexable trailing-slash URL", async ({ request }) => {
   const response = await request.get("/sf2-themes/sitemap.xml");
   const body = await response.text();
   const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
@@ -147,6 +147,7 @@ test("sitemap.xml lists the six indexable trailing-slash URLs", async ({ request
     "https://douglasjarquin.github.io/sf2-themes/preview/",
     "https://douglasjarquin.github.io/sf2-themes/install/",
     "https://douglasjarquin.github.io/sf2-themes/game/",
+    ...["main", "ryu", "ken", "chun-li", "guile", "dhalsim", "e-honda", "blanka", "zangief", "m-bison", "sagat", "vega", "balrog", "fei-long", "t-hawk", "cammy", "dee-jay", "akuma"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
   ]);
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
 });

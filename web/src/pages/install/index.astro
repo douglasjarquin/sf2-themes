@@ -71,7 +71,10 @@ const moves = [
   (() => {
     const status = document.querySelector("[data-copy-status]");
     const copy = async (button, value, successMessage) => {
-      if (!navigator.clipboard?.writeText) return;
+      if (!navigator.clipboard?.writeText) {
+        if (status) status.textContent = "Copy unavailable";
+        return;
+      }
       try {
         await navigator.clipboard.writeText(value);
         button.textContent = "COPIED ✓";

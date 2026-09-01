@@ -5,6 +5,7 @@ const noOverflow = () =>
 
 test("home and shared chrome", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
+  await page.addInitScript(() => { Math.random = () => 0; });
   await page.goto("./");
 
   await expect(page.getByRole("heading", { name: "FIGHT FOR YOUR TERMINAL." })).toBeVisible();
@@ -22,7 +23,7 @@ test("home and shared chrome", async ({ page }) => {
   await page.locator("[data-site-picker-toggle]").click();
   await page.getByRole("button", { name: "LIGHT", exact: true }).click();
   await expect(page.locator("[data-site-picker-toggle]")).toContainText("LIGHT");
-  await expect(page.locator("[data-featured-palette-preview]")).toHaveAttribute("data-selected-palette", "chun-li-light");
+  await expect(page.locator("[data-featured-palette-preview]")).toHaveAttribute("data-selected-palette", "main");
 
   await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
   await page.setViewportSize({ width: 375, height: 844 });
@@ -84,4 +85,14 @@ test("install and copy", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 844 });
   await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
   await page.screenshot({ path: "artifacts/ulw/install-green.png", fullPage: true });
+});
+
+
+test("install reports unavailable clipboard support", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+  });
+  await page.goto("install/");
+  await page.locator("[data-install-copy]").first().click();
+  await expect(page.locator("[data-copy-status]")).toHaveText("Copy unavailable");
 });
