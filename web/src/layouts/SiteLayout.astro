@@ -101,7 +101,8 @@ const siteThemePayload = JSON.stringify(
           const candidate = JSON.parse(localStorage.getItem("sf2-site-theme") || "null");
           if (candidate?.id) saved = candidate;
         } catch {}
-        const themes = JSON.parse(data.textContent || "[]");
+        let themes;
+        try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
         const theme = themes.find((item) => item.id === saved.id) || themes[0];
         const mode = saved.mode === "light" ? "light" : "dark";
         const palette = theme?.[mode];

@@ -82,10 +82,12 @@ const siteThemeOptions = themeFamilies.map(({ id, name, dark }) => ({
     const panel = picker?.querySelector("[data-site-picker-panel]");
     const data = document.getElementById("site-theme-data");
     if (!(picker instanceof HTMLElement) || !(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement) || !data) return;
-    const themes = JSON.parse(data.textContent || "[]");
+    let themes;
+    try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
     let current = { id: document.documentElement.dataset.siteTheme || "main", mode: document.documentElement.dataset.siteMode || "dark" };
     const updateControls = () => {
       const theme = themes.find((item) => item.id === current.id) || themes[0];
+      if (!theme?.[current.mode]) return;
       toggle.querySelector("[data-site-picker-label]").textContent = `${theme.name.toUpperCase()} / ${current.mode.toUpperCase()}`;
       toggle.querySelector("[data-site-picker-swatch]").style.background = theme[current.mode].accent;
       for (const button of picker.querySelectorAll("[data-site-mode]")) button.setAttribute("aria-pressed", String(button.dataset.siteMode === current.mode));
