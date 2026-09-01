@@ -141,6 +141,7 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
       for (const button of page.querySelectorAll("[data-detail-mode]")) button.setAttribute("aria-pressed", String(button.dataset.detailMode === mode));
       for (const button of page.querySelectorAll("[data-adapter]")) button.setAttribute("aria-pressed", String(button.dataset.adapter === adapter));
       page.querySelector("[data-detail-command]").textContent = command(adapter, mode);
+      page.querySelector("[data-terminal-id]").textContent = mode === "light" ? `${id}-light` : id;
       page.querySelector("[data-terminal-mode]").textContent = mode;
       for (const item of page.querySelectorAll("[data-detail-swatch]")) {
         const color = item.dataset[`${mode}Color`];

@@ -73,6 +73,13 @@ test("theme detail scopes terminal preview colors to the selected canonical mode
   await expect(page.locator(".terminal-panel .terminal-accent").first()).toHaveCSS("color", toRgb(ryuLight.ui.accent));
 });
 
+test("theme detail labels the terminal preview with the selected catalog mode", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+  await page.locator('[data-detail-mode="light"]').click();
+
+  await expect(page.locator("[data-terminal-id]")).toHaveText("ryu-light");
+});
+
 test("roster cards retain canonical dark tokens without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
