@@ -161,13 +161,7 @@ test("public preview route is separate from the preserved gameplay asset namespa
   const primaryPreview = page
     .getByRole("navigation", { name: "Primary" })
     .getByRole("link", { name: "PREVIEW", exact: true });
-  const footerPreview = page
-    .getByRole("contentinfo")
-    .getByRole("link", { name: "Preview", exact: true });
-
   await expect(primaryPreview).toHaveCount(0);
-  await expect(footerPreview).toHaveCount(1);
-  await expect(footerPreview).toHaveAttribute("href", "/sf2-themes/preview/");
 
   const oldPageRoute = await request.get("screenshots/");
   const gameplayAsset = await request.get("screenshots/game/ryu.png");
@@ -277,20 +271,12 @@ test("the footer exposes internal IA and the skip link reaches main content", as
     "href",
     "/sf2-themes/themes/",
   );
-  await expect(footer.getByRole("link", { name: "Palette", exact: true })).toHaveAttribute(
-    "href",
-    "/sf2-themes/palette/",
-  );
-  await expect(footer.getByRole("link", { name: "Preview", exact: true })).toHaveAttribute(
-    "href",
-    "/sf2-themes/preview/",
-  );
   await expect(footer.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
     "href",
     "/sf2-themes/install/",
   );
-  await expect(footer.getByRole("link", { name: "Arcade", exact: true })).toHaveAttribute(
+  await expect(footer.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
     "href",
-    "/sf2-themes/game/",
+    "https://github.com/douglasjarquin/sf2-themes",
   );
 });

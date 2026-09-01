@@ -4,10 +4,7 @@ import { sitePath } from "../lib/site-path.mjs";
 const pages = [
   { label: "Home", href: sitePath() },
   { label: "Themes", href: sitePath("themes") },
-  { label: "Palette", href: sitePath("palette") },
-  { label: "Preview", href: sitePath("preview") },
   { label: "Install", href: sitePath("install") },
-  { label: "Arcade", href: sitePath("game") },
 ];
 ---
 
@@ -26,20 +23,10 @@ const pages = [
           <a href={item.href}>{item.label}</a>
         ))
       }
-    </nav>
-    <nav class="site-footer__links" aria-label="Project links">
       <a
         href="https://github.com/douglasjarquin/sf2-themes"
         rel="noreferrer"
-        target="_blank">GitHub repository <span aria-hidden="true">↗</span></a
-      >
-      <a
-        href="https://github.com/douglasjarquin/sf2-themes/issues"
-        rel="noreferrer"
-        target="_blank">Report an issue <span aria-hidden="true">↗</span></a
-      >
-      <a href="https://herdr.dev/docs/configuration/" rel="noreferrer" target="_blank"
-        >Herdr configuration docs <span aria-hidden="true">↗</span></a
+        target="_blank">GitHub <span aria-hidden="true">↗</span></a
       >
     </nav>
   </div>

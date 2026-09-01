@@ -52,7 +52,7 @@ import { sitePath } from "../lib/site-path.mjs";
 <style>
   .home-page { display: flex; flex-direction: column; }
   .home-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 110px 0; }
-  .home-hero__copy { max-inline-size: 62ch; }
+  .home-hero__copy { min-inline-size: 0; }
   .home-kicker { margin: 0 0 var(--space-7); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
   h1, h2 { margin: 0; font-family: var(--font-display); line-height: 0.95; text-transform: uppercase; }
   .home-hero h1 { max-inline-size: 100%; color: var(--fg); font-size: var(--text-hero); letter-spacing: -.02em; text-wrap: balance; }
