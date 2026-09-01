@@ -115,17 +115,17 @@ RYU       VS       KEN
 </script>
 
 <style>
-  .arcade-cabinet { inline-size: 100%; max-inline-size: 720px; justify-self: center; border: 2px solid color-mix(in srgb, var(--cabinet-foreground) 14%, transparent); box-shadow: 10px 10px 0 color-mix(in srgb, var(--home-background) 60%, black); background: var(--cabinet-background); overflow: hidden; transition: background-color 120ms ease-out, border-color 120ms ease-out; }
+  .arcade-cabinet { inline-size: 100%; max-inline-size: 720px; justify-self: center; border: 2px solid color-mix(in srgb, var(--cabinet-foreground) 14%, transparent); box-shadow: 10px 10px 0 color-mix(in srgb, var(--cabinet-background) 60%, black); background: var(--cabinet-background); overflow: hidden; transition: background-color 120ms ease-out, border-color 120ms ease-out; }
   .arcade-cabinet--compact { max-inline-size: 480px; }
   .arcade-cabinet__marquee { border-block-end: 3px solid var(--cabinet-gold); background: linear-gradient(135deg, var(--cabinet-red), color-mix(in srgb, var(--cabinet-red) 65%, black)); color: var(--cabinet-foreground); font-family: var(--font-display); font-size: 10px; letter-spacing: .12em; padding: var(--space-4); text-align: center; transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out; }
   .arcade-cabinet__screen { position: relative; min-block-size: 236px; margin: var(--space-4); background: var(--cabinet-background); isolation: isolate; transition: background-color 120ms ease-out; }
-  .arcade-cabinet__screen::after { position: absolute; z-index: 2; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--home-background) 28%, transparent) 0, color-mix(in srgb, var(--home-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
+  .arcade-cabinet__screen::after { position: absolute; z-index: 2; inset: 0; pointer-events: none; content: ""; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--cabinet-background) 28%, transparent) 0, color-mix(in srgb, var(--cabinet-background) 28%, transparent) 1px, transparent 1px, transparent 4px); }
   .arcade-cabinet__status { position: absolute; z-index: 3; inset-block-start: var(--space-3); inset-inline: var(--space-3); display: flex; justify-content: space-between; gap: var(--space-3); color: var(--cabinet-accent); font-family: var(--font-mono); font-size: 10px; pointer-events: none; }
   .arcade-cabinet__renderer { min-block-size: 236px; display: grid; place-items: center; overflow: hidden; }
   .arcade-cabinet__renderer :global(canvas) { inline-size: 100%; block-size: auto; }
   .arcade-cabinet__poster { margin: 0; color: var(--cabinet-foreground); font-family: var(--font-mono); font-size: clamp(10px, 1.3vw, 13px); line-height: 1.7; text-align: center; white-space: pre; }
   .arcade-cabinet__poster[hidden] { display: none; }
-  .arcade-cabinet__palette { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-block: 2px solid var(--home-surface); color: color-mix(in srgb, var(--cabinet-foreground) 62%, transparent); font-family: var(--font-display); font-size: 7px; }
+  .arcade-cabinet__palette { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-block: 2px solid var(--cabinet-background); color: color-mix(in srgb, var(--cabinet-foreground) 62%, transparent); font-family: var(--font-display); font-size: 7px; }
   .theme-chip { min-block-size: 32px; border: 2px solid transparent; background: var(--chip-color); box-shadow: 0 3px 0 var(--chip-shadow); color: var(--cabinet-background); cursor: pointer; font-family: var(--font-display); font-size: 6px; padding: 8px; }
   .theme-chip:hover, .theme-chip[aria-pressed="true"] { border-color: var(--cabinet-gold); transform: translate(1px, 1px); }
   .arcade-cabinet__controls { display: grid; gap: var(--space-3); padding: var(--space-4) var(--space-5); }

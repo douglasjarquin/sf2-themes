@@ -18,6 +18,8 @@ for (const viewport of viewports) {
   test(`shared shell works at ${viewport.name} size`, async ({ page }) => {
     // Given: a visitor opens the statically rendered site at its configured base.
     await page.setViewportSize(viewport);
+    await page.emulateMedia({ colorScheme: "dark" });
+    await page.addInitScript(() => localStorage.removeItem("sf2-themes.site-theme-family.v1"));
     await page.goto("./");
 
     // When: keyboard focus enters the page.
@@ -107,6 +109,8 @@ const readShell = () => {
 
 test("all public routes use the preview page shell", async ({ page }) => {
   // Given: the preview page is the visual source of truth for shared site chrome.
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.addInitScript(() => localStorage.removeItem("sf2-themes.site-theme-family.v1"));
   await page.goto("preview/");
   const previewShell = await page.evaluate(readShell);
 

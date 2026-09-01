@@ -1,5 +1,13 @@
 ---
 import { sitePath } from "../lib/site-path.mjs";
+import { themeFamilies } from "../data/theme-data.mjs";
+
+type SiteThemeFamily = {
+  readonly id: string;
+  readonly name: string;
+  readonly dark: { readonly siteTokens: { readonly preview: readonly string[] } };
+};
+const siteThemeFamilies = themeFamilies as SiteThemeFamily[];
 
 const { currentPath } = Astro.props;
 const navigation = [
@@ -18,6 +26,23 @@ const normalizedCurrentPath = currentPath.endsWith("/")
 <header class="site-header">
   <div class="site-frame site-header__inner">
     <a class="site-brand" href={sitePath()}>SF2 THEMES</a>
+    <div class="site-header__utility">
+      <div aria-label="Site theme" class="site-theme" data-site-theme-control>
+        <div class="site-theme__selector">
+          <label for="site-theme-select">SITE THEME</label>
+          <select id="site-theme-select" data-site-theme-select>
+            {siteThemeFamilies.map((family) => <option value={family.id}>{family.name}</option>)}
+          </select>
+        </div>
+        <div class="site-theme__details">
+          <div aria-label="Active theme colors" class="site-theme__swatches" data-site-theme-swatches>
+            {siteThemeFamilies[0].dark.siteTokens.preview.map((color: string) => <span aria-hidden="true" data-site-theme-swatch style={`--site-theme-swatch: ${color}`}></span>)}
+          </div>
+          <span class="site-theme__mode" data-site-theme-mode>FOLLOWS SYSTEM · DARK</span>
+        </div>
+        <span aria-atomic="true" aria-live="polite" class="site-theme__status" data-site-theme-status role="status"></span>
+      </div>
+    </div>
     <nav class="primary-nav" aria-label="Primary">
       {
         navigation.map((item) => (
@@ -42,3 +67,32 @@ const normalizedCurrentPath = currentPath.endsWith("/")
     </nav>
   </div>
 </header>
+
+<script>
+  import { initializeSiteThemeControl } from "../scripts/site-theme-runtime.mjs";
+
+  initializeSiteThemeControl();
+</script>
+
+<style>
+  .site-header__utility { display: flex; min-inline-size: 0; }
+  .site-theme { display: grid; gap: var(--space-1); min-inline-size: 0; color: var(--color-foreground); }
+  .site-theme__selector { display: flex; align-items: center; gap: var(--space-2); min-inline-size: 0; }
+  .site-theme__selector label { flex: none; color: var(--color-muted); font-family: var(--font-mono); font-size: var(--text-overline); letter-spacing: .08em; white-space: nowrap; }
+  .site-theme__selector select { min-inline-size: 0; max-inline-size: 150px; border: var(--border-thin) solid var(--color-border); border-radius: var(--radius-control); background: var(--color-panel); color: var(--color-foreground); cursor: pointer; font: var(--text-overline)/1.5 var(--font-mono); padding: var(--space-1) var(--space-2); }
+  .site-theme__selector select:hover { border-color: var(--color-accent); }
+  .site-theme__details { display: flex; align-items: center; justify-content: end; gap: var(--space-2); min-inline-size: 0; }
+  .site-theme__swatches { display: flex; flex: none; gap: 2px; }
+  .site-theme__swatches span { display: block; inline-size: 12px; block-size: 8px; background: var(--site-theme-swatch); }
+  .site-theme__mode { min-inline-size: 0; color: var(--color-subtle); font-family: var(--font-mono); font-size: 8px; letter-spacing: .05em; white-space: nowrap; }
+  .site-theme__status { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-width: 720px) {
+    .site-header__utility { inline-size: 100%; }
+    .site-theme { inline-size: 100%; }
+    .site-theme__selector select { flex: 1; max-inline-size: none; }
+    .site-theme__details { justify-content: start; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .site-theme__selector select { transition: none; }
+  }
+</style>

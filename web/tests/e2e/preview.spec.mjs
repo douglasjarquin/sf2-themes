@@ -1,15 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { paletteVariants } from "../../src/data/theme-data.mjs";
+import { paletteVariants, themeFamilies } from "../../src/data/theme-data.mjs";
 
 const expectedIds = [];
-for (const family of [...new Set(paletteVariants.map((variant) => variant.character))]) {
-  for (const mode of ["dark", "light"]) {
-    const variant = paletteVariants.find((candidate) =>
-      candidate.character === family && candidate.tokens.meta.variant === mode,
-    );
-    if (variant) expectedIds.push(variant.id);
-  }
+for (const family of themeFamilies) {
+  expectedIds.push(family.dark.id, family.light.id);
 }
 
 test("preview route renders a useful palette surface for every canonical variant", async ({ page }) => {

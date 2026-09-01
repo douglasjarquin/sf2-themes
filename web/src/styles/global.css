@@ -32,7 +32,6 @@
   --text-overline: 9px;
   --border-strong: 2px;
   --shadow-card: 4px;
-  color-scheme: dark;
   font-synthesis: none;
 }
 
@@ -61,8 +60,8 @@ body::before {
 }
 
 ::selection {
-  background: var(--color-red);
-  color: var(--color-foreground);
+  background: var(--color-selection-background);
+  color: var(--color-selection-foreground);
 }
 
 a {

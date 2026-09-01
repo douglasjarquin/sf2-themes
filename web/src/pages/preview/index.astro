@@ -1,25 +1,18 @@
 ---
 import PalettePreview from "../../components/PalettePreview.astro";
 import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
-import { paletteVariants } from "../../data/theme-data.mjs";
+import { paletteVariants, themeFamilies } from "../../data/theme-data.mjs";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
-const familyMap = new Map<string, typeof paletteVariants>();
-for (const variant of paletteVariants) {
-  const family = variant.character;
-  const variants = familyMap.get(family) ?? [];
-  variants.push(variant);
-  familyMap.set(family, variants);
-}
-
-const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
-  id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-  name,
-  variants: [...variants].sort((left, right) => {
-    if (left.tokens.meta.variant === right.tokens.meta.variant) return 0;
-    return left.tokens.meta.variant === "dark" ? -1 : 1;
-  }),
-}));
+type PreviewVariant = (typeof paletteVariants)[number];
+type PreviewFamily = {
+  readonly id: string;
+  readonly name: string;
+  readonly stage: string;
+  readonly dark: PreviewVariant;
+  readonly light: PreviewVariant;
+};
+const previewFamilies = themeFamilies as PreviewFamily[];
 ---
 
 <SiteLayout
@@ -61,12 +54,12 @@ const previewFamilies = [...familyMap.entries()].map(([name, variants]) => ({
               <div>
                 <p class="preview-family__index">{String(familyIndex + 1).padStart(2, "0")} / FAMILY</p>
                 <h3 id={`family-${family.id}`}>{family.name}</h3>
-                <p>{family.variants[0]?.tokens.meta.stage}</p>
+                <p>{family.stage}</p>
               </div>
-              <code>{family.variants.length} MODES</code>
+              <code>2 MODES</code>
             </header>
             <div class="preview-mode-list">
-              {family.variants.map((variant) => <PalettePreview variant={variant} />)}
+              {[family.dark, family.light].map((variant) => <PalettePreview variant={variant} />)}
             </div>
           </section>
         ))}

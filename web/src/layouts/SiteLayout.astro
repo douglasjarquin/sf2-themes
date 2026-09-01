@@ -1,7 +1,8 @@
 ---
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import { characterVariants, themeTokens } from "../data/theme-data.mjs";
+import { buildSiteThemeCss, siteThemeDeclarations } from "../data/site-theme.mjs";
+import { themeFamilies } from "../data/theme-data.mjs";
 import {
   CABINET_IMAGE_PATH,
   PRODUCT_DESCRIPTION,
@@ -12,37 +13,44 @@ import {
 } from "../lib/seo.mjs";
 import "../styles/global.css";
 
+type SiteThemeFamily = {
+  readonly id: string;
+  readonly light: { readonly siteTokens: Record<string, string | readonly string[]> };
+};
+const siteThemeFamilies = themeFamilies as SiteThemeFamily[];
+
 const { description = PRODUCT_DESCRIPTION, noindex = false, title } = Astro.props;
 const pageTitle = `${title} | ${PRODUCT_NAME}`;
 const pageUrl = canonicalUrl(Astro.url.pathname);
 const shareImage = absoluteUrl(CABINET_IMAGE_PATH);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
-const main = themeTokens.main;
-const colorVariables = new Map([
-  ["--color-background", main.ui.background],
-  ["--color-foreground", main.ui.foreground],
-  ["--color-accent", main.ui.accent],
-  ["--color-red", main.semantic.red],
-  ["--color-cyan", main.semantic.cyan],
-  ["--color-surface-dim", main.ui.surface_dim],
-  ["--color-surface-0", main.ui.surface0],
-  ["--color-surface-1", main.ui.surface1],
-  ["--color-panel", main.ui.panel_bg],
-]);
-
-for (const variant of characterVariants) {
-  for (const [role, value] of Object.entries(variant.colors)) {
-    colorVariables.set(`--character-${variant.id}-${role}`, value);
-  }
-}
-
-const customProperties = [...colorVariables]
-  .map(([property, value]) => `${property}: ${value}`)
-  .join("; ");
+const mainFamily = siteThemeFamilies.find(({ id }: SiteThemeFamily) => id === "main");
+if (mainFamily === undefined) throw new TypeError("site theme Main family is required");
+const themeCss = buildSiteThemeCss(siteThemeFamilies);
+const mainLightCss = siteThemeDeclarations(mainFamily.light.siteTokens);
+const siteThemeStyles = `${themeCss}
+html[data-site-color-scheme="dark"] { color-scheme: dark; }
+html[data-site-color-scheme="light"] { color-scheme: light; }
+@media (prefers-color-scheme: light) {
+  html[data-site-theme-family="main"][data-site-theme-id="main"] { ${mainLightCss}; color-scheme: light; }
+}`;
+const validFamilies = JSON.stringify(siteThemeFamilies.map(({ id }: SiteThemeFamily) => id));
+const siteThemeBootstrap = `(() => {
+  const root = document.documentElement;
+  const validFamilies = ${validFamilies};
+  let storedFamily = null;
+  try { storedFamily = window.localStorage.getItem("sf2-themes.site-theme-family.v1"); } catch {}
+  const family = validFamilies.includes(storedFamily) ? storedFamily : "main";
+  let scheme = "dark";
+  try { scheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; } catch {}
+  root.dataset.siteThemeFamily = family;
+  root.dataset.siteThemeId = scheme === "light" ? family + "-light" : family;
+  root.dataset.siteColorScheme = scheme;
+})();`;
 ---
 
 <!doctype html>
-<html lang="en" style={customProperties}>
+<html lang="en" data-site-theme-family="main" data-site-theme-id="main" data-site-color-scheme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
@@ -66,6 +74,8 @@ const customProperties = [...colorVariables]
       rel="stylesheet"
     />
     <title>{pageTitle}</title>
+    <style is:inline set:html={siteThemeStyles}></style>
+    <script is:inline set:html={siteThemeBootstrap}></script>
     {noindex ? null : <script is:inline type="application/ld+json" set:html={jsonLd} />}
   </head>
   <body>

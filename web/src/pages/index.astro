@@ -1,23 +1,8 @@
 ---
 import FeaturedPalettePreview from "../components/FeaturedPalettePreview.astro";
-import { themeTokens } from "../data/theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { PRODUCT_DESCRIPTION } from "../lib/seo.mjs";
 import { sitePath } from "../lib/site-path.mjs";
-
-const main = themeTokens.main;
-const homeStyle = [
-  ["--home-background", main.ui.background],
-  ["--home-foreground", main.ui.foreground],
-  ["--home-panel", main.ui.panel_bg],
-  ["--home-surface", main.ui.surface1],
-  ["--home-accent", main.ui.accent],
-  ["--home-red", main.semantic.red],
-  ["--home-gold", main.semantic.yellow],
-  ["--home-cyan", main.semantic.cyan],
-]
-  .map(([property, value]) => `${property}: ${value}`)
-  .join("; ");
 
 ---
 
@@ -25,7 +10,7 @@ const homeStyle = [
   title="Street Fighter II terminal themes"
   description={PRODUCT_DESCRIPTION}
 >
-  <div class="home-page" style={homeStyle}>
+  <div class="home-page">
     <section class="home-hero site-frame" aria-labelledby="home-heading">
       <div class="home-hero__copy">
         <p class="home-kicker">ROUND ONE - TERMINAL EDITION</p>
@@ -76,27 +61,27 @@ const homeStyle = [
 </SiteLayout>
 
 <style>
-  .home-page { display: flex; flex-direction: column; padding-block-end: var(--space-20); background-image: radial-gradient(color-mix(in srgb, var(--home-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
+  .home-page { display: flex; flex-direction: column; padding-block-end: var(--space-20); background-color: var(--color-background); background-image: radial-gradient(color-mix(in srgb, var(--color-foreground) 7%, transparent) 1px, transparent 1px); background-size: 22px 22px; }
   .home-hero { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; gap: var(--space-8); padding-block: var(--space-15) calc(var(--space-15) * 2); }
   .home-hero__copy { display: grid; gap: var(--space-6); max-inline-size: 62ch; }
-  .home-kicker { margin: 0; color: var(--home-cyan); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.9; }
+  .home-kicker { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.9; }
   h1, h2 { margin: 0; font-family: var(--font-display); line-height: 1.5; }
-  .home-hero h1 { color: var(--home-foreground); font-family: var(--font-body); font-size: var(--text-hero); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
-  h2 { color: var(--home-foreground); font-size: var(--text-section); }
-  .home-lede { margin: 0; color: color-mix(in srgb, var(--home-foreground) 70%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
+  .home-hero h1 { color: var(--color-foreground); font-family: var(--font-body); font-size: var(--text-hero); font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+  h2 { color: var(--color-foreground); font-size: var(--text-section); }
+  .home-lede { margin: 0; color: color-mix(in srgb, var(--color-foreground) 70%, transparent); font-size: var(--text-body-lg); line-height: 1.7; }
   .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); }
-  .home-action { border: var(--border-strong) solid var(--home-foreground); box-shadow: var(--shadow-card) var(--shadow-card) 0 var(--home-background); color: var(--home-foreground); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.5; padding: var(--space-3) var(--space-4); }
-  .home-action:hover { background: var(--home-foreground); color: var(--home-background); transform: translate(2px, 2px); }
-  .home-action--primary { border-color: var(--home-red); background: var(--home-red); color: var(--home-foreground); }
-  .home-menu { order: 3; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: var(--space-15); padding-block: var(--space-10); border-block-start: 2px solid color-mix(in srgb, var(--home-foreground) 8%, transparent); }
+  .home-action { border: var(--border-strong) solid var(--color-foreground); box-shadow: var(--shadow-card) var(--shadow-card) 0 var(--color-background); color: var(--color-foreground); font-family: var(--font-display); font-size: var(--text-overline); line-height: 1.5; padding: var(--space-3) var(--space-4); }
+  .home-action:hover { background: var(--color-foreground); color: var(--color-background); transform: translate(2px, 2px); }
+  .home-action--primary { border-color: var(--color-red); background: var(--color-red); color: var(--color-foreground); }
+  .home-menu { order: 3; display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, .8fr); gap: var(--space-8); margin-block-start: var(--space-15); padding-block: var(--space-10); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
   .home-menu__links { display: grid; gap: var(--space-3); align-content: center; }
-  .home-menu__links a { border-inline-start: var(--border-strong) solid var(--home-red); color: var(--home-foreground); font-family: var(--font-display); font-size: var(--text-label); line-height: 1.6; padding: var(--space-3) var(--space-4); }
-  .home-menu__links a:hover { border-color: var(--home-gold); background: var(--home-panel); color: var(--home-gold); transform: translateX(3px); }
-  .home-values { order: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-10); padding-block: var(--space-15); border-block-start: 2px solid color-mix(in srgb, var(--home-foreground) 8%, transparent); }
+  .home-menu__links a { border-inline-start: var(--border-strong) solid var(--color-red); color: var(--color-foreground); font-family: var(--font-display); font-size: var(--text-label); line-height: 1.6; padding: var(--space-3) var(--space-4); }
+  .home-menu__links a:hover { border-color: var(--color-gold); background: var(--color-panel); color: var(--color-gold); transform: translateX(3px); }
+  .home-values { order: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-10); padding-block: var(--space-15); border-block-start: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
   .home-values article { padding: 0; }
-  .home-values span { color: var(--home-red); font-family: var(--font-display); font-size: var(--text-section); }
+  .home-values span { color: var(--color-red); font-family: var(--font-display); font-size: var(--text-section); }
   .home-values h2 { margin-block: var(--space-4) var(--space-3); font-size: var(--text-caption); }
-  .home-values p { margin: 0; color: color-mix(in srgb, var(--home-foreground) 64%, transparent); font-size: var(--text-body); line-height: 1.65; }
+  .home-values p { margin: 0; color: color-mix(in srgb, var(--color-foreground) 64%, transparent); font-size: var(--text-body); line-height: 1.65; }
   @media (max-width: 760px) { .home-hero { grid-template-columns: 1fr; gap: var(--space-20); padding-block: var(--space-15) var(--space-20); } .home-hero__copy { gap: var(--space-5); } .home-hero .home-kicker { max-inline-size: 28ch; } .home-menu { grid-template-columns: 1fr; } .home-values { grid-template-columns: 1fr; } }
   @media (prefers-reduced-motion: reduce) { .home-action, .home-menu__links a { transition: none; } }
 </style>

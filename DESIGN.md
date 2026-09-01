@@ -76,6 +76,17 @@ The primary mobile breakpoint is 620px and the shared navigation breakpoint is 7
 - **Motion**: micro transitions on links and controls.
 - **Layout**: full-height grid shell.
 
+### Site Theme Switcher
+
+- **Structure**: the header utility area contains a visible `SITE THEME` label, a native family select, a five-color active-variant strip, and a system-mode status line.
+- **State model**: the persisted value is one of the 18 family IDs, such as `main`, `ken`, or `chun-li`.
+- **Concrete variant**: the active concrete ID is derived from the family and the current `prefers-color-scheme` value, so `ken` resolves to `ken` in dark mode and `ken-light` in light mode.
+- **States**: the select exposes the current family through native selected-option semantics, while the root exposes family, concrete ID, and active color scheme data attributes.
+- **Accessibility**: the control uses a visible label, native keyboard behavior, visible focus, a polite live status, and no color-only family choices.
+- **Mobile layout**: at and below the shared 720px header breakpoint, the selector becomes a full-width row between the brand and primary navigation and must remain usable at 375px without horizontal overflow.
+- **Motion**: family changes update the root and preview strip immediately with the existing 120ms micro-feedback language; the document never animates through intermediate palettes, and reduced-motion users receive no non-essential transition.
+- **Boundaries**: site chrome, homepage content, generic panels, and controls use the active site projection, while `PalettePreview`, catalog swatches, featured previews, screenshots, and the arcade cabinet retain their own canonical palette tokens.
+
 ### Page Breadcrumb
 
 - **Structure**: a compact current-route path with a home link, current-page label, and optional route detail.
@@ -173,6 +184,7 @@ Only transform, color, background, and border presentation transitions are used 
 Reduced-motion users receive no non-essential transform animation.
 Copy actions announce success or failure in a live status region.
 The arcade cabinet advances meaningful text fight frames at a 480ms cadence after a credit is inserted.
+The site theme selector follows the operating system and does not expose a manual light/dark override.
 
 ## 7. Depth & Surface
 

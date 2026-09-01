@@ -11,6 +11,8 @@ const uvCommand = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.g
 
 test("install route gives the real setup then apply commands", async ({ page }) => {
   // Given: a visitor needs to install the CLI from the project site.
+  await page.emulateMedia({ colorScheme: "dark" });
+  await page.addInitScript(() => localStorage.removeItem("sf2-themes.site-theme-family.v1"));
   await page.goto("./install/");
 
   // When: they read the installation route.

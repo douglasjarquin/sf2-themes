@@ -71,6 +71,10 @@ Theme changes recolor the current snapshot, while fighter selections apply to th
 The game is a static browser experience with a deterministic fixed-step core, authored terminal glyph art, and a visible static poster fallback when the renderer is unavailable.
 The screenshot archive uses the same `/game/` capture surface and contains original project-authored terminal captures rather than raster or commercial game assets.
 
+The website defaults to the `main` theme family.
+Your chosen website family persists locally in the browser, while its dark or light concrete variant follows the operating system color scheme.
+The website theme is separate from the arcade game palette, so changing the site chrome does not change a selected game or preview palette.
+
 ## Setup, then apply
 
 `setup` is one-time application integration.
