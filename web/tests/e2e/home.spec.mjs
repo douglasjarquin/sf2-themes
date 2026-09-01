@@ -59,8 +59,6 @@ test("malformed site theme data preserves the static home preview", async ({ pag
   });
   await page.goto("./");
   await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  await page.locator("[data-site-picker-toggle]").click();
-  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
   expect(runtimeErrors).toEqual([]);
 });
 
@@ -79,5 +77,7 @@ test("structurally malformed site theme data preserves the static home preview",
   });
   await page.goto("./");
   await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
+  await page.locator("[data-site-picker-toggle]").click();
+  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
   expect(runtimeErrors).toEqual([]);
 });

@@ -10,9 +10,11 @@
   --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-9: 36px;
   --space-10: 40px;
   --space-12: 48px;
   --space-15: 60px;
+  --space-16: 64px;
   --space-20: 80px;
   --duration-micro: 120ms;
   --border-thin: 1px;
@@ -30,6 +32,9 @@
   --text-caption: 14px;
   --text-label: 13px;
   --text-overline: 15px;
+  --text-terminal: 19px;
+  --text-terminal-mobile: 14px;
+  --text-stat-mobile: clamp(64px, 20vw, 96px);
   --border-strong: 2px;
   --shadow-card: 0px;
   --color-background: var(--bg);
