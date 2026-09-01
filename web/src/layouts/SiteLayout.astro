@@ -112,7 +112,7 @@ const siteThemePayload = JSON.stringify(
           && Array.isArray(palette.ansi)
           && palette.ansi.length === 16
           && palette.ansi.every((value) => typeof value === "string");
-        if (!Array.isArray(themes) || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
+        if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
         const theme = themes.find((item) => item.id === saved.id) || themes[0];
         const mode = saved.mode === "light" ? "light" : "dark";
         const palette = theme?.[mode];

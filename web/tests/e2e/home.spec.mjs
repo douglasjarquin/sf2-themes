@@ -81,3 +81,23 @@ test("structurally malformed site theme data preserves the static home preview",
   await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
   expect(runtimeErrors).toEqual([]);
 });
+
+test("empty site theme data preserves the static home preview", async ({ page }) => {
+  const runtimeErrors = [];
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+  await page.route("**/sf2-themes/", async (route) => {
+    const response = await route.fetch();
+    const body = await response.text();
+    const corrupted = body.replace(
+      /(<script[^>]*id=\"site-theme-data\"[^>]*>)[\s\S]*?(<\/script>)/,
+      "$1[]$2",
+    );
+    expect(corrupted).not.toBe(body);
+    await route.fulfill({ response, body: corrupted });
+  });
+  await page.goto("./");
+  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
+  await page.locator("[data-site-picker-toggle]").click();
+  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
+  expect(runtimeErrors).toEqual([]);
+});
