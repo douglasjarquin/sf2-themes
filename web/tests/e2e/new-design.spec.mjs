@@ -64,6 +64,9 @@ test("roster and detail", async ({ page }) => {
   await expect.poll(() => page.evaluate(() => window.__copied)).toContain("apply codex --theme ryu-light");
   await expect(page.locator("[data-adjacent-navigation]")).toBeVisible();
   await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
+  await page.setViewportSize({ width: 375, height: 844 });
+  await expect.poll(() => page.locator(".detail-swatches").evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length)).toBe(1);
+  await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
   await page.screenshot({ path: "artifacts/ulw/roster-detail-green.png", fullPage: true });
 });
 
