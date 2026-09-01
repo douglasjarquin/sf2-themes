@@ -7,6 +7,7 @@ ci:
 commands:
   test: |
     set -e
+    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:$PATH"
     mise run test
     npm --prefix web ci
     npm --prefix web run test
@@ -14,6 +15,7 @@ commands:
     npm --prefix web run screenshots:verify
   lint: |
     set -e
+    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:$PATH"
     uv run ruff check src tests scripts
     shellcheck tests/test_cli.sh
     npm --prefix web run check
