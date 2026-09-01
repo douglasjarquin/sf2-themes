@@ -70,7 +70,7 @@ Catalog ids stay short (\`ryu\`, \`ken-light\`). Installed identities use \`sf2-
 ## Pages
 
 - [Home](${liveUrl})
-- [Adapters](${canonicalUrl(`${SITE_BASE}themes/`)})
+- [Themes](${canonicalUrl(`${SITE_BASE}themes/`)})
 - [Palette catalog](${canonicalUrl(`${SITE_BASE}palette/`)})
 - [Palette preview](${canonicalUrl(`${SITE_BASE}preview/`)})
 - [Install](${canonicalUrl(`${SITE_BASE}install/`)})
