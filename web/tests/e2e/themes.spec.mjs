@@ -80,6 +80,14 @@ test("theme detail labels the terminal preview with the selected catalog mode", 
   await expect(page.locator("[data-terminal-id]")).toHaveText("ryu-light");
 });
 
+test("theme detail keeps light-mode code values as string literals", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+  await page.locator('[data-detail-mode="light"]').click();
+
+  await expect(page.locator("[data-code-accent]")).toHaveText(`"${ryuLight.ui.accent}"`);
+  await expect(page.locator("[data-code-background]")).toHaveText(`"${ryuLight.ui.background}"`);
+});
+
 test("roster cards retain canonical dark tokens without JavaScript", async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();

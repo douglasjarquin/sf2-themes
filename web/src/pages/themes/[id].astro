@@ -148,9 +148,13 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         item.querySelector(".detail-swatch__color").style.background = color;
         item.querySelector("[data-swatch-hex]").textContent = color;
       }
-      for (const selector of ["[data-terminal-background]", "[data-terminal-foreground]", "[data-terminal-accent]", "[data-code-accent]", "[data-code-background]"]) {
+      for (const selector of ["[data-terminal-background]", "[data-terminal-foreground]", "[data-terminal-accent]"]) {
         const value = page.querySelector(selector);
         if (value) value.textContent = `${value.dataset[`${mode}Value`]}`;
+      }
+      for (const selector of ["[data-code-accent]", "[data-code-background]"]) {
+        const value = page.querySelector(selector);
+        if (value) value.textContent = `"${value.dataset[`${mode}Value`]}"`;
       }
       page.querySelector("[data-code-mode]").textContent = `"${mode}"`;
       updateApplyLabel();
