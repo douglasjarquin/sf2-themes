@@ -33,10 +33,11 @@ const initialTheme = themeFamilies[0];
     if (!(preview instanceof HTMLElement) || !data) return;
     let themes;
     try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+    if (!Array.isArray(themes)) return;
     const update = () => {
       const id = document.documentElement.dataset.siteTheme || "main";
       const mode = document.documentElement.dataset.siteMode === "light" ? "light" : "dark";
-      const theme = themes.find((item) => item.id === id && item[mode]) || themes.find((item) => item.id === "main" && item[mode]);
+      const theme = themes.find((item) => item?.id === id && item?.[mode]) || themes.find((item) => item?.id === "main" && item?.[mode]);
       if (!theme) return;
       preview.querySelectorAll("[data-home-theme-id]").forEach((node) => { node.textContent = theme.id; });
       const label = preview.querySelector("[data-home-theme-label]");
