@@ -52,6 +52,8 @@ test -f "$test_dir/installed-nvim/colors/sf2-main.lua"
 test -f "$test_dir/installed-nvim/colors/sf2-ryu-light.lua"
 test -f "$test_dir/installed-nvim/plugin/sf2-theme.lua"
 grep -q 'colorscheme sf2-ryu-light' "$test_dir/installed-nvim/sf2-theme/current.lua"
+grep -q 'colorscheme sf2-ryu' "$test_dir/installed-nvim/sf2-theme/current.lua"
+grep -q 'TERM_THEME' "$test_dir/installed-nvim/sf2-theme/current.lua"
 printf '%s\n' 'Copy-only installed Neovim: PASS'
 "$repo_dir/sf2-themes" setup codex --config-dir "$test_dir/installed-codex"
 "$repo_dir/sf2-themes" apply codex --theme ryu-light --config-dir "$test_dir/installed-codex"
@@ -82,6 +84,8 @@ grep -q '\[theme.custom.dark\]' "$test_dir/installed-herdr/config.toml"
 grep -q '\[theme.custom.light\]' "$test_dir/installed-herdr/config.toml"
 test -f "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 grep -q 'sf2-themes: sf2-main' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
+grep -q 'get_appearance' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
+grep -q 'return "sf2-main-light"' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 printf '%s\n' 'Copy-only installed CLI: PASS'
 
 mkdir -p "$test_dir/wezterm-existing"

@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
+from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors, selectable_id
@@ -154,9 +155,20 @@ def render_scheme(theme: Theme) -> str:
     return "\n".join(lines)
 
 
-def render_pointer(theme: Theme) -> str:
-    """Render the managed Lua pointer file."""
-    return f'-- sf2-themes: {theme.metadata.selectable_id}\nreturn "{theme.metadata.selectable_id}"\n'
+def render_pointer(dark: Theme, light: Theme) -> str:
+    """Render the managed Lua pointer that follows host appearance."""
+    return "\n".join(
+        (
+            f"-- sf2-themes: {dark.metadata.selectable_id}",
+            'local wezterm = require("wezterm")',
+            'local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"',
+            'if appearance:find("Dark") then',
+            f'  return "{dark.metadata.selectable_id}"',
+            "end",
+            f'return "{light.metadata.selectable_id}"',
+            "",
+        )
+    )
 
 
 def write_schemes(
@@ -186,14 +198,16 @@ def write_schemes(
 
 def write_pointer(
     theme: Theme,
+    themes: Sequence[Theme],
     *,
     dry_run: bool,
     follow_symlinks: bool,
 ) -> WriteResult:
-    """Write the managed current-scheme pointer."""
+    """Write the managed current-scheme pointer for a dark/light pair."""
+    dark, light = theme_pair(theme, themes)
     return write_file(
         current_pointer_path(),
-        render_pointer(theme),
+        render_pointer(dark, light),
         dry_run=dry_run,
         follow_symlinks=follow_symlinks,
     )
@@ -209,7 +223,7 @@ def apply_wezterm(
 ) -> list[WriteResult]:
     """Write schemes and the current pointer. Does not edit user Lua."""
     results = write_schemes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    results.append(write_pointer(theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
+    results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
     return results
 
 
@@ -232,12 +246,14 @@ def setup_wezterm(
     )
     pointer = current_pointer_path()
     if replace_pointer or not pointer.is_file():
-        results.append(write_pointer(theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
+        results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
     else:
-        existing_id = read_current_id()
-        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == existing_id), None)
-        if legacy_theme is not None:
-            results.append(write_pointer(legacy_theme, dry_run=dry_run, follow_symlinks=follow_symlinks))
+        try:
+            current = installed_theme(read_current_id(), themes)
+        except ThemeError:
+            current = None
+        if current is not None:
+            results.append(write_pointer(current, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
     lua_path = wezterm_lua_path(config_dir)
     existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
     lua = setup_lua(existing, current_pointer_path(), adopt=adopt)

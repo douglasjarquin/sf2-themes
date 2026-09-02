@@ -103,14 +103,16 @@ Starship apply also refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
 Lazygit setup and apply install all 36 complete theme fragments under its `themes/` directory and select the requested theme in `config.yml`.
 Use `--adopt` when an existing `gui.theme` section is not managed by sf2-themes.
 
+If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
+If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
+
+WezTerm apply writes every catalog scheme and a pointer that returns the selected character's dark or light sibling from `wezterm.gui.get_appearance()`. Applying `ryu` or `ryu-light` selects the same pair.
+
 Neovim setup installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
-The loader applies the selected theme automatically when Neovim starts.
+The pointer selects the matching dark or light colorscheme from `TERM_THEME` (set by the WezTerm integration) or `'background'`. Applying `ryu` or `ryu-light` selects the same pair.
 
 Codex setup writes every catalog theme as `sf2-<catalog-id>.tmTheme` under `$CODEX_HOME/themes/` and selects the active prefixed theme with `[tui].theme` in `$CODEX_HOME/config.toml`.
 Restart Codex after applying a theme, or reselect it with `/theme` in an existing session.
-
-If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
-If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
 
 Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
 
@@ -144,9 +146,9 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
-- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua`.
+- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
 - Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` plus dark and light custom palettes for the selected character.
-- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active theme at `~/.config/nvim/sf2-theme/current.lua`.
+- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
 - Starship updates the marked palette in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.

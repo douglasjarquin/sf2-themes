@@ -29,6 +29,8 @@ def test_apply_wezterm_defaults_to_main(tmp_path: Path, monkeypatch, capsys) -> 
     pointer = (tmp_path / "xdg" / "sf2-theme" / "wezterm-current.lua").read_text(encoding="utf-8")
     assert "sf2-themes: sf2-main" in pointer
     assert 'return "sf2-main"' in pointer
+    assert 'return "sf2-main-light"' in pointer
+    assert "get_appearance" in pointer
     captured = capsys.readouterr().out
     assert "sf2-main.toml" in captured
 
@@ -57,6 +59,17 @@ def test_apply_herdr_light_selection_current_is_family_id(tmp_path: Path, capsys
     assert "# sf2-themes: sf2-chun-li" in text
     assert dispatch(["current", "herdr", "--config-dir", str(herdr)]) == 0
     assert capsys.readouterr().out.strip().endswith("sf2-chun-li")
+
+
+def test_apply_wezterm_light_selection_writes_appearance_pair(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    assert dispatch(["apply", "wezterm", "--theme", "ryu-light", "--config-dir", str(tmp_path / "wezterm")]) == 0
+    pointer = (tmp_path / "xdg" / "sf2-theme" / "wezterm-current.lua").read_text(encoding="utf-8")
+    assert "-- sf2-themes: sf2-ryu" in pointer
+    assert 'return "sf2-ryu"' in pointer
+    assert 'return "sf2-ryu-light"' in pointer
+    assert dispatch(["current", "wezterm"]) == 0
+    assert capsys.readouterr().out.strip().endswith("sf2-ryu")
 
 
 def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:

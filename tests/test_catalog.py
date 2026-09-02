@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from sf2_theme.catalog import get_theme, theme_pair
+from sf2_theme.catalog import get_theme, installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import HexColor, IntroducedIn, Theme, ThemeKind, ThemeMetadata, ThemeVariant
 from sf2_theme.validation import Severity, validate_catalog
@@ -195,3 +195,10 @@ def test_theme_pair_resolves_dark_and_light_from_either_selection() -> None:
     main_pair = theme_pair(get_theme("main-light", catalog), catalog)
     assert main_pair[0].metadata.id == "main"
     assert main_pair[1].metadata.id == "main-light"
+
+
+def test_installed_theme_accepts_prefixed_and_short_ids() -> None:
+    catalog = _catalog_contract()
+    assert installed_theme("sf2-ken", catalog).metadata.id == "ken"
+    assert installed_theme("ken", catalog).metadata.id == "ken"
+    assert installed_theme("boxer", catalog).metadata.id == "balrog"

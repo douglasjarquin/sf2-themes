@@ -26,6 +26,7 @@ The committed root executable mirrors this package by embedding the standalone g
 - Route normal runtime consumers through `load_catalog()`; reserve `parse_catalog()` for callers that must inspect or report invalid catalog data.
 - Pass an already loaded catalog into repeated lookups and adapters so one operation uses one deterministic snapshot.
 - Resolve a selected catalog id to its dark and light siblings through `theme_pair()` instead of reconstructing `-light` names in adapters.
+- Resolve a managed `sf2-` pointer identity through `installed_theme()` so setup can refresh an existing pair without `--theme`.
 - Keep catalog and CLI selection IDs short, such as `ryu-light`.
 - Derive installed names through `ThemeMetadata.selectable_id` or `selectable_id()` so adapter-facing identities are consistently `sf2-<catalog-id>`.
 - Preserve the intentional spelling split: public distribution and command `sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.

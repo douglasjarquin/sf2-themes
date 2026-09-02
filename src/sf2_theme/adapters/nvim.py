@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
+from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors
@@ -157,8 +158,22 @@ def render_scheme(theme: Theme) -> str:
     return "\n".join(lines)
 
 
-def render_pointer(theme: Theme) -> str:
-    return f'-- sf2-themes: {theme.metadata.selectable_id}\nvim.cmd("colorscheme {scheme_name(theme)}")\n'
+def render_pointer(dark: Theme, light: Theme) -> str:
+    """Render the managed pointer that follows TERM_THEME or 'background'."""
+    dark_id = dark.metadata.selectable_id
+    light_id = light.metadata.selectable_id
+    return "\n".join(
+        (
+            f"-- sf2-themes: {dark_id}",
+            'local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")',
+            "if light_mode then",
+            f'  vim.cmd("colorscheme {light_id}")',
+            "else",
+            f'  vim.cmd("colorscheme {dark_id}")',
+            "end",
+            "",
+        )
+    )
 
 
 def render_loader() -> str:
@@ -197,14 +212,16 @@ def write_schemes(
 
 def write_pointer(
     theme: Theme,
+    themes: Sequence[Theme],
     *,
     config_dir: Path | None,
     dry_run: bool,
     follow_symlinks: bool,
 ) -> WriteResult:
+    dark, light = theme_pair(theme, themes)
     return write_file(
         current_pointer_path(config_dir),
-        render_pointer(theme),
+        render_pointer(dark, light),
         dry_run=dry_run,
         follow_symlinks=follow_symlinks,
     )
@@ -227,6 +244,7 @@ def apply_nvim(
     results.append(
         write_pointer(
             theme,
+            themes,
             config_dir=config_dir,
             dry_run=dry_run,
             follow_symlinks=follow_symlinks,
@@ -255,18 +273,22 @@ def setup_nvim(
         results.append(
             write_pointer(
                 theme,
+                themes,
                 config_dir=config_dir,
                 dry_run=dry_run,
                 follow_symlinks=follow_symlinks,
             )
         )
     else:
-        existing_id = read_current_id(config_dir)
-        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == existing_id), None)
-        if legacy_theme is not None:
+        try:
+            current = installed_theme(read_current_id(config_dir), themes)
+        except ThemeError:
+            current = None
+        if current is not None:
             results.append(
                 write_pointer(
-                    legacy_theme,
+                    current,
+                    themes,
                     config_dir=config_dir,
                     dry_run=dry_run,
                     follow_symlinks=follow_symlinks,
