@@ -8,7 +8,6 @@ export const PRODUCT_DESCRIPTION =
   "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, and Starship.";
 export const REPOSITORY_URL = "https://github.com/douglasjarquin/sf2-themes";
 export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS, Windows";
-export const CABINET_IMAGE_PATH = `${SITE_BASE}screenshots/game/ryu.png`;
 
 export const INDEXABLE_PATHS = Object.freeze([
   SITE_BASE,

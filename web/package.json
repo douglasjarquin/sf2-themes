@@ -16,9 +16,7 @@
     "themes:check": "python3 ../scripts/generate-web-theme-data.py --check",
     "test:game": "node --test test/game-core.test.mjs test/fighter-registry.test.mjs",
     "test:e2e": "playwright test",
-    "test": "aubr test:unit && aubr test:e2e",
-    "screenshots:game": "aubr build && node ../scripts/capture-game-screenshots.mjs",
-    "screenshots:verify": "node ../scripts/verify-game-screenshots.mjs"
+    "test": "aubr test:unit && aubr test:e2e"
   },
   "dependencies": {
     "smol-toml": "1.8.0",

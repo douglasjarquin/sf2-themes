@@ -108,14 +108,10 @@ for (const viewport of [
   });
 }
 
-test("old screenshots page route is absent while gameplay assets remain available", async ({ request }) => {
-  // Given: the production preview server exposes the renamed route and generated asset namespace.
-  // When: a client requests the retired page and one canonical gameplay image.
+test("screenshots page route and gameplay screenshot assets are absent", async ({ request }) => {
   const oldRoute = await request.get("screenshots/");
   const image = await request.get("screenshots/game/ryu.png");
 
-  // Then: the page is gone but the generated image remains available.
   expect(oldRoute.status()).toBe(404);
-  expect(image.status()).toBe(200);
-  expect(image.headers()["content-type"]).toBe("image/png");
+  expect(image.status()).toBe(404);
 });

@@ -129,15 +129,6 @@ a:hover {
   min-inline-size: 0;
 }
 
-html[data-capture-mode="cabinet"] .site-header,
-html[data-capture-mode="cabinet"] .site-footer {
-  display: none;
-}
-
-html[data-capture-mode="cabinet"] body {
-  overflow: hidden;
-}
-
 .site-frame {
   inline-size: min(100%, calc(var(--content-width) + (var(--space-8) * 2)));
   margin-inline: auto;

@@ -177,10 +177,3 @@ export type GameSnapshot = {
   readonly projectiles: readonly ProjectileSnapshot[];
   readonly result: RoundResult;
 };
-
-export type CaptureState = {
-  readonly tick: number;
-  readonly phase: GamePhase;
-  readonly complete: boolean;
-  readonly rngState: number;
-};

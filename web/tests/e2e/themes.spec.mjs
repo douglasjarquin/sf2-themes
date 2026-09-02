@@ -50,17 +50,7 @@ test("theme detail switches preview mode and copies its adapter command", async 
   await expect(page.locator("[data-detail-copy]")).toHaveText("COPIED ✓");
   await expect.poll(() => page.evaluate(() => window.__copiedCommand)).toContain("apply codex --theme ryu-light");
   await expect(page.locator("[data-adjacent-navigation]")).toBeVisible();
-  await expect(page.locator(".detail-screenshot img")).toHaveAttribute("src", /screenshots\/game\/ryu-light\.png$/);
-  await expect.poll(() => page.locator(".detail-screenshot img").evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
-});
-
-test("theme detail switches the screenshot with the selected catalog mode", async ({ page }) => {
-  await page.goto("./themes/ryu/");
-
-  await page.locator('[data-detail-mode="light"]').click();
-
-  await expect(page.locator(".detail-screenshot img")).toHaveAttribute("src", /screenshots\/game\/ryu-light\.png$/);
-  await expect.poll(() => page.locator(".detail-screenshot img").evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+  await expect(page.locator(".detail-screenshot")).toHaveCount(0);
 });
 
 test("theme detail recomputes the apply state when preview mode changes", async ({ page }) => {

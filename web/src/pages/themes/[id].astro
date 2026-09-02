@@ -49,11 +49,10 @@ const swatchLabels = [...labels, ...Array.from({ length: 16 }, (_, index) => `AN
 const familyIndex = themeFamilies.findIndex((item: ThemeFamily) => item.id === id);
 const previous = themeFamilies[(familyIndex - 1 + themeFamilies.length) % themeFamilies.length];
 const next = themeFamilies[(familyIndex + 1) % themeFamilies.length];
-const screenshot = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/screenshots/game/${id}.png`;
 const command = (adapter: string, mode: string) => `uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply ${adapter} --theme ${id}${mode === "light" ? "-light" : ""}`;
 ---
 
-<SiteLayout title={`${name} terminal theme`} description={`Palette, preview, install command, and screenshots for the ${name} Street Fighter II terminal theme.`}>
+<SiteLayout title={`${name} terminal theme`} description={`Palette, preview, and install command for the ${name} Street Fighter II terminal theme.`}>
   <div class="detail-page" data-theme-detail-preview data-preview-mode="dark" data-theme-id={id} style={detailPreviewStyle}>
     <header class="detail-hero site-frame">
       <p class="detail-breadcrumb"><a href={sitePath("themes")}>THE ROSTER</a> <span>/</span> {id.toUpperCase()}</p>
@@ -112,11 +111,6 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         </div>
       </section>
 
-      <section class="detail-screenshot" aria-labelledby="screenshot-heading">
-        <h2 id="screenshot-heading">SCREENSHOTS</h2>
-        <figure><img alt={`${name} arcade gameplay preview`} data-dark-src={screenshot} data-light-src={`${import.meta.env.BASE_URL.replace(/\/$/, "")}/screenshots/game/${id}-light.png`} height="720" src={screenshot} width="1280" /></figure>
-      </section>
-
       <nav class="detail-adjacent" data-adjacent-navigation aria-label="Adjacent themes">
         <a href={sitePath(`themes/${previous.id}`)}><span>←</span> {previous.name.toUpperCase()}</a>
         <a href={sitePath(`themes/${next.id}`)}>{next.name.toUpperCase()} <span>→</span></a>
@@ -135,7 +129,6 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
     const copyButton = page.querySelector("[data-detail-copy]");
     const status = page.querySelector("[data-detail-status]");
     const applyButton = page.querySelector("[data-detail-apply]");
-    const screenshotImage = page.querySelector(".detail-screenshot img");
     const command = (nextAdapter, nextMode) => `uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes apply ${nextAdapter} --theme ${id}${nextMode === "light" ? "-light" : ""}`;
     const update = () => {
       page.dataset.previewMode = mode;
@@ -158,8 +151,6 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
         if (value) value.textContent = `"${value.dataset[`${mode}Value`]}"`;
       }
       page.querySelector("[data-code-mode]").textContent = `"${mode}"`;
-      const screenshotSrc = screenshotImage?.dataset[`${mode}Src`];
-      if (screenshotSrc) screenshotImage.setAttribute("src", screenshotSrc);
       updateApplyLabel();
     };
     for (const button of page.querySelectorAll("[data-detail-mode]")) button.addEventListener("click", () => { mode = button.dataset.detailMode; update(); });
@@ -217,7 +208,6 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
   .terminal-accent, .syntax-accent { color: var(--detail-accent); }
   .terminal-error { color: var(--detail-a1); }.terminal-success { color: var(--detail-a2); }.terminal-warning { color: var(--detail-a3); }.terminal-info { color: var(--detail-a4); }.terminal-debug { color: var(--detail-a5); }.terminal-trace { color: var(--detail-a6); }
   .syntax-keyword { color: var(--detail-a5); }.syntax-property { color: var(--detail-a4); }.syntax-string { color: var(--detail-a2); }.syntax-value { color: var(--detail-a6); }
-  .detail-page[data-preview-mode="light"] [data-dark-only], .detail-page:not([data-preview-mode="light"]) [data-light-only] { display: none; }
   .detail-swatch { display: grid; grid-template-columns: 1fr; overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
   .detail-swatch__color { display: block; min-block-size: 74px; }
   .detail-swatch > div { padding: var(--space-3) var(--space-4); }
@@ -225,8 +215,6 @@ const command = (adapter: string, mode: string) => `uvx --from git+https://githu
   .detail-swatch code { display: block; margin-block-start: var(--space-2); color: var(--fg); font: 600 16px/1.4 var(--font-mono); }
   .detail-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--space-3); }
   .detail-content h2 { margin: 0 0 var(--space-5); font-size: 34px; }
-  .detail-screenshot figure { margin: 0; overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); background: var(--su); }
-  .detail-screenshot img { display: block; inline-size: 100%; block-size: auto; }
   .detail-adjacent { display: flex; justify-content: space-between; gap: var(--space-5); padding-block: var(--space-8); border-block-start: var(--border-thin) solid var(--ov); }
   .detail-adjacent a { color: var(--mu); font: 600 17px/1.4 var(--font-mono); letter-spacing: 0.08em; }
   .detail-adjacent a:hover { color: var(--ac); }

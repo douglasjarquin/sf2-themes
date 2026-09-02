@@ -5,7 +5,6 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
-  CABINET_IMAGE_PATH,
   INDEXABLE_PATHS,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
@@ -13,7 +12,6 @@ import {
   REPOSITORY_URL,
   SITE_BASE,
   SITE_ORIGIN,
-  absoluteUrl,
   canonicalUrl,
   llmsTxt,
   productJsonLd,
@@ -99,5 +97,4 @@ test("JSON-LD describes the visible site and software without ratings or offers"
   assert.equal(software.downloadUrl, REPOSITORY_URL);
   assert.equal(software.codeRepository, REPOSITORY_URL);
   assert.doesNotMatch(serialized, /aggregateRating|offers|"ratingValue"/);
-  assert.equal(absoluteUrl(CABINET_IMAGE_PATH), "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png");
 });

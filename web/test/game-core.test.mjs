@@ -30,7 +30,7 @@ function advanceUntil(core, phase, limit) {
   assert.fail(`phase ${phase} was not reached within ${limit} ticks`);
 }
 
-test("same seed and input frames produce equal snapshots and capture state", () => {
+test("same seed and input frames produce equal snapshots", () => {
   const first = createGameCore(makeCoreOptions({ seed: 77 }));
   const second = createGameCore(makeCoreOptions({ seed: 77 }));
   const frames = Array.from({ length: 2_000 }, (_, tick) => ({
@@ -41,7 +41,6 @@ test("same seed and input frames produce equal snapshots and capture state", () 
     second.step(frame);
   }
   assert.deepEqual(first.getSnapshot(), second.getSnapshot());
-  assert.deepEqual(first.getCaptureState(), second.getCaptureState());
 });
 
 test("fixed-step clock makes render chunking independent and caps catch-up", () => {

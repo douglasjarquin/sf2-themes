@@ -53,15 +53,10 @@ mise run setup -- wezterm
 mise run web:test
 mise run web:check
 mise run web:build
-mise run web:screenshots
-mise run web:screenshots:verify
 mise run web:dev
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
-`mise run web:screenshots` captures all 36 palette variants at 1280 × 720 and writes the verified archive to `web/public/screenshots/game/` with a strict manifest.
-`mise run web:screenshots:verify` validates the archive without regenerating it.
-The generated archive is available at `/sf2-themes/preview/` and is also used by `/sf2-themes/palette/`.
 
 ## Arcade game
 
@@ -69,7 +64,6 @@ The homepage includes a compact playable ASCII cabinet, and `/sf2-themes/game/` 
 Use Arrow keys or WASD to move, Z or J for a light attack, X or K for a heavy attack, C for a projectile, Shift to block, Escape to pause, and Enter to insert a coin.
 Theme changes recolor the current snapshot, while fighter selections apply to the next match.
 The game is a static browser experience with a deterministic fixed-step core, authored terminal glyph art, and a visible static poster fallback when the renderer is unavailable.
-The screenshot archive uses the same `/game/` capture surface and contains original project-authored terminal captures rather than raster or commercial game assets.
 
 ## Setup, then apply
 

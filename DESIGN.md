@@ -4,7 +4,7 @@
 
 - Supplied reference packet: `Downloads/sf2-new-design/{Home,Themes,Theme Detail,Install,SiteNav,Design System}.dc.html` and `themes.js` were the visual and interaction source of truth.
 - Existing project extraction: `web/src/styles/global.css`, `SiteLayout.astro`, `SiteHeader.astro`, and `theme-data.mjs` established the Astro shell, generated catalog contract, and existing accessibility baseline.
-- Skipped image generation: the user supplied precise HTML design references and the product's required visuals are live DOM, canonical palette swatches, and generated gameplay screenshots, so introducing new imagery would not be authoritative.
+- Skipped image generation: the user supplied precise HTML design references and the product's required visuals are live DOM and canonical palette swatches, so introducing new imagery would not be authoritative.
 
 ## 1. Atmosphere & Identity
 
@@ -93,10 +93,10 @@ All grid tracks use `minmax(0, 1fr)` or `minmax(min(20rem, 100%), 1fr)` so unbro
 
 ### Detail Palette and Mode Controls
 
-- Structure: theme heading, dark/light control cluster, apply-to-site action, adapter command chooser, terminal/code panels, palette grid, screenshot, adjacent navigation.
-- Variants: dark/light preview, selected site theme, adapter selection, screenshot available/unavailable.
-- States: default, active, copied, focus-visible, empty screenshot fallback.
-- Accessibility: buttons are labelled by mode/adapter, screenshot has descriptive alt text, adjacent links are keyboard reachable.
+- Structure: theme heading, dark/light control cluster, apply-to-site action, adapter command chooser, terminal/code panels, palette grid, adjacent navigation.
+- Variants: dark/light preview, selected site theme, adapter selection.
+- States: default, active, copied, focus-visible.
+- Accessibility: buttons are labelled by mode/adapter, and adjacent links are keyboard reachable.
 
 ### Existing Palette Preview
 
@@ -108,8 +108,8 @@ All grid tracks use `minmax(0, 1fr)` or `minmax(min(20rem, 100%), 1fr)` so unbro
 
 ### Existing Arcade Cabinet
 
-- Structure: generated terminal cabinet, fighter controls, deterministic game host, and screenshot assets.
-- Variants: idle, playing, result, reduced-motion, and capture mode.
+- Structure: generated terminal cabinet, fighter controls, and deterministic game host.
+- Variants: idle, playing, result, and reduced-motion.
 - States: selected fighter/theme, credit, pause, combat, result, and renderer failure fallback.
 - Accessibility: native controls, pressed selection state, live status, and preserved static poster.
 - Layout: game-specific geometry remains owned by `web/src/game/` and is not coupled to site-theme chrome.
