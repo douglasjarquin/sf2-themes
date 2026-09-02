@@ -177,11 +177,39 @@ def render_pointer(dark: Theme, light: Theme) -> str:
 
 
 def render_loader() -> str:
+    """TERM_THEME freezes at process start, so a host appearance change made
+    after launch never reaches an already-running Neovim; re-derive it from
+    the live host appearance instead of trusting the frozen env var."""
     return "\n".join(
         (
             'local current = vim.fn.stdpath("config") .. "/sf2-theme/current.lua"',
-            "if vim.fn.filereadable(current) == 1 then",
-            "  dofile(current)",
+            "local function sf2_apply_current()",
+            "  if vim.fn.filereadable(current) == 1 then",
+            "    dofile(current)",
+            "  end",
+            "end",
+            "sf2_apply_current()",
+            "",
+            'if vim.fn.has("mac") == 1 then',
+            "  local function sf2_sync_term_theme()",
+            '    vim.fn.system({ "defaults", "read", "-g", "AppleInterfaceStyle" })',
+            '    local want = vim.v.shell_error == 0 and "dark" or "light"',
+            "    if vim.env.TERM_THEME ~= want then",
+            "      vim.env.TERM_THEME = want",
+            "      sf2_apply_current()",
+            "    end",
+            "  end",
+            "  sf2_sync_term_theme()",
+            '  local group = vim.api.nvim_create_augroup("sf2-theme-appearance", { clear = true })',
+            '  vim.api.nvim_create_autocmd({ "FocusGained", "VimResume" }, {',
+            "    group = group,",
+            "    callback = sf2_sync_term_theme,",
+            "  })",
+            "  local uv = vim.uv or vim.loop",
+            "  local timer = uv.new_timer()",
+            "  if timer then",
+            "    timer:start(15000, 15000, vim.schedule_wrap(sf2_sync_term_theme))",
+            "  end",
             "end",
             "",
         )
