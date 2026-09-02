@@ -77,12 +77,8 @@ def _custom_token_lines(theme: Theme) -> list[str]:
 
 
 def render_block(dark: Theme, light: Theme) -> str:
-    """Render a marked Herdr block that auto-switches a dark/light pair.
-
-    Stable Herdr v0.8.2 understands `auto_switch` plus one `[theme.custom]`
-    overlay. Nested `[theme.custom.dark]` / `[theme.custom.light]` wait for a
-    release that includes herdr#2324.
-    """
+    """Render a marked Herdr block that auto-switches a dark/light pair,
+    including the SF2 character palette itself (requires herdr#2324)."""
     lines = [
         MANAGED_START,
         f"# sf2-themes: {dark.metadata.selectable_id}",
@@ -92,8 +88,11 @@ def render_block(dark: Theme, light: Theme) -> str:
         f'light_name = "{herdr_base_theme_name(light)}"',
         f'dark_name = "{herdr_base_theme_name(dark)}"',
         "",
-        "[theme.custom]",
+        "[theme.custom.dark]",
         *_custom_token_lines(dark),
+        "",
+        "[theme.custom.light]",
+        *_custom_token_lines(light),
         MANAGED_END,
         "",
     ]
