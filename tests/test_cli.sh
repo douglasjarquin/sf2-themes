@@ -23,18 +23,16 @@ assert config["theme"]["auto_switch"] is True
 assert config["theme"]["name"] == "catppuccin"
 assert config["theme"]["light_name"] == "catppuccin-latte"
 assert config["theme"]["dark_name"] == "catppuccin"
-dark = config["theme"]["custom"]["dark"]
-light = config["theme"]["custom"]["light"]
-assert dark["accent"] == "#ad8705"
-assert dark["text"] == "#cad1de"
-assert dark["active_row_bg"] == "#1d2433"
-assert dark["selection_bg"] == "#2a3243"
-assert dark["overlay0"] == "#7c8597"
-assert dark["mauve"]
-assert dark["peach"]
-assert light["accent"] == "#7d6005"
-assert light["text"] == "#2c313d"
-assert light["sidebar_bg"] == "#edf1fa"
+custom = config["theme"]["custom"]
+assert "dark" not in custom
+assert "light" not in custom
+assert custom["accent"] == "#ad8705"
+assert custom["text"] == "#cad1de"
+assert custom["active_row_bg"] == "#1d2433"
+assert custom["selection_bg"] == "#2a3243"
+assert custom["overlay0"] == "#7c8597"
+assert custom["mauve"]
+assert custom["peach"]
 print("Herdr merge preservation: PASS")
 PY
 
@@ -80,8 +78,15 @@ grep -q 'sf2-street-fighter-2' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'ansi = \["#2b323f", "#c86e67", "#4e975b", "#a58324", "#5b89cc"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'accent = "#ad8705"' "$test_dir/installed-herdr/config.toml"
 grep -q 'auto_switch = true' "$test_dir/installed-herdr/config.toml"
-grep -q '\[theme.custom.dark\]' "$test_dir/installed-herdr/config.toml"
-grep -q '\[theme.custom.light\]' "$test_dir/installed-herdr/config.toml"
+grep -q '^\[theme.custom\]$' "$test_dir/installed-herdr/config.toml"
+if grep -q '\[theme.custom.dark\]' "$test_dir/installed-herdr/config.toml"; then
+  printf '%s\n' 'unexpected [theme.custom.dark]' >&2
+  exit 1
+fi
+if grep -q '\[theme.custom.light\]' "$test_dir/installed-herdr/config.toml"; then
+  printf '%s\n' 'unexpected [theme.custom.light]' >&2
+  exit 1
+fi
 test -f "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 grep -q 'sf2-themes: sf2-main' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 grep -q 'get_appearance' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"

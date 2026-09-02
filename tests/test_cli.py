@@ -45,8 +45,9 @@ def test_install_warns_and_applies(tmp_path: Path, monkeypatch, capsys) -> None:
     text = (herdr / "config.toml").read_text(encoding="utf-8")
     assert "sf2-themes: sf2-main" in text
     assert "auto_switch = true" in text
-    assert "[theme.custom.dark]" in text
-    assert "[theme.custom.light]" in text
+    assert any(line.strip() == "[theme.custom]" for line in text.splitlines())
+    assert "[theme.custom.dark]" not in text
+    assert "[theme.custom.light]" not in text
 
 
 def test_apply_herdr_light_selection_current_is_family_id(tmp_path: Path, capsys) -> None:
@@ -57,6 +58,9 @@ def test_apply_herdr_light_selection_current_is_family_id(tmp_path: Path, capsys
     assert "auto_switch = true" in text
     assert 'light_name = "catppuccin-latte"' in text
     assert "# sf2-themes: sf2-chun-li" in text
+    assert any(line.strip() == "[theme.custom]" for line in text.splitlines())
+    assert "[theme.custom.dark]" not in text
+    assert "[theme.custom.light]" not in text
     assert dispatch(["current", "herdr", "--config-dir", str(herdr)]) == 0
     assert capsys.readouterr().out.strip().endswith("sf2-chun-li")
 

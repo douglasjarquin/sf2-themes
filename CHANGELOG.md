@@ -3,7 +3,7 @@
 ## Unreleased
 
 - WezTerm, Herdr, and Neovim apply a selected character as a dark/light pair and auto-switch with host appearance instead of pinning a single variant.
-- Herdr writes `auto_switch` plus `[theme.custom.dark]` and `[theme.custom.light]`. WezTerm's pointer follows `get_appearance()`. Neovim's pointer follows `TERM_THEME` or `'background'`.
+- Herdr writes `auto_switch` plus a single `[theme.custom]` overlay compatible with Herdr v0.8.2. WezTerm's pointer follows `get_appearance()`. Neovim's pointer follows `TERM_THEME` or `'background'`.
 
 ## 1.0.1
 

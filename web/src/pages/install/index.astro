@@ -6,7 +6,7 @@ const moves = [
   ["WEZTERM", "setup wezterm", "Set up the one-time WezTerm integration."],
   ["WEZTERM", "apply wezterm --theme ryu", "Apply Ryu's dark and light schemes; WezTerm switches with host appearance."],
   ["HERDR", "setup herdr", "Set up the one-time Herdr integration."],
-  ["HERDR", "apply herdr --theme chun-li", "Apply Chun-Li's dark and light palettes with Herdr auto-switch, then reload the server configuration."],
+  ["HERDR", "apply herdr --theme chun-li", "Apply Chun-Li with Herdr auto-switch, then reload the server configuration."],
   ["NVIM", "setup nvim", "Set up the one-time Neovim colorscheme loader."],
   ["NVIM", "apply nvim --theme ryu-light", "Apply Ryu's dark and light colorschemes; Neovim follows TERM_THEME or background."],
   ["CODEX", "setup codex", "Set up the one-time Codex custom theme directory."],
@@ -59,7 +59,7 @@ const moves = [
         <h2 id="notes-heading">NO GUESSWORK</h2>
         <ul>
           <li>WezTerm setup upgrades an existing assignment to the managed pointer, which auto-switches the selected character's dark and light schemes. For another selected scheme, use <code>--adopt</code> or paste the printed snippet.</li>
-          <li>Herdr apply writes the selected character's dark and light palettes and enables theme auto-switch. Unmarked <code>[theme]</code> sections stay unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
+          <li>Herdr apply enables theme auto-switch and writes a single <code>[theme.custom]</code> overlay. Unmarked <code>[theme]</code> sections stay unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
           <li><code>install</code> remains a deprecated alias for <code>apply</code>.</li>
         </ul>
       </section>
