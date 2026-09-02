@@ -14,7 +14,7 @@ The committed root executable mirrors this package by embedding the standalone g
 | Theme values and names | `model.py` | Immutable palette types, exact hex parsing, canonical IDs, and adapter-facing IDs. |
 | TOML shape | `parse.py` | Schema, required fields, enum values, unknown keys, and typed construction. |
 | Semantic validity | `validation.py` | Contrast, ANSI distinctions, lookup-key uniqueness, and error versus warning severity. |
-| Catalog lifecycle | `catalog.py` | Embedded or filesystem discovery, deterministic order, validated loading, lookup, and defaults. |
+| Catalog lifecycle | `catalog.py` | Embedded or filesystem discovery, deterministic order, validated loading, lookup, pairing, and defaults. |
 | Public dispatch | `cli.py`, `__main__.py` | Argument handling, command behavior, error presentation, and adapter orchestration. |
 | Application formats | `adapters/` | Rendering, recognized configuration merges, managed markers, and app-specific paths. |
 | Mutation primitive | `filesystem.py` | No-op detection, dry-run diffs, backups, mode preservation, symlink policy, and atomic replacement. |
@@ -25,6 +25,7 @@ The committed root executable mirrors this package by embedding the standalone g
 - Keep structural rejection in `parse.py`, semantic checks in `validation.py`, and their composition in `catalog.py`.
 - Route normal runtime consumers through `load_catalog()`; reserve `parse_catalog()` for callers that must inspect or report invalid catalog data.
 - Pass an already loaded catalog into repeated lookups and adapters so one operation uses one deterministic snapshot.
+- Resolve a selected catalog id to its dark and light siblings through `theme_pair()` instead of reconstructing `-light` names in adapters.
 - Keep catalog and CLI selection IDs short, such as `ryu-light`.
 - Derive installed names through `ThemeMetadata.selectable_id` or `selectable_id()` so adapter-facing identities are consistently `sf2-<catalog-id>`.
 - Preserve the intentional spelling split: public distribution and command `sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.

@@ -51,6 +51,7 @@ apply writes or selects the active theme (default: main).
 install is a deprecated alias for apply.
 starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
 Lazygit installs one YAML fragment per catalog theme under its themes directory.
+Herdr apply writes the selected theme's dark and light palettes and enables auto-switch.
 """
 
 
@@ -174,6 +175,7 @@ def _setup(app: str, options: Options) -> None:
         case "herdr":
             result = apply_herdr(
                 theme,
+                catalog,
                 config_dir=options.config_dir,
                 dry_run=options.dry_run,
                 follow_symlinks=options.follow_symlinks,
@@ -242,6 +244,7 @@ def _apply(app: str, options: Options) -> None:
                 (
                     apply_herdr(
                         theme,
+                        catalog,
                         config_dir=options.config_dir,
                         dry_run=options.dry_run,
                         follow_symlinks=options.follow_symlinks,

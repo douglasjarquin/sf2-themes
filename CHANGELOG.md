@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Herdr apply writes the selected theme's dark and light palettes and enables `auto_switch`, so a character theme follows host-terminal appearance instead of pinning a single variant.
+
 ## 1.0.1
 
 - Upgrade a previous `config.color_scheme = "street-fighter-2"` assignment during `setup wezterm` instead of leaving WezTerm pinned to the old scheme file.

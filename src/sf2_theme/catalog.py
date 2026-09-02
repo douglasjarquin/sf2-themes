@@ -2,7 +2,7 @@
 
 import os
 import tomllib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
@@ -88,6 +88,13 @@ def get_theme(name: str, themes: tuple[Theme, ...] | None = None) -> Theme:
         if lowered in keys:
             return theme
     raise ThemeError(f"unknown theme: {name}")
+
+
+def theme_pair(theme: Theme, themes: Sequence[Theme]) -> tuple[Theme, Theme]:
+    """Return the dark and light siblings for a selected catalog theme."""
+    catalog = tuple(themes)
+    dark_id = theme.metadata.id.removesuffix("-light")
+    return get_theme(dark_id, catalog), get_theme(f"{dark_id}-light", catalog)
 
 
 def default_theme(themes: tuple[Theme, ...] | None = None) -> Theme:

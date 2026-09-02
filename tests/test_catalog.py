@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from sf2_theme.catalog import get_theme
+from sf2_theme.catalog import get_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import HexColor, IntroducedIn, Theme, ThemeKind, ThemeMetadata, ThemeVariant
 from sf2_theme.validation import Severity, validate_catalog
@@ -183,3 +183,15 @@ def test_catalog_rejects_light_metadata_drift() -> None:
     # Then: each responsible pairing field is named.
     assert "ryu-light: stage must match dark variant" in messages
     assert "ryu-light: light variant aliases must be empty" in messages
+
+
+def test_theme_pair_resolves_dark_and_light_from_either_selection() -> None:
+    catalog = _catalog_contract()
+    from_dark = theme_pair(get_theme("ryu", catalog), catalog)
+    from_light = theme_pair(get_theme("ryu-light", catalog), catalog)
+    assert from_dark[0].metadata.id == "ryu"
+    assert from_dark[1].metadata.id == "ryu-light"
+    assert from_light == from_dark
+    main_pair = theme_pair(get_theme("main-light", catalog), catalog)
+    assert main_pair[0].metadata.id == "main"
+    assert main_pair[1].metadata.id == "main-light"

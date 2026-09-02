@@ -40,7 +40,23 @@ def test_install_warns_and_applies(tmp_path: Path, monkeypatch, capsys) -> None:
     assert dispatch(["install", "herdr", "--config-dir", str(herdr)]) == 0
     err = capsys.readouterr().err
     assert "deprecated" in err
-    assert "sf2-themes: sf2-main" in (herdr / "config.toml").read_text(encoding="utf-8")
+    text = (herdr / "config.toml").read_text(encoding="utf-8")
+    assert "sf2-themes: sf2-main" in text
+    assert "auto_switch = true" in text
+    assert "[theme.custom.dark]" in text
+    assert "[theme.custom.light]" in text
+
+
+def test_apply_herdr_light_selection_current_is_family_id(tmp_path: Path, capsys) -> None:
+    herdr = tmp_path / "herdr"
+    herdr.mkdir()
+    assert dispatch(["apply", "herdr", "--theme", "chun-li-light", "--config-dir", str(herdr)]) == 0
+    text = (herdr / "config.toml").read_text(encoding="utf-8")
+    assert "auto_switch = true" in text
+    assert 'light_name = "catppuccin-latte"' in text
+    assert "# sf2-themes: sf2-chun-li" in text
+    assert dispatch(["current", "herdr", "--config-dir", str(herdr)]) == 0
+    assert capsys.readouterr().out.strip().endswith("sf2-chun-li")
 
 
 def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:

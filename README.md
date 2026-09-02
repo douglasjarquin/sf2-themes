@@ -114,6 +114,8 @@ If it selects some other scheme, pass `--adopt` or paste the printed snippet. `s
 
 Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
 
+Herdr apply writes both the dark and light palettes for the selected character (or `main`) and enables Herdr's `auto_switch`, so the UI follows the host terminal's light/dark appearance. Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
+
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
 
 `install` still works as a deprecated alias for `apply`.
@@ -143,7 +145,7 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
 - The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua`.
-- Herdr updates only a marked block in `~/.config/herdr/config.toml`.
+- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` plus dark and light custom palettes for the selected character.
 - Neovim colorschemes go in `~/.config/nvim/colors/`, with the active theme at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
