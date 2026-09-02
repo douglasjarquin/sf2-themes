@@ -152,7 +152,7 @@ test("sitemap.xml lists every indexable trailing-slash URL", async ({ request })
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
 });
 
-test("public preview route is separate from the preserved gameplay asset namespace", async ({
+test("public preview route is separate from the retired screenshots namespace", async ({
   page,
   request,
 }) => {
@@ -167,8 +167,7 @@ test("public preview route is separate from the preserved gameplay asset namespa
   const gameplayAsset = await request.get("screenshots/game/ryu.png");
 
   expect(oldPageRoute.status()).toBe(404);
-  expect(gameplayAsset.status()).toBe(200);
-  expect(gameplayAsset.headers()["content-type"]).toMatch(/image\/png/);
+  expect(gameplayAsset.status()).toBe(404);
 });
 
 test("every indexable route has unique metadata, a self-canonical, and JSON-LD", async ({
@@ -214,23 +213,13 @@ test("every indexable route has unique metadata, a self-canonical, and JSON-LD",
       "content",
       route.canonical,
     );
-    await expect(ogImage).toHaveAttribute(
-      "content",
-      "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png",
-    );
-    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
-      "content",
-      "summary_large_image",
-    );
-    await expect(twitterImage).toHaveAttribute(
-      "content",
-      "https://douglasjarquin.github.io/sf2-themes/screenshots/game/ryu.png",
-    );
-    await expect(icon).toHaveAttribute("href", "/sf2-themes/screenshots/game/ryu.png");
+    await expect(ogImage).toHaveCount(0);
+    await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary");
+    await expect(twitterImage).toHaveCount(0);
+    await expect(icon).toHaveCount(0);
 
     const imageResponse = await request.get("/sf2-themes/screenshots/game/ryu.png");
-    expect(imageResponse.ok()).toBe(true);
-    expect(imageResponse.headers()["content-type"]).toMatch(/image\/png/);
+    expect(imageResponse.status()).toBe(404);
 
     titles.push(route.title);
     descriptions.push(route.description);

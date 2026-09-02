@@ -48,7 +48,6 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 - Rebuild the committed root `sf2-themes` executable because `scripts/build-standalone.py` embeds the catalog's exact TOML sources.
 - Regenerate `docs/previews/` because `scripts/generate-previews.py` writes one SVG for every catalog ID.
 - Expect `web/src/data/theme-data.mjs` to parse the same files in catalog order and expose all 36 entries through `paletteVariants`.
-- Regenerate the full `web/public/screenshots/` archive after any TOML change because its manifest fingerprints every palette file and requires one ordered `1280x720` PNG per theme.
 - Review adapter snapshots and `docs/roster.md` when an intentional token, identity, alias, era, or visual direction changes.
 
 ## Verify the focused contract before stopping.
@@ -59,6 +58,5 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 - Run `bash tests/test_cli.sh` to exercise the copied standalone CLI and prefixed installed identities.
 - Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` to verify complete Lazygit key coverage and all 36 generated identities.
 - Run `aube -C web run test:unit`, `mise run web:check`, and `mise run web:build` for browser parsing, palette mapping, and static rendering.
-- Run `mise run web:screenshots` followed by `mise run web:screenshots:verify` whenever palette TOML changes.
 - Run `git diff --check` and inspect the scoped diff for the intended TOML and regenerated dependents.
-- Finish only when the source loader, standalone loader, browser catalog, previews, and screenshot manifest all agree on the same ordered 36-theme catalog.
+- Finish only when the source loader, standalone loader, browser catalog, and previews all agree on the same ordered 36-theme catalog.

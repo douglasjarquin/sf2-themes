@@ -4,10 +4,8 @@ import SiteHeader from "../components/SiteHeader.astro";
 import { characterVariants, themeTokens } from "../data/theme-data.mjs";
 import { themeFamilies } from "../data/site-theme-data.mjs";
 import {
-  CABINET_IMAGE_PATH,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
-  absoluteUrl,
   canonicalUrl,
   productJsonLd,
 } from "../lib/seo.mjs";
@@ -16,7 +14,6 @@ import "../styles/global.css";
 const { description = PRODUCT_DESCRIPTION, noindex = false, title } = Astro.props;
 const pageTitle = `${title} | ${PRODUCT_NAME}`;
 const pageUrl = canonicalUrl(Astro.url.pathname);
-const shareImage = absoluteUrl(CABINET_IMAGE_PATH);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
 const main = themeTokens.main;
 const colorVariables = new Map();
@@ -80,16 +77,13 @@ const siteThemePayload = JSON.stringify(
     {noindex ? <meta name="robots" content="noindex" /> : null}
     <meta name="viewport" content="width=device-width" />
     <link rel="canonical" href={pageUrl} />
-    <link rel="icon" type="image/png" href={CABINET_IMAGE_PATH} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={pageUrl} />
-    <meta property="og:image" content={shareImage} />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={shareImage} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

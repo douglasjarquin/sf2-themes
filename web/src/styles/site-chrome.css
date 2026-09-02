@@ -1,8 +1,3 @@
-html[data-capture-mode="cabinet"] .site-header,
-html[data-capture-mode="cabinet"] .site-footer {
-  display: none;
-}
-
 .site-header {
   position: sticky;
   z-index: 50;

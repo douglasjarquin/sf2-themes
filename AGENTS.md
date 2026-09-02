@@ -7,7 +7,7 @@
 ## OVERVIEW
 
 SF2 Themes is a Python CLI and static Astro site for one TOML theme catalog shared by terminal adapters, documentation, and a deterministic browser arcade game.
-The committed standalone CLI and visual archives are generated products with freshness checks in CI.
+The committed standalone CLI is a generated product with a freshness check in CI.
 
 ## MAINTAINING THIS FILE
 
@@ -22,10 +22,10 @@ Rewrite or prune stale notes instead of appending history.
 ```text
 src/sf2_theme/       Python model, catalog, CLI, safe writes, and adapters
 themes/              Authoritative 36-entry TOML catalog
-scripts/             Standalone, preview, and deterministic screenshot tooling
+scripts/             Standalone and preview generation tooling
 tests/               Pytest contracts, snapshots, and copied-CLI shell test
-web/                 Static Astro site, Node tests, Playwright, and generated archive
-web/src/game/        Fixed-step game core plus browser, renderer, input, and capture adapters
+web/                 Static Astro site, Node tests, and Playwright
+web/src/game/        Fixed-step game core plus browser, renderer, and input adapters
 docs/                Authored contracts and generated SVG previews
 .github/workflows/   Path-selected CI, Pages build/deploy, and issue automation
 ```
@@ -40,8 +40,7 @@ docs/                Authored contracts and generated SVG previews
 | Standalone generation | `scripts/build-standalone.py` | Owns the committed root `sf2-themes` executable |
 | Theme design contract | `docs/theme-guidelines.md`, `docs/roster.md` | Covers IDs, dark/light pairs, semantics, and validation |
 | Astro shell and routes | `web/src/layouts/`, `web/src/pages/`, `web/src/lib/site-path.mjs` | Static Pages base is `/sf2-themes` |
-| Browser game | `web/src/game/`, `docs/game-architecture.md` | Shared by home, `/game/`, and capture mode |
-| Screenshot archive | `scripts/capture-game-screenshots.mjs`, `verify-game-screenshots.mjs` | Generated manifest plus 36 PNGs |
+| Browser game | `web/src/game/`, `docs/game-architecture.md` | Shared by `/game/` |
 | Python verification | `tests/`, `mise.toml` | Pytest plus the copied standalone CLI harness |
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
 | Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
@@ -72,13 +71,12 @@ docs/                Authored contracts and generated SVG previews
 ## ANTI-PATTERNS
 
 - Do not hand-edit the generated root `sf2-themes` executable.
-- Do not hand-edit `docs/previews/` or `web/public/screenshots/`; run their owning generators.
+- Do not hand-edit `docs/previews/`; run `python3 scripts/generate-previews.py`.
 - Do not duplicate catalog parsing or semantic color rules inside adapters or pages.
 - Do not modify unknown WezTerm Lua, unmarked Herdr theme blocks, or unrelated adapter configuration.
 - Do not follow configuration symlinks unless the caller explicitly selects `--follow-symlinks`.
 - Do not introduce DOM, browser globals, timers, animation frames, wall-clock reads, or `Math.random` into `web/src/game/core/`.
 - Do not import `textmode.js` outside `TextmodeRenderer.ts`.
-- Do not publish a partial or unverified screenshot archive or overwrite an existing custom output directory.
 
 ## COMMANDS
 
@@ -91,14 +89,11 @@ mise run web:install
 mise run web:check
 mise run web:test
 mise run web:build
-mise run web:screenshots
-mise run web:screenshots:verify
 ```
 
 ## NOTES
 
 - Python or catalog changes require standalone regeneration before `mise run test`.
-- Theme changes also require `python3 scripts/generate-previews.py` and may invalidate the web screenshot archive.
-- Screenshot-affecting changes require regeneration followed by strict verification; the archive is 36 `1280x720` PNGs with manifest fingerprints.
+- Theme changes also require `python3 scripts/generate-previews.py`.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
-- Generated `.omo/`, caches, build output, and image volume do not count as source complexity when placing child guidance.
+- Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.

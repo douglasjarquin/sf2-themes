@@ -14,7 +14,6 @@ commands:
     /opt/homebrew/bin/npm --prefix web run build || exit 104
     (cd web && n=0; for file in tests/unit/*.test.mjs test/*.test.mjs; do n=$((n + 1)); /opt/homebrew/bin/node --test "$file" || exit $((120 + n)); done)
     /opt/homebrew/bin/npm --prefix web run test:e2e || exit 105
-    /opt/homebrew/bin/npm --prefix web run screenshots:verify || exit 106
   lint: |
     set -e
     export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"

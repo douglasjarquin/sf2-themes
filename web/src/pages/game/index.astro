@@ -106,28 +106,6 @@ if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlaye
 </SiteLayout>
 
 <script>
-  import { installCaptureBridge } from "../../game/capture/bridge.ts";
-
-  const captureUrl = new URL(window.location.href);
-  const captureRoot = document.querySelector("[data-arcade-game]");
-  if (captureUrl.searchParams.get("capture") === "1" && captureRoot instanceof HTMLElement) {
-    document.documentElement.dataset.captureMode = "cabinet";
-    void installCaptureBridge(captureRoot, captureUrl.searchParams).catch((error) => {
-      captureRoot.dataset.captureError = error instanceof Error ? error.name : "CaptureBridgeError";
-      captureRoot.dataset.rendererStatus = "failed";
-      captureRoot.dataset.loopStatus = "paused";
-      const poster = captureRoot.querySelector("[data-game-poster]");
-      if (poster instanceof HTMLElement) {
-        poster.hidden = false;
-        poster.dataset.failure = captureRoot.dataset.captureError;
-      }
-      const liveStatus = captureRoot.querySelector("[data-game-live-status]");
-      if (liveStatus instanceof HTMLElement) liveStatus.textContent = "CAPTURE DISPLAY UNAVAILABLE - STATIC POSTER ACTIVE";
-      const gameStatus = captureRoot.querySelector("[data-game-status]");
-      if (gameStatus instanceof HTMLElement) gameStatus.textContent = "STATIC FALLBACK";
-    });
-  }
-
   const route = window.location.pathname;
   const form = document.querySelector("[data-game-config]");
   const cabinet = document.querySelector("[data-arcade-game]");
@@ -220,13 +198,4 @@ if (defaultTheme === undefined || defaultPlayerOne === undefined || defaultPlaye
   @media (max-width: 760px) { .game-layout { grid-template-columns: 1fr; } .game-config { order: 2; } .game-stage { order: 1; } }
   @media (max-width: 420px) { .game-intro, .game-layout { padding-inline: var(--space-4); } .game-stage, .game-config { padding: var(--space-4); } .game-stage__header { align-items: start; flex-direction: column; } .game-config select { font-size: 10px; } }
   @media (prefers-reduced-motion: reduce) { .game-config__submit, .fullscreen-button { transition: none; } }
-  html[data-capture-mode="cabinet"] .game-intro,
-  html[data-capture-mode="cabinet"] .game-config,
-  html[data-capture-mode="cabinet"] .game-stage__header,
-  html[data-capture-mode="cabinet"] .arcade-cabinet__status,
-  html[data-capture-mode="cabinet"] .arcade-cabinet__palette,
-  html[data-capture-mode="cabinet"] .arcade-cabinet__controls { display: none; }
-  html[data-capture-mode="cabinet"] .game-page { display: grid; min-block-size: 100dvh; padding: 0; place-items: center; }
-  html[data-capture-mode="cabinet"] .game-layout { display: block; inline-size: min(100%, 1280px); padding: var(--space-4); }
-  html[data-capture-mode="cabinet"] .game-stage { padding: 0; border: 0; box-shadow: none; background: transparent; }
 </style>

@@ -37,11 +37,3 @@ run = "aube -C web run check"
 [tasks."web:build"]
 description = "Build the Astro site"
 run = "aube -C web run build"
-
-[tasks."web:screenshots"]
-description = "Generate the deterministic all-theme game screenshot archive"
-run = "aube -C web run screenshots:game"
-
-[tasks."web:screenshots:verify"]
-description = "Verify the deterministic game screenshot archive"
-run = "aube -C web run screenshots:verify"

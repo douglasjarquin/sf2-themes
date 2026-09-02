@@ -5,7 +5,6 @@ import { sitePath } from "../lib/site-path.mjs";
 type Props = {
   readonly compact?: boolean;
   readonly initialThemeId?: string;
-  readonly captureMode?: boolean;
   readonly initialPlayerOneId?: string;
   readonly initialPlayerTwoId?: string;
   readonly fullPalette?: boolean;
@@ -15,7 +14,6 @@ type Props = {
 const {
   compact = false,
   initialThemeId = "ryu",
-  captureMode = false,
   initialPlayerOneId = "ryu",
   initialPlayerTwoId = "ken",
   fullPalette = false,
@@ -48,7 +46,6 @@ const cabinetStyle = [
   class:list={["arcade-cabinet", { "arcade-cabinet--compact": compact }]}
   data-active-theme={initialTheme.id}
   data-arcade-game
-  data-capture-mode={captureMode ? "true" : "false"}
   data-configurable-fighters={configurableFighters ? "true" : "false"}
   data-game-state="boot"
   data-game-focus
