@@ -11,11 +11,11 @@ const routes = [
   },
   {
     path: "themes/",
-    title: "WezTerm, Herdr, Neovim, Codex, and Starship adapters | sf2-themes",
+    title: "The roster - 18 theme families | sf2-themes",
     description:
-      "Install Street Fighter II colors in WezTerm, Herdr, Neovim, Codex, and Starship with one CLI.",
+      "Browse all 18 Street Fighter II theme families, each with dark and light modes for WezTerm, Herdr, Neovim, Codex, and Starship.",
     canonical: `${origin}/sf2-themes/themes/`,
-    heading: "THEMES",
+    heading: "CHOOSE YOUR FIGHTER.",
   },
   {
     path: "palette/",
@@ -134,7 +134,7 @@ test("the project 404 page is branded, linked, and noindexed", async ({ page, re
   );
 });
 
-test("sitemap.xml lists the six indexable trailing-slash URLs", async ({ request }) => {
+test("sitemap.xml lists every indexable trailing-slash URL", async ({ request }) => {
   const response = await request.get("/sf2-themes/sitemap.xml");
   const body = await response.text();
   const locations = [...body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
@@ -147,6 +147,7 @@ test("sitemap.xml lists the six indexable trailing-slash URLs", async ({ request
     "https://douglasjarquin.github.io/sf2-themes/preview/",
     "https://douglasjarquin.github.io/sf2-themes/install/",
     "https://douglasjarquin.github.io/sf2-themes/game/",
+    ...["main", "akuma", "balrog", "blanka", "cammy", "chun-li", "dee-jay", "dhalsim", "e-honda", "fei-long", "guile", "ken", "m-bison", "ryu", "sagat", "t-hawk", "vega", "zangief"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
   ]);
   expect(locations.every((location) => location.endsWith("/"))).toBe(true);
 });
@@ -160,14 +161,7 @@ test("public preview route is separate from the preserved gameplay asset namespa
   const primaryPreview = page
     .getByRole("navigation", { name: "Primary" })
     .getByRole("link", { name: "PREVIEW", exact: true });
-  const footerPreview = page
-    .getByRole("contentinfo")
-    .getByRole("link", { name: "Preview", exact: true });
-
-  await expect(primaryPreview).toHaveCount(1);
-  await expect(primaryPreview).toHaveAttribute("href", "/sf2-themes/preview/");
-  await expect(footerPreview).toHaveCount(1);
-  await expect(footerPreview).toHaveAttribute("href", "/sf2-themes/preview/");
+  await expect(primaryPreview).toHaveCount(0);
 
   const oldPageRoute = await request.get("screenshots/");
   const gameplayAsset = await request.get("screenshots/game/ryu.png");
@@ -277,20 +271,12 @@ test("the footer exposes internal IA and the skip link reaches main content", as
     "href",
     "/sf2-themes/themes/",
   );
-  await expect(footer.getByRole("link", { name: "Palette", exact: true })).toHaveAttribute(
-    "href",
-    "/sf2-themes/palette/",
-  );
-  await expect(footer.getByRole("link", { name: "Preview", exact: true })).toHaveAttribute(
-    "href",
-    "/sf2-themes/preview/",
-  );
   await expect(footer.getByRole("link", { name: "Install", exact: true })).toHaveAttribute(
     "href",
     "/sf2-themes/install/",
   );
-  await expect(footer.getByRole("link", { name: "Arcade", exact: true })).toHaveAttribute(
+  await expect(footer.getByRole("link", { name: /GitHub/ })).toHaveAttribute(
     "href",
-    "/sf2-themes/game/",
+    "https://github.com/douglasjarquin/sf2-themes",
   );
 });

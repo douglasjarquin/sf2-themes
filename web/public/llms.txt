@@ -18,7 +18,7 @@ Catalog ids stay short (`ryu`, `ken-light`). Installed identities use `sf2-<cata
 ## Pages
 
 - [Home](https://douglasjarquin.github.io/sf2-themes/)
-- [Adapters](https://douglasjarquin.github.io/sf2-themes/themes/)
+- [Themes](https://douglasjarquin.github.io/sf2-themes/themes/)
 - [Palette catalog](https://douglasjarquin.github.io/sf2-themes/palette/)
 - [Palette preview](https://douglasjarquin.github.io/sf2-themes/preview/)
 - [Install](https://douglasjarquin.github.io/sf2-themes/install/)

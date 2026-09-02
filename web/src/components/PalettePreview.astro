@@ -69,7 +69,7 @@ const initialSwatches = swatches(variant);
 const previewPayload = JSON.stringify(paletteVariants).replaceAll("<", "\\u003c").replaceAll("\u2028", "\\u2028").replaceAll("\u2029", "\\u2029");
 ---
 
-<article aria-label={`${compact ? "Featured palette" : "Palette"}: ${variant.name}`} class:list={["palette-preview", { "palette-preview--compact": compact }]} data-featured-palette-preview={featured ? true : undefined} data-preview-id={variant.id} data-preview-layout={compact ? "compact" : "full"} data-preview-variant data-selected-palette={featured ? variant.id : undefined} style={previewStyle(variant)}>
+<article aria-label={`${compact ? "Featured palette" : "Palette"}: ${variant.name}`} class:list={["palette-preview", { "palette-preview--compact": compact }]} data-featured-palette-preview={featured ? true : undefined} data-preview-id={variant.id} data-preview-layout={compact ? "compact" : "full"} data-preview-variant data-selected-palette={featured ? variant.id : undefined} data-theme-preview={featured ? true : undefined} style={previewStyle(variant)}>
   <header class="palette-preview__header">
     <div>
       {compact ? <p>FEATURED PALETTE / <span data-preview-mode>{variant.tokens.meta.variant.toUpperCase()}</span></p> : <p>{variant.tokens.meta.variant.toUpperCase()} MODE</p>}

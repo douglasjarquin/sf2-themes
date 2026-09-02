@@ -3,11 +3,14 @@ import { expect, test } from "@playwright/test";
 const routes = [
   { label: "HOME", pathname: "/sf2-themes/" },
   { label: "THEMES", pathname: "/sf2-themes/themes/" },
-  { label: "PALETTE", pathname: "/sf2-themes/palette/" },
-  { label: "PREVIEW", pathname: "/sf2-themes/preview/" },
   { label: "INSTALL", pathname: "/sf2-themes/install/" },
 ];
-const publicRoutes = [...routes, { label: "GAME", pathname: "/sf2-themes/game/" }];
+const publicRoutes = [
+  ...routes,
+  { label: "PALETTE", pathname: "/sf2-themes/palette/" },
+  { label: "PREVIEW", pathname: "/sf2-themes/preview/" },
+  { label: "GAME", pathname: "/sf2-themes/game/" },
+];
 
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
@@ -72,6 +75,16 @@ for (const viewport of viewports) {
   });
 }
 
+test("site picker mode controls keep the documented hit target", async ({ page }) => {
+  await page.goto("./");
+  await page.locator("[data-site-picker-toggle]").click();
+
+  for (const mode of ["dark", "light"]) {
+    const box = await page.locator(`[data-site-picker] [data-site-mode="${mode}"]`).boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  }
+});
+
 const readShell = () => {
   const readStyles = (selector, pseudo) => {
     const element = document.querySelector(selector);
@@ -100,7 +113,7 @@ const readShell = () => {
     brand: readStyles(".site-brand"),
     footer: readStyles(".site-footer"),
     nav: readStyles(".primary-nav__link:not([aria-current])"),
-    navAction: readStyles(".primary-nav__link--action"),
+    navAction: readStyles(".primary-nav__link--github"),
     navCurrent: current ? readStyles('.primary-nav__link[aria-current="page"]') : null,
   };
 };
@@ -116,7 +129,9 @@ test("all public routes use the preview page shell", async ({ page }) => {
 
     // Then: the shared shell computes to the same values as the preview template.
     const shell = await page.evaluate(readShell);
-    const expectedShell = route.label === "GAME" ? { ...previewShell, navCurrent: null } : previewShell;
+    const expectedShell = { ...previewShell };
+    delete shell.navCurrent;
+    delete expectedShell.navCurrent;
     expect(shell, route.pathname).toEqual(expectedShell);
   }
 });

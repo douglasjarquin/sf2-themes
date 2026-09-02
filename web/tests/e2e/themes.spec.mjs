@@ -1,82 +1,118 @@
 import { expect, test } from "@playwright/test";
+import generatedThemeData from "../../src/data/generated-theme-data.json" with { type: "json" };
 
-const themesPath = "/sf2-themes/themes/";
+const ryuDark = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu");
+const ryuLight = generatedThemeData.themes.find(({ meta }) => meta.id === "ryu-light");
+const chunLiDark = generatedThemeData.themes.find(({ meta }) => meta.id === "chun-li");
+const toRgb = (hex) => {
+  const [, red, green, blue] = hex.match(/^#(..)(..)(..)$/).map((part) => Number.parseInt(part, 16));
+  return `rgb(${red}, ${green}, ${blue})`;
+};
 
-test("themes catalog truthfully lists the supported adapters", async ({ page }) => {
-  await page.goto(themesPath);
+test("themes route lists generated roster families", async ({ page }) => {
+  await page.goto("./themes/");
 
-  await expect(page.getByRole("heading", { name: "THEMES" })).toBeVisible();
-  await expect(page.getByTestId("themes-stats")).toHaveText("5 PORTS · 5 READY · 1 CLI");
-
-  const cards = page.getByTestId("adapter-card");
-  await expect(cards).toHaveCount(5);
-  await expect(cards.nth(0)).toContainText("wezterm");
-  await expect(cards.nth(0)).toContainText("READY");
-  await expect(cards.nth(0).locator("code")).toHaveText("sf2-themes setup wezterm");
-  await expect(cards.nth(1)).toContainText("herdr");
-  await expect(cards.nth(1)).toContainText("READY");
-  await expect(cards.nth(1).locator("code")).toHaveText("sf2-themes setup herdr");
-  await expect(cards.nth(2)).toContainText("nvim");
-  await expect(cards.nth(2).locator("code")).toHaveText("sf2-themes setup nvim");
-  await expect(cards.nth(3)).toContainText("codex");
-  await expect(cards.nth(3).locator("code")).toHaveText("sf2-themes setup codex");
-  await expect(cards.nth(4)).toContainText("starship");
-  await expect(cards.nth(4)).toContainText("READY");
-  await expect(cards.nth(4).locator("code")).toHaveText("sf2-themes setup starship");
+  await expect(page.getByRole("heading", { name: "CHOOSE YOUR FIGHTER." })).toBeVisible();
+  await expect(page.locator("[data-theme-card]")).toHaveCount(18);
+  await expect(page.locator('[data-theme-card="ryu"]')).toContainText("Ryu");
+  await expect(page.locator('[data-theme-card="ryu"]')).toContainText("Japan · Suzaku Castle rooftop");
+  await expect(page.locator('[data-theme-card="ryu"] [data-theme-detail]')).toHaveAttribute("href", /themes\/ryu\/$/);
 });
 
-test("themes catalog filters, trims searches, and shows the empty state", async ({ page }) => {
-  await page.goto(themesPath);
-  const visibleCards = page.locator('[data-testid="adapter-card"]:visible');
+test("theme card site action persists the selected family", async ({ page }) => {
+  await page.goto("./themes/");
+  await page.locator('[data-theme-card="chun-li"] [data-set-theme]').click();
 
-  await page.getByRole("button", { name: "READY", exact: true }).click();
-  await expect(visibleCards).toHaveCount(5);
-
-  await page.getByRole("button", { name: "PLANNED", exact: true }).click();
-  await expect(visibleCards).toHaveCount(0);
-  await expect(page.getByTestId("themes-empty-state")).toHaveText(
-    "K.O. - NO PORT MATCHES. TRY ANOTHER NAME.",
-  );
-
-  await page.getByRole("button", { name: "ALL", exact: true }).click();
-  const search = page.getByRole("searchbox", { name: "Search ports" });
-  await search.fill("  WeZTeRm  ");
-  await expect(visibleCards).toHaveCount(1);
-  await expect(visibleCards).toContainText("wezterm");
-
-  await search.fill("not-a-port");
-  await expect(visibleCards).toHaveCount(0);
-  await expect(page.getByTestId("themes-empty-state")).toBeVisible();
+  await expect(page.locator('[data-theme-card="chun-li"] [data-set-theme]')).toHaveText("ACTIVE");
+  await expect(page.locator('[data-theme-card="chun-li"] [data-theme-card-tag]')).toHaveText("WEARING");
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("sf2-site-theme"))).toContain('"id":"chun-li"');
 });
 
-test("copy feedback follows clipboard success and never reports a rejected write", async ({ page }) => {
+test("theme detail switches preview mode and copies its adapter command", async ({ page }) => {
   await page.addInitScript(() => {
-    window.__copiedCommands = [];
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
-      value: {
-        writeText: async (value) => {
-          window.__copiedCommands.push(value);
-        },
-      },
+      value: { writeText: async (value) => { window.__copiedCommand = value; } },
     });
   });
-  await page.goto(themesPath);
+  await page.goto("./themes/ryu/");
 
-  const wezterm = page.getByTestId("adapter-card").filter({ hasText: "wezterm" });
-  await wezterm.getByRole("button", { name: "COPY" }).click();
-  await expect(wezterm.getByRole("button", { name: "COPIED" })).toBeVisible();
-  await expect
-    .poll(() => page.evaluate(() => window.__copiedCommands))
-    .toEqual(["sf2-themes setup wezterm"]);
+  await expect(page.getByRole("heading", { name: "RYU" })).toBeVisible();
+  await expect(page.locator("[data-detail-swatch]")).toHaveCount(23);
+  await page.locator('[data-detail-mode="light"]').click();
+  await expect(page.locator('[data-detail-mode="light"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-theme-detail-preview]")).toHaveAttribute("data-preview-mode", "light");
+  await page.locator("[data-detail-apply]").click();
+  await expect(page.locator("[data-detail-apply]")).toHaveText("SITE IS WEARING THIS ✓");
+  await page.getByRole("button", { name: "CODEX", exact: true }).click();
+  await page.locator("[data-detail-copy]").click();
 
+  await expect(page.locator("[data-detail-copy]")).toHaveText("COPIED ✓");
+  await expect.poll(() => page.evaluate(() => window.__copiedCommand)).toContain("apply codex --theme ryu-light");
+  await expect(page.locator("[data-adjacent-navigation]")).toBeVisible();
+  await expect(page.locator(".detail-screenshot img")).toHaveAttribute("src", /screenshots\/game\/ryu-light\.png$/);
+  await expect.poll(() => page.locator(".detail-screenshot img").evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+});
+
+test("theme detail switches the screenshot with the selected catalog mode", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+
+  await page.locator('[data-detail-mode="light"]').click();
+
+  await expect(page.locator(".detail-screenshot img")).toHaveAttribute("src", /screenshots\/game\/ryu-light\.png$/);
+  await expect.poll(() => page.locator(".detail-screenshot img").evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
+});
+
+test("theme detail recomputes the apply state when preview mode changes", async ({ page }) => {
   await page.addInitScript(() => {
-    navigator.clipboard.writeText = async () => Promise.reject(new DOMException("Denied", "NotAllowedError"));
+    localStorage.setItem("sf2-site-theme", JSON.stringify({ id: "ryu", mode: "dark" }));
   });
-  await page.reload();
+  await page.goto("./themes/ryu/");
 
-  const herdr = page.getByTestId("adapter-card").filter({ hasText: "herdr" });
-  await herdr.getByRole("button", { name: "COPY" }).click();
-  await expect(herdr.getByRole("button", { name: "COPY" })).toBeVisible();
-  await expect(herdr.getByRole("button", { name: "COPIED" })).toHaveCount(0);
+  await expect(page.locator("[data-detail-apply]")).toHaveText("SITE IS WEARING THIS ✓");
+  await page.locator('[data-detail-mode="light"]').click();
+  await expect(page.locator("[data-detail-apply]")).toHaveText("APPLY TO SITE");
+});
+
+test("theme detail scopes terminal preview colors to the selected canonical mode", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+
+  await expect(page.locator(".terminal-panel").first()).toHaveCSS("background-color", toRgb(ryuDark.ui.background));
+  await page.locator('[data-detail-mode="light"]').click();
+  await expect(page.locator(".terminal-panel").first()).toHaveCSS("background-color", toRgb(ryuLight.ui.background));
+  await expect(page.locator(".terminal-panel .terminal-accent").first()).toHaveCSS("color", toRgb(ryuLight.ui.accent));
+});
+
+test("theme detail labels the terminal preview with the selected catalog mode", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+  await page.locator('[data-detail-mode="light"]').click();
+
+  await expect(page.locator("[data-terminal-id]")).toHaveText("ryu-light");
+});
+
+test("theme detail keeps light-mode code values as string literals", async ({ page }) => {
+  await page.goto("./themes/ryu/");
+  await page.locator('[data-detail-mode="light"]').click();
+
+  await expect(page.locator("[data-code-accent]")).toHaveText(`"${ryuLight.ui.accent}"`);
+  await expect(page.locator("[data-code-background]")).toHaveText(`"${ryuLight.ui.background}"`);
+});
+
+test("roster cards retain canonical dark tokens without JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
+  const page = await context.newPage();
+  await page.goto("./themes/");
+
+  const card = page.locator('[data-theme-card="ryu"]');
+  await expect(card).toHaveCSS("color", toRgb(ryuDark.ui.foreground));
+  await expect(card.locator(".theme-card__swatches span").first()).toHaveCSS("background-color", toRgb(ryuDark.ui.accent));
+  await context.close();
+});
+
+test("preserved routes follow site theme selection through color aliases", async ({ page }) => {
+  await page.goto("./palette/");
+  await page.locator("[data-site-picker-toggle]").click();
+  await page.getByRole("button", { name: "CHUN-LI", exact: true }).click();
+
+  await expect(page.locator(".palette-variant").first()).toHaveCSS("background-color", toRgb(chunLiDark.ui.surface0));
 });

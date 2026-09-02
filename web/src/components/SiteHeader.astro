@@ -1,44 +1,137 @@
 ---
+import { themeFamilies } from "../data/site-theme-data.mjs";
 import { sitePath } from "../lib/site-path.mjs";
+import "../styles/site-chrome.css";
 
 const { currentPath } = Astro.props;
 const navigation = [
-  { label: "HOME", href: sitePath() },
-  { label: "THEMES", href: sitePath("themes") },
-  { label: "PALETTE", href: sitePath("palette") },
-  { label: "PREVIEW", href: sitePath("preview") },
-  { label: "INSTALL", href: sitePath("install") },
+  { label: "HOME", href: sitePath(), key: "home" },
+  { label: "THEMES", href: sitePath("themes"), key: "themes" },
+  { label: "INSTALL", href: sitePath("install"), key: "install" },
 ];
-
-const normalizedCurrentPath = currentPath.endsWith("/")
-  ? currentPath
-  : `${currentPath}/`;
+const normalizedCurrentPath = currentPath.endsWith("/") ? currentPath : `${currentPath}/`;
+const siteThemeOptions = themeFamilies.map(({ id, name, dark }) => ({
+  id,
+  name,
+  accent: dark?.ui.accent,
+  background: dark?.ui.background,
+}));
 ---
 
 <header class="site-header">
   <div class="site-frame site-header__inner">
-    <a class="site-brand" href={sitePath()}>SF2 THEMES</a>
+    <a class="site-brand" href={sitePath()} aria-label="SF2 Themes home">
+      SF2<span aria-hidden="true">·</span>THEMES
+    </a>
     <nav class="primary-nav" aria-label="Primary">
       {
-        navigation.map((item) => (
-          <a
-            aria-current={normalizedCurrentPath === item.href ? "page" : undefined}
-            class="primary-nav__link"
-            data-nav-link
-            href={item.href}
-          >
-            {item.label}
-          </a>
-        ))
+        navigation.map((item) => {
+          const active = item.key === "home"
+            ? normalizedCurrentPath === item.href
+            : normalizedCurrentPath.startsWith(item.href);
+          return (
+            <a
+              aria-current={active ? "page" : undefined}
+              class="primary-nav__link"
+              data-nav-link
+              href={item.href}
+            >
+              {item.label}
+            </a>
+          );
+        })
       }
-      <a
-        class="primary-nav__link primary-nav__link--action"
-        href="https://github.com/douglasjarquin/sf2-themes"
-        rel="noreferrer"
-        target="_blank"
-      >
+      <a class="primary-nav__link primary-nav__link--github" href="https://github.com/douglasjarquin/sf2-themes" rel="noreferrer" target="_blank">
         GITHUB <span aria-hidden="true">↗</span>
       </a>
     </nav>
+
+    <div class="site-picker" data-site-picker>
+      <button aria-controls="site-theme-panel" aria-expanded="false" aria-haspopup="dialog" class="site-picker__toggle" data-site-picker-toggle type="button">
+        <span class="site-picker__swatch" data-site-picker-swatch aria-hidden="true"></span>
+        <span data-site-picker-label>MAIN / DARK</span>
+        <span class="site-picker__chevron" aria-hidden="true">▾</span>
+      </button>
+      <div aria-label="Site theme picker" class="site-picker__panel" data-site-picker-panel hidden id="site-theme-panel" role="dialog">
+        <div class="site-picker__controls">
+          <span class="site-picker__eyebrow">SITE THEME</span>
+          <div class="site-picker__modes" role="group" aria-label="Site theme mode">
+            <button data-site-mode="dark" type="button">DARK</button>
+            <button data-site-mode="light" type="button">LIGHT</button>
+          </div>
+        </div>
+        <div class="site-picker__options">
+          {
+            siteThemeOptions.map((theme) => (
+              <button aria-label={theme.name.toUpperCase()} data-site-theme-option data-theme-id={theme.id} style={`--picker-swatch: ${theme.accent}; --picker-edge: ${theme.background}`} type="button">
+                <span class="site-picker__option-swatch" aria-hidden="true"></span>
+                <span>{theme.name.toUpperCase()}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+    </div>
   </div>
 </header>
+
+<script is:inline>
+  (() => {
+    const picker = document.querySelector("[data-site-picker]");
+    const toggle = picker?.querySelector("[data-site-picker-toggle]");
+    const panel = picker?.querySelector("[data-site-picker-panel]");
+    const data = document.getElementById("site-theme-data");
+    if (!(picker instanceof HTMLElement) || !(toggle instanceof HTMLButtonElement) || !(panel instanceof HTMLElement) || !data) return;
+    let themes;
+    try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+    const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+    const validPalette = (palette) => palette
+      && Array.isArray(palette.uiValues)
+      && palette.uiValues.length === 5
+      && palette.uiValues.every(isColor)
+      && isColor(palette.accent)
+      && isColor(palette.secondary)
+      && Array.isArray(palette.ansi)
+      && palette.ansi.length === 16
+      && palette.ansi.every(isColor);
+    if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
+    let current = { id: document.documentElement.dataset.siteTheme || "main", mode: document.documentElement.dataset.siteMode || "dark" };
+    const updateControls = () => {
+      const theme = themes.find((item) => item.id === current.id) || themes[0];
+      if (!theme?.[current.mode]) return;
+      toggle.querySelector("[data-site-picker-label]").textContent = `${theme.name.toUpperCase()} / ${current.mode.toUpperCase()}`;
+      toggle.querySelector("[data-site-picker-swatch]").style.background = theme[current.mode].accent;
+      for (const button of picker.querySelectorAll("[data-site-mode]")) button.setAttribute("aria-pressed", String(button.dataset.siteMode === current.mode));
+      for (const button of picker.querySelectorAll("[data-site-theme-option]")) button.setAttribute("aria-pressed", String(button.dataset.themeId === current.id));
+    };
+    const apply = (id, mode) => {
+      const theme = themes.find((item) => item.id === id) || themes[0];
+      const nextMode = mode === "light" ? "light" : "dark";
+      const palette = theme[nextMode];
+      const [bg, surface, overlay, muted, foreground] = palette.uiValues;
+      const values = { "--bg": bg, "--su": surface, "--ov": overlay, "--mu": muted, "--fg": foreground, "--ac": palette.accent, "--se": palette.secondary };
+      palette.ansi.forEach((color, index) => { values[`--a${index}`] = color; });
+      Object.entries(values).forEach(([property, value]) => document.documentElement.style.setProperty(property, value));
+      document.documentElement.style.colorScheme = nextMode;
+      current = { id: theme.id, mode: nextMode };
+      document.documentElement.dataset.siteTheme = theme.id;
+      document.documentElement.dataset.siteMode = nextMode;
+      try { localStorage.setItem("sf2-site-theme", JSON.stringify(current)); } catch {}
+      window.dispatchEvent(new CustomEvent("sf2-theme", { detail: current }));
+      updateControls();
+    };
+    window.sf2ApplySiteTheme = apply;
+    const close = (restoreFocus = false) => {
+      panel.hidden = true;
+      toggle.setAttribute("aria-expanded", "false");
+      if (restoreFocus) toggle.focus();
+    };
+    toggle.addEventListener("click", () => { panel.hidden = !panel.hidden; toggle.setAttribute("aria-expanded", String(!panel.hidden)); });
+    for (const button of picker.querySelectorAll("[data-site-mode]")) button.addEventListener("click", () => apply(current.id, button.dataset.siteMode));
+    for (const button of picker.querySelectorAll("[data-site-theme-option]")) button.addEventListener("click", () => { apply(button.dataset.themeId, current.mode); close(); });
+    document.addEventListener("mousedown", (event) => { if (!picker.contains(event.target)) close(); });
+    document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !panel.hidden) close(true); });
+    window.addEventListener("sf2-theme", (event) => { current = event.detail; updateControls(); });
+    updateControls();
+  })();
+</script>

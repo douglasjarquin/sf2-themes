@@ -1,8 +1,104 @@
 ---
-import PalettePreview from "./PalettePreview.astro";
-import { paletteVariants } from "../data/theme-data.mjs";
+import { themeFamilies } from "../data/site-theme-data.mjs";
 
-const initialPalette = paletteVariants[0];
+const initialTheme = themeFamilies[0];
 ---
 
-<PalettePreview variant={initialPalette} compact featured randomize />
+<section aria-labelledby="home-preview-heading" class="home-preview site-frame" data-home-theme-preview>
+  <div class="home-preview__meta">
+    <span id="home-preview-heading">LIVE PREVIEW - THIS SITE WEARS THE THEME YOU PICK</span>
+    <span data-home-theme-label>{initialTheme.name.toUpperCase()} / DARK</span>
+  </div>
+  <div class="home-preview__window">
+    <header class="home-preview__window-header">
+      <span class="home-preview__dot home-preview__dot--red" aria-hidden="true"></span>
+      <span class="home-preview__dot home-preview__dot--yellow" aria-hidden="true"></span>
+      <span class="home-preview__dot home-preview__dot--green" aria-hidden="true"></span>
+      <span data-home-terminal-label>TERMINAL / {initialTheme.id}</span>
+    </header>
+    <pre><code><span class="home-preview__ansi home-preview__ansi--green">$</span> sf2-themes show <span data-home-theme-id>{initialTheme.id}</span>
+<span class="home-preview__muted">theme       </span><span class="home-preview__accent" data-home-theme-id>{initialTheme.id}</span>
+<span class="home-preview__muted">mode        </span><span data-home-theme-mode>DARK</span>
+<span class="home-preview__ansi home-preview__ansi--blue">background</span>  var(--bg)  <span class="home-preview__ansi home-preview__ansi--red">red</span> <span class="home-preview__ansi home-preview__ansi--green">green</span> <span class="home-preview__ansi home-preview__ansi--yellow">yellow</span> <span class="home-preview__ansi home-preview__ansi--blue">blue</span> <span class="home-preview__ansi home-preview__ansi--magenta">magenta</span> <span class="home-preview__ansi home-preview__ansi--cyan">cyan</span></code></pre>
+    <div aria-label="ANSI 16 color ramp" class="home-preview__ramp">
+      {Array.from({ length: 16 }, (_, index) => <span aria-hidden="true" data-home-ansi style={`--ansi-index: ${index}`}></span>)}
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (() => {
+    const preview = document.querySelector("[data-home-theme-preview]");
+    const data = document.getElementById("site-theme-data");
+    if (!(preview instanceof HTMLElement) || !data) return;
+    let themes;
+    try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+    const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+    const validPalette = (palette) => palette
+      && Array.isArray(palette.uiValues)
+      && palette.uiValues.length === 5
+      && palette.uiValues.every(isColor)
+      && isColor(palette.accent)
+      && isColor(palette.secondary)
+      && Array.isArray(palette.ansi)
+      && palette.ansi.length === 16
+      && palette.ansi.every(isColor);
+    if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
+    const update = () => {
+      const id = document.documentElement.dataset.siteTheme || "main";
+      const mode = document.documentElement.dataset.siteMode === "light" ? "light" : "dark";
+      const theme = themes.find((item) => item?.id === id && item?.[mode]) || themes.find((item) => item?.id === "main" && item?.[mode]);
+      if (!theme) return;
+      const previewId = mode === "light" ? `${theme.id}-light` : theme.id;
+      preview.querySelectorAll("[data-home-theme-id]").forEach((node) => { node.textContent = previewId; });
+      const label = preview.querySelector("[data-home-theme-label]");
+      const terminal = preview.querySelector("[data-home-terminal-label]");
+      const modeNode = preview.querySelector("[data-home-theme-mode]");
+      if (label) label.textContent = `${theme.name.toUpperCase()} / ${mode.toUpperCase()}`;
+      if (terminal) terminal.textContent = `TERMINAL / ${previewId}`;
+      if (modeNode) modeNode.textContent = mode.toUpperCase();
+    };
+    window.addEventListener("sf2-theme", update);
+    update();
+  })();
+</script>
+
+<style>
+  .home-preview { padding-block: var(--space-8) var(--space-15); }
+  .home-preview__meta { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-block-end: var(--space-5); color: var(--mu); font: var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.18em; }
+  .home-preview__meta [data-home-theme-label] { color: var(--ac); letter-spacing: 0.1em; }
+  .home-preview__window { overflow: hidden; border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); background: var(--su); }
+  .home-preview__window-header { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-4) var(--space-5); border-block-end: var(--border-thin) solid var(--ov); color: var(--mu); font: var(--text-caption)/1.4 var(--font-mono); letter-spacing: 0.1em; }
+  .home-preview__window-header > span:last-child { margin-inline-start: var(--space-3); }
+  .home-preview__dot { inline-size: 12px; block-size: 12px; border-radius: 50%; }
+  .home-preview__dot--red { background: var(--a1); }
+  .home-preview__dot--yellow { background: var(--a3); }
+  .home-preview__dot--green { background: var(--a2); }
+  .home-preview__window pre { margin: 0; padding: var(--space-8) var(--space-10); overflow-wrap: anywhere; color: var(--fg); font: var(--text-terminal)/1.75 var(--font-mono); white-space: pre-wrap; }
+  .home-preview__muted { color: var(--mu); }
+  .home-preview__accent { color: var(--ac); }
+  .home-preview__ansi--red { color: var(--a1); }
+  .home-preview__ansi--green { color: var(--a2); }
+  .home-preview__ansi--yellow { color: var(--a3); }
+  .home-preview__ansi--blue { color: var(--a4); }
+  .home-preview__ansi--magenta { color: var(--a5); }
+  .home-preview__ansi--cyan { color: var(--a6); }
+  .home-preview__ramp { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); block-size: 22px; }
+  .home-preview__ramp span { background: var(--a0); }
+  .home-preview__ramp span:nth-child(2) { background: var(--a1); }
+  .home-preview__ramp span:nth-child(3) { background: var(--a2); }
+  .home-preview__ramp span:nth-child(4) { background: var(--a3); }
+  .home-preview__ramp span:nth-child(5) { background: var(--a4); }
+  .home-preview__ramp span:nth-child(6) { background: var(--a5); }
+  .home-preview__ramp span:nth-child(7) { background: var(--a6); }
+  .home-preview__ramp span:nth-child(8) { background: var(--a7); }
+  .home-preview__ramp span:nth-child(9) { background: var(--a8); }
+  .home-preview__ramp span:nth-child(10) { background: var(--a9); }
+  .home-preview__ramp span:nth-child(11) { background: var(--a10); }
+  .home-preview__ramp span:nth-child(12) { background: var(--a11); }
+  .home-preview__ramp span:nth-child(13) { background: var(--a12); }
+  .home-preview__ramp span:nth-child(14) { background: var(--a13); }
+  .home-preview__ramp span:nth-child(15) { background: var(--a14); }
+  .home-preview__ramp span:nth-child(16) { background: var(--a15); }
+  @media (max-width: 620px) { .home-preview__window pre { padding: var(--space-6) var(--space-5); font-size: var(--text-terminal-mobile); } }
+</style>

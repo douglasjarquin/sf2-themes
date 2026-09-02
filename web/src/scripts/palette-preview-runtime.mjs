@@ -1,6 +1,6 @@
 export function initializeFeaturedPalettePreview() {
   const dataNode = document.querySelector("[data-featured-palette-data]");
-  const currentPreview = dataNode?.previousElementSibling;
+  let currentPreview = dataNode?.previousElementSibling;
   if (!(dataNode instanceof HTMLScriptElement)) return;
   if (!(currentPreview instanceof HTMLElement) || !currentPreview.matches("[data-featured-palette-preview]")) return;
 
@@ -30,6 +30,7 @@ export function initializeFeaturedPalettePreview() {
   if (!Array.isArray(palettes) || palettes.length === 0 || !palettes.every(isPalette)) return;
 
   const palette = palettes[Math.floor(Math.random() * palettes.length)];
+  const render = (palette) => {
   const nextPreview = currentPreview.cloneNode(true);
   if (!(nextPreview instanceof HTMLElement)) return;
   const compact = nextPreview.dataset.previewLayout === "compact";
@@ -123,5 +124,8 @@ export function initializeFeaturedPalettePreview() {
     if (labelNode) labelNode.textContent = label;
     if (valueNode) valueNode.textContent = value;
   });
-  currentPreview.replaceWith(nextPreview);
+    currentPreview.replaceWith(nextPreview);
+    currentPreview = nextPreview;
+  };
+  render(palette);
 }

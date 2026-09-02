@@ -2,6 +2,7 @@
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { characterVariants, themeTokens } from "../data/theme-data.mjs";
+import { themeFamilies } from "../data/site-theme-data.mjs";
 import {
   CABINET_IMAGE_PATH,
   PRODUCT_DESCRIPTION,
@@ -18,17 +19,7 @@ const pageUrl = canonicalUrl(Astro.url.pathname);
 const shareImage = absoluteUrl(CABINET_IMAGE_PATH);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
 const main = themeTokens.main;
-const colorVariables = new Map([
-  ["--color-background", main.ui.background],
-  ["--color-foreground", main.ui.foreground],
-  ["--color-accent", main.ui.accent],
-  ["--color-red", main.semantic.red],
-  ["--color-cyan", main.semantic.cyan],
-  ["--color-surface-dim", main.ui.surface_dim],
-  ["--color-surface-0", main.ui.surface0],
-  ["--color-surface-1", main.ui.surface1],
-  ["--color-panel", main.ui.panel_bg],
-]);
+const colorVariables = new Map();
 
 for (const variant of characterVariants) {
   for (const [role, value] of Object.entries(variant.colors)) {
@@ -36,9 +27,49 @@ for (const variant of characterVariants) {
   }
 }
 
+const siteVariables = [
+  ["--bg", main.ui.background],
+  ["--su", main.ui.surface0],
+  ["--ov", main.ui.surface1],
+  ["--mu", main.ui.muted],
+  ["--fg", main.ui.foreground],
+  ["--ac", main.ui.accent],
+  ["--se", main.ui.accent_secondary],
+  ...[
+    ...Object.values(main.ansi.normal),
+    ...Object.values(main.ansi.bright),
+  ].map((value, index) => [`--a${index}`, value]),
+];
+for (const [property, value] of siteVariables) colorVariables.set(property, value);
+
 const customProperties = [...colorVariables]
   .map(([property, value]) => `${property}: ${value}`)
   .join("; ");
+const siteThemePayload = JSON.stringify(
+  themeFamilies.map(({ id, name, world, dark, light }) => ({
+    id,
+    name,
+    world,
+    dark: {
+      uiValues: [dark.ui.background, dark.ui.surface0, dark.ui.surface1, dark.ui.muted, dark.ui.foreground],
+      accent: dark.ui.accent,
+      secondary: dark.ui.accent_secondary,
+      ansi: [
+        ...Object.values(dark.ansi.normal),
+        ...Object.values(dark.ansi.bright),
+      ],
+    },
+    light: {
+      uiValues: [light.ui.background, light.ui.surface0, light.ui.surface1, light.ui.muted, light.ui.foreground],
+      accent: light.ui.accent,
+      secondary: light.ui.accent_secondary,
+      ansi: [
+        ...Object.values(light.ansi.normal),
+        ...Object.values(light.ansi.bright),
+      ],
+    },
+  })),
+).replaceAll("<", "\\u003c");
 ---
 
 <!doctype html>
@@ -62,9 +93,54 @@ const customProperties = [...colorVariables]
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
+    <script is:inline type="application/json" id="site-theme-data" set:html={siteThemePayload} />
+    <script is:inline>
+      (() => {
+        const data = document.getElementById("site-theme-data");
+        if (!data) return;
+        let saved = { id: "main", mode: "dark" };
+        try {
+          const candidate = JSON.parse(localStorage.getItem("sf2-site-theme") || "null");
+          if (candidate?.id) saved = candidate;
+        } catch {}
+        let themes;
+        try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
+        const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+        const validPalette = (palette) => palette
+          && Array.isArray(palette.uiValues)
+          && palette.uiValues.length === 5
+          && palette.uiValues.every(isColor)
+          && isColor(palette.accent)
+          && isColor(palette.secondary)
+          && Array.isArray(palette.ansi)
+          && palette.ansi.length === 16
+          && palette.ansi.every(isColor);
+        if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
+        const theme = themes.find((item) => item.id === saved.id) || themes[0];
+        const mode = saved.mode === "light" ? "light" : "dark";
+        const palette = theme?.[mode];
+        if (!palette) return;
+        const root = document.documentElement;
+        const [bg, surface, overlay, muted, foreground] = palette.uiValues;
+        const values = {
+          "--bg": bg,
+          "--su": surface,
+          "--ov": overlay,
+          "--mu": muted,
+          "--fg": foreground,
+          "--ac": palette.accent,
+          "--se": palette.secondary,
+        };
+        palette.ansi.forEach((color, index) => { values[`--a${index}`] = color; });
+        Object.entries(values).forEach(([property, value]) => root.style.setProperty(property, value));
+        root.style.colorScheme = mode;
+        root.dataset.siteTheme = theme.id;
+        root.dataset.siteMode = mode;
+      })();
+    </script>
     <title>{pageTitle}</title>
     {noindex ? null : <script is:inline type="application/ld+json" set:html={jsonLd} />}
   </head>

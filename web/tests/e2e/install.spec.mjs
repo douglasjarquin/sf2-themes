@@ -14,17 +14,16 @@ test("install route gives the real setup then apply commands", async ({ page }) 
   await page.goto("./install/");
 
   // When: they read the installation route.
-  const installBlock = page.getByLabel("Install script");
-  const installHeadings = page.locator(".install-moves__heading h2, .adapter-notes h2");
+  const installBlock = page.locator("code[aria-label]");
+  const installHeadings = page.locator("#moves-heading, #notes-heading");
 
   // Then: it preserves the README script and presents uv-backed adapter commands only.
   await expect(page.getByText("READY PLAYER ONE", { exact: true })).toHaveCount(0);
   await expect(installHeadings).toHaveCount(2);
   await expect(installHeadings.first()).toHaveCSS("color", "rgb(202, 209, 222)");
-  await expect(installHeadings.first()).toHaveCSS("font-weight", "700");
-  await expect(installHeadings.first()).toHaveCSS("text-shadow", "none");
-  await expect(installBlock).toHaveText(installScript);
-  await expect(installBlock).toHaveText(`${uvCommand} --version`);
+  await expect(installHeadings.first()).toHaveCSS("font-family", /Archivo Black/);
+  await expect(installBlock).toHaveAttribute("aria-label", installScript);
+  await expect(installBlock).toContainText(`${uvCommand} --version`);
   await expect(page.getByText(`${uvCommand} setup wezterm`, { exact: true })).toBeVisible();
   await expect(
     page.getByText(`${uvCommand} apply wezterm --theme ryu`, { exact: true }),
@@ -42,7 +41,7 @@ test("install route gives the real setup then apply commands", async ({ page }) 
     page.getByText(`${uvCommand} apply codex --theme ryu-light`, { exact: true }),
   ).toBeVisible();
 
-  const adapterNotesText = await page.locator(".adapter-notes").innerText();
+  const adapterNotesText = await page.locator(".install-notes").innerText();
   expect(adapterNotesText).not.toContain("street-fighter-2");
   expect(adapterNotesText).not.toMatch(/\bryu\b.*alias|alias.*\bryu\b/i);
 
@@ -76,7 +75,7 @@ test("install script copy confirms only after clipboard success", async ({ page 
 
   // Then: the clipboard receives the exact multiline text and the button confirms it.
   await expect.poll(() => page.evaluate(() => window.__sf2ThemeCopiedText)).toBe(installScript);
-  await expect(copyButton).toHaveText("✓ Copied");
+  await expect(copyButton).toHaveText("COPIED ✓");
   await expect(copyStatus).toHaveText("Install script copied");
 });
 
@@ -99,7 +98,7 @@ test("install script copy stays unconfirmed when clipboard rejects", async ({ pa
   await copyButton.click();
 
   // Then: no successful-copy checkmark is shown.
-  await expect(copyButton).toHaveText("Copy install script");
+  await expect(copyButton).toHaveText("COPY INSTALL SCRIPT");
   await expect(copyStatus).toHaveText("Copy failed");
 });
 
@@ -128,6 +127,6 @@ test("install script copy reports unexpected clipboard errors without exposing d
   // Then: the failure is observable by safe error type only and never looks successful.
   await expect.poll(() => diagnostics).toContain("[sf2-themes] Clipboard write failed: Error");
   expect(diagnostics.join("\n")).not.toContain("secret clipboard payload");
-  await expect(copyButton).toHaveText("Copy install script");
+  await expect(copyButton).toHaveText("COPY INSTALL SCRIPT");
   await expect(copyStatus).toHaveText("Copy failed");
 });

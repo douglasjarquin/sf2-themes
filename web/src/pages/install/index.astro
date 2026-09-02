@@ -1,168 +1,117 @@
 ---
-import PageBreadcrumb from "../../components/PageBreadcrumb.astro";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-
-const uvCommand = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
-const installScript = `${uvCommand} --version`;
-
+const CLI = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
+const installScript = `${CLI} --version`;
 const moves = [
-  ["WEZTERM", `${uvCommand} setup wezterm`, "Set up the one-time WezTerm integration."],
-  ["WEZTERM", `${uvCommand} apply wezterm --theme ryu`, "Apply Ryu, or replace the theme name with your fighter."],
-  ["HERDR", `${uvCommand} setup herdr`, "Set up the one-time Herdr integration."],
-  ["HERDR", `${uvCommand} apply herdr --theme chun-li`, "Apply Chun-Li, then reload the Herdr server configuration."],
-  ["NVIM", `${uvCommand} setup nvim`, "Set up the one-time Neovim colorscheme loader."],
-  ["NVIM", `${uvCommand} apply nvim --theme ryu-light`, "Apply Ryu Light, or replace the theme name with your fighter."],
-  ["CODEX", `${uvCommand} setup codex`, "Set up the one-time Codex custom theme directory."],
-  ["CODEX", `${uvCommand} apply codex --theme ryu-light`, "Apply Ryu Light, then restart Codex or reselect it with /theme."],
-  ["STARSHIP", `${uvCommand} apply starship --theme vega`, "Apply Vega to Starship and refresh the zsh-syntax highlight snippet."],
+  ["WEZTERM", "setup wezterm", "Set up the one-time WezTerm integration."],
+  ["WEZTERM", "apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
+  ["HERDR", "setup herdr", "Set up the one-time Herdr integration."],
+  ["HERDR", "apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
+  ["NVIM", "setup nvim", "Set up the one-time Neovim colorscheme loader."],
+  ["NVIM", "apply nvim --theme ryu-light", "Apply Ryu Light, or replace the theme name with your fighter."],
+  ["CODEX", "setup codex", "Set up the one-time Codex custom theme directory."],
+  ["CODEX", "apply codex --theme ryu-light", "Apply Ryu Light, then restart Codex or reselect it with /theme."],
+  ["STARSHIP", "apply starship --theme vega", "Apply Vega to Starship and refresh the zsh-syntax highlight snippet."],
 ];
 ---
 
-<SiteLayout
-  title="Install Street Fighter II terminal themes"
-  description="Install sf2-themes, then set up and apply Street Fighter II terminal colors."
->
-  <section class="install-page">
-    <div class="site-frame install-page__inner">
-      <header class="install-page__header">
-        <PageBreadcrumb current="INSTALL" detail="SETUP + APPLY" />
-        <h1 class="page-title">INSTALL</h1>
-        <p class="install-page__lede">
-          Run the CLI directly from GitHub with uv, then set up each terminal once.
-        </p>
-        <p class="install-page__lede">
-          Use short catalog ids such as <code>ken</code> on the CLI; installed theme identities use the
-          grouped <code>sf2-ken</code> form in every adapter.
-        </p>
-      </header>
+<SiteLayout title="Install Street Fighter II terminal themes" description="Install sf2-themes, then set up and apply Street Fighter II terminal colors.">
+  <div class="install-page">
+    <header class="install-hero site-frame">
+      <p class="install-eyebrow">SETUP + APPLY</p>
+      <h1 class="page-title">INSTALL</h1>
+      <p class="install-lede">Run the CLI directly from GitHub with uv, then set up each terminal once. Use short catalog ids such as <code>ken</code> on the CLI; installed theme identities use the grouped <code>sf2-ken</code> form in every adapter.</p>
+    </header>
 
-      <section aria-labelledby="install-script-heading" class="install-panel">
-        <div class="install-panel__heading">
-          <span class="install-panel__lights" aria-hidden="true"><i></i><i></i><i></i></span>
-          <div>
-            <p class="install-panel__eyebrow">TERMINAL</p>
-            <h2 id="install-script-heading">GET THE CLI</h2>
-          </div>
-          <button data-install-copy data-install-script={installScript} type="button"
-            >Copy install script</button
-          >
+    <div class="install-content site-frame">
+      <section class="install-section" aria-labelledby="cli-heading">
+        <h2 id="cli-heading">GET THE CLI</h2>
+        <div class="command-bar">
+          <code aria-label={installScript}><span class="command-prompt" aria-hidden="true">$</span> {installScript}</code>
+          <button aria-label="Copy install script" data-install-copy data-install-script={installScript} type="button">COPY INSTALL SCRIPT</button>
         </div>
-        <pre aria-label="Install script"><code>{installScript}</code></pre>
-        <p class="install-panel__meta">Requires uv and Python 3.11 or newer.</p>
-        <p aria-live="polite" class="sr-only" data-install-status role="status"></p>
+        <p class="install-muted">Requires uv and Python 3.11 or newer.</p>
+        <p aria-live="polite" class="install-status" data-copy-status data-install-status role="status"></p>
       </section>
 
-      <section aria-labelledby="move-list-heading" class="install-moves">
-        <div class="install-moves__heading">
-          <p>SETUP, THEN APPLY</p>
-          <h2 id="move-list-heading">MAKE YOUR MOVE</h2>
-        </div>
-        <ol>
+      <section class="install-section" aria-labelledby="moves-heading">
+        <h2 id="moves-heading">MAKE YOUR MOVE</h2>
+        <div class="install-moves">
           {
-            moves.map(([adapter, command, detail], index) => (
-              <li>
-                <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                <div>
-                  <p>{adapter}</p>
+            moves.map(([adapter, args, note], index) => {
+              const command = `${CLI} ${args}`;
+              return (
+                <article class="install-step" data-install-step>
+                  <div class="install-step__meta">
+                    <span>{String(index + 1).padStart(2, "0")} - {adapter}</span>
+                    <button data-install-command={command} type="button">COPY</button>
+                  </div>
                   <code>{command}</code>
-                  <small>{detail}</small>
-                </div>
-              </li>
-            ))
+                  <p>{note}</p>
+                </article>
+              );
+            })
           }
-        </ol>
+        </div>
       </section>
 
-      <aside aria-labelledby="adapter-notes-heading" class="adapter-notes">
-        <p>ADAPTER NOTES</p>
-        <h2 id="adapter-notes-heading">NO GUESSWORK</h2>
+      <section class="install-section install-notes" aria-labelledby="notes-heading">
+        <h2 id="notes-heading">NO GUESSWORK</h2>
         <ul>
-          <li>
-            WezTerm setup upgrades an existing assignment to the managed pointer. For another
-            selected scheme, use <code>--adopt</code> or paste the printed snippet.
-          </li>
-          <li>
-            Herdr leaves an unmarked <code>[theme]</code> section alone unless you use
-            <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.
-          </li>
+          <li>WezTerm setup upgrades an existing assignment to the managed pointer. For another selected scheme, use <code>--adopt</code> or paste the printed snippet.</li>
+          <li>Herdr leaves an unmarked <code>[theme]</code> section alone unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
           <li><code>install</code> remains a deprecated alias for <code>apply</code>.</li>
         </ul>
-      </aside>
+      </section>
     </div>
-  </section>
+  </div>
 </SiteLayout>
 
-<script>
-  const copyButton = document.querySelector<HTMLButtonElement>("[data-install-copy]");
-  const copyStatus = document.querySelector<HTMLElement>("[data-install-status]");
-
-  copyButton?.addEventListener("click", async () => {
-    const installScript = copyButton.dataset.installScript;
-
-    if (!installScript || !navigator.clipboard?.writeText) {
-      if (copyStatus) copyStatus.textContent = "Copy unavailable";
-      return;
+<script is:inline>
+  (() => {
+    const status = document.querySelector("[data-copy-status]");
+    const copy = async (button, value, successMessage) => {
+      if (!navigator.clipboard?.writeText) {
+        if (status) status.textContent = "Copy unavailable";
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(value);
+        button.textContent = "COPIED ✓";
+        if (status) status.textContent = successMessage;
+        window.setTimeout(() => { button.textContent = button.dataset.originalLabel || "COPY"; }, 1600);
+      } catch (error) {
+        console.warn(`[sf2-themes] Clipboard write failed: ${error?.constructor?.name || "Error"}`);
+        if (status) status.textContent = "Copy failed";
+      }
+    };
+    for (const button of document.querySelectorAll("[data-install-copy], [data-install-command]")) {
+      button.dataset.originalLabel = button.textContent;
+      button.addEventListener("click", () => copy(button, button.dataset.installScript || button.dataset.installCommand, button.hasAttribute("data-install-copy") ? "Install script copied" : "Command copied"));
     }
-
-    try {
-      await navigator.clipboard.writeText(installScript);
-    } catch (error) {
-      console.warn(
-        "[sf2-themes] Clipboard write failed:",
-        error instanceof Error ? error.name : "UnknownError",
-      );
-      if (copyStatus) copyStatus.textContent = "Copy failed";
-      return;
-    }
-
-    copyButton.textContent = "✓ Copied";
-    if (copyStatus) copyStatus.textContent = "Install script copied";
-  });
+  })();
 </script>
 
 <style>
-  .install-page__inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 1fr); align-items: start; gap: var(--space-12); padding-block: var(--space-12) var(--space-20); }
-  .sr-only { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-  .install-page__header, .adapter-notes { grid-column: 1 / -1; }
-  .install-page__header { display: grid; gap: var(--space-4); max-inline-size: 760px; }
-  .install-panel__eyebrow, .install-moves__heading > p, .adapter-notes > p, .install-moves li > span { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 9px; line-height: 1.9; }
-  .install-moves li p { margin: 0; color: var(--color-cyan); font-family: var(--font-display); font-size: 14px; line-height: 1.45; }
-  h2 { margin: 0; color: var(--color-foreground); font-family: var(--font-display); font-weight: 700; }
-  h2 { font-size: var(--text-section); line-height: 1.5; }
-  .install-page__lede, .install-panel__meta, .install-moves small, .adapter-notes li { color: color-mix(in srgb, var(--color-foreground) 72%, transparent); font-size: 16px; line-height: 1.7; }
-  .install-page__lede, .install-panel__meta { margin: 0; }
-  .install-panel, .adapter-notes { border: 2px solid color-mix(in srgb, var(--color-foreground) 12%, transparent); background: color-mix(in srgb, var(--color-background) 82%, black); box-shadow: 6px 6px 0 color-mix(in srgb, var(--color-background) 72%, black); }
-  .install-panel__heading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-block-size: 54px; padding: var(--space-3) var(--space-4); border-block-end: 2px solid color-mix(in srgb, var(--color-foreground) 8%, transparent); }
-  .install-panel__heading > div { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .install-panel__lights { display: flex; gap: 7px; }
-  .install-panel__lights i { inline-size: 10px; block-size: 10px; border-radius: 50%; background: var(--color-red); }
-  .install-panel__lights i:nth-child(2) { background: var(--color-accent); }
-  .install-panel__lights i:nth-child(3) { background: var(--color-cyan); }
-  button { min-block-size: 30px; padding: var(--space-2) var(--space-3); border: 1px solid color-mix(in srgb, var(--color-foreground) 24%, transparent); background: transparent; box-shadow: none; color: color-mix(in srgb, var(--color-foreground) 72%, transparent); cursor: pointer; font: 500 12px/1.2 var(--font-mono); transition: color var(--duration-micro) ease-out, border-color var(--duration-micro) ease-out; }
-  button:hover { border-color: var(--color-accent); color: var(--color-accent); }
-  button:focus-visible { outline: 3px solid var(--color-cyan); outline-offset: 4px; }
-  pre { min-block-size: 150px; min-inline-size: 0; overflow: hidden; margin: 0; padding: var(--space-5) var(--space-6); background: transparent; color: var(--color-foreground); font: 500 13px/2 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
-  pre code { white-space: inherit; }
-  .install-panel__meta { display: none; }
-  .install-moves { display: grid; gap: var(--space-4); }
-  .install-moves__heading { display: grid; gap: var(--space-2); }
-  ol, ul { display: grid; gap: var(--space-4); margin: 0; padding: 0; list-style: none; }
-  .install-moves li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-3); padding: 0; }
-  .install-moves li > div { display: grid; gap: var(--space-2); }
-  code { overflow-wrap: anywhere; color: var(--color-foreground); font-family: var(--font-mono); font-size: 14px; }
-  .install-moves small { font-size: 14px; line-height: 1.45; }
-  .adapter-notes { padding: var(--space-6); }
-  .adapter-notes h2 { margin-block: var(--space-2) var(--space-5); }
-  .adapter-notes li { position: relative; padding-inline-start: var(--space-5); }
-  .adapter-notes li::before { position: absolute; inset-inline-start: 0; color: var(--color-red); content: "▸"; }
-  @media (min-width: 561px) { .install-page__header { margin-block-end: var(--space-6); } }
-  @media (max-width: 560px) {
-    .install-page__inner { grid-template-columns: 1fr; gap: var(--space-10); padding-block: calc(var(--space-12) + var(--space-1)) var(--space-15); }
-    .install-page__header, .adapter-notes { grid-column: auto; }
-    .install-page__header { margin-block-end: calc(var(--space-6) + var(--space-1)); }
-    .install-panel__heading { flex-wrap: nowrap; }
-    .install-panel__lights { flex: none; }
-    button { max-inline-size: 190px; }
-    pre { padding-inline: var(--space-5); font-size: 12px; }
-  }
+  .install-page { padding-block-end: var(--space-20); }
+  .install-hero { padding-block: var(--space-20) var(--space-12); }
+  .install-eyebrow { margin: 0 0 var(--space-6); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
+  .install-lede { max-inline-size: 760px; margin: var(--space-8) 0 0; color: var(--mu); font-size: var(--text-body-lg); font-weight: 500; line-height: 1.5; text-wrap: pretty; }
+  .install-content { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-16); min-inline-size: 0; }
+  .install-section h2 { margin: 0 0 var(--space-6); font-family: var(--font-display); font-size: 34px; }
+  .command-bar { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-6) var(--space-8); border: var(--border-thin) solid var(--ov); border-radius: 10px; background: var(--su); }
+  .command-bar code { min-inline-size: 0; flex: 1; overflow-x: auto; color: var(--fg); font: 18px/1.6 var(--font-mono); white-space: nowrap; }
+  .command-prompt { color: var(--se); }
+  .command-bar button, .install-step button { flex: none; min-block-size: 44px; padding: var(--space-2) var(--space-4); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-control); background: transparent; color: var(--ac); font: 600 13px/1.4 var(--font-mono); letter-spacing: 0.08em; cursor: pointer; }
+  .command-bar button:hover, .install-step button:hover { border-color: var(--ac); }
+  .install-muted, .install-status { margin: var(--space-3) 0 0; color: var(--mu); font-size: 18px; line-height: 1.5; }
+  .install-status { min-block-size: 1.5em; color: var(--ac); }
+  .install-moves { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: var(--space-4); }
+  .install-step { min-inline-size: 0; padding: var(--space-6) var(--space-8); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); }
+  .install-step__meta { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-block-end: var(--space-4); color: var(--ac); font: 600 15px/1.4 var(--font-mono); letter-spacing: 0.16em; }
+  .install-step code { display: block; overflow-x: auto; margin-block-end: var(--space-4); color: var(--fg); font: 16px/1.6 var(--font-mono); white-space: nowrap; }
+  .install-step p { margin: 0; color: var(--mu); font-size: 18px; line-height: 1.5; }
+  .install-notes ul { display: grid; gap: var(--space-4); max-inline-size: 860px; margin: 0; padding-inline-start: var(--space-6); color: var(--mu); font-size: 20px; line-height: 1.7; }
+  .install-notes code, .install-lede code { color: var(--ac); font-family: var(--font-mono); }
+  @media (max-width: 640px) { .install-hero { padding-block: var(--space-12) var(--space-10); } .command-bar { align-items: stretch; flex-direction: column; padding: var(--space-5); } .command-bar button { inline-size: 100%; } .install-step { padding: var(--space-5); } .install-step__meta { letter-spacing: 0.1em; } .install-step code { font-size: 14px; } }
 </style>

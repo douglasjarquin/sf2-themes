@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("homepage uses the featured palette preview while the arcade host remains reusable", async () => {
+test("homepage uses the live theme preview while the arcade host remains reusable", async () => {
   // Given the homepage, featured preview, preserved arcade component, and browser boundary
   const [homepage, featured, shared, styles, arcade, host] = await Promise.all([
     readFile(new URL("../src/pages/index.astro", import.meta.url), "utf8"),
@@ -20,7 +20,7 @@ test("homepage uses the featured palette preview while the arcade host remains r
   assert.match(homepage, /<FeaturedPalettePreview\b/);
   assert.doesNotMatch(homepage, /<ArcadeGame\b|data-arcade-game/);
   assert.doesNotMatch(homepage, legacyIdentifiers);
-  assert.match(featured, /<PalettePreview\b/);
+  assert.match(featured, /data-home-theme-preview/);
   assert.doesNotMatch(featured, /data-code-pane|data-terminal-pane|data-preview-swatch|syntaxPattern/);
   assert.match(shared, /data-preview-variant/);
   assert.match(shared, /data-code-pane/);

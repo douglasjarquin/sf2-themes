@@ -1,195 +1,148 @@
-# sf2-themes Design System
+# SF2 Themes Design System
+
+## 0. Research Log
+
+- Supplied reference packet: `Downloads/sf2-new-design/{Home,Themes,Theme Detail,Install,SiteNav,Design System}.dc.html` and `themes.js` were the visual and interaction source of truth.
+- Existing project extraction: `web/src/styles/global.css`, `SiteLayout.astro`, `SiteHeader.astro`, and `theme-data.mjs` established the Astro shell, generated catalog contract, and existing accessibility baseline.
+- Skipped image generation: the user supplied precise HTML design references and the product's required visuals are live DOM, canonical palette swatches, and generated gameplay screenshots, so introducing new imagery would not be authoritative.
 
 ## 1. Atmosphere & Identity
 
-sf2-themes feels like an arcade cabinet wired directly into a developer's terminal.
-The signature is pixel-era display type, dark navy surfaces, and fighter colors used as functional visual signals.
+SF2 Themes is a dark editorial arcade catalog: confident, spacious, and technical without becoming a dashboard.
+The signature is a deep navy canvas with warm fighter accents, oversized Archivo Black headlines, and terminal-like mono controls that make every palette feel wearable.
 
 ## 2. Color
 
 ### Palette
 
-| Role | Token | Value | Usage |
-|------|------|-------|-------|
-| Surface/primary | `--color-background` | `#101a3a` | Page background |
-| Surface/panel | `--color-panel` | `#101a3a` | Cards and footer |
-| Surface/0 | `--color-surface-0` | `#28304a` | Recessed surfaces |
-| Surface/1 | `--color-surface-1` | `#363d53` | Raised surfaces |
-| Text/primary | `--color-foreground` | `#fff4d6` | Headings and body text |
-| Accent/primary | `--color-accent` | `#f2b134` | Primary actions and emphasis |
-| Status/error | `--color-red` | `#e8565f` | Error and combat signal |
-| Status/info | `--color-cyan` | `#35c4c2` | Labels, focus, and informational signal |
-| Theme-specific | `--character-<id>-<role>` | Theme TOML values | Palette swatches and fighter previews |
+Canonical preview colors come from `web/src/data/generated-theme-data.json` through `theme-data.mjs`.
+The site shell maps the selected canonical family/mode to these variables at runtime.
+
+| Role | Token | Source / usage |
+|------|-------|----------------|
+| Canvas | `--bg` | selected `ui.background` |
+| Surface | `--su` | selected `ui.surface0` |
+| Overlay | `--ov` | selected `ui.surface1` |
+| Muted text | `--mu` | selected `ui.muted` |
+| Foreground | `--fg` | selected `ui.foreground` |
+| Primary accent | `--ac` | selected `ui.accent` |
+| Secondary accent | `--se` | selected `ui.accent_secondary` |
+| ANSI slots | `--a0` through `--a15` | selected `ansi.normal` and `ansi.bright` |
 
 ### Rules
 
-Theme-specific colors come from the TOML catalog and are never retyped in page markup.
-Accent colors are used for interactive emphasis and meaningful visual signals.
+- Theme values are resolved only by `theme-data.mjs` and the shared site-theme runtime.
+- Page CSS consumes variables and does not hand-type canonical theme colors.
+- Site chrome selection is separate from game palette selection; the browser game continues to receive its explicit palette payload.
 
 ## 3. Typography
 
-### Scale
+| Level | Size | Weight | Usage |
+|------|------|--------|-------|
+| Display | `clamp(4rem, 9vw, 8.75rem)` | Archivo Black | hero and theme detail titles |
+| Section | `clamp(2rem, 5vw, 3rem)` | Archivo Black | major headings |
+| Card | `1.625rem` | Archivo 700 | roster and install card headings |
+| Lead | `clamp(1.25rem, 2vw, 1.625rem)` | Archivo 500 | route introductions |
+| Body | `1.125rem` | Archivo 400 | explanatory copy |
+| Meta | `0.8125rem` | IBM Plex Mono 600 | labels, statuses, navigation |
+| Code | `1rem` | IBM Plex Mono 400/600 | commands and terminal panels |
 
-| Level | Size | Weight | Line Height | Usage |
-|------|------|--------|-------------|-------|
-| Display | `26px` | 700 | 1.5 | Page titles |
-| Body/lg | `17px` | 400 | 1.7 | Lead paragraphs |
-| Body | `14px` | 400 | 1.7 | Supporting copy |
-| Caption | `12px` | 400 | 1.5 | Hex values and metadata |
-| Label | `10px` | 700 | 1.8 | Arcade labels and card names |
-| Overline | `9px` | 700 | 1.9 | Section eyebrows |
-
-### Font Stack
-
-- Display: `Press Start 2P`, monospace.
-- Body: `Chakra Petch`, sans-serif.
-- Mono: `JetBrains Mono`, monospace.
+Font stacks are Archivo / Archivo Black for editorial text and IBM Plex Mono for controls and code.
+The three-family split is intentional because the supplied reference explicitly uses these roles.
 
 ## 4. Spacing & Layout
 
-### Base Unit
-
-All spacing derives from a base unit of 4px.
-
-The shared spacing tokens are defined in `web/src/styles/global.css` from `--space-1` through `--space-20`.
-
-The shared radius tokens are `--radius-panel` for substantial surfaces and `--radius-control` for compact controls.
-
-Preview-specific geometry tokens such as `--swatch-height` and `--code-line-number-width` are defined alongside the shared tokens so the audit surface does not introduce one-off spacing values.
-
-### Grid
-
-The content width is `1180px` plus responsive horizontal padding.
-Palette source cards use a five-column grid on wide screens and one column below 621px.
-Palette variant swatches use five columns on wide screens and intrinsic responsive columns below 621px.
-The primary mobile breakpoint is 620px and the shared navigation breakpoint is 720px.
+Spacing uses a 4px base with shared tokens from `web/src/styles/global.css`.
+The page shell is `--content-width: 1400px` with 40px desktop gutters and `clamp()` gutters on narrow screens.
+Major sections use 48-96px vertical rhythm; cards use 24-36px padding; grids use 12-24px gaps.
+Responsive breakpoints are 760px for stacked page composition and 640px for compact navigation/control clusters.
+All grid tracks use `minmax(0, 1fr)` or `minmax(min(20rem, 100%), 1fr)` so unbroken commands cannot widen the page.
 
 ## 5. Components
 
-### Site Shell
+### Site Header and Theme Picker
 
-- **Structure**: header, main content, footer.
-- **Variants**: route-aware header navigation.
-- **Spacing**: shared frame and spacing tokens.
-- **States**: active route, focus-visible links.
-- **Accessibility**: semantic landmarks and keyboard-visible focus.
-- **Motion**: micro transitions on links and controls.
-- **Layout**: full-height grid shell.
+- Structure: sticky header, brand link, primary route links, GitHub link, picker button, disclosure panel with dark/light controls and catalog-family buttons.
+- Variants: active route, selected family, dark mode, light mode, open, closed.
+- States: default, hover, active, focus-visible, disabled unavailable clipboard feedback.
+- Accessibility: semantic navigation, `aria-current`, `aria-expanded`, labelled disclosure, keyboard-reachable buttons, Escape-to-close, outside-click close.
+- Motion: 120ms color/transform affordance; panel visibility is stateful and respects reduced motion.
+
+### Palette Swatch Strip
+
+- Structure: six live swatch spans for accent, secondary, and ANSI preview colors.
+- Variants: roster card and terminal preview.
+- States: static, hover on containing link, focus on containing link.
+- Accessibility: decorative swatches are hidden; card name and mode remain text-visible.
+
+### Theme Roster Card
+
+- Structure: semantic link containing family metadata, display title, world line, six-color strip, detail link, and site-theme action.
+- Variants: normal `2 MODES`, selected `WEARING`, dark-mode and light-mode data.
+- States: default, hover, active, focus-visible, selected.
+- Accessibility: action button stops link navigation and exposes `ACTIVE` when selected.
+- Motion: 120ms border/color/transform affordance only.
+
+### Code Panel and Copy Action
+
+- Structure: labelled terminal/code surface with command content and a copy button.
+- Variants: install command, theme apply command, terminal preview, TypeScript preview.
+- States: default, copied, clipboard failure, focus-visible.
+- Accessibility: semantic `pre`/`code`, `aria-live` status, no success state before clipboard resolution.
+- Motion: button label changes only after successful write; reduced motion keeps the state change.
+
+### Detail Palette and Mode Controls
+
+- Structure: theme heading, dark/light control cluster, apply-to-site action, adapter command chooser, terminal/code panels, palette grid, screenshot, adjacent navigation.
+- Variants: dark/light preview, selected site theme, adapter selection, screenshot available/unavailable.
+- States: default, active, copied, focus-visible, empty screenshot fallback.
+- Accessibility: buttons are labelled by mode/adapter, screenshot has descriptive alt text, adjacent links are keyboard reachable.
+
+### Existing Palette Preview
+
+- Structure: canonical palette identity, syntax/code pane, terminal pane, and grouped neutral/accent/ANSI swatches.
+- Variants: full preview routes and compact featured home preview.
+- States: static fallback, selected persisted site family/mode, copied color/command, clipboard failure, and malformed payload fallback.
+- Accessibility: semantic article and headings, native copy buttons, labelled swatches, and complete no-JavaScript fallback.
+- Layout: full previews use responsive grids; compact home preview stacks to a readable single column at narrow widths.
+
+### Existing Arcade Cabinet
+
+- Structure: generated terminal cabinet, fighter controls, deterministic game host, and screenshot assets.
+- Variants: idle, playing, result, reduced-motion, and capture mode.
+- States: selected fighter/theme, credit, pause, combat, result, and renderer failure fallback.
+- Accessibility: native controls, pressed selection state, live status, and preserved static poster.
+- Layout: game-specific geometry remains owned by `web/src/game/` and is not coupled to site-theme chrome.
 
 ### Page Breadcrumb
 
-- **Structure**: a compact current-route path with a home link, current-page label, and optional route detail.
-- **Variants**: route-specific context for themes, palette, preview, install, and arcade pages.
-- **Spacing**: shared overline typography and spacing tokens.
-- **States**: default home link, hover, focus-visible, and current-page text.
-- **Accessibility**: semantic breadcrumb navigation with an explicit label and `aria-current` on the active page.
-- **Motion**: home link uses the shared micro transition only for interactive feedback.
-- **Layout**: wraps naturally above route titles without horizontal overflow at mobile widths.
-
-### Palette Card
-
-- **Structure**: interactive button, color block, name, hex value, and token label.
-- **Variants**: main source color and catalog theme palette.
-- **Spacing**: shared frame, grid, and spacing tokens.
-- **States**: default, hover, active, focus-visible, and copy feedback.
-- **Accessibility**: native button semantics and an explicit copy label containing the color value.
-- **Motion**: 120ms transform on hover, disabled for reduced motion.
-- **Layout**: responsive grid.
-
-### Palette Variant Row
-
-- **Structure**: theme identity and a responsive group of five interactive swatches.
-- **Variants**: dark and light catalog themes.
-- **Spacing**: shared card, grid, and spacing tokens.
-- **States**: default, hover, active, focus-visible, and copy feedback.
-- **Accessibility**: native buttons, visible focus, and named swatches.
-- **Motion**: no decorative motion.
-- **Layout**: two-column row on wide screens and a single-column stack on mobile.
-
-### Palette Preview Family
-
-- **Structure**: a family identity row followed by paired dark and light palette mode panels.
-- **Variants**: one family section for Main and each TOML-backed fighter, with every canonical mode rendered in source order.
-- **Spacing**: wide family sections with breathable separators and compact mode-panel internals.
-- **States**: default, focused code/terminal surfaces, and copy feedback for commands and color values.
-- **Accessibility**: semantic headings, native copy buttons, labeled swatch groups, and readable static content without JavaScript.
-- **Motion**: no decorative motion; copy controls use the shared micro transition only for feedback.
-- **Layout**: mode panels sit side by side on wide screens and stack below 720px; swatch grids reflow below 620px.
-
-### Featured Palette Preview
-
-- **Structure**: one featured `article` contains an identity header, paired syntax-highlighted code and terminal panes, and 25 individually labeled swatches grouped as six neutral, three accent, eight normal ANSI, and eight bright ANSI colors.
-- **Variants**: the server-rendered fallback is the canonical Main palette, and the browser selects one canonical `paletteVariants` entry at runtime after its serialized payload has parsed successfully.
-- **Static fallback**: JavaScript-disabled, malformed-payload, and missing-payload sessions retain the complete server-rendered Main preview instead of replacing it.
-- **Syntax**: code tokens expose semantic kinds for comments, keywords, properties, strings, numbers, punctuation, and plain text, with colors derived from the selected canonical palette.
-- **Spacing**: the primitive uses shared typography, spacing, border, radius, and shadow tokens, while canonical palette CSS custom properties supply all preview colors.
-- **Accessibility**: the preview has a descriptive article label, semantic section headings for code and terminal content, readable text labels and values for every swatch, and complete useful content before client JavaScript runs.
-- **Motion**: the preview has no decorative animation, so reduced-motion users see the same static fallback and no runtime transition is required.
-- **Layout**: code and terminal panes plus swatch ramps use two columns above 980px, one column from 761px through 980px, two compact columns from 521px through 760px, and one readable column at 520px and below without horizontal overflow.
-
-### Palette Mode Panel
-
-- **Structure**: mode header, live code preview, truthful `sf2-themes show` terminal preview, six neutral swatches, three accent swatches, and two eight-color ANSI rows.
-- **Variants**: dark and light, each styled from its canonical TOML-backed UI and semantic tokens.
-- **Spacing**: 12px panel padding with 4px-derived internal gaps and a 12px radius from the revised reference direction.
-- **States**: default, hover/focus copy controls, and polite per-panel copy status.
-- **Accessibility**: mode labels, explicit color names and values, visible focus, and no image-only information.
-- **Motion**: color and border feedback only, with reduced-motion support inherited from the shared shell.
-- **Layout**: code and terminal previews stack inside each mode panel; palette ramps remain readable at 375px.
-
-### Palette Mode Filter
-
-- **Structure**: a grouped set of native toggle buttons above the catalog.
-- **Variants**: all, dark, and light.
-- **Spacing**: shared spacing tokens and compact control gaps.
-- **States**: default, hover, active, focus-visible, and pressed.
-- **Accessibility**: `role="group"`, an accessible group label, and `aria-pressed` on each control.
-- **Motion**: color and border feedback only.
-- **Layout**: inline cluster that stacks with the catalog heading on mobile.
-
-### Arcade Cabinet
-
-- **Structure**: marquee, live terminal transcript, fighter selector, and coin action.
-- **Variants**: idle, playing, and complete sequence states with a selected TOML-backed fighter theme.
-- **States**: selected fighter, pressed fighter controls, credit count, active fight frame, and completed K.O. frame.
-- **Accessibility**: native buttons, exclusive `aria-pressed` selection, and a polite live transcript.
-- **Motion**: 120ms color and border transition for theme changes; transcript frames advance every 480ms and use no transform animation when reduced motion is preferred.
-- **Layout**: cabinet remains a readable single-column terminal surface at mobile widths.
-
-### Screenshot Card
-
-- **Structure**: a generated cabinet image with a fighter label and captured game moment.
-- **Variants**: one card for each playable character theme.
-- **Spacing**: two-column archive grid on wide screens with shared frame and card spacing.
-- **States**: default, loading image, and keyboard focus when the image is inspected by assistive technology.
-- **Accessibility**: semantic figure captions, descriptive alternative text, intrinsic image dimensions, and a single labeled screenshot landmark.
-- **Motion**: no decorative card motion; images remain stable records of the cabinet.
-- **Layout**: cards collapse to one column below 621px without cropping the source image's 16:9 frame.
+- Structure: route context link, separator, and current label.
+- Variants: existing palette/preview/install routes.
+- States: default, hover, and focus-visible.
+- Accessibility: readable route context with semantic links and keyboard focus.
 
 ## 6. Motion & Interaction
 
-The micro duration is 120ms with ease-out timing.
-Only transform, color, background, and border presentation transitions are used for interactive feedback.
-Reduced-motion users receive no non-essential transform animation.
-Copy actions announce success or failure in a live status region.
-The arcade cabinet advances meaningful text fight frames at a 480ms cadence after a credit is inserted.
+Motion is restrained and functional.
+Interactive color/border/transform transitions use `--duration-micro: 120ms` and `ease-out`.
+The picker is an explicit disclosure rather than a decorative animation.
+Copy labels change on success and automatically restore; no motion is required for comprehension.
+`prefers-reduced-motion: reduce` disables transitions and smooth scrolling.
 
 ## 7. Depth & Surface
 
-The system uses a mixed strategy of tonal surfaces and offset shadows.
-Cards use panel surfaces with a 4px offset shadow, while color blocks use a 5px offset shadow.
-Dividers use low-contrast foreground mixes to preserve the arcade material without adding visual noise.
+The system uses a mixed borders-and-tonal-shift strategy from the supplied reference.
+Surfaces use `--su` and `--ov` with 1px overlay borders, 10-14px radii, and one restrained popover shadow.
+The body background remains open and unboxed; nested panels are reserved for terminal/code content that needs a clear boundary.
 
 ## 8. Accessibility Constraints & Accepted Debt
 
-### Constraints
-
-The target is WCAG 2.2 AA with keyboard reachability, visible focus, semantic landmarks, readable contrast, and reduced-motion support.
-Interactive palette elements must remain native buttons with accessible names.
-The page must reflow to one readable column at 375px without horizontal overflow.
-
-### Accepted Debt
+- WCAG 2.2 AA target with 4.5:1 body contrast and 3:1 large-text contrast where the selected theme permits it.
+- Every interactive element has a visible focus ring, 44px minimum hit target intent, semantic role, and keyboard path.
+- Site picker state is announced through labels and `aria-expanded`; copy feedback uses `aria-live`.
+- Primary content must reflow to one readable column at 375px with no page-level horizontal overflow.
+- Reduced-motion preferences are respected.
 
 | Item | Location | Why accepted | Owner / Exit |
 |------|----------|--------------|--------------|
-| None recorded | - | No new accessibility debt is introduced by the palette catalog expansion. | Revisit during the next visual QA pass. |
+| Remote Google Fonts can be unavailable offline | `SiteLayout.astro` | The supplied design explicitly names Archivo and IBM Plex Mono; local bundling is outside this redesign scope. | Future asset self-hosting pass |
