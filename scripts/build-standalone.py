@@ -23,6 +23,7 @@ MODULES: tuple[tuple[str, Path, bool], ...] = (
     ("sf2_theme.adapters.lazygit", SRC / "adapters" / "lazygit.py", False),
     ("sf2_theme.adapters.nvim", SRC / "adapters" / "nvim.py", False),
     ("sf2_theme.adapters.codex", SRC / "adapters" / "codex.py", False),
+    ("sf2_theme.adapters.claude", SRC / "adapters" / "claude.py", False),
     ("sf2_theme.adapters.starship", SRC / "adapters" / "starship.py", False),
     ("sf2_theme.adapters.zsh_syntax", SRC / "adapters" / "zsh_syntax.py", False),
     ("sf2_theme.cli", SRC / "cli.py", False),

@@ -64,6 +64,15 @@ grep -q 'theme = "sf2-ryu-light"' "$test_dir/installed-codex/config.toml"
 grep -q '#131927' "$test_dir/installed-codex/themes/sf2-main.tmTheme"
 test "$("$repo_dir/sf2-themes" current codex --config-dir "$test_dir/installed-codex")" = "sf2-ryu-light"
 printf '%s\n' 'Copy-only installed Codex: PASS'
+"$repo_dir/sf2-themes" setup claude --config-dir "$test_dir/installed-claude"
+"$repo_dir/sf2-themes" apply claude --theme ryu-light --config-dir "$test_dir/installed-claude"
+test -f "$test_dir/installed-claude/themes/sf2-main.json"
+test -f "$test_dir/installed-claude/themes/sf2-main-light.json"
+test -f "$test_dir/installed-claude/themes/sf2-ryu-light.json"
+grep -q '"theme": "custom:sf2-ryu-light"' "$test_dir/installed-claude/settings.json"
+grep -q '#ad8705' "$test_dir/installed-claude/themes/sf2-main.json"
+test "$("$repo_dir/sf2-themes" current claude --config-dir "$test_dir/installed-claude")" = "sf2-ryu-light"
+printf '%s\n' 'Copy-only installed Claude: PASS'
 "$repo_dir/sf2-themes" setup lazygit --config-dir "$test_dir/installed-lazygit"
 "$repo_dir/sf2-themes" apply lazygit --theme ryu-light --config-dir "$test_dir/installed-lazygit"
 test "$(find "$test_dir/installed-lazygit/themes" -type f -name 'sf2-*.yml' | wc -l | tr -d ' ')" -eq 36

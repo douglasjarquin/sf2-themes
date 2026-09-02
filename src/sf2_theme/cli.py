@@ -1,5 +1,6 @@
 """Command-line interface for the Street Fighter II theme pack."""
 
+import json
 import sys
 import tomllib
 from collections.abc import Sequence
@@ -7,6 +8,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from sf2_theme import __version__
+from sf2_theme.adapters.claude import apply_claude, setup_claude
+from sf2_theme.adapters.claude import read_current_id as claude_current
 from sf2_theme.adapters.codex import apply_codex, setup_codex
 from sf2_theme.adapters.codex import read_current_id as codex_current
 from sf2_theme.adapters.herdr import apply_herdr
@@ -33,7 +36,7 @@ from sf2_theme.filesystem import WriteResult
 from sf2_theme.model import Theme
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit")
+APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit", "claude")
 HELP_TEXT = """Street Fighter II theme pack
 
 Usage:
@@ -52,6 +55,8 @@ install is a deprecated alias for apply.
 starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
 Lazygit installs one YAML fragment per catalog theme under its themes directory.
 WezTerm, Herdr, and Neovim apply both dark and light siblings and auto-switch with host appearance.
+Claude installs one theme file per catalog entry under ~/.claude/themes/ and selects it in settings.json;
+select it or switch siblings yourself in /theme, since Claude Code has no host-appearance auto-switch.
 """
 
 
@@ -221,6 +226,17 @@ def _setup(app: str, options: Options) -> None:
                 f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
                 file=sys.stderr,
             )
+        case "claude":
+            _report(
+                setup_claude(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
+                    replace_theme=options.theme is not None,
+                )
+            )
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -285,6 +301,16 @@ def _apply(app: str, options: Options) -> None:
             )
         case "starship":
             _report(_apply_starship(theme, options))
+        case "claude":
+            _report(
+                apply_claude(
+                    theme,
+                    catalog,
+                    config_dir=options.config_dir,
+                    dry_run=options.dry_run,
+                    follow_symlinks=options.follow_symlinks,
+                )
+            )
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -327,6 +353,8 @@ def _current(app: str, options: Options) -> None:
             print(lazygit_current(options.config_dir))
         case "starship":
             print(starship_current(options.config_dir))
+        case "claude":
+            print(claude_current(options.config_dir))
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}")
 
@@ -382,7 +410,7 @@ def dispatch(arguments: list[str]) -> int:
                 _current(_app(options.rest[0]), options)
             case _:
                 raise CliError(f"unknown command: {command}; run sf2-themes --help")
-    except (ThemeError, OSError, tomllib.TOMLDecodeError) as error:
+    except (ThemeError, OSError, tomllib.TOMLDecodeError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     return 0

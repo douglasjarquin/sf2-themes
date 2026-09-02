@@ -61,6 +61,14 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Preserve unrelated `gui` settings and named author colors, refuse an unmarked existing `gui.theme` unless `--adopt` is explicit, and keep the managed blocks idempotent.
 - Resolve the config directory from `--config-dir`, `LAZYGIT_CONFIG_DIR`, or the platform's Lazygit default, and route every write through `write_file`.
 
+## Claude Code
+
+- The adapter owns catalog files `<claude-home>/themes/sf2-*.json` and only the `theme` key in `<claude-home>/settings.json`, resolved from `--config-dir`, `CLAUDE_CONFIG_DIR`, or `~/.claude`.
+- Claude Code's custom-theme schema (`name`/`base`/`overrides`) is an experimental component with no publicly documented full token list; `OVERRIDE_TOKENS` is a best-effort mapping onto SF2 roles, confirmed live in a running session for the `claude`/`error`/`success` tokens the docs do specify.
+- Claude Code has no host-appearance auto-switch for custom themes (confirmed absent from the docs), so selecting a light or dark sibling here just pins that one theme in settings.json like Codex, not a following pair like WezTerm/Herdr/Neovim.
+- Preserve every other `settings.json` key; only ever touch the top-level `theme` string, written as `custom:<selectable-id>`.
+- Setup without an explicit theme preserves an existing `custom:sf2-*` selection, while apply always selects the requested or default theme.
+
 ## Shared write contract
 
 - Route managed text writes through `write_file` so every adapter shares one mutation contract.
@@ -76,6 +84,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Run `uv run --with pytest pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
 - Run `uv run --with pytest pytest -q tests/test_codex.py` for Codex theme or config changes.
 - Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
+- Run `uv run --with pytest pytest -q tests/test_claude.py` for Claude Code theme or settings changes.
 - Run `uv run --with pytest pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
 - After adapter behavior changes, follow the inherited standalone regeneration rule and run `bash tests/test_cli.sh` to exercise the copied CLI across all adapters.
 - Completion requires focused tests to pass with dry-run, backup, symlink, preservation, and exact-path ownership expectations intact.
