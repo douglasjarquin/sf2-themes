@@ -6,7 +6,6 @@ export const MAX_CATCH_UP_TICKS = 8 as const;
 export const MAX_DEVICE_PIXEL_RATIO = 2 as const;
 export const PLAYER_INACTIVITY_TICKS = 1_800 as const;
 export const RESULT_TICKS = 300 as const;
-export const CAPTURE_MAX_TICKS = 7_200 as const;
 
 export const BOOT_TICKS = 1 as const;
 export const TITLE_TICKS = 600 as const;

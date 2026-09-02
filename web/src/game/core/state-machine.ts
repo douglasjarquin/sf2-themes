@@ -1,7 +1,6 @@
 import {
   ATTRACT_INTRO_TICKS,
   BOOT_TICKS,
-  CAPTURE_MAX_TICKS,
   PLAYER_INACTIVITY_TICKS,
   PLAYER_INTRO_TICKS,
   RESULT_TICKS,
@@ -10,7 +9,6 @@ import {
 } from "../config.ts";
 import { validateFighterDefinition } from "../fighter-registry.ts";
 import type {
-  CaptureState,
   FighterDefinition,
   GameInput,
   GamePhase,
@@ -63,7 +61,6 @@ export type GameCore = {
   readonly insertCoin: () => GameSnapshot;
   readonly reset: (seed?: number) => GameSnapshot;
   readonly getSnapshot: () => GameSnapshot;
-  readonly getCaptureState: () => CaptureState;
 };
 
 export function createGameCore(options: GameCoreOptions): GameCore {
@@ -266,6 +263,5 @@ export function createGameCore(options: GameCoreOptions): GameCore {
     insertCoin: () => step({ insertCoin: true }),
     reset,
     getSnapshot: snapshot,
-    getCaptureState: () => ({ tick, phase, complete: tick >= CAPTURE_MAX_TICKS, rngState: rng.state }),
   };
 }
