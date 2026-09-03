@@ -36,9 +36,8 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - From the repository root, use the `mise run web:*` tasks so Node 24 and Aube 2.1 come from the pinned toolchain.
 - From `web/`, use `aube run <script>` or use `aube -C web ...` from the root for focused package scripts.
 - Treat `aubr` as package-script composition used inside `package.json`, not as the repository-level entry point.
-- Install from `package-lock.json` with `mise run web:install` locally or `npm --prefix web ci` in CI, matching the lockfile-backed path both `verify.yml` and `deploy.yml` run; Aube's virtual-store install fails on a fresh CI runner.
+- On macOS (case-insensitive filesystem), the plain `mise run web:*` tasks (`aube -C web ...`) work fine, including inside a container. On Linux (case-sensitive filesystem — GitHub Actions runners and every local dev container), `aube run build`'s pnpm-style symlinked `node_modules` trips an Astro/Vite/rolldown case-sensitivity check during prerendering (`cannot test case insensitive FS, CLIENT_ENTRY does not point to an existing file`), reproduced deterministically across two independent fresh container instances on both `amd64` and `arm64`; `npm`'s flat, copied `node_modules` avoids it. `verify.yml`'s `web` job and `deploy.yml`'s `build` job therefore run the `web:*:ci` task variants (`web:install:ci`, `web:build:ci`, `web:check:ci`, `web:test:ci` — plain `npm ci`/`npm run <script>`, still only inside the container, never on a bare runner or host) instead of the aube-based ones; local/bare-host use keeps the plain `web:*` tasks.
 - Keep `astro check`, unit tests, browser tests, and the production build as separate evidence because none substitutes for another.
-- The normal web CI path installs with npm, installs Chromium, builds, then runs check, Node tests, and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
 
 ## TEST SURFACES AND OWNED SERVERS
 

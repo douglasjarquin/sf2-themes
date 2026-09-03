@@ -75,3 +75,19 @@ run = "aube -C web run check"
 [tasks."web:build"]
 description = "Build the Astro site"
 run = "aube -C web run build"
+
+[tasks."web:install:ci"]
+description = "Install Astro dependencies with npm (Linux containers only, see AGENTS.md)"
+run = "cd web && npm ci"
+
+[tasks."web:build:ci"]
+description = "Build the Astro site with npm (Linux containers only, see AGENTS.md)"
+run = "cd web && npm run build"
+
+[tasks."web:check:ci"]
+description = "Run Astro type and template checks with npm (Linux containers only, see AGENTS.md)"
+run = "cd web && npm run check"
+
+[tasks."web:test:ci"]
+description = "Run Astro unit and end-to-end tests with npm (Linux containers only, see AGENTS.md)"
+run = "cd web && npm run test"

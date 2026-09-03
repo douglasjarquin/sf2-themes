@@ -878,7 +878,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `test: extend the workflow YAML test parser for new CI constructs, if needed` | Files: [tests/_workflow_yaml.py]
 
-- [ ] 24. Reproduce the aube fresh-runner install failure inside the container; decide the fallback
+- [x] 24. Reproduce the aube fresh-runner install failure inside the container; decide the fallback
 
   **What to do**: `web/AGENTS.md:39` records a specific prior finding: "Aube's virtual-store install fails on a fresh CI runner." This plan's assumption that containerizing fixes it (task 20's `web` job now calls `mise run web:install`, i.e. `aube -C web install`, instead of `npm ci`) is **unverified** (Metis-flagged). Reproduce it directly: run `scripts/ci/run-in-dev-container.sh mise run web:install` against a **brand-new** container instance with **no** prior aube store cache (simulate a truly fresh GitHub-hosted runner: fresh container, empty `AUBE_STORE_DIR`), at least twice in separate fresh instances. If it succeeds both times: containerizing did fix it (the baked toolchain image likely resolves whatever made the bare runner "fresh" in the failing way — e.g. a missing system dependency `aube`'s virtual store needs). If it still fails: keep `npm ci` as the install step specifically **inside the container** for `web:install` in CI (still satisfies "no npm on the host" — npm now only ever runs inside the ephemeral, always-fresh container image, never on the runner's own filesystem — document this explicitly as a scoped exception, not a silent revert).
   **Must NOT do**: Do not assume success without the two-fresh-instance reproduction — this is exactly the kind of unverified claim Metis flagged as a real risk to committing to thrust 2 fully.
@@ -911,7 +911,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `ci: verify (or work around) aube install on a fresh container instance` | Files: [mise.toml (only if fallback needed), .github/workflows/verify.yml (only if fallback needed)]
 
-- [ ] 25. Update web/AGENTS.md's npm-in-CI rationale note
+- [x] 25. Update web/AGENTS.md's npm-in-CI rationale note
 
   **What to do**: Rewrite `web/AGENTS.md:39,41` (Metis-cited) based on task 24's actual, re-verified outcome — either "containerizing resolved the fresh-runner aube failure (verified <date>, see evidence/task-24-*)" or "aube still fails on a fresh instance even containerized; CI's `web:install` step uses npm specifically inside the container as a scoped exception (verified <date>)." Remove the now-stale "matching the lockfile-backed path both verify.yml and deploy.yml run" framing since those workflows no longer run raw `npm --prefix web ci`.
   **Must NOT do**: Do not leave the old note's specific claims uncorrected even if the overall conclusion (npm needed somewhere) turns out unchanged — the doc must reflect what was actually re-verified, not just carry the old sentence forward.
