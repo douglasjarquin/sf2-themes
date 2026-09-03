@@ -133,13 +133,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install dependencies
-        run: scripts/ci/run-in-dev-container.sh mise run web:install:ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:install:npm
       - name: Build
-        run: scripts/ci/run-in-dev-container.sh mise run web:build:ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:build:npm
       - name: Check
-        run: scripts/ci/run-in-dev-container.sh mise run web:check:ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:check
       - name: Test
-        run: scripts/ci/run-in-dev-container.sh mise run web:test:ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:test:npm
       - name: Remove this job's overlay volumes
         if: always()
         run: scripts/ci/gc-job-overlay-volumes.sh

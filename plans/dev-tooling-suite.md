@@ -936,7 +936,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `docs(web): correct the npm-in-CI rationale note after re-verification` | Files: [web/AGENTS.md]
 
-- [ ] 26. Rewrite .made.yml to call mise tasks directly
+- [x] 26. Rewrite .made.yml to call mise tasks directly
 
   **What to do**: Replace `.made.yml`'s `test` and `lint` command blocks — currently hardcoded absolute host paths (`/opt/homebrew/bin`, `/Users/douglasjarquin/.local/...`) duplicating `mise run test` plus raw `npm --prefix web ci`/`run themes:check`/`run build`/`run test:e2e`, node --test loops, `uv run ruff`, and `shellcheck` — with direct calls to the canonical mise task names this plan defines: `mise run test` (now covers pytest + test-cli via `depends`, task 10), `mise run web:install`, `mise run web:build` (already runs `themes:check` internally via package.json's chain, task 7), `mise run web:test` (already runs both `test:unit` and `test:e2e` per `web/package.json`'s own `"test"` script), `mise run lint`, `mise run shellcheck` (tasks 3, 10). Run these directly on the host (not through `scripts/ci/run-in-dev-container.sh`) — `.made.yml`'s job is a fast local agent self-check, not full CI parity; requiring Docker for it would make it fail wherever Docker isn't running, a regression from today.
   **Must NOT do**: Do not reintroduce hardcoded absolute paths — rely on `mise` being on `PATH` (the same assumption every other task in this plan already makes).

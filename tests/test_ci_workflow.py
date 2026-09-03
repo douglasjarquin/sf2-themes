@@ -57,7 +57,7 @@ def test_deploy_and_verify_web_jobs_install_through_the_same_containerized_task(
         step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
     }
 
-    install_command = "scripts/ci/run-in-dev-container.sh mise run web:install:ci"
+    install_command = "scripts/ci/run-in-dev-container.sh mise run web:install:npm"
     assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == install_command
 
 
@@ -70,8 +70,8 @@ def test_deploy_build_step_binds_dist_to_the_runner_filesystem_for_the_pages_art
     # deploy's Pages artifact upload runs on the bare runner and needs dist on
     # its real filesystem; verify's web job never reads dist outside the
     # container, so it keeps using the isolated named volume instead.
-    assert deploy_steps["Build"] == "scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build:ci"
-    assert verify_steps["Build"] == "scripts/ci/run-in-dev-container.sh mise run web:build:ci"
+    assert deploy_steps["Build"] == "scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build:npm"
+    assert verify_steps["Build"] == "scripts/ci/run-in-dev-container.sh mise run web:build:npm"
 
 
 def test_toolchain_checks_and_web_jobs_gc_their_overlay_volumes() -> None:

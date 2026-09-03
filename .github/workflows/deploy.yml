@@ -18,9 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: Install dependencies
-        run: scripts/ci/run-in-dev-container.sh mise run web:install:ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:install:npm
       - name: Build
-        run: scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build:ci
+        run: scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build:npm
       - name: Remove this job's overlay volumes
         if: always()
         run: scripts/ci/gc-job-overlay-volumes.sh
