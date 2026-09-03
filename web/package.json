@@ -8,12 +8,12 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "python3 ../scripts/generate-web-theme-data.py --check && astro build",
+    "build": "python3 ../mise-tasks/generate-web-theme-data --check && astro build",
     "preview": "astro preview",
-    "check": "python3 ../scripts/generate-web-theme-data.py --check && astro check",
-    "test:unit": "python3 ../scripts/generate-web-theme-data.py --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
-    "themes:generate": "python3 ../scripts/generate-web-theme-data.py",
-    "themes:check": "python3 ../scripts/generate-web-theme-data.py --check",
+    "check": "python3 ../mise-tasks/generate-web-theme-data --check && astro check",
+    "test:unit": "python3 ../mise-tasks/generate-web-theme-data --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
+    "themes:generate": "python3 ../mise-tasks/generate-web-theme-data",
+    "themes:check": "python3 ../mise-tasks/generate-web-theme-data --check",
     "test:game": "node --test test/game-core.test.mjs test/fighter-registry.test.mjs",
     "test:e2e": "playwright test",
     "test": "aubr test:unit && aubr test:e2e"

@@ -11,7 +11,7 @@ shellcheck = "0.11.0"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
-run = "uv sync --all-extras && uv run pytest -q && bash tests/test_cli.sh"
+run = "uv sync --all-extras && uv run pytest -q && ./mise-tasks/test-cli"
 
 [tasks.apply]
 description = "Apply a theme with the project CLI"

@@ -95,14 +95,14 @@ jobs:
         run: python -m sf2_theme validate --all
       - name: Standalone freshness
         run: |
-          python scripts/build-standalone.py
+          python mise-tasks/build-standalone
           git diff --exit-code -- sf2-themes
       - name: Lint
         run: ruff check src tests scripts
       - name: ShellCheck
-        run: shellcheck tests/test_cli.sh
+        run: shellcheck mise-tasks/test-cli
       - name: Shell integration
-        run: tests/test_cli.sh
+        run: mise-tasks/test-cli
 
   web:
     needs: changes

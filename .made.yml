@@ -18,5 +18,5 @@ commands:
     set -e
     export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"
     /Users/douglasjarquin/.local/bin/mise exec -- ruff check src tests scripts || exit 111
-    /opt/homebrew/bin/shellcheck tests/test_cli.sh || exit 112
+    /Users/douglasjarquin/.local/bin/mise exec -- shellcheck mise-tasks/test-cli || exit 112
     /opt/homebrew/bin/npm --prefix web run check || exit 113

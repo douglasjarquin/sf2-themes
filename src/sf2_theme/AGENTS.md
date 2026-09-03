@@ -18,7 +18,7 @@ The committed root executable mirrors this package by embedding the standalone g
 | Public dispatch | `cli.py`, `__main__.py` | Argument handling, command behavior, error presentation, and adapter orchestration. |
 | Application formats | `adapters/` | Rendering, recognized configuration merges, managed markers, and app-specific paths. |
 | Mutation primitive | `filesystem.py` | No-op detection, dry-run diffs, backups, mode preservation, symlink policy, and atomic replacement. |
-| Standalone mirror | `scripts/build-standalone.py` | Runtime module allowlist and embedded theme files for the generated `sf2-themes`. |
+| Standalone mirror | `mise-tasks/build-standalone` | Runtime module allowlist and embedded theme files for the generated `sf2-themes`. |
 
 ## CONVENTIONS
 
@@ -51,6 +51,6 @@ The committed root executable mirrors this package by embedding the standalone g
 - Pair CLI dispatch changes with `tests/test_cli.py` and the affected adapter suite.
 - Pair rendered output changes with `tests/test_snapshots.py` and the owning adapter tests.
 - Any package or catalog change triggers standalone regeneration before verification; a new import also requires a generator roster update.
-- Treat `tests/test_cli.sh` as the installed-consumer contract because it copies the generated executable away from the repository and exercises all adapters.
+- Treat `mise-tasks/test-cli` as the installed-consumer contract because it copies the generated executable away from the repository and exercises all adapters.
 - Prove standalone freshness by regenerating from inputs and confirming the committed root executable has no remaining diff.
 - Finish with the root Python verification gate rather than duplicating its command sequence here.
