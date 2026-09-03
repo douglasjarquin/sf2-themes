@@ -14,23 +14,24 @@ RUN if ! id -u dev >/dev/null 2>&1; then useradd -m -s /bin/bash dev; fi && \
     mkdir -p /workspace/sf2-themes/web && \
     chown -R dev:dev /workspace
 
-ENV PLAYWRIGHT_BROWSERS_PATH=/home/dev/.cache/ms-playwright
-
-RUN mkdir -p /opt/sf2-themes/manifests/web && chown -R dev:dev /opt/sf2-themes
+RUN mkdir -p /opt/sf2-themes/manifests/web && \
+    chown -R dev:dev /opt/sf2-themes
 WORKDIR /opt/sf2-themes/manifests
 COPY --chown=dev:dev pyproject.toml uv.lock ./
 COPY --chown=dev:dev web/package.json web/package-lock.json ./web/
 
 USER dev
 RUN mise exec -- uv sync --all-extras --no-install-project && \
-    mise exec -- aube --dir web install
+    cd web && mise exec -- aube install
 
 USER root
-RUN mise exec -- aube --dir web exec -- playwright install-deps chromium
+RUN cd web && mise exec -- aube exec -- playwright install-deps chromium
 
 USER dev
-RUN mise exec -- aube --dir web exec -- playwright install chromium
+RUN cd web && mise exec -- aube exec -- playwright install chromium
 
+USER root
+RUN chmod -R a+rX /opt/sf2-themes/manifests /home/dev/.cache
 COPY --chmod=0755 docker/dev/entrypoint.sh /usr/local/bin/sf2-themes-dev-entrypoint
 
 WORKDIR /workspace/sf2-themes
