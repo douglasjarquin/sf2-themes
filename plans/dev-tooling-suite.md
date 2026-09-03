@@ -1013,7 +1013,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 - [x] F3. Real Manual QA
   On a genuinely clean checkout (fresh clone, no `~/.local/share/mise` cache reused): `mise install --locked`, `mise run test`, `scripts/ci/run-in-dev-container.sh mise run web:test`, `mise run web:dev:container` + a real `curl` against the published port, then open an actual draft PR against this repo and watch `verify.yml` run end-to-end for real (not simulated) — this is the only step that proves the whole chain works together, not just each piece in isolation.
 
-- [ ] F4. Scope Fidelity Check + Manual Boss Actions
+- [x] F4. Scope Fidelity Check + Manual Boss Actions
   Confirm `scripts/sf2` is untouched and `scripts/ci/*.sh` were never converted to mise tasks (Must NOT Have). Then, explicitly, in the final report to the boss — not silently checked off — list the two actions only the boss can perform: (1) set `ghcr.io/douglasjarquin/sf2-themes-toolchain` and `-dev` package visibility to **Public** in GitHub → repo → Packages, so a fork PR's read-only `GITHUB_TOKEN` can still pull them; (2) update this repo's branch-protection required-status-check list for the renamed/added job (`toolchain-checks`), since that list lives in GitHub settings, not in the workflow YAML.
 
 ## Commit Strategy
