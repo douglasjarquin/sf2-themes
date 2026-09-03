@@ -418,7 +418,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `chore(mise-tasks): relocate build-standalone to a mise file task, regenerate sf2-themes` | Files: [mise-tasks/build-standalone, sf2-themes, AGENTS.md, src/sf2_theme/AGENTS.md]
 
-- [ ] 10. Define mise.toml tasks: lint, shellcheck, validate-catalog, standalone-freshness
+- [x] 10. Define mise.toml tasks: lint, shellcheck, validate-catalog, standalone-freshness
 
   **What to do**: Replace `[tasks.test]`'s current shim body (`run = ["uv run --with pytest pytest -q", "bash tests/test_cli.sh"]`) with `depends = ["pytest", "test-cli"]` plus a new `[tasks.pytest]` (`run = "uv sync --all-extras && uv run pytest -q"`, per task 2) and `[tasks.test-cli]` (`run = "./mise-tasks/test-cli"`, thin but pointing at the now-canonical file task rather than a `tests/` script — this is not a shim, it's mise's own task-to-file-task delegation, the intended end state). Add `[tasks.lint]` (`run = "ruff check src tests mise-tasks"`, per task 3's config), `[tasks.shellcheck]` (`run = "shellcheck mise-tasks/test-cli"` — the only shell file task), `[tasks."validate-catalog"]` (`run = "uv run --project . python -m sf2_theme validate --all"`), `[tasks."standalone-freshness"]` (`depends = ["build-standalone"]`, `run = "git diff --exit-code -- sf2-themes"`), and `[tasks."build-standalone"]` (`run = "./mise-tasks/build-standalone"`).
   **Must NOT do**: Do not make `[tasks.test]` (the composite) itself call `bash`/`python3` against a `mise-tasks/` file directly with a full relative path duplicated in two places — use `depends` so mise's own dependency graph is the single source of task-to-task wiring.
@@ -452,7 +452,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(mise): define lint, shellcheck, validate-catalog, and standalone-freshness tasks` | Files: [mise.toml]
 
-- [ ] 11. Add web:dev:container mise task
+- [x] 11. Add web:dev:container mise task
 
   **What to do**: Add `[tasks."web:dev:container"]` (`run = "aube -C web run dev -- --host 0.0.0.0 --port 4322"`) as a distinct task from the existing `web:dev` (which stays `--host 127.0.0.1`, unpublished-port, for bare-host local dev). Port 4322 is deliberately different from Playwright's default `PLAYWRIGHT_PORT` (4321, `web/playwright.config.mjs:3`) to avoid a collision if both an e2e run and a long-running dev container happen to run concurrently (Metis-flagged risk).
   **Must NOT do**: Do not change `web:dev`'s existing host/port — bare-host local dev is unaffected by this migration.
