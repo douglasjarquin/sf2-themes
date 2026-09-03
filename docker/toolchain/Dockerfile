@@ -23,7 +23,16 @@ RUN MISE_VERSION="v${MISE_VERSION}" MISE_INSTALL_PATH=/usr/local/bin/mise \
 
 WORKDIR /opt/sf2-themes/toolchain
 COPY mise.toml mise.lock ./
-RUN mise trust --yes . && mise install --locked
+# mise install --locked verifies GitHub artifact attestations over the
+# network per tool; the Sigstore TUF fetch behind that has intermittently
+# failed with a transport error unrelated to artifact integrity, reproduced
+# and confirmed transient across repeated fresh-container attempts.
+RUN mise trust --yes . && \
+    for attempt in 1 2 3; do \
+      mise install --locked && break; \
+      [ "$attempt" -lt 3 ] || exit 1; \
+      sleep 5; \
+    done
 
 RUN mkdir -p "$MISE_CONFIG_DIR" && \
     cp mise.toml "$MISE_CONFIG_DIR/config.toml" && \
