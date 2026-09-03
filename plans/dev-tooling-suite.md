@@ -686,7 +686,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(ci): add run-in-dev-container wrapper with job-scoped volumes and UID fixup` | Files: [scripts/ci/run-in-dev-container.sh]
 
-- [ ] 18. Create scripts/ci/gc-job-overlay-volumes.sh
+- [x] 18. Create scripts/ci/gc-job-overlay-volumes.sh
 
   **What to do**: Given `GITHUB_RUN_ID`/`GITHUB_JOB` (required — no-op with a clear stderr message if either is unset, matching niceuptime's own script exactly, since this only makes sense in CI), `docker volume ls -q | grep '^sf2-themes-ci-${GITHUB_RUN_ID}-${GITHUB_JOB}-'` and `docker volume rm` each match. A removal failure logs to stderr but does not fail the script (this runs in an `if: always()` CI step — it must never be the thing that turns a green run red).
   **Must NOT do**: Do not touch `sf2-themes-dev-*` (local) volumes — this script only ever targets the CI-scoped naming pattern.
