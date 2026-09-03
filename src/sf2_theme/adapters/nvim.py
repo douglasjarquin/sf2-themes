@@ -165,7 +165,8 @@ def render_pointer(dark: Theme, light: Theme) -> str:
     return "\n".join(
         (
             f"-- sf2-themes: {dark_id}",
-            'local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")',
+            'local light_mode = vim.env.TERM_THEME == "light" '
+            'or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")',
             "if light_mode then",
             f'  vim.cmd("colorscheme {light_id}")',
             "else",
