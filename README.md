@@ -46,14 +46,21 @@ The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, u
 
 ```sh
 mise install
-mise run web:install
 mise run test
 mise run apply -- wezterm --theme vega
 mise run setup -- wezterm
-mise run web:test
+```
+
+For the Astro site, use `web:install`/`web:check`/`web:dev` for everyday work, and the separate `web:install:npm`/`web:build:npm`/`web:test:npm` tasks for anything that runs a real production build - see `web/AGENTS.md` for why the two dependency trees stay apart:
+
+```sh
+mise run web:install
 mise run web:check
-mise run web:build
 mise run web:dev
+
+mise run web:install:npm
+mise run web:build:npm
+mise run web:test:npm
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.

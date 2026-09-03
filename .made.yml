@@ -7,16 +7,13 @@ ci:
 commands:
   test: |
     set -e
-    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"
-    /Users/douglasjarquin/.local/bin/mise run test || exit 101
-    /opt/homebrew/bin/npm --prefix web ci || exit 102
-    /opt/homebrew/bin/npm --prefix web run themes:check || exit 103
-    /opt/homebrew/bin/npm --prefix web run build || exit 104
-    (cd web && n=0; for file in tests/unit/*.test.mjs test/*.test.mjs; do n=$((n + 1)); /opt/homebrew/bin/node --test "$file" || exit $((120 + n)); done)
-    /opt/homebrew/bin/npm --prefix web run test:e2e || exit 105
+    mise run test || exit 101
+    mise run web:install:npm || exit 102
+    mise run web:build:npm || exit 104
+    mise run web:test:npm || exit 105
   lint: |
     set -e
-    export PATH="/opt/homebrew/bin:/Users/douglasjarquin/.local/bin:/Users/douglasjarquin/.local/share/mise/installs/node/24/bin:/Users/douglasjarquin/.local/share/mise/installs/aube/2.1:$PATH"
-    /Users/douglasjarquin/.local/bin/uv run ruff check src tests scripts || exit 111
-    /opt/homebrew/bin/shellcheck tests/test_cli.sh || exit 112
-    /opt/homebrew/bin/npm --prefix web run check || exit 113
+    mise run lint || exit 111
+    mise run shellcheck || exit 112
+    mise run web:install:npm || exit 113
+    mise run web:check:npm || exit 114

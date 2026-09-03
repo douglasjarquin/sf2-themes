@@ -35,16 +35,15 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 
 - From the repository root, use the `mise run web:*` tasks so Node 24 and Aube 2.1 come from the pinned toolchain.
 - From `web/`, use `aube run <script>` or use `aube -C web ...` from the root for focused package scripts.
-- Treat `aubr` as package-script composition used inside `package.json`, not as the repository-level entry point.
-- Install from `package-lock.json` with `mise run web:install` locally or `npm --prefix web ci` in CI, matching the lockfile-backed path both `verify.yml` and `deploy.yml` run; Aube's virtual-store install fails on a fresh CI runner.
+- `package.json`'s own `test` script runs plain `npm run test:unit && npm run test:e2e` deliberately, not `aubr` (`aube run`): `aube run` performs an install-reconciliation check that mutates `node_modules` back toward aube's layout, which corrupts an npm-managed tree. Never reintroduce `aubr` into any script that `web:test:npm` calls.
+- `aube install` and `aube run check`/`aube run dev` are reliable everywhere (bare macOS host, both container architectures). `aube run build` is not: it resolves Astro through aube's own virtual-store cache rather than the local `node_modules`, and Astro's prerendering then fails — either `Cannot find native binding '@rolldown/binding-wasm32-wasi'` or `cannot test case insensitive FS, CLIENT_ENTRY does not point to an existing file` depending on exactly what's cached. Reproduced identically on bare macOS, and in fresh containers on both `amd64` and `arm64` — this is not an OS/filesystem/architecture difference, and it doesn't matter whether `node_modules` itself was populated by `aube install` or `npm ci`; only `npm run build` (or `npm run test`, which builds internally for its e2e preview server) reliably resolves Astro from the local tree. `web:build:npm`/`web:test:npm`/`web:install:npm` (plain `npm ci`/`npm run <script>`, self-contained — always run `web:install:npm` before them, never mix with the aube-based `web:install`) exist specifically for this; use them for anything that does a real Astro build, in CI or locally. `web:check`, `web:dev`, and `web:install` stay on the plain aube-based tasks since those never hit this.
 - Keep `astro check`, unit tests, browser tests, and the production build as separate evidence because none substitutes for another.
-- The normal web CI path installs with npm, installs Chromium, builds, then runs check, Node tests, and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
 
 ## TEST SURFACES AND OWNED SERVERS
 
 - `tests/unit/*.test.mjs` and `test/*.test.mjs` are Node tests for config, data, deterministic game logic, renderer contracts, and import boundaries without a browser page.
 - `tests/e2e/*.spec.mjs` are Playwright tests against a production build served under `/sf2-themes/` in desktop Chromium.
-- Use `aube -C web run test:unit` or `test:e2e` for a focused layer, while `mise run web:test` runs both layers in sequence.
+- Use `aube -C web run test:unit` or `test:e2e` for a focused layer, while `mise run web:test:npm` runs both layers in sequence.
 - Playwright builds and starts its own Astro preview on `PLAYWRIGHT_PORT`, which defaults to `4321`, and local runs may reuse a server already listening there.
 - For concurrent or manual E2E runs, select an unused `PLAYWRIGHT_PORT` and confirm that any reused server belongs to this worktree.
 - Let Playwright close the preview it starts, and when starting a preview manually record its PID and port so cleanup stops only that owned process.

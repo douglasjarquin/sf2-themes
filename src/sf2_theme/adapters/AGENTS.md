@@ -79,12 +79,12 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 
 ## Focused verification
 
-- Run `uv run --with pytest pytest -q tests/test_wezterm.py tests/test_cli.py tests/test_snapshots.py` for WezTerm ownership or Lua integration changes.
-- Run `uv run --with pytest pytest -q tests/test_herdr.py tests/test_snapshots.py` for Herdr merge or rendering changes.
-- Run `uv run --with pytest pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
-- Run `uv run --with pytest pytest -q tests/test_codex.py` for Codex theme or config changes.
-- Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
-- Run `uv run --with pytest pytest -q tests/test_claude.py` for Claude Code theme or settings changes.
-- Run `uv run --with pytest pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
-- After adapter behavior changes, follow the inherited standalone regeneration rule and run `bash tests/test_cli.sh` to exercise the copied CLI across all adapters.
+- Run `uv run pytest -q tests/test_wezterm.py tests/test_cli.py tests/test_snapshots.py` for WezTerm ownership or Lua integration changes.
+- Run `uv run pytest -q tests/test_herdr.py tests/test_snapshots.py` for Herdr merge or rendering changes.
+- Run `uv run pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
+- Run `uv run pytest -q tests/test_codex.py` for Codex theme or config changes.
+- Run `uv run pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
+- Run `uv run pytest -q tests/test_claude.py` for Claude Code theme or settings changes.
+- Run `uv run pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
+- After adapter behavior changes, follow the inherited standalone regeneration rule and run `mise run test-cli` to exercise the copied CLI across all adapters.
 - Completion requires focused tests to pass with dry-run, backup, symlink, preservation, and exact-path ownership expectations intact.

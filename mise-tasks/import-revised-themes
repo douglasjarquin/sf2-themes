@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
+#MISE description="Import a revised theme catalog into themes/"
 # /// script
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
 
 # ─── How to run ───
-# 1. Install uv (if not installed):
-#      curl -LsSf https://astral.sh/uv/install.sh | sh
-# 2. Run directly:
-#      python3 scripts/import-revised-themes.py --source PATH --destination themes [--check]
-# 3. Or run through uv:
-#      uv run scripts/import-revised-themes.py --source PATH --destination themes [--check]
+#      mise run import-revised-themes -- --source PATH --destination themes [--check]
 # ──────────────────
 
 from __future__ import annotations

@@ -21,13 +21,15 @@ Rewrite or prune stale notes instead of appending history.
 
 ```text
 src/sf2_theme/       Python model, catalog, CLI, safe writes, and adapters
+mise-tasks/          Standalone/preview/theme-data generation and the copied-CLI shell test, as mise file tasks
 themes/              Authoritative 36-entry TOML catalog
-scripts/             Standalone and preview generation tooling
-tests/               Pytest contracts, snapshots, and copied-CLI shell test
+scripts/             scripts/sf2 (a plain `sf2-themes` alias for checkout use) and scripts/ci/ (container orchestration)
+docker/              toolchain (mise + Python + Node + aube, no app source) and dev (+ prefetched deps) images
+tests/               Pytest contracts and snapshots
 web/                 Static Astro site, Node tests, and Playwright
 web/src/game/        Fixed-step game core plus browser, renderer, and input adapters
 docs/                Authored contracts and generated SVG previews
-.github/workflows/   Path-selected CI, Pages build/deploy, and issue automation
+.github/workflows/   Path-selected CI, Pages build/deploy, image publishing, and issue automation
 ```
 
 ## WHERE TO LOOK
@@ -37,13 +39,14 @@ docs/                Authored contracts and generated SVG previews
 | CLI dispatch | `src/sf2_theme/cli.py` | Public command is `sf2-themes`; `install` is deprecated |
 | Theme model and lookup | `src/sf2_theme/model.py`, `catalog.py`, `validation.py` | `themes/` remains the source of truth |
 | Adapter mutation | `src/sf2_theme/adapters/`, `filesystem.py` | Preserve unrelated user configuration and symlink policy |
-| Standalone generation | `scripts/build-standalone.py` | Owns the committed root `sf2-themes` executable |
+| Standalone generation | `mise-tasks/build-standalone` | Owns the committed root `sf2-themes` executable |
 | Theme design contract | `docs/theme-guidelines.md`, `docs/roster.md` | Covers IDs, dark/light pairs, semantics, and validation |
 | Astro shell and routes | `web/src/layouts/`, `web/src/pages/`, `web/src/lib/site-path.mjs` | Static Pages base is `/sf2-themes` |
 | Browser game | `web/src/game/`, `docs/game-architecture.md` | Shared by `/game/` |
 | Python verification | `tests/`, `mise.toml` | Pytest plus the copied standalone CLI harness |
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
 | Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
+| Containerized dev/CI | `docker/`, `scripts/ci/run-in-dev-container.sh` | `mise run <task>` runs identically on bare host or through the wrapper |
 
 ## CODE MAP
 
@@ -71,7 +74,7 @@ docs/                Authored contracts and generated SVG previews
 ## ANTI-PATTERNS
 
 - Do not hand-edit the generated root `sf2-themes` executable.
-- Do not hand-edit `docs/previews/`; run `python3 scripts/generate-previews.py`.
+- Do not hand-edit `docs/previews/`; run `mise run generate-previews`.
 - Do not duplicate catalog parsing or semantic color rules inside adapters or pages.
 - Do not modify unknown WezTerm Lua, unmarked Herdr theme blocks, or unrelated adapter configuration.
 - Do not follow configuration symlinks unless the caller explicitly selects `--follow-symlinks`.
@@ -82,18 +85,22 @@ docs/                Authored contracts and generated SVG previews
 
 ```bash
 mise run test
+mise run lint
 mise run apply -- wezterm --theme vega
 ./sf2-themes --version
-python3 scripts/build-standalone.py
+mise run build-standalone
 mise run web:install
 mise run web:check
-mise run web:test
-mise run web:build
+mise run web:install:npm
+mise run web:build:npm
+mise run web:test:npm
+scripts/ci/run-in-dev-container.sh mise run test
 ```
 
 ## NOTES
 
 - Python or catalog changes require standalone regeneration before `mise run test`.
-- Theme changes also require `python3 scripts/generate-previews.py`.
+- Theme changes also require `mise run generate-previews`.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
 - Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.
+- Use `web:build:npm`/`web:check`/`web:test:npm` (not the plain aube-based `web:build`/`web:test`) for anything that runs a real Astro build — see `web/AGENTS.md` for why.

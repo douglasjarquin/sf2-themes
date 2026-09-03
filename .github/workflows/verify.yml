@@ -26,15 +26,23 @@ jobs:
             python:
               - 'src/**'
               - 'tests/**'
+              - 'mise-tasks/**'
+              - 'docker/**'
               - 'scripts/**'
               - 'themes/**'
               - 'pyproject.toml'
               - 'uv.lock'
+              - 'mise.toml'
+              - 'mise.lock'
               - 'sf2-themes'
             web:
               - 'web/**'
               - 'themes/**'
+              - 'mise-tasks/generate-web-theme-data'
+              - 'docker/**'
+              - 'scripts/ci/**'
               - 'mise.toml'
+              - 'mise.lock'
       - id: select
         if: always()
         env:
@@ -88,45 +96,67 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
       - name: Install
-        run: pip install -e ".[dev]"
+        run: pip install -e . pytest
       - name: Tests
         run: pytest
+
+  toolchain-checks:
+    needs: changes
+    if: needs.changes.outputs.python == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Validate catalog
-        run: python -m sf2_theme validate --all
+        run: scripts/ci/run-in-dev-container.sh mise run validate-catalog
       - name: Standalone freshness
-        run: |
-          python scripts/build-standalone.py
-          git diff --exit-code -- sf2-themes
+        run: scripts/ci/run-in-dev-container.sh mise run standalone-freshness
       - name: Lint
-        run: ruff check src tests scripts
+        run: scripts/ci/run-in-dev-container.sh mise run lint
       - name: ShellCheck
-        run: shellcheck tests/test_cli.sh
+        run: scripts/ci/run-in-dev-container.sh mise run shellcheck
       - name: Shell integration
-        run: tests/test_cli.sh
+        run: scripts/ci/run-in-dev-container.sh mise run test-cli
+      - name: Remove this job's overlay volumes
+        if: always()
+        run: scripts/ci/gc-job-overlay-volumes.sh
 
   web:
     needs: changes
     if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
-        run: npm --prefix web ci
-      - name: Install Chromium
-        run: npx --prefix web playwright install --with-deps chromium
+        run: scripts/ci/run-in-dev-container.sh mise run web:install:npm
       - name: Build
-        run: npm --prefix web run build
+        run: scripts/ci/run-in-dev-container.sh mise run web:build:npm
       - name: Check
-        run: npm --prefix web run check
-      - name: Unit tests
-        run: npm --prefix web run test:unit
-      - name: End-to-end tests
-        run: npm --prefix web run test:e2e
+        run: scripts/ci/run-in-dev-container.sh mise run web:check:npm
+      - name: Test
+        run: scripts/ci/run-in-dev-container.sh mise run web:test:npm
+      - name: Remove this job's overlay volumes
+        if: always()
+        run: scripts/ci/gc-job-overlay-volumes.sh
 
   gate:
     if: always()
-    needs: [changes, actionlint, test, web]
+    needs: [changes, actionlint, test, toolchain-checks, web]
     runs-on: ubuntu-latest
     steps:
       - name: Require selected checks to pass
@@ -134,13 +164,14 @@ jobs:
           CHANGES: ${{ needs.changes.result }}
           ACTIONLINT: ${{ needs.actionlint.result }}
           PYTHON: ${{ needs.test.result }}
+          TOOLCHAIN_CHECKS: ${{ needs.toolchain-checks.result }}
           WEB: ${{ needs.web.result }}
         run: |
           if [[ "$CHANGES" != "success" ]]; then
             echo "changes job result: $CHANGES"
             exit 1
           fi
-          for result in "$ACTIONLINT" "$PYTHON" "$WEB"; do
+          for result in "$ACTIONLINT" "$PYTHON" "$TOOLCHAIN_CHECKS" "$WEB"; do
             case "$result" in
               success|skipped) ;;
               *) echo "selected job result: $result"; exit 1 ;;
