@@ -10,6 +10,10 @@ ruff = "0.16.5"
 shellcheck = "0.11.0"
 "npm:portless" = "0.15.6"
 
+[tasks.deps]
+description = "Install Python, npm, and Playwright Chromium dependencies"
+run = "uv sync --all-extras && cd web && npm ci && npx playwright install chromium"
+
 [tasks.test]
 description = "Run Python and standalone CLI tests"
 depends = ["pytest", "test-cli"]

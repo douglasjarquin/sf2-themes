@@ -25,6 +25,7 @@ mise-tasks/          Standalone/preview/theme-data generation and the copied-CLI
 themes/              Authoritative 36-entry TOML catalog
 scripts/             scripts/sf2 (a plain `sf2-themes` alias for checkout use) and scripts/ci/ (container orchestration)
 docker/              toolchain (mise + Python + Node + aube, no app source) and dev (+ prefetched deps) images
+.cursor/             Cursor Cloud environment.json; builds docker/dev/Dockerfile
 tests/               Pytest contracts and snapshots
 web/                 Static Astro site, Node tests, and Playwright
 web/src/game/        Fixed-step game core plus browser, renderer, and input adapters
@@ -47,6 +48,7 @@ docs/                Authored contracts and generated SVG previews
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
 | Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
 | Containerized dev/CI | `docker/`, `scripts/ci/run-in-dev-container.sh` | `mise run <task>` runs identically on bare host or through the wrapper |
+| Cursor Cloud | `.cursor/environment.json`, `docker/dev/Dockerfile` | Cloud agents build the dev image with no toolchain build-arg |
 
 ## CODE MAP
 
@@ -84,6 +86,7 @@ docs/                Authored contracts and generated SVG previews
 ## COMMANDS
 
 ```bash
+mise run deps
 mise run test
 mise run lint
 mise run apply -- wezterm --theme vega
@@ -107,3 +110,17 @@ scripts/ci/run-in-dev-container.sh mise run test
 - Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.
 - CI and `.made.yml` run `web:install:npm`/`web:build:npm`/`web:check:npm`/`web:test:npm` exclusively; the aube-based `web:install`/`web:check`/`web:dev` are for everyday local work against a separate dependency tree — see `web/AGENTS.md` for why the two trees stay apart and never mix in one sequence.
 - `web:dev:local` serves the Astro site at `https://sf2-themes.test` via portless instead of a raw port — see `web/AGENTS.md` for setup and the Astro agent-detection caveat.
+
+## Cursor Cloud
+
+Cursor Cloud uses the mise environment from `.cursor/environment.json`.
+It builds `docker/dev/Dockerfile` with no toolchain build-arg, so that file bootstraps mise when `FROM` is Ubuntu.
+CI still passes the published toolchain image into the same Dockerfile.
+
+Do not start nested Docker.
+Do not wrap commands in `scripts/ci/run-in-dev-container.sh`.
+The agent already is the environment.
+Use `mise run test`, `mise run lint`, `mise run web:check:npm`, and `mise run web:test:npm`.
+`mise run web:dev:container` is already running in the `web` terminal on port 4322.
+Keep the aube-based `web:install`/`web:check`/`web:dev` tree and the npm-based `web:install:npm`/`web:build:npm`/`web:test:npm` tree apart.
+Cloud verification uses the npm tasks.

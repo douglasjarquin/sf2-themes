@@ -28,6 +28,7 @@ jobs:
               - 'tests/**'
               - 'mise-tasks/**'
               - 'docker/**'
+              - '.cursor/**'
               - 'scripts/**'
               - 'themes/**'
               - 'pyproject.toml'
