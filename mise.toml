@@ -84,6 +84,10 @@ run = "cd web && npm ci"
 description = "Build the Astro site with npm (aube's build is unreliable here, see web/AGENTS.md)"
 run = "cd web && npm run build"
 
+[tasks."web:check:npm"]
+description = "Run Astro type and template checks with npm (never mix with aube-based web:* in the same tree, see web/AGENTS.md)"
+run = "cd web && npm run check"
+
 [tasks."web:test:npm"]
 description = "Run Astro unit and end-to-end tests with npm (aube's build is unreliable here, see web/AGENTS.md)"
 run = "cd web && npm run test"

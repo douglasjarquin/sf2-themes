@@ -15,4 +15,5 @@ commands:
     set -e
     mise run lint || exit 111
     mise run shellcheck || exit 112
-    mise run web:check || exit 113
+    mise run web:install:npm || exit 113
+    mise run web:check:npm || exit 114

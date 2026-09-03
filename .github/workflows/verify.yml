@@ -137,7 +137,7 @@ jobs:
       - name: Build
         run: scripts/ci/run-in-dev-container.sh mise run web:build:npm
       - name: Check
-        run: scripts/ci/run-in-dev-container.sh mise run web:check
+        run: scripts/ci/run-in-dev-container.sh mise run web:check:npm
       - name: Test
         run: scripts/ci/run-in-dev-container.sh mise run web:test:npm
       - name: Remove this job's overlay volumes
