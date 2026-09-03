@@ -21,13 +21,15 @@ Rewrite or prune stale notes instead of appending history.
 
 ```text
 src/sf2_theme/       Python model, catalog, CLI, safe writes, and adapters
+mise-tasks/          Standalone/preview/theme-data generation and the copied-CLI shell test, as mise file tasks
 themes/              Authoritative 36-entry TOML catalog
-scripts/             Standalone and preview generation tooling
-tests/               Pytest contracts, snapshots, and copied-CLI shell test
+scripts/             scripts/sf2 (a plain `sf2-themes` alias for checkout use) and scripts/ci/ (container orchestration)
+docker/              toolchain (mise + Python + Node + aube, no app source) and dev (+ prefetched deps) images
+tests/               Pytest contracts and snapshots
 web/                 Static Astro site, Node tests, and Playwright
 web/src/game/        Fixed-step game core plus browser, renderer, and input adapters
 docs/                Authored contracts and generated SVG previews
-.github/workflows/   Path-selected CI, Pages build/deploy, and issue automation
+.github/workflows/   Path-selected CI, Pages build/deploy, image publishing, and issue automation
 ```
 
 ## WHERE TO LOOK
@@ -44,6 +46,7 @@ docs/                Authored contracts and generated SVG previews
 | Python verification | `tests/`, `mise.toml` | Pytest plus the copied standalone CLI harness |
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
 | Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
+| Containerized dev/CI | `docker/`, `scripts/ci/run-in-dev-container.sh` | `mise run <task>` runs identically on bare host or through the wrapper |
 
 ## CODE MAP
 
@@ -82,13 +85,16 @@ docs/                Authored contracts and generated SVG previews
 
 ```bash
 mise run test
+mise run lint
 mise run apply -- wezterm --theme vega
 ./sf2-themes --version
 mise run build-standalone
 mise run web:install
 mise run web:check
-mise run web:test
-mise run web:build
+mise run web:install:npm
+mise run web:build:npm
+mise run web:test:npm
+scripts/ci/run-in-dev-container.sh mise run test
 ```
 
 ## NOTES
@@ -97,3 +103,4 @@ mise run web:build
 - Theme changes also require `mise run generate-previews`.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
 - Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.
+- Use `web:build:npm`/`web:check`/`web:test:npm` (not the plain aube-based `web:build`/`web:test`) for anything that runs a real Astro build — see `web/AGENTS.md` for why.

@@ -969,7 +969,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `chore(made): call canonical mise tasks instead of duplicating hardcoded commands` | Files: [.made.yml]
 
-- [ ] 27. Final documentation sweep
+- [x] 27. Final documentation sweep
 
   **What to do**: Grep the whole repo one more time for any remaining stale reference the per-task updates above might have missed: `git grep -n "scripts/build-standalone.py\|scripts/generate-previews.py\|scripts/generate-web-theme-data.py\|scripts/author_character_themes.py\|scripts/import-revised-themes.py\|tests/test_cli.sh\|npm --prefix\|npx --prefix"`. Update root `AGENTS.md`'s "STRUCTURE" and "COMMANDS" sections to reflect the new `mise-tasks/`, `docker/`, `scripts/ci/` directories and the new `mise run <task>` command surface. Update `README.md` if it names any relocated path (excluding `scripts/sf2`, which stays).
   **Must NOT do**: Do not touch `scripts/sf2`'s own documentation in `README.md` — it is explicitly out of scope for this whole plan.
