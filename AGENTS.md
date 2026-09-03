@@ -93,6 +93,7 @@ mise run web:install
 mise run web:check
 mise run web:install:npm
 mise run web:build:npm
+mise run web:check:npm
 mise run web:test:npm
 mise run web:dev:local
 scripts/ci/run-in-dev-container.sh mise run test
@@ -104,5 +105,5 @@ scripts/ci/run-in-dev-container.sh mise run test
 - Theme changes also require `mise run generate-previews`.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
 - Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.
-- Use `web:build:npm`/`web:check`/`web:test:npm` for anything that runs a real Astro build — see `web/AGENTS.md` for why the npm-based tasks exist alongside the aube-based `web:check`/`web:dev`/`web:install`.
+- CI and `.made.yml` run `web:install:npm`/`web:build:npm`/`web:check:npm`/`web:test:npm` exclusively; the aube-based `web:install`/`web:check`/`web:dev` are for everyday local work against a separate dependency tree — see `web/AGENTS.md` for why the two trees stay apart and never mix in one sequence.
 - `web:dev:local` serves the Astro site at `https://sf2-themes.test` via portless instead of a raw port — see `web/AGENTS.md` for setup and the Astro agent-detection caveat.
