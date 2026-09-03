@@ -4,13 +4,15 @@ const CLI = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2
 const installScript = `${CLI} --version`;
 const moves = [
   ["WEZTERM", "setup wezterm", "Set up the one-time WezTerm integration."],
-  ["WEZTERM", "apply wezterm --theme ryu", "Apply Ryu, or replace the theme name with your fighter."],
+  ["WEZTERM", "apply wezterm --theme ryu", "Apply Ryu's dark and light schemes; WezTerm switches with host appearance."],
   ["HERDR", "setup herdr", "Set up the one-time Herdr integration."],
-  ["HERDR", "apply herdr --theme chun-li", "Apply Chun-Li, then reload the Herdr server configuration."],
+  ["HERDR", "apply herdr --theme chun-li", "Apply Chun-Li with Herdr auto-switch, then reload the server configuration."],
   ["NVIM", "setup nvim", "Set up the one-time Neovim colorscheme loader."],
-  ["NVIM", "apply nvim --theme ryu-light", "Apply Ryu Light, or replace the theme name with your fighter."],
+  ["NVIM", "apply nvim --theme ryu-light", "Apply Ryu's dark and light colorschemes; Neovim follows TERM_THEME or background."],
   ["CODEX", "setup codex", "Set up the one-time Codex custom theme directory."],
   ["CODEX", "apply codex --theme ryu-light", "Apply Ryu Light, then restart Codex or reselect it with /theme."],
+  ["CLAUDE", "setup claude", "Set up the one-time Claude Code custom theme directory."],
+  ["CLAUDE", "apply claude --theme ryu-light", "Apply Ryu Light, then reselect it with /theme in Claude Code."],
   ["STARSHIP", "apply starship --theme vega", "Apply Vega to Starship and refresh the zsh-syntax highlight snippet."],
 ];
 ---
@@ -58,8 +60,9 @@ const moves = [
       <section class="install-section install-notes" aria-labelledby="notes-heading">
         <h2 id="notes-heading">NO GUESSWORK</h2>
         <ul>
-          <li>WezTerm setup upgrades an existing assignment to the managed pointer. For another selected scheme, use <code>--adopt</code> or paste the printed snippet.</li>
-          <li>Herdr leaves an unmarked <code>[theme]</code> section alone unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
+          <li>WezTerm setup upgrades an existing assignment to the managed pointer, which auto-switches the selected character's dark and light schemes. For another selected scheme, use <code>--adopt</code> or paste the printed snippet.</li>
+          <li>Herdr apply enables theme auto-switch and writes per-mode <code>[theme.custom.dark]</code> / <code>[theme.custom.light]</code> overlays (needs a Herdr build with herdr#2324; not in a stable release yet). Unmarked <code>[theme]</code> sections stay unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
+          <li>Claude Code has no host-appearance auto-switch for custom themes, so applying a sibling just pins that one theme, like Codex.</li>
           <li><code>install</code> remains a deprecated alias for <code>apply</code>.</li>
         </ul>
       </section>
@@ -111,7 +114,8 @@ const moves = [
   .install-step__meta { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-block-end: var(--space-4); color: var(--ac); font: 600 15px/1.4 var(--font-mono); letter-spacing: 0.16em; }
   .install-step code { display: block; overflow-x: auto; margin-block-end: var(--space-4); color: var(--fg); font: 16px/1.6 var(--font-mono); white-space: nowrap; }
   .install-step p { margin: 0; color: var(--mu); font-size: 18px; line-height: 1.5; }
-  .install-notes ul { display: grid; gap: var(--space-4); max-inline-size: 860px; margin: 0; padding-inline-start: var(--space-6); color: var(--mu); font-size: 20px; line-height: 1.7; }
-  .install-notes code, .install-lede code { color: var(--ac); font-family: var(--font-mono); }
+  .install-notes ul { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); max-inline-size: 860px; margin: 0; padding-inline-start: var(--space-6); color: var(--mu); font-size: 20px; line-height: 1.7; }
+  .install-notes li { min-inline-size: 0; }
+  .install-notes code, .install-lede code { color: var(--ac); font-family: var(--font-mono); overflow-wrap: break-word; }
   @media (max-width: 640px) { .install-hero { padding-block: var(--space-12) var(--space-10); } .command-bar { align-items: stretch; flex-direction: column; padding: var(--space-5); } .command-bar button { inline-size: 100%; } .install-step { padding: var(--space-5); } .install-step__meta { letter-spacing: 0.1em; } .install-step code { font-size: 14px; } }
 </style>

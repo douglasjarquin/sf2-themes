@@ -8,12 +8,13 @@ import pytest
 from sf2_theme.adapters.wezterm import (
     apply_wezterm,
     current_pointer_path,
+    render_pointer,
     render_scheme,
     setup_wezterm,
     wezterm_lua_path,
 )
 from sf2_theme.adapters.wezterm_lua import setup_lua
-from sf2_theme.catalog import get_theme, parse_catalog
+from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.parse import parse_theme
 
@@ -70,6 +71,16 @@ def test_light_variant_resolves_and_renders_light_metadata() -> None:
     assert theme.metadata.display_name == "Street Fighter II - Ryu Light"
     assert 'name = "sf2-ryu-light"' in rendered
     assert 'background = "#' in rendered
+
+
+def test_pointer_auto_switches_dark_and_light_siblings() -> None:
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("ryu-light", catalog), catalog)
+    pointer = render_pointer(dark, light)
+    assert "-- sf2-themes: sf2-ryu" in pointer
+    assert "get_appearance" in pointer
+    assert 'return "sf2-ryu"' in pointer
+    assert 'return "sf2-ryu-light"' in pointer
 
 
 def test_safe_config_builder_gets_dofile() -> None:
@@ -269,6 +280,8 @@ def test_setup_wezterm_migrates_existing_unprefixed_pointer(tmp_path: Path, monk
 
     assert "-- sf2-themes: sf2-ken" in pointer.read_text(encoding="utf-8")
     assert 'return "sf2-ken"' in pointer.read_text(encoding="utf-8")
+    assert 'return "sf2-ken-light"' in pointer.read_text(encoding="utf-8")
+    assert "get_appearance" in pointer.read_text(encoding="utf-8")
     setup_wezterm(
         get_theme("main", catalog),
         catalog,

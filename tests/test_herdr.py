@@ -5,90 +5,142 @@ from pathlib import Path
 import pytest
 
 from sf2_theme.adapters.herdr import HERDR_TOKENS, apply_herdr, merge_theme, render_block
-from sf2_theme.catalog import get_theme, parse_catalog
+from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.errors import ThemeError
 
 
+def _assert_mode_custom_tables(block: str) -> None:
+    assert any(line.strip() == "[theme.custom.dark]" for line in block.splitlines())
+    assert any(line.strip() == "[theme.custom.light]" for line in block.splitlines())
+    assert not any(line.strip() == "[theme.custom]" for line in block.splitlines())
+
+
 def test_render_includes_every_token() -> None:
-    theme = get_theme("main", parse_catalog())
-    block = render_block(theme)
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("main", catalog), catalog)
+    block = render_block(dark, light)
+    _assert_mode_custom_tables(block)
     assert 'name = "catppuccin"' in block
+    assert "auto_switch = true" in block
+    assert 'light_name = "catppuccin-latte"' in block
+    assert 'dark_name = "catppuccin"' in block
     for token, _, _ in HERDR_TOKENS:
-        assert f"{token} =" in block
+        assert block.count(f"{token} =") == 2
     assert "overlay0" in block and "mauve" in block and "peach" in block
-    assert f'mauve = "{theme.ui.accent_secondary}"' in block
-    assert f'accent = "{theme.ui.accent}"' in block
+    assert f'mauve = "{dark.ui.accent_secondary}"' in block
+    assert f'accent = "{dark.ui.accent}"' in block
 
 
-def test_light_variant_uses_latte_base() -> None:
-    theme = get_theme("ryu-light", parse_catalog())
-    assert 'name = "catppuccin-latte"' in render_block(theme)
+def test_pair_uses_latte_base_for_light_and_mocha_for_dark() -> None:
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("ryu-light", catalog), catalog)
+    block = render_block(dark, light)
+    _assert_mode_custom_tables(block)
+    assert 'name = "catppuccin"' in block
+    assert 'light_name = "catppuccin-latte"' in block
+    assert 'dark_name = "catppuccin"' in block
+    assert "# sf2-themes: sf2-ryu" in block
+
+
+def test_custom_overlay_covers_both_siblings() -> None:
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("vega", catalog), catalog)
+    block = render_block(dark, light)
+    _assert_mode_custom_tables(block)
+    assert f'sidebar_bg = "{dark.ui.background}"' in block
+    assert f'text = "{dark.ui.foreground}"' in block
+    assert f'sidebar_bg = "{light.ui.background}"' in block
+    assert f'text = "{light.ui.foreground}"' in block
 
 
 def test_sidebar_rows_use_surfaces_not_selection_tint() -> None:
-    theme = get_theme("vega", parse_catalog())
-    block = render_block(theme)
-    assert f'active_row_bg = "{theme.ui.surface}"' in block
-    assert f'selection_bg = "{theme.ui.overlay}"' in block
-    assert f'active_row_bg = "{theme.ui.selection_background}"' not in block
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("vega", catalog), catalog)
+    block = render_block(dark, light)
+    assert f'active_row_bg = "{dark.ui.surface}"' in block
+    assert f'selection_bg = "{dark.ui.overlay}"' in block
+    assert f'active_row_bg = "{dark.ui.selection_background}"' not in block
 
 
 def test_overlay_tokens_are_muted_text_not_border() -> None:
     # Herdr uses overlay0/1 as dim fg; shared adapter.overlay0 is border chrome.
-    theme = get_theme("vega", parse_catalog())
-    block = render_block(theme)
-    assert f'overlay0 = "{theme.ui.muted}"' in block
-    assert f'overlay1 = "{theme.ui.subtle}"' in block
-    assert f'overlay0 = "{theme.ui.border}"' not in block
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("vega", catalog), catalog)
+    block = render_block(dark, light)
+    assert f'overlay0 = "{dark.ui.muted}"' in block
+    assert f'overlay1 = "{dark.ui.subtle}"' in block
+    assert f'overlay0 = "{dark.ui.border}"' not in block
 
 
-def test_herdr_managed_identity_is_prefixed() -> None:
-    theme = get_theme("main", parse_catalog())
+def test_herdr_managed_identity_is_family_dark_id() -> None:
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("main-light", catalog), catalog)
+    assert "# sf2-themes: sf2-main" in render_block(dark, light)
 
-    assert "# sf2-themes: sf2-main" in render_block(theme)
+
+def test_selecting_light_or_dark_writes_the_same_pair() -> None:
+    catalog = parse_catalog()
+    from_dark = merge_theme("", get_theme("chun-li", catalog), catalog, adopt=False)
+    from_light = merge_theme("", get_theme("chun-li-light", catalog), catalog, adopt=False)
+    assert from_dark == from_light
+    _assert_mode_custom_tables(from_dark)
+    assert "auto_switch = true" in from_dark
+    assert "# sf2-themes: sf2-chun-li" in from_dark
 
 
 def test_preserves_unrelated_sections() -> None:
-    theme = get_theme("main", parse_catalog())
+    catalog = parse_catalog()
+    theme = get_theme("main", catalog)
     existing = '[ui]\ntheme = "follow-system"\n\n[keys]\nprefix = "ctrl+b"\n'
-    merged = merge_theme(existing, theme, adopt=False)
+    merged = merge_theme(existing, theme, catalog, adopt=False)
     assert 'theme = "follow-system"' in merged
     assert 'prefix = "ctrl+b"' in merged
     assert "# >>> sf2-themes managed theme" in merged
+    assert "auto_switch = true" in merged
+    _assert_mode_custom_tables(merged)
 
 
 def test_refuses_unmarked_theme_without_adopt() -> None:
-    theme = get_theme("main", parse_catalog())
+    catalog = parse_catalog()
+    theme = get_theme("main", catalog)
     existing = '[theme]\nname = "catppuccin"\n'
     with pytest.raises(ThemeError, match="--adopt"):
-        merge_theme(existing, theme, adopt=False)
+        merge_theme(existing, theme, catalog, adopt=False)
 
 
 def test_adopt_replaces_unmarked_theme() -> None:
-    theme = get_theme("main", parse_catalog())
+    catalog = parse_catalog()
+    theme = get_theme("main", catalog)
     existing = '[ui]\nconfirm_close = true\n\n[theme]\nname = "dracula"\n'
-    merged = merge_theme(existing, theme, adopt=True)
+    merged = merge_theme(existing, theme, catalog, adopt=True)
     assert "dracula" not in merged
     assert 'name = "catppuccin"' in merged
+    assert "auto_switch = true" in merged
     assert "# >>> sf2-themes managed theme" in merged
     assert "confirm_close = true" in merged
+    _assert_mode_custom_tables(merged)
 
 
 def test_second_apply_replaces_marked_block() -> None:
     catalog = parse_catalog()
     main = get_theme("main", catalog)
-    first = merge_theme("", main, adopt=False)
-    second = merge_theme(first, main, adopt=False)
+    first = merge_theme("", main, catalog, adopt=False)
+    second = merge_theme(first, main, catalog, adopt=False)
     assert second.count("# >>> sf2-themes managed theme") == 1
+    assert sum(line.strip() == "[theme.custom.dark]" for line in second.splitlines()) == 1
+    _assert_mode_custom_tables(second)
 
 
 def test_apply_herdr_round_trip(tmp_path: Path) -> None:
-    theme = get_theme("main", parse_catalog())
+    catalog = parse_catalog()
+    theme = get_theme("main", catalog)
     config_dir = tmp_path / "herdr"
     config_dir.mkdir()
     (config_dir / "config.toml").write_text('[ui]\ntheme = "follow-system"\n', encoding="utf-8")
-    apply_herdr(theme, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
-    apply_herdr(theme, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
+    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
+    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
     text = (config_dir / "config.toml").read_text(encoding="utf-8")
-    assert text.count("[theme.custom]") == 1
+    _assert_mode_custom_tables(text)
+    assert sum(line.strip() == "[theme.custom.dark]" for line in text.splitlines()) == 1
     assert 'theme = "follow-system"' in text
+    assert "auto_switch = true" in text
