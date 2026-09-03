@@ -587,7 +587,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(docker): add dev image entrypoint with mise activation and volume seeding` | Files: [docker/dev/entrypoint.sh]
 
-- [ ] 15. Create scripts/ci/dev-image-fingerprint.sh
+- [x] 15. Create scripts/ci/dev-image-fingerprint.sh
 
   **What to do**: A script printing one deterministic hash to stdout, computed from the concatenated contents of: toolchain fingerprint inputs (`mise.toml`, `mise.lock`, `docker/toolchain/Dockerfile`, `docker/toolchain/apt-packages.txt`) for the toolchain image, and additionally `pyproject.toml`, `uv.lock`, `web/package.json`, `web/package-lock.json`, `docker/dev/Dockerfile`, `docker/dev/apt-packages.txt`, `docker/dev/entrypoint.sh` for the dev image (Metis-flagged: `web/package-lock.json` must be included since Playwright's browser binary is version-coupled to it). Accept a `--target toolchain|dev` flag selecting which input set to hash. Use `sha256sum` over the sorted, concatenated file list (stable ordering) and print the first 12 hex characters.
   **Must NOT do**: Do not include the full repo tree or any app source in the hash — only the named manifest/Dockerfile inputs, or every commit would invalidate the cache.
@@ -619,7 +619,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(ci): add docker image fingerprinting script` | Files: [scripts/ci/dev-image-fingerprint.sh]
 
-- [ ] 16. Create scripts/ci/ensure-toolchain-image.sh and scripts/ci/ensure-dev-image.sh
+- [x] 16. Create scripts/ci/ensure-toolchain-image.sh and scripts/ci/ensure-dev-image.sh
 
   **What to do**: Two scripts (near-identical, parameterized by target) that: compute the fingerprint (task 15), check `docker manifest inspect ghcr.io/douglasjarquin/sf2-themes-<target>:sha-<fingerprint>` (or a local `docker image inspect` first, to skip a network round-trip when already pulled); if present, `docker pull` (or confirm local) and print the resolved tag to stdout; if absent, build locally via `docker buildx build --platform linux/amd64,linux/arm64 --cache-from type=registry,ref=ghcr.io/douglasjarquin/sf2-themes-<target>:buildcache -f docker/<target>/Dockerfile -t <tag> .` (for `dev`, pass `--build-arg TOOLCHAIN_IMAGE=$(scripts/ci/ensure-toolchain-image.sh)` so the dev build always layers on an already-resolved toolchain tag) and print the freshly-built tag. This is the **cold-start safety net**: it works correctly even before `publish-images.yml` (task 19) has ever run, resolving the chicken-and-egg problem Metis raised — CI never hard-fails just because nothing's been published yet, it just builds locally that one time.
   **Must NOT do**: Do not `--push` from these scripts — publishing is `publish-images.yml`'s job (task 19) only, keeping "resolve/build a usable local tag" and "publish for others to reuse" as separate concerns.
