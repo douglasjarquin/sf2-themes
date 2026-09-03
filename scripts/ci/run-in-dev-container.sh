@@ -10,6 +10,11 @@ if [ "${1:-}" = "--publish" ]; then
   PUBLISH="$2"
   shift 2
 fi
+BIND_DIST=0
+if [ "${1:-}" = "--bind-dist" ]; then
+  BIND_DIST=1
+  shift
+fi
 if [ "$#" -eq 0 ]; then
   printf 'error: command required\n' >&2
   exit 1
@@ -39,6 +44,7 @@ docker_env=(
   -e HOST_UID="$(id -u)"
   -e HOST_GID="$(id -g)"
   -e HOME=/home/dev
+  -e BIND_DIST="$BIND_DIST"
 )
 for var in CI PLAYWRIGHT_PORT GITHUB_OUTPUT GITHUB_PATH GITHUB_ENV; do
   if [ -n "${!var:-}" ]; then
@@ -51,6 +57,13 @@ if [ -n "$PUBLISH" ]; then
   publish_args=(-p "$PUBLISH")
 fi
 
+dist_mount_args=(--mount "type=volume,src=$FE_DIST_VOL,dst=/workspace/sf2-themes/web/dist")
+if [ "$BIND_DIST" -eq 1 ]; then
+  # dist must land on the real host filesystem (e.g. for actions/upload-pages-artifact),
+  # not a named volume the CI runner's own filesystem can never see.
+  dist_mount_args=()
+fi
+
 docker run --name "$NAME" --rm --init \
   --user root \
   --entrypoint /bin/bash \
@@ -58,7 +71,7 @@ docker run --name "$NAME" --rm --init \
   --mount type=volume,src="$VENV_VOL",dst=/workspace/sf2-themes/.venv \
   --mount type=volume,src="$FE_NM_VOL",dst=/workspace/sf2-themes/web/node_modules \
   --mount type=volume,src="$FE_ASTRO_VOL",dst=/workspace/sf2-themes/web/.astro \
-  --mount type=volume,src="$FE_DIST_VOL",dst=/workspace/sf2-themes/web/dist \
+  "${dist_mount_args[@]}" \
   "${publish_args[@]}" \
   --workdir /workspace/sf2-themes \
   "${docker_env[@]}" \
@@ -77,8 +90,10 @@ docker run --name "$NAME" --rm --init \
     chown "$HOST_UID:$HOST_GID" \
       /workspace/sf2-themes/.venv \
       /workspace/sf2-themes/web/node_modules \
-      /workspace/sf2-themes/web/.astro \
-      /workspace/sf2-themes/web/dist
+      /workspace/sf2-themes/web/.astro
+    if [ "$BIND_DIST" -ne 1 ]; then
+      chown "$HOST_UID:$HOST_GID" /workspace/sf2-themes/web/dist
+    fi
     exec setpriv --reuid="$HOST_UID" --regid="$HOST_GID" --clear-groups -- \
       /usr/local/bin/sf2-themes-dev-entrypoint "$@"
   ' _ "$@"

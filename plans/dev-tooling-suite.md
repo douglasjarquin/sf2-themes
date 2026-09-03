@@ -718,7 +718,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(ci): add job-scoped volume garbage collection` | Files: [scripts/ci/gc-job-overlay-volumes.sh]
 
-- [ ] 19. Create .github/workflows/publish-images.yml
+- [x] 19. Create .github/workflows/publish-images.yml
 
   **What to do**: New workflow, `permissions: { packages: write, contents: read }`, triggered on `push` to `main` touching `docker/**`, `mise.toml`, `mise.lock`, `pyproject.toml`, `uv.lock`, `web/package.json`, `web/package-lock.json`, plus `workflow_dispatch` for manual runs. Steps: `docker/setup-buildx-action`, `docker/login-action` against `ghcr.io` using `GITHUB_TOKEN`, then `docker buildx build --platform linux/amd64,linux/arm64 --push --cache-to type=registry,ref=ghcr.io/douglasjarquin/sf2-themes-toolchain:buildcache,mode=max --cache-from type=registry,ref=ghcr.io/douglasjarquin/sf2-themes-toolchain:buildcache -t ghcr.io/douglasjarquin/sf2-themes-toolchain:sha-$(scripts/ci/dev-image-fingerprint.sh --target toolchain) -t ghcr.io/douglasjarquin/sf2-themes-toolchain:latest .` for the toolchain image, then the equivalent for `dev` (with `--build-arg TOOLCHAIN_IMAGE=ghcr.io/douglasjarquin/sf2-themes-toolchain:latest`). This is the mechanism that keeps CI (task 20/21) fast after the first run of this workflow — task 16's local-build fallback covers the cold-start gap before this has ever run once.
   **Must NOT do**: Do not make `verify.yml`/`deploy.yml` depend on this workflow having already run — they must work standalone via task 16's fallback (this is a speed optimization, not a hard dependency).
@@ -751,7 +751,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(ci): add publish-images workflow for toolchain and dev GHCR images` | Files: [.github/workflows/publish-images.yml]
 
-- [ ] 20. Restructure .github/workflows/verify.yml around containerized tasks
+- [x] 20. Restructure .github/workflows/verify.yml around containerized tasks
 
   **What to do**: Add `mise-tasks/**`, `docker/**`, `scripts/ci/**`, `mise.toml`, `mise.lock` to the `changes` job's path filters (Metis-flagged gap: none of these currently trigger the `test`/`web` jobs). Add `mise.toml` to the existing `python` filter too (not just `web` — Python tasks now also depend on it). **Keep the `test` job's matrix structure exactly as today** (bare `actions/setup-python`, `["3.11","3.12","3.13","3.14"]`, `allow-prereleases: true`) — per the Metis-driven resolution, only simplify its `pip install` line (task 2) and drop the ruff/shellcheck/standalone-freshness/`test_cli.sh` steps out of it. Add a new `toolchain-checks` job (`needs: changes`, `if: needs.changes.outputs.python == 'true'`, `permissions: { packages: read }`) whose steps are `scripts/ci/run-in-dev-container.sh mise run lint`, `... mise run shellcheck`, `... mise run standalone-freshness`, `... mise run validate-catalog`, `... mise run test-cli`, each followed by `scripts/ci/gc-job-overlay-volumes.sh` (`if: always()`). Restructure the `web` job (`permissions: { packages: read }`) to `scripts/ci/run-in-dev-container.sh mise run web:install`, `... mise run web:build`, `... mise run web:check`, `... mise run web:test` (dropping the raw `npm --prefix web ci`/`npx playwright install`/`npm run *` steps — see task 24 for the aube-in-CI verification this depends on), plus the same GC step. Update `gate`'s `needs` to include `toolchain-checks`.
   **Must NOT do**: Do not remove or restructure the `changes` job's job-selector logic beyond adding the new filter paths — its `always()`/fallback-to-true behavior on force-pushes and missing base SHAs must survive unchanged.
@@ -785,7 +785,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `ci: containerize toolchain checks and web job, keep the Python matrix untouched` | Files: [.github/workflows/verify.yml]
 
-- [ ] 21. Restructure .github/workflows/deploy.yml around the containerized build
+- [x] 21. Restructure .github/workflows/deploy.yml around the containerized build
 
   **What to do**: Add `permissions: { packages: read }` to the `build` job. Replace `npm --prefix web ci` + `npm --prefix web run build` with `scripts/ci/run-in-dev-container.sh mise run web:install` + `... mise run web:build`, followed by `scripts/ci/gc-job-overlay-volumes.sh` (`if: always()`). Everything after (`actions/upload-pages-artifact`, the `deploy` job) is unaffected.
   **Must NOT do**: Do not change the `deploy` job or its `if: github.event_name != 'pull_request'` guard.
