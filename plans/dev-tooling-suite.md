@@ -816,7 +816,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `ci: containerize the Pages build step` | Files: [.github/workflows/deploy.yml]
 
-- [ ] 22. Update tests/test_ci_workflow.py for the restructured workflows
+- [x] 22. Update tests/test_ci_workflow.py for the restructured workflows
 
   **What to do**: Update the hardcoded assertions Metis identified: `assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == "npm --prefix web ci"` and the `"Build"` line (`tests/test_ci_workflow.py:53-54`) to assert the new `scripts/ci/run-in-dev-container.sh mise run web:install`/`web:build` step commands instead. Update the `gate["needs"]` exact-set assertion (`tests/test_ci_workflow.py:22`) to include `toolchain-checks`. Audit the rest of the file for any other step-name or command-string assertion touching steps this plan changed (the `test` job's `pip install` line, the removed `ruff`/`shellcheck`/`test_cli.sh` steps that move into `toolchain-checks`).
   **Must NOT do**: Do not weaken these assertions into substring/regex matches to dodge maintenance — keep them exact-string, matching the file's existing style; update them precisely instead.
@@ -847,7 +847,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `test: update workflow assertions for the containerized CI steps` | Files: [tests/test_ci_workflow.py]
 
-- [ ] 23. Verify and, if needed, extend tests/_workflow_yaml.py's hand-rolled parser
+- [x] 23. Verify and, if needed, extend tests/_workflow_yaml.py's hand-rolled parser
 
   **What to do**: `tests/_workflow_yaml.py` documents itself as supporting "exactly the constructs used in `.github/workflows/*.yml`... not a general-purpose YAML parser" (Metis-cited). Run the full `tests/test_ci_workflow.py` suite against the restructured workflows (tasks 20-21) and fix any parser failure caused by new YAML shapes this plan introduces (e.g. `permissions:` blocks on individual jobs if not already parsed, multi-line `run: |` blocks with embedded `&&` chains from the container wrapper calls). Extend the parser minimally — only the specific constructs actually used, matching its existing minimal-subset philosophy.
   **Must NOT do**: Do not replace this hand-rolled parser with a general YAML library as a "fix" — that's a bigger, unrequested change; extend it narrowly for the constructs this plan actually introduces.
