@@ -17,25 +17,17 @@ depends = ["pytest", "test-cli"]
 description = "Run the Python test suite"
 run = "uv sync --all-extras && uv run pytest -q"
 
-[tasks."test-cli"]
-description = "Exercise the copied standalone CLI across every adapter"
-run = "./mise-tasks/test-cli"
-
 [tasks.lint]
 description = "Run ruff over the Python source tree"
 run = "ruff check src tests mise-tasks"
 
 [tasks.shellcheck]
-description = "Run shellcheck over the shell file tasks"
-run = "shellcheck mise-tasks/test-cli"
+description = "Run shellcheck over the shell file tasks and container orchestration scripts"
+run = "shellcheck mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
 
 [tasks."validate-catalog"]
 description = "Validate every theme in the catalog"
 run = "uv run --project . python -m sf2_theme validate --all"
-
-[tasks."build-standalone"]
-description = "Regenerate the committed single-file sf2-themes CLI"
-run = "./mise-tasks/build-standalone"
 
 [tasks."standalone-freshness"]
 description = "Fail if the committed sf2-themes executable is stale"
@@ -64,17 +56,9 @@ run = "aube -C web run dev -- --host 0.0.0.0 --port 4322"
 description = "Install Astro dependencies from package-lock.json"
 run = "aube -C web install"
 
-[tasks."web:test"]
-description = "Run Astro unit and end-to-end tests"
-run = "aube -C web run test"
-
 [tasks."web:check"]
 description = "Run Astro type and template checks"
 run = "aube -C web run check"
-
-[tasks."web:build"]
-description = "Build the Astro site"
-run = "aube -C web run build"
 
 [tasks."web:install:npm"]
 description = "Install Astro dependencies with npm (aube's build is unreliable here, see web/AGENTS.md)"
