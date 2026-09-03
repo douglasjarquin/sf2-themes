@@ -15,6 +15,7 @@ venv/
 /web/dist/
 web/test-results/
 /test-results/
+web/artifacts/
 
 # Worktree no-mistakes state and evidence stay local. Evidence is published
 # to the orphan no-mistakes/evidence branch, not this code branch.
