@@ -64,6 +64,7 @@ mise run web:test:npm
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
+For a stable HTTPS domain instead of a raw port, run `mise run web:install:npm` once, then `mise run web:dev:local` for `https://sf2-themes.test` via [portless](https://github.com/vercel-labs/portless) - see `web/AGENTS.md` for setup notes.
 
 ## Arcade game
 

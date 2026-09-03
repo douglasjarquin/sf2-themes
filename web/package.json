@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "portless": "sf2-themes",
   "engines": {
     "node": "24.x"
   },
