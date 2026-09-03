@@ -80,3 +80,28 @@ def test_toolchain_checks_and_web_jobs_gc_their_overlay_volumes() -> None:
         gc_steps = [step for step in job["steps"] if step.get("run") == "scripts/ci/gc-job-overlay-volumes.sh"]
         assert len(gc_steps) == 1
         assert gc_steps[0].get("if") == "always()"
+
+
+def test_every_containerized_job_authenticates_to_ghcr_before_its_first_container_step() -> None:
+    for workflow_name in ("verify.yml", "deploy.yml"):
+        workflow = _load(workflow_name)
+        for job_name, job in workflow["jobs"].items():
+            steps = job.get("steps", [])
+            container_indexes = [
+                i
+                for i, step in enumerate(steps)
+                if str(step.get("run", "")).startswith("scripts/ci/run-in-dev-container.sh")
+            ]
+            if not container_indexes:
+                continue
+
+            login_indexes = [
+                i
+                for i, step in enumerate(steps)
+                if str(step.get("uses", "")).startswith("docker/login-action")
+                and step.get("with", {}).get("registry") == "ghcr.io"
+            ]
+            assert login_indexes, f"{workflow_name}:{job_name} runs a containerized step but never logs into ghcr.io"
+            assert min(login_indexes) < min(container_indexes), (
+                f"{workflow_name}:{job_name} logs into ghcr.io after its first containerized step"
+            )
