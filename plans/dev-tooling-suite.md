@@ -1004,13 +1004,13 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 ## Final Verification Wave (MANDATORY - after ALL implementation tasks)
 > ALL must APPROVE. Present consolidated results to user and get explicit "okay" before completing.
 
-- [ ] F1. Plan Compliance Audit
+- [x] F1. Plan Compliance Audit
   Verify every task's Acceptance Criteria are checked, every commit landed, and the Dependency Matrix's wave ordering was actually followed (no task started before its blockers merged).
 
-- [ ] F2. Code Quality Review
+- [x] F2. Code Quality Review
   Re-run `mise run lint`, `mise run shellcheck`, and `docker build` for both images with `--no-cache` at least once (catches anything a warm Docker layer cache silently papered over). Confirm no task introduced a new script-shim pattern (`grep -rn "run = \[\"bash \|run = \"python3 scripts"` across `mise.toml` should return nothing).
 
-- [ ] F3. Real Manual QA
+- [x] F3. Real Manual QA
   On a genuinely clean checkout (fresh clone, no `~/.local/share/mise` cache reused): `mise install --locked`, `mise run test`, `scripts/ci/run-in-dev-container.sh mise run web:test`, `mise run web:dev:container` + a real `curl` against the published port, then open an actual draft PR against this repo and watch `verify.yml` run end-to-end for real (not simulated) — this is the only step that proves the whole chain works together, not just each piece in isolation.
 
 - [ ] F4. Scope Fidelity Check + Manual Boss Actions
