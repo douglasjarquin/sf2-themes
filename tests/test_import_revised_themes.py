@@ -1,3 +1,4 @@
+import importlib.machinery
 import importlib.util
 import os
 import subprocess
@@ -7,11 +8,12 @@ from types import ModuleType
 
 import pytest
 
-IMPORTER_PATH = Path("scripts/import-revised-themes.py")
+IMPORTER_PATH = Path("mise-tasks/import-revised-themes")
 
 
 def load_importer() -> ModuleType:
-    spec = importlib.util.spec_from_file_location("import_revised_themes", IMPORTER_PATH)
+    loader = importlib.machinery.SourceFileLoader("import_revised_themes", str(IMPORTER_PATH))
+    spec = importlib.util.spec_from_file_location("import_revised_themes", IMPORTER_PATH, loader=loader)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
@@ -37,7 +39,7 @@ def test_importer_fails_before_writes_when_source_file_is_missing(tmp_path: Path
     result = subprocess.run(
         (
             sys.executable,
-            "scripts/import-revised-themes.py",
+            "mise-tasks/import-revised-themes",
             "--source",
             str(source),
             "--destination",
