@@ -26,13 +26,8 @@ testpaths = ["tests"]
 
 [tool.ruff]
 src = ["src", "tests", "mise-tasks"]
-extend-include = [
-  "mise-tasks/build-standalone",
-  "mise-tasks/generate-previews",
-  "mise-tasks/generate-web-theme-data",
-  "mise-tasks/author-character-themes",
-  "mise-tasks/import-revised-themes",
-]
+extend-include = ["mise-tasks/*"]
+extend-exclude = ["mise-tasks/test-cli"]
 target-version = "py311"
 line-length = 120
 
