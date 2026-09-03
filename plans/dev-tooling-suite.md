@@ -484,7 +484,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(mise): add web:dev:container task for the long-running container dev server` | Files: [mise.toml]
 
-- [ ] 12. Create docker/toolchain/Dockerfile (mise + Python + Node + aube, no app source)
+- [x] 12. Create docker/toolchain/Dockerfile (mise + Python + Node + aube, no app source)
 
   **What to do**: Create `docker/toolchain/Dockerfile` `FROM ubuntu:24.04` (pin by digest). Install `docker/toolchain/apt-packages.txt` (start minimal: `git curl ca-certificates build-essential python3` — Playwright's OS deps move to the `dev` image in task 13, since the toolchain has no app source to know it needs a browser yet). Install mise via a pinned version (`ARG MISE_VERSION=<latest stable at implementation time>`, official installer: `curl https://mise.run | sh` with `MISE_VERSION` env set, simpler than a bespoke asset-JSON bootstrap since this repo has no air-gapped-build constraint niceuptime's Cursor-Cloud note was working around). `COPY mise.toml mise.lock /opt/sf2-themes/toolchain/`, `WORKDIR /opt/sf2-themes/toolchain`, `RUN mise trust --yes . && mise install --locked`. Add `LABEL org.opencontainers.image.source="https://github.com/douglasjarquin/sf2-themes"`. No app source, no `dev` user (this image is a pure cache layer, always run as whatever the layering image sets).
   **Must NOT do**: Do not COPY any application source (`src/`, `web/`, `themes/`) into this image — that's what makes it reusable across future repos in the "suite," and what keeps its build-cache stable regardless of app changes.
@@ -520,7 +520,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(docker): add the toolchain image (mise + Python + Node + aube, no app source)` | Files: [docker/toolchain/Dockerfile, docker/toolchain/apt-packages.txt]
 
-- [ ] 13. Create docker/dev/Dockerfile (FROM toolchain, app deps prefetched, non-root user)
+- [x] 13. Create docker/dev/Dockerfile (FROM toolchain, app deps prefetched, non-root user)
 
   **What to do**: `FROM sf2-themes-toolchain:<pinned-fingerprint-or-tag-arg>` (via `ARG TOOLCHAIN_IMAGE`, set by the build wrapper in task 16). Install `docker/dev/apt-packages.txt` (Playwright Chromium's OS libs — start from Playwright's own documented Ubuntu 24.04 dependency list, verified at implementation time via `npx playwright install-deps --dry-run` output or Playwright's own docs, since this list drifts by Playwright version) **as root, before creating the `dev` user**. Create a non-root `dev` user. `COPY --chown=dev:dev pyproject.toml uv.lock web/package.json web/package-lock.json ./` (manifests only, for layer-cache locality), then as `dev`: `mise exec -- uv sync --all-extras` and `mise exec -- aube -C web install` and `mise exec -- aube -C web exec -- playwright install chromium` (Chromium binary itself can install as `dev`; only its OS-level deps needed root, already handled above). Set `ENV PLAYWRIGHT_BROWSERS_PATH=/home/dev/.cache/ms-playwright` (or wherever `aube`/Playwright resolves by default — confirm at implementation time and pin explicitly so the fingerprint and the runtime env agree). `WORKDIR /workspace/sf2-themes`. `ENTRYPOINT ["docker/dev/entrypoint.sh"]`.
   **Must NOT do**: Do not `COPY` the full repo source into this image — only manifests, for cache locality; the full source arrives via the bind mount at container-run time (task 17).
@@ -555,7 +555,7 @@ Wave 7: `.made.yml` rewrite + final doc sweep — depends on every task name/pat
 
   **Commit**: YES | Message: `feat(docker): add the dev image (toolchain + prefetched app deps, non-root)` | Files: [docker/dev/Dockerfile, docker/dev/apt-packages.txt]
 
-- [ ] 14. Create docker/dev/entrypoint.sh
+- [x] 14. Create docker/dev/entrypoint.sh
 
   **What to do**: A short entrypoint that: (1) activates mise (`eval "$(mise activate bash)"` or ensures `MISE_DATA_DIR`'s shims are on `PATH` — required because `web/package.json`'s scripts call bare `python3`, which must resolve to mise's pinned Python inside the container, Metis-flagged); (2) if a mounted target directory the dev image baked deps into (e.g. `web/node_modules`) is empty (first run against a fresh named volume, task 17), copies the image's original baked copy in before proceeding (Metis-flagged volume-masking risk — the seed step, not the prefetch itself, is what makes prefetching load-bearing rather than decorative); (3) `exec "$@"`.
   **Must NOT do**: Do not silently swallow a seed-copy failure — if the baked source directory is itself missing or empty, fail loudly rather than proceeding with a broken environment.
