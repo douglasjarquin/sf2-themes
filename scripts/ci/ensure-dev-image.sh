@@ -21,5 +21,7 @@ fi
 
 TOOLCHAIN_TAG="$(scripts/ci/ensure-toolchain-image.sh)"
 printf '[ensure-dev-image] building %s locally on top of %s (not found local or remote)\n' "$TAG" "$TOOLCHAIN_TAG" >&2
-docker build -f docker/dev/Dockerfile --build-arg "TOOLCHAIN_IMAGE=${TOOLCHAIN_TAG}" -t "$TAG" . >&2
+docker buildx build --load \
+  --cache-from "type=registry,ref=${IMAGE_PREFIX}:buildcache" \
+  -f docker/dev/Dockerfile --build-arg "TOOLCHAIN_IMAGE=${TOOLCHAIN_TAG}" -t "$TAG" . >&2
 printf '%s\n' "$TAG"

@@ -20,5 +20,7 @@ if docker pull "$TAG" >&2 2>/dev/null; then
 fi
 
 printf '[ensure-toolchain-image] building %s locally (not found local or remote)\n' "$TAG" >&2
-docker build -f docker/toolchain/Dockerfile -t "$TAG" . >&2
+docker buildx build --load \
+  --cache-from "type=registry,ref=${IMAGE_PREFIX}:buildcache" \
+  -f docker/toolchain/Dockerfile -t "$TAG" . >&2
 printf '%s\n' "$TAG"
