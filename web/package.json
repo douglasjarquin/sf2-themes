@@ -16,7 +16,7 @@
     "themes:check": "python3 ../mise-tasks/generate-web-theme-data --check",
     "test:game": "node --test test/game-core.test.mjs test/fighter-registry.test.mjs",
     "test:e2e": "playwright test",
-    "test": "aubr test:unit && aubr test:e2e"
+    "test": "npm run test:unit && npm run test:e2e"
   },
   "dependencies": {
     "smol-toml": "1.8.0",
