@@ -1,1 +1,2 @@
 tini
+sudo
