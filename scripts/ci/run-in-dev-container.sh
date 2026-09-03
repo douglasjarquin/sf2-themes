@@ -91,9 +91,13 @@ docker run --name "$NAME" --rm --init \
       /workspace/sf2-themes/.venv \
       /workspace/sf2-themes/web/node_modules \
       /workspace/sf2-themes/web/.astro
-    if [ "$BIND_DIST" -ne 1 ]; then
-      chown "$HOST_UID:$HOST_GID" /workspace/sf2-themes/web/dist
+    if [ "$BIND_DIST" -eq 1 ]; then
+      # Unlike the volume mounts above, a bind-mounted dist has no
+      # auto-created mount point - it may not exist at all yet on a fresh
+      # checkout, so it must be created before it can be chowned.
+      mkdir -p /workspace/sf2-themes/web/dist
     fi
+    chown "$HOST_UID:$HOST_GID" /workspace/sf2-themes/web/dist
     exec setpriv --reuid="$HOST_UID" --regid="$HOST_GID" --clear-groups -- \
       /usr/local/bin/sf2-themes-dev-entrypoint "$@"
   ' _ "$@"
