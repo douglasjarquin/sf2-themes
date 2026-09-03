@@ -8,6 +8,7 @@ uv = "0.11"
 aube = "2.1"
 ruff = "0.16.5"
 shellcheck = "0.11.0"
+"npm:portless" = "0.15.6"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
@@ -75,3 +76,7 @@ run = "cd web && npm run check"
 [tasks."web:test:npm"]
 description = "Run Astro unit and end-to-end tests with npm (aube's build is unreliable here, see web/AGENTS.md)"
 run = "cd web && npm run test"
+
+[tasks."web:dev:local"]
+description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install:npm first)"
+run = "cd web && PORTLESS_TLD=test ASTRO_DEV_BACKGROUND=1 portless"
