@@ -6,15 +6,22 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$REPO_ROOT"
 
 PUBLISH=""
-if [ "${1:-}" = "--publish" ]; then
-  PUBLISH="$2"
-  shift 2
-fi
 BIND_DIST=0
-if [ "${1:-}" = "--bind-dist" ]; then
-  BIND_DIST=1
-  shift
-fi
+while true; do
+  case "${1:-}" in
+    --publish)
+      PUBLISH="$2"
+      shift 2
+      ;;
+    --bind-dist)
+      BIND_DIST=1
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
 if [ "$#" -eq 0 ]; then
   printf 'error: command required\n' >&2
   exit 1
@@ -46,7 +53,7 @@ docker_env=(
   -e HOME=/home/dev
   -e BIND_DIST="$BIND_DIST"
 )
-for var in CI PLAYWRIGHT_PORT GITHUB_OUTPUT GITHUB_PATH GITHUB_ENV; do
+for var in CI PLAYWRIGHT_PORT; do
   if [ -n "${!var:-}" ]; then
     docker_env+=(-e "$var=${!var}")
   fi
