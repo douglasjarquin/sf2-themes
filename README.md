@@ -42,7 +42,7 @@ The command requires uv and Python 3.11 or newer.
 
 ## Development with mise
 
-The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.1.
+The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.2.4.
 
 ```sh
 mise install
@@ -51,20 +51,18 @@ mise run apply -- wezterm --theme vega
 mise run setup -- wezterm
 ```
 
-For the Astro site, use `web:install`/`web:check`/`web:dev` for everyday work, and the separate `web:install:npm`/`web:build:npm`/`web:test:npm` tasks for anything that runs a real production build - see `web/AGENTS.md` for why the two dependency trees stay apart:
+For the Astro site:
 
 ```sh
 mise run web:install
 mise run web:check
+mise run web:build
+mise run web:test
 mise run web:dev
-
-mise run web:install:npm
-mise run web:build:npm
-mise run web:test:npm
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
-For a stable HTTPS domain instead of a raw port, run `mise run web:install:npm` once, then `mise run web:dev:local` for `https://sf2-themes.test` via [portless](https://github.com/vercel-labs/portless) - see `web/AGENTS.md` for setup notes.
+For a stable HTTPS domain instead of a raw port, run `mise run web:install` once, then `mise run web:dev:local` for `https://sf2-themes.test` via [portless](https://github.com/vercel-labs/portless) - see `web/AGENTS.md` for setup notes.
 
 ## Arcade game
 

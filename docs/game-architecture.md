@@ -62,4 +62,4 @@ The art is project-authored terminal glyph content and does not use raster sprit
 
 `/themes/` remains the adapter catalog.
 
-Use `mise run web:check`, `mise run web:test:npm`, and `mise run web:build:npm` for the normal web gates.
+Use `mise run web:check`, `mise run web:test`, and `mise run web:build` for the normal web gates.

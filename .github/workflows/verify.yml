@@ -144,13 +144,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
-        run: scripts/ci/run-in-dev-container.sh mise run web:install:npm
+        run: scripts/ci/run-in-dev-container.sh mise run web:install
       - name: Build
-        run: scripts/ci/run-in-dev-container.sh mise run web:build:npm
+        run: scripts/ci/run-in-dev-container.sh mise run web:build
       - name: Check
-        run: scripts/ci/run-in-dev-container.sh mise run web:check:npm
+        run: scripts/ci/run-in-dev-container.sh mise run web:check
       - name: Test
-        run: scripts/ci/run-in-dev-container.sh mise run web:test:npm
+        run: scripts/ci/run-in-dev-container.sh mise run web:test
       - name: Remove this job's overlay volumes
         if: always()
         run: scripts/ci/gc-job-overlay-volumes.sh

@@ -10,7 +10,8 @@ on:
       - "pyproject.toml"
       - "uv.lock"
       - "web/package.json"
-      - "web/package-lock.json"
+      - "web/aube-lock.yaml"
+      - "web/.npmrc"
   workflow_dispatch:
 
 permissions:

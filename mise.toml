@@ -5,14 +5,14 @@ lockfile = true
 node = "24"
 python = "3.11"
 uv = "0.11"
-aube = "2.1"
+aube = "2.2.4"
 ruff = "0.16.5"
 shellcheck = "0.11.0"
 "npm:portless" = "0.15.6"
 
 [tasks.deps]
-description = "Install Python, npm, and Playwright Chromium dependencies"
-run = "uv sync --all-extras && cd web && npm ci && npx playwright install chromium"
+description = "Install Python, aube, and Playwright Chromium dependencies"
+run = "uv sync --all-extras && aube -C web install && aube -C web exec playwright install chromium"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
@@ -58,29 +58,21 @@ description = "Start the Astro development server bound for container port publi
 run = "aube -C web run dev -- --host 0.0.0.0 --port 4322"
 
 [tasks."web:install"]
-description = "Install Astro dependencies from package-lock.json"
+description = "Install Astro dependencies from aube-lock.yaml"
 run = "aube -C web install"
 
 [tasks."web:check"]
 description = "Run Astro type and template checks"
 run = "aube -C web run check"
 
-[tasks."web:install:npm"]
-description = "Install Astro dependencies with npm (aube's build is unreliable here, see web/AGENTS.md)"
-run = "cd web && npm ci"
+[tasks."web:build"]
+description = "Build the Astro site"
+run = "aube -C web run build"
 
-[tasks."web:build:npm"]
-description = "Build the Astro site with npm (aube's build is unreliable here, see web/AGENTS.md)"
-run = "cd web && npm run build"
-
-[tasks."web:check:npm"]
-description = "Run Astro type and template checks with npm (never mix with aube-based web:* in the same tree, see web/AGENTS.md)"
-run = "cd web && npm run check"
-
-[tasks."web:test:npm"]
-description = "Run Astro unit and end-to-end tests with npm (aube's build is unreliable here, see web/AGENTS.md)"
-run = "cd web && npm run test"
+[tasks."web:test"]
+description = "Run Astro unit and end-to-end tests"
+run = "aube -C web run test"
 
 [tasks."web:dev:local"]
-description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install:npm first)"
+description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install first)"
 run = "cd web && PORTLESS_TLD=test ASTRO_DEV_BACKGROUND=1 portless"

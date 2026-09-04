@@ -65,7 +65,7 @@ docs/                Authored contracts and generated SVG previews
 
 ## CONVENTIONS
 
-- Tool versions and stable developer commands live in `mise.toml`: Python 3.11, Node 24, uv 0.11, and Aube 2.1.
+- Tool versions and stable developer commands live in `mise.toml`: Python 3.11, Node 24, uv 0.11, and Aube 2.2.4.
 - Catalog IDs stay short; adapter-installed identities use `sf2-<catalog-id>`.
 - Catalog order is `main.toml`, optional `main-light.toml`, then sorted character TOMLs.
 - The Astro app uses static output and the `/sf2-themes` Pages base; internal URLs go through `sitePath()`.
@@ -82,6 +82,7 @@ docs/                Authored contracts and generated SVG previews
 - Do not follow configuration symlinks unless the caller explicitly selects `--follow-symlinks`.
 - Do not introduce DOM, browser globals, timers, animation frames, wall-clock reads, or `Math.random` into `web/src/game/core/`.
 - Do not import `textmode.js` outside `TextmodeRenderer.ts`.
+- Do not use npm, npx, pnpm, or yarn for web installs or scripts; use aube through `mise run web:*` or `aube -C web ...`.
 
 ## COMMANDS
 
@@ -94,10 +95,8 @@ mise run apply -- wezterm --theme vega
 mise run build-standalone
 mise run web:install
 mise run web:check
-mise run web:install:npm
-mise run web:build:npm
-mise run web:check:npm
-mise run web:test:npm
+mise run web:build
+mise run web:test
 mise run web:dev:local
 scripts/ci/run-in-dev-container.sh mise run test
 ```
@@ -108,7 +107,7 @@ scripts/ci/run-in-dev-container.sh mise run test
 - Theme changes also require `mise run generate-previews`.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
 - Generated `.omo/`, caches, and build output do not count as source complexity when placing child guidance.
-- CI and `.made.yml` run `web:install:npm`/`web:build:npm`/`web:check:npm`/`web:test:npm` exclusively; the aube-based `web:install`/`web:check`/`web:dev` are for everyday local work against a separate dependency tree — see `web/AGENTS.md` for why the two trees stay apart and never mix in one sequence.
+- CI and `.made.yml` run `web:install`/`web:build`/`web:check`/`web:test` through aube. Keep `web/.npmrc` on `node-linker=hoisted` so Astro prerender can resolve native bindings.
 - `web:dev:local` serves the Astro site at `https://sf2-themes.test` via portless instead of a raw port — see `web/AGENTS.md` for setup and the Astro agent-detection caveat.
 
 ## Cursor Cloud
@@ -120,7 +119,6 @@ CI still passes the published toolchain image into the same Dockerfile.
 Do not start nested Docker.
 Do not wrap commands in `scripts/ci/run-in-dev-container.sh`.
 The agent already is the environment.
-Use `mise run test`, `mise run lint`, `mise run web:check:npm`, and `mise run web:test:npm`.
+Use `mise run test`, `mise run lint`, `mise run web:check`, and `mise run web:test`.
 `mise run web:dev:container` is already running in the `web` terminal on port 4322.
-Keep the aube-based `web:install`/`web:check`/`web:dev` tree and the npm-based `web:install:npm`/`web:build:npm`/`web:test:npm` tree apart.
-Cloud verification uses the npm tasks.
+Cloud verification uses the aube web tasks.

@@ -8,12 +8,12 @@ commands:
   test: |
     set -e
     mise run test || exit 101
-    mise run web:install:npm || exit 102
-    mise run web:build:npm || exit 104
-    mise run web:test:npm || exit 105
+    mise run web:install || exit 102
+    mise run web:build || exit 104
+    mise run web:test || exit 105
   lint: |
     set -e
     mise run lint || exit 111
     mise run shellcheck || exit 112
-    mise run web:install:npm || exit 113
-    mise run web:check:npm || exit 114
+    mise run web:install || exit 113
+    mise run web:check || exit 114

@@ -60,17 +60,22 @@ RUN mkdir -p /opt/sf2-themes/manifests/web && \
     chown -R dev:dev /opt/sf2-themes
 WORKDIR /opt/sf2-themes/manifests
 COPY --chown=dev:dev pyproject.toml uv.lock ./
-COPY --chown=dev:dev web/package.json web/package-lock.json ./web/
+COPY --chown=dev:dev web/package.json web/aube-lock.yaml web/.npmrc ./web/
+
+# aube (xx::fslock) writes /tmp/fslock/<hash>. Root `mise install` in this
+# file or the toolchain image leaves that directory 0755, so USER dev cannot
+# create lockfiles. Same chmod as scripts/ci/run-in-dev-container.sh.
+RUN mkdir -p /tmp/fslock && chmod 1777 /tmp/fslock
 
 USER dev
 RUN mise exec -- uv sync --all-extras --no-install-project && \
-    cd web && mise exec -- npm ci
+    cd web && mise exec -- aube ci
 
 USER root
-RUN cd web && mise exec -- npx playwright install-deps chromium
+RUN cd web && mise exec -- aube exec playwright install-deps chromium
 
 USER dev
-RUN cd web && mise exec -- npx playwright install chromium
+RUN cd web && mise exec -- aube exec playwright install chromium
 
 USER root
 RUN chmod -R a+rX /opt/sf2-themes/manifests /home/dev/.cache

@@ -27,7 +27,7 @@ case "$TARGET" in
   dev)
     FILES=(
       mise.toml mise.lock docker/toolchain/Dockerfile docker/toolchain/apt-packages.txt
-      pyproject.toml uv.lock web/package.json web/package-lock.json
+      pyproject.toml uv.lock web/package.json web/aube-lock.yaml web/.npmrc
       docker/dev/Dockerfile docker/dev/apt-packages.txt docker/dev/entrypoint.sh
     )
     ;;
