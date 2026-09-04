@@ -42,7 +42,7 @@ The command requires uv and Python 3.11 or newer.
 
 ## Development with mise
 
-The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.1.
+The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.2.4.
 
 ```sh
 mise install

@@ -33,12 +33,13 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 
 ## AUBE AND MISE BOUNDARIES
 
-- From the repository root, use the `mise run web:*` tasks so Node 24 and Aube 2.1 come from the pinned toolchain.
+- From the repository root, use the `mise run web:*` tasks so Node 24 and Aube 2.2.4 come from the pinned toolchain.
 - From `web/`, use `aube run <script>` or use `aube -C web ...` from the root for focused package scripts.
 - Treat `aubr` as package-script composition used inside `package.json`, not as the repository-level entry point.
-- Install from `package-lock.json` with `mise run web:install` locally or `npm --prefix web ci` in CI, matching the lockfile-backed path both `verify.yml` and `deploy.yml` run; Aube's virtual-store install fails on a fresh CI runner.
+- Install from `aube-lock.yaml` with `mise run web:install` locally or `aube -C web ci` in CI, matching the lockfile-backed path both `verify.yml` and `deploy.yml` run.
+- Keep `web/.npmrc` on `node-linker=hoisted` so Astro prerender can resolve native bindings and client entry files from an npm-compatible tree.
 - Keep `astro check`, unit tests, browser tests, and the production build as separate evidence because none substitutes for another.
-- The normal web CI path installs with npm, installs Chromium, builds, then runs check, Node tests, and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
+- The normal web CI path installs with aube, installs Chromium, builds, then runs check, Node tests, and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
 
 ## TEST SURFACES AND OWNED SERVERS
 

@@ -112,17 +112,17 @@ jobs:
       - uses: actions/checkout@v7
       - uses: jdx/mise-action@v4
       - name: Install dependencies
-        run: npm --prefix web ci
+        run: aube -C web ci
       - name: Install Chromium
-        run: npx --prefix web playwright install --with-deps chromium
+        run: aube -C web exec playwright install --with-deps chromium
       - name: Build
-        run: npm --prefix web run build
+        run: aube -C web run build
       - name: Check
-        run: npm --prefix web run check
+        run: aube -C web run check
       - name: Unit tests
-        run: npm --prefix web run test:unit
+        run: aube -C web run test:unit
       - name: End-to-end tests
-        run: npm --prefix web run test:e2e
+        run: aube -C web run test:e2e
 
   gate:
     if: always()

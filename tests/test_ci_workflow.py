@@ -50,5 +50,21 @@ def test_deploy_and_verify_web_jobs_use_the_same_lockfile_backed_install_and_bui
         step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
     }
 
-    assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == "npm --prefix web ci"
-    assert deploy_steps["Build"] == verify_steps["Build"] == "npm --prefix web run build"
+    assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == "aube -C web ci"
+    assert deploy_steps["Build"] == verify_steps["Build"] == "aube -C web run build"
+
+
+def test_verify_web_job_uses_aube_instead_of_npm() -> None:
+    verify_steps = {step["name"]: step["run"] for step in _load("verify.yml")["jobs"]["web"]["steps"] if "run" in step}
+    deploy_steps = {
+        step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
+    }
+
+    for script in [*verify_steps.values(), *deploy_steps.values()]:
+        assert "npm " not in script
+        assert "npx " not in script
+
+    assert verify_steps["Install Chromium"] == "aube -C web exec playwright install --with-deps chromium"
+    assert verify_steps["Check"] == "aube -C web run check"
+    assert verify_steps["Unit tests"] == "aube -C web run test:unit"
+    assert verify_steps["End-to-end tests"] == "aube -C web run test:e2e"

@@ -60,7 +60,7 @@ docs/                Authored contracts and generated SVG previews
 
 ## CONVENTIONS
 
-- Tool versions and stable developer commands live in `mise.toml`: Python 3.11, Node 24, uv 0.11, and Aube 2.1.
+- Tool versions and stable developer commands live in `mise.toml`: Python 3.11, Node 24, uv 0.11, and Aube 2.2.4.
 - Catalog IDs stay short; adapter-installed identities use `sf2-<catalog-id>`.
 - Catalog order is `main.toml`, optional `main-light.toml`, then sorted character TOMLs.
 - The Astro app uses static output and the `/sf2-themes` Pages base; internal URLs go through `sitePath()`.
@@ -77,6 +77,7 @@ docs/                Authored contracts and generated SVG previews
 - Do not follow configuration symlinks unless the caller explicitly selects `--follow-symlinks`.
 - Do not introduce DOM, browser globals, timers, animation frames, wall-clock reads, or `Math.random` into `web/src/game/core/`.
 - Do not import `textmode.js` outside `TextmodeRenderer.ts`.
+- Do not use npm, npx, pnpm, or yarn for web installs or scripts; use aube through `mise run web:*` or `aube -C web ...`.
 
 ## COMMANDS
 
