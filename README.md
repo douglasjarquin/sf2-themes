@@ -127,7 +127,7 @@ Claude Code setup writes every catalog theme as `sf2-<catalog-id>.json` under `~
 
 Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
 
-Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs a Herdr build with herdr#2324; not in a stable release yet). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
+Herdr apply enables `auto_switch` for the selected character (or `main`) and writes a single `[theme.custom]` overlay that stable Herdr v0.8.2 understands. Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
 
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
 
@@ -159,7 +159,7 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
 - The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
-- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
+- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and one `[theme.custom]` overlay for the selected character.
 - Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.

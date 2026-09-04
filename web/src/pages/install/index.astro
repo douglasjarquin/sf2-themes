@@ -61,7 +61,7 @@ const moves = [
         <h2 id="notes-heading">NO GUESSWORK</h2>
         <ul>
           <li>WezTerm setup upgrades an existing assignment to the managed pointer, which auto-switches the selected character's dark and light schemes. For another selected scheme, use <code>--adopt</code> or paste the printed snippet.</li>
-          <li>Herdr apply enables theme auto-switch and writes per-mode <code>[theme.custom.dark]</code> / <code>[theme.custom.light]</code> overlays (needs a Herdr build with herdr#2324; not in a stable release yet). Unmarked <code>[theme]</code> sections stay unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
+          <li>Herdr apply enables theme auto-switch and writes a single <code>[theme.custom]</code> overlay that stable Herdr v0.8.2 understands. Unmarked <code>[theme]</code> sections stay unless you use <code>--adopt</code>. After applying, run <code>herdr server reload-config</code>.</li>
           <li>Claude Code has no host-appearance auto-switch for custom themes, so applying a sibling just pins that one theme, like Codex.</li>
           <li><code>install</code> remains a deprecated alias for <code>apply</code>.</li>
         </ul>
