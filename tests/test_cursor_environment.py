@@ -39,6 +39,24 @@ def test_dev_dockerfile_defaults_to_the_same_ubuntu_pin_as_the_toolchain() -> No
     assert 'COPY docker/toolchain/apt-packages.txt' in dev
 
 
+def test_dev_dockerfile_makes_fslock_writable_before_nonroot_aube() -> None:
+    # aube's xx::fslock writes /tmp/fslock/<hash>. Root mise install leaves
+    # that directory 0755, so USER dev cannot create lockfiles during the
+    # image build.
+    instructions = [
+        line
+        for line in (ROOT / "docker" / "dev" / "Dockerfile").read_text().splitlines()
+        if line and not line.startswith("#")
+    ]
+    chmod = next(i for i, line in enumerate(instructions) if "chmod 1777 /tmp/fslock" in line)
+    user_dev = next(i for i, line in enumerate(instructions) if line == "USER dev")
+    aube_ci = next(i for i, line in enumerate(instructions) if "aube ci" in line)
+
+    assert any("mkdir -p /tmp/fslock" in line for line in instructions)
+    assert chmod < user_dev < aube_ci
+    assert (ROOT / "scripts" / "ci" / "run-in-dev-container.sh").read_text().count("chmod 1777 /tmp/fslock") == 1
+
+
 def test_deps_task_installs_python_aube_and_playwright() -> None:
     mise = tomllib.loads((ROOT / "mise.toml").read_text())
     run = mise["tasks"]["deps"]["run"]

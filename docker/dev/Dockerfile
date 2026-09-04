@@ -62,6 +62,11 @@ WORKDIR /opt/sf2-themes/manifests
 COPY --chown=dev:dev pyproject.toml uv.lock ./
 COPY --chown=dev:dev web/package.json web/aube-lock.yaml web/.npmrc ./web/
 
+# aube (xx::fslock) writes /tmp/fslock/<hash>. Root `mise install` in this
+# file or the toolchain image leaves that directory 0755, so USER dev cannot
+# create lockfiles. Same chmod as scripts/ci/run-in-dev-container.sh.
+RUN mkdir -p /tmp/fslock && chmod 1777 /tmp/fslock
+
 USER dev
 RUN mise exec -- uv sync --all-extras --no-install-project && \
     cd web && mise exec -- aube ci
