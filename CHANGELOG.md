@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Upgrade the website to Astro 7.3.
 - Add a `claude` app: installs every catalog theme under `~/.claude/themes/` and selects one with `theme` in `~/.claude/settings.json`. Claude Code's custom-theme format has no host-appearance auto-switch, so applying a sibling pins it like Codex rather than following like WezTerm/Herdr/Neovim.
 - WezTerm, Herdr, and Neovim apply a selected character as a dark/light pair and auto-switch with host appearance instead of pinning a single variant.
 - Herdr writes `auto_switch` plus per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays (needs a Herdr build with herdr#2324; not yet in a stable release). WezTerm's pointer follows `get_appearance()`. Neovim's pointer follows `TERM_THEME` or `'background'`.

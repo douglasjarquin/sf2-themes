@@ -53,6 +53,7 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - `tests/e2e/*.spec.mjs` are Playwright tests against a production build served under `/sf2-themes/` in desktop Chromium.
 - Use `aube -C web run test:unit` or `test:e2e` for a focused layer, while `mise run web:test:npm` runs both layers in sequence.
 - Playwright builds and starts its own Astro preview on `PLAYWRIGHT_PORT`, which defaults to `4321`, and local runs may reuse a server already listening there.
+- The Playwright preview command passes `--ignore-lock` so concurrent E2E runs on different `PLAYWRIGHT_PORT` values can start independent preview servers instead of colliding on Astro's preview lockfile.
 - For concurrent or manual E2E runs, select an unused `PLAYWRIGHT_PORT` and confirm that any reused server belongs to this worktree.
 - Let Playwright close the preview it starts, and when starting a preview manually record its PID and port so cleanup stops only that owned process.
 
