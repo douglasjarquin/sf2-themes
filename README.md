@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit).
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit).
 
 The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
@@ -46,17 +46,23 @@ The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, u
 
 ```sh
 mise install
-mise run web:install
 mise run test
 mise run apply -- wezterm --theme vega
 mise run setup -- wezterm
-mise run web:test
+```
+
+For the Astro site:
+
+```sh
+mise run web:install
 mise run web:check
 mise run web:build
+mise run web:test
 mise run web:dev
 ```
 
 `mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
+For a stable HTTPS domain instead of a raw port, run `mise run web:install` once, then `mise run web:dev:local` for `https://sf2-themes.test` via [portless](https://github.com/vercel-labs/portless) - see `web/AGENTS.md` for setup notes.
 
 ## Arcade game
 
@@ -91,6 +97,9 @@ sf2-themes apply nvim --theme ryu-light
 sf2-themes setup codex
 sf2-themes apply codex --theme ryu-light
 
+sf2-themes setup claude
+sf2-themes apply claude --theme ryu-light
+
 sf2-themes setup starship
 sf2-themes apply starship --theme vega
 
@@ -103,16 +112,22 @@ Starship apply also refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
 Lazygit setup and apply install all 36 complete theme fragments under its `themes/` directory and select the requested theme in `config.yml`.
 Use `--adopt` when an existing `gui.theme` section is not managed by sf2-themes.
 
+If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
+If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
+
+WezTerm apply writes every catalog scheme and a pointer that returns the selected character's dark or light sibling from `wezterm.gui.get_appearance()`. Applying `ryu` or `ryu-light` selects the same pair.
+
 Neovim setup installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
-The loader applies the selected theme automatically when Neovim starts.
+The pointer selects the matching dark or light colorscheme from `TERM_THEME` (set by the WezTerm integration) or `'background'`. Applying `ryu` or `ryu-light` selects the same pair.
 
 Codex setup writes every catalog theme as `sf2-<catalog-id>.tmTheme` under `$CODEX_HOME/themes/` and selects the active prefixed theme with `[tui].theme` in `$CODEX_HOME/config.toml`.
 Restart Codex after applying a theme, or reselect it with `/theme` in an existing session.
 
-If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
-If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
+Claude Code setup writes every catalog theme as `sf2-<catalog-id>.json` under `~/.claude/themes/` and selects it with `theme` in `~/.claude/settings.json`. Reselect it with `/theme` in an existing session. Claude Code has no host-appearance auto-switch for custom themes, so applying `ryu` or `ryu-light` just pins that one sibling, like Codex.
 
 Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
+
+Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs a Herdr build with herdr#2324; not in a stable release yet). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
 
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
 
@@ -130,6 +145,7 @@ sf2-themes current wezterm
 sf2-themes apply herdr --theme boxer --dry-run
 sf2-themes current nvim
 sf2-themes current codex
+sf2-themes current claude
 sf2-themes current starship
 sf2-themes current lazygit
 ```
@@ -142,21 +158,22 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
-- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua`.
-- Herdr updates only a marked block in `~/.config/herdr/config.toml`.
-- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active theme at `~/.config/nvim/sf2-theme/current.lua`.
+- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
+- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
+- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
+- Claude Code custom themes go in `~/.claude/themes/`, with the active theme in `~/.claude/settings.json` under `theme`.
 - Starship updates the marked palette in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
 - Lazygit themes go in its `themes/` directory, and the selected `gui.theme` plus wildcard author color are managed in `config.yml`.
 - Symlinks are refused unless you pass `--follow-symlinks`.
 - Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
-Override locations with `--config-dir`, `CODEX_HOME`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
+Override locations with `--config-dir`, `CODEX_HOME`, `CLAUDE_CONFIG_DIR`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
 
 ## Uninstall
 
-Remove `~/.config/wezterm/colors/sf2-*.toml` and any remaining `street-fighter-ii-*.toml`, `~/.config/nvim/colors/sf2-*.lua` and any remaining `street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/sf2-*.tmTheme`, the Lazygit `themes/sf2-*.yml` files and marked config sections, the Codex `[tui]` theme setting, the WezTerm integration snippet, and the marked Herdr theme block.
+Remove `~/.config/wezterm/colors/sf2-*.toml` and any remaining `street-fighter-ii-*.toml`, `~/.config/nvim/colors/sf2-*.lua` and any remaining `street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/sf2-*.tmTheme`, `~/.claude/themes/sf2-*.json`, the Lazygit `themes/sf2-*.yml` files and marked config sections, the Codex `[tui]` theme setting, the Claude Code `theme` setting, the WezTerm integration snippet, and the marked Herdr theme block.
 
 ## Design
 

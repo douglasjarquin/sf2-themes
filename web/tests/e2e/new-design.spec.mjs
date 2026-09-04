@@ -81,7 +81,7 @@ test("install and copy", async ({ page }) => {
   await page.goto("install/");
 
   await expect(page.getByRole("heading", { name: "INSTALL" })).toBeVisible();
-  await expect(page.locator("[data-install-step]")).toHaveCount(9);
+  await expect(page.locator("[data-install-step]")).toHaveCount(11);
   await page.locator("[data-install-copy]").first().click();
   await expect(page.locator("[data-install-copy]").first()).toHaveText("COPIED ✓");
   await expect(page.locator("[data-copy-status]")).toHaveText("Install script copied");

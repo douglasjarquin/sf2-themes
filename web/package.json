@@ -3,17 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "portless": "sf2-themes",
   "engines": {
     "node": "24.x"
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "python3 ../scripts/generate-web-theme-data.py --check && astro build",
+    "build": "python3 ../mise-tasks/generate-web-theme-data --check && astro build",
     "preview": "astro preview",
-    "check": "python3 ../scripts/generate-web-theme-data.py --check && astro check",
-    "test:unit": "python3 ../scripts/generate-web-theme-data.py --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
-    "themes:generate": "python3 ../scripts/generate-web-theme-data.py",
-    "themes:check": "python3 ../scripts/generate-web-theme-data.py --check",
+    "check": "python3 ../mise-tasks/generate-web-theme-data --check && astro check",
+    "test:unit": "python3 ../mise-tasks/generate-web-theme-data --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
+    "themes:generate": "python3 ../mise-tasks/generate-web-theme-data",
+    "themes:check": "python3 ../mise-tasks/generate-web-theme-data --check",
     "test:game": "node --test test/game-core.test.mjs test/fighter-registry.test.mjs",
     "test:e2e": "playwright test",
     "test": "aubr test:unit && aubr test:e2e"
@@ -26,7 +27,7 @@
     "@astrojs/check": "0.9.10",
     "@playwright/test": "1.62.1",
     "@types/node": "25.2.3",
-    "astro": "7.2.6",
+    "astro": "7.3.1",
     "typescript": "5.9.3"
   }
 }

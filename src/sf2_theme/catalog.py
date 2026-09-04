@@ -2,11 +2,11 @@
 
 import os
 import tomllib
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.model import Theme, theme_to_toml
+from sf2_theme.model import SELECTABLE_PREFIX, Theme, theme_to_toml
 from sf2_theme.parse import parse_theme
 from sf2_theme.validation import Severity, require_valid, validate_catalog, validate_theme
 
@@ -88,6 +88,21 @@ def get_theme(name: str, themes: tuple[Theme, ...] | None = None) -> Theme:
         if lowered in keys:
             return theme
     raise ThemeError(f"unknown theme: {name}")
+
+
+def theme_pair(theme: Theme, themes: Sequence[Theme]) -> tuple[Theme, Theme]:
+    """Return the dark and light siblings for a selected catalog theme."""
+    catalog = tuple(themes)
+    dark_id = theme.metadata.id.removesuffix("-light")
+    return get_theme(dark_id, catalog), get_theme(f"{dark_id}-light", catalog)
+
+
+def installed_theme(name: str, themes: Sequence[Theme]) -> Theme:
+    """Resolve a catalog id or an adapter-installed sf2- identity."""
+    catalog = tuple(themes)
+    if name.startswith(SELECTABLE_PREFIX):
+        return get_theme(name.removeprefix(SELECTABLE_PREFIX), catalog)
+    return get_theme(name, catalog)
 
 
 def default_theme(themes: tuple[Theme, ...] | None = None) -> Theme:

@@ -19,7 +19,7 @@ def test_gate_job_requires_every_selected_check() -> None:
     workflow = _load("verify.yml")
     gate = workflow["jobs"]["gate"]
 
-    assert set(gate["needs"]) == {"changes", "actionlint", "test", "web"}
+    assert set(gate["needs"]) == {"changes", "actionlint", "test", "toolchain-checks", "web"}
 
 
 def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
@@ -27,34 +27,54 @@ def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
     gate = workflow["jobs"]["gate"]
     script = gate["steps"][0]["run"]
 
-    def run_gate(changes: str, actionlint: str, python: str, web: str) -> int:
+    def run_gate(changes: str, actionlint: str, python: str, toolchain_checks: str, web: str) -> int:
         result = subprocess.run(
             ["bash", "-c", script],
-            env={"CHANGES": changes, "ACTIONLINT": actionlint, "PYTHON": python, "WEB": web},
+            env={
+                "CHANGES": changes,
+                "ACTIONLINT": actionlint,
+                "PYTHON": python,
+                "TOOLCHAIN_CHECKS": toolchain_checks,
+                "WEB": web,
+            },
             capture_output=True,
             text=True,
         )
         return result.returncode
 
-    assert run_gate("success", "success", "success", "success") == 0
-    assert run_gate("success", "skipped", "success", "skipped") == 0
-    assert run_gate("failure", "success", "success", "success") == 1
-    assert run_gate("success", "failure", "success", "success") == 1
-    assert run_gate("success", "success", "failure", "success") == 1
-    assert run_gate("success", "success", "success", "cancelled") == 1
+    assert run_gate("success", "success", "success", "success", "success") == 0
+    assert run_gate("success", "skipped", "success", "skipped", "skipped") == 0
+    assert run_gate("failure", "success", "success", "success", "success") == 1
+    assert run_gate("success", "failure", "success", "success", "success") == 1
+    assert run_gate("success", "success", "failure", "success", "success") == 1
+    assert run_gate("success", "success", "success", "failure", "success") == 1
+    assert run_gate("success", "success", "success", "success", "cancelled") == 1
 
 
-def test_deploy_and_verify_web_jobs_use_the_same_lockfile_backed_install_and_build() -> None:
+def test_deploy_and_verify_web_jobs_install_through_the_same_containerized_task() -> None:
     verify_steps = {step["name"]: step["run"] for step in _load("verify.yml")["jobs"]["web"]["steps"] if "run" in step}
     deploy_steps = {
         step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
     }
 
-    assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == "aube -C web ci"
-    assert deploy_steps["Build"] == verify_steps["Build"] == "aube -C web run build"
+    install_command = "scripts/ci/run-in-dev-container.sh mise run web:install"
+    assert deploy_steps["Install dependencies"] == verify_steps["Install dependencies"] == install_command
 
 
-def test_verify_web_job_uses_aube_instead_of_npm() -> None:
+def test_deploy_build_step_binds_dist_to_the_runner_filesystem_for_the_pages_artifact() -> None:
+    deploy_steps = {
+        step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
+    }
+    verify_steps = {step["name"]: step["run"] for step in _load("verify.yml")["jobs"]["web"]["steps"] if "run" in step}
+
+    # deploy's Pages artifact upload runs on the bare runner and needs dist on
+    # its real filesystem; verify's web job never reads dist outside the
+    # container, so it keeps using the isolated named volume instead.
+    assert deploy_steps["Build"] == "scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build"
+    assert verify_steps["Build"] == "scripts/ci/run-in-dev-container.sh mise run web:build"
+
+
+def test_verify_and_deploy_web_jobs_use_aube_instead_of_npm() -> None:
     verify_steps = {step["name"]: step["run"] for step in _load("verify.yml")["jobs"]["web"]["steps"] if "run" in step}
     deploy_steps = {
         step["name"]: step["run"] for step in _load("deploy.yml")["jobs"]["build"]["steps"] if "run" in step
@@ -63,8 +83,40 @@ def test_verify_web_job_uses_aube_instead_of_npm() -> None:
     for script in [*verify_steps.values(), *deploy_steps.values()]:
         assert "npm " not in script
         assert "npx " not in script
+        assert ":npm" not in script
 
-    assert verify_steps["Install Chromium"] == "aube -C web exec playwright install --with-deps chromium"
-    assert verify_steps["Check"] == "aube -C web run check"
-    assert verify_steps["Unit tests"] == "aube -C web run test:unit"
-    assert verify_steps["End-to-end tests"] == "aube -C web run test:e2e"
+    assert verify_steps["Check"] == "scripts/ci/run-in-dev-container.sh mise run web:check"
+    assert verify_steps["Test"] == "scripts/ci/run-in-dev-container.sh mise run web:test"
+
+
+def test_toolchain_checks_and_web_jobs_gc_their_overlay_volumes() -> None:
+    for job_name in ("toolchain-checks", "web"):
+        job = _load("verify.yml")["jobs"][job_name]
+        gc_steps = [step for step in job["steps"] if step.get("run") == "scripts/ci/gc-job-overlay-volumes.sh"]
+        assert len(gc_steps) == 1
+        assert gc_steps[0].get("if") == "always()"
+
+
+def test_every_containerized_job_authenticates_to_ghcr_before_its_first_container_step() -> None:
+    for workflow_name in ("verify.yml", "deploy.yml"):
+        workflow = _load(workflow_name)
+        for job_name, job in workflow["jobs"].items():
+            steps = job.get("steps", [])
+            container_indexes = [
+                i
+                for i, step in enumerate(steps)
+                if str(step.get("run", "")).startswith("scripts/ci/run-in-dev-container.sh")
+            ]
+            if not container_indexes:
+                continue
+
+            login_indexes = [
+                i
+                for i, step in enumerate(steps)
+                if str(step.get("uses", "")).startswith("docker/login-action")
+                and step.get("with", {}).get("registry") == "ghcr.io"
+            ]
+            assert login_indexes, f"{workflow_name}:{job_name} runs a containerized step but never logs into ghcr.io"
+            assert min(login_indexes) < min(container_indexes), (
+                f"{workflow_name}:{job_name} logs into ghcr.io after its first containerized step"
+            )

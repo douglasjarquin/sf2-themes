@@ -6,7 +6,7 @@ from sf2_theme.adapters.herdr import render_block
 from sf2_theme.adapters.lazygit import render_theme as render_lazygit_theme
 from sf2_theme.adapters.nvim import render_scheme as render_nvim_scheme
 from sf2_theme.adapters.wezterm import render_scheme
-from sf2_theme.catalog import get_theme, parse_catalog
+from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 
 SNAPSHOTS = Path(__file__).parent / "snapshots"
 
@@ -23,8 +23,9 @@ def test_main_wezterm_snapshot() -> None:
 
 
 def test_main_herdr_snapshot() -> None:
-    theme = get_theme("main", parse_catalog())
-    _assert_snapshot("herdr-main.toml", render_block(theme))
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("main", catalog), catalog)
+    _assert_snapshot("herdr-main.toml", render_block(dark, light))
 
 
 def test_ryu_wezterm_snapshot() -> None:

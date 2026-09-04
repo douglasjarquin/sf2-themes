@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from sf2_theme.adapters.nvim import apply_nvim, render_pointer, render_scheme, setup_nvim
-from sf2_theme.catalog import get_theme, parse_catalog
+from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.cli import dispatch
 
 
@@ -71,6 +71,8 @@ def test_setup_writes_managed_loader_and_default_current(tmp_path: Path) -> None
     loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
     assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
     assert "colorscheme sf2-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
+    assert "colorscheme sf2-main-light" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
+    assert "TERM_THEME" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
     assert len(results) == len(catalog) + 2
 
 
@@ -92,6 +94,8 @@ def test_setup_nvim_migrates_existing_unprefixed_pointer(tmp_path: Path) -> None
 
     assert "-- sf2-themes: sf2-ken" in pointer.read_text(encoding="utf-8")
     assert "colorscheme sf2-ken" in pointer.read_text(encoding="utf-8")
+    assert "colorscheme sf2-ken-light" in pointer.read_text(encoding="utf-8")
+    assert "TERM_THEME" in pointer.read_text(encoding="utf-8")
 
 
 def test_apply_backs_up_current_pointer_and_current_reads_theme(tmp_path: Path, capsys) -> None:
@@ -108,7 +112,7 @@ def test_apply_backs_up_current_pointer_and_current_reads_theme(tmp_path: Path, 
     assert dispatch(["apply", "nvim", "--theme", "ryu-light", "--config-dir", str(config_dir)]) == 0
     assert dispatch(["current", "nvim", "--config-dir", str(config_dir)]) == 0
 
-    assert capsys.readouterr().out.splitlines()[-1] == "sf2-ryu-light"
+    assert capsys.readouterr().out.splitlines()[-1] == "sf2-ryu"
     backups = list((config_dir / "sf2-theme").glob("current.lua.bak.*"))
     assert len(backups) == 1
     assert "sf2-main" in backups[0].read_text(encoding="utf-8")
@@ -184,7 +188,11 @@ def test_config_dir_and_environment_override(tmp_path: Path, monkeypatch) -> Non
     assert not (tmp_path / "nvim" / "sf2-theme").exists()
 
 
-def test_pointer_rendering_is_a_colorscheme_switch() -> None:
-    theme = get_theme("main", parse_catalog())
-
-    assert "colorscheme sf2-main" in render_pointer(theme)
+def test_pointer_rendering_auto_switches_the_character_pair() -> None:
+    catalog = parse_catalog()
+    dark, light = theme_pair(get_theme("main", catalog), catalog)
+    pointer = render_pointer(dark, light)
+    assert "-- sf2-themes: sf2-main" in pointer
+    assert "colorscheme sf2-main" in pointer
+    assert "colorscheme sf2-main-light" in pointer
+    assert "TERM_THEME" in pointer

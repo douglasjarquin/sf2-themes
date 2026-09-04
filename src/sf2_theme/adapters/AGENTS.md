@@ -10,6 +10,8 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 ## WezTerm
 
 - `apply_wezterm` owns catalog scheme files under `<wezterm-config>/colors/` and the pointer `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua`; it never edits `wezterm.lua`.
+- The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
+- Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - `setup_wezterm` adds one-time Lua integration after writing schemes, with the pointer replaced only when requested or absent.
 - Empty Lua receives a starter config, while a recognized `wezterm.config_builder()` shape receives pointer integration before its matching return.
 - Existing managed pointer integration is idempotent.
@@ -28,6 +30,8 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 ## Herdr
 
 - Both `setup herdr` and `apply herdr` delegate to `apply_herdr`, which owns exactly the block between the `sf2-themes managed theme` markers.
+- Resolve the selected catalog id to its dark/light sibling pair and write `auto_switch`, `light_name`, `dark_name`, and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays (requires a Herdr build with herdr#2324; stable releases before it silently drop these tables and stay pinned to one palette).
+- Selecting either sibling (`chun-li` or `chun-li-light`) writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Replace an existing complete managed block in place and fail closed on incomplete markers or invalid TOML.
 - An unmarked `[theme]`, `[theme.*]`, or top-level `theme =` remains user-owned unless `--adopt` is explicit.
 - Adoption removes only the existing theme namespace and preserves unrelated tables, keys, and top-level values.
@@ -36,6 +40,8 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 ## Neovim
 
 - The adapter owns catalog files `<nvim-config>/colors/sf2-*.lua` and the selected pointer `<nvim-config>/sf2-theme/current.lua`.
+- The pointer selects the dark or light sibling from `TERM_THEME` or `'background'` so Neovim follows the same character pair as WezTerm and Herdr.
+- Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - `apply_nvim` writes the catalog and pointer, while `setup_nvim` additionally owns `<nvim-config>/plugin/sf2-theme.lua` as the startup loader.
 - Setup without an explicit theme preserves a valid managed pointer and only normalizes a recognized legacy short ID.
 - Limit legacy cleanup to enumerated `street-fighter-ii-<catalog-id>.lua` files and leave every other `colors/` or `plugin/` entry untouched.
@@ -55,6 +61,14 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Preserve unrelated `gui` settings and named author colors, refuse an unmarked existing `gui.theme` unless `--adopt` is explicit, and keep the managed blocks idempotent.
 - Resolve the config directory from `--config-dir`, `LAZYGIT_CONFIG_DIR`, or the platform's Lazygit default, and route every write through `write_file`.
 
+## Claude Code
+
+- The adapter owns catalog files `<claude-home>/themes/sf2-*.json` and only the `theme` key in `<claude-home>/settings.json`, resolved from `--config-dir`, `CLAUDE_CONFIG_DIR`, or `~/.claude`.
+- Claude Code's custom-theme schema (`name`/`base`/`overrides`) is an experimental component with no publicly documented full token list; `OVERRIDE_TOKENS` is a best-effort mapping onto SF2 roles, confirmed live in a running session for the `claude`/`error`/`success` tokens the docs do specify.
+- Claude Code has no host-appearance auto-switch for custom themes (confirmed absent from the docs), so selecting a light or dark sibling here just pins that one theme in settings.json like Codex, not a following pair like WezTerm/Herdr/Neovim.
+- Preserve every other `settings.json` key; only ever touch the top-level `theme` string, written as `custom:<selectable-id>`.
+- Setup without an explicit theme preserves an existing `custom:sf2-*` selection, while apply always selects the requested or default theme.
+
 ## Shared write contract
 
 - Route managed text writes through `write_file` so every adapter shares one mutation contract.
@@ -65,11 +79,12 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 
 ## Focused verification
 
-- Run `uv run --with pytest pytest -q tests/test_wezterm.py tests/test_cli.py tests/test_snapshots.py` for WezTerm ownership or Lua integration changes.
-- Run `uv run --with pytest pytest -q tests/test_herdr.py tests/test_snapshots.py` for Herdr merge or rendering changes.
-- Run `uv run --with pytest pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
-- Run `uv run --with pytest pytest -q tests/test_codex.py` for Codex theme or config changes.
-- Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
-- Run `uv run --with pytest pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
-- After adapter behavior changes, follow the inherited standalone regeneration rule and run `bash tests/test_cli.sh` to exercise the copied CLI across all adapters.
+- Run `uv run pytest -q tests/test_wezterm.py tests/test_cli.py tests/test_snapshots.py` for WezTerm ownership or Lua integration changes.
+- Run `uv run pytest -q tests/test_herdr.py tests/test_snapshots.py` for Herdr merge or rendering changes.
+- Run `uv run pytest -q tests/test_nvim.py tests/test_snapshots.py` for Neovim layout or rendering changes.
+- Run `uv run pytest -q tests/test_codex.py` for Codex theme or config changes.
+- Run `uv run pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
+- Run `uv run pytest -q tests/test_claude.py` for Claude Code theme or settings changes.
+- Run `uv run pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
+- After adapter behavior changes, follow the inherited standalone regeneration rule and run `mise run test-cli` to exercise the copied CLI across all adapters.
 - Completion requires focused tests to pass with dry-run, backup, symlink, preservation, and exact-path ownership expectations intact.

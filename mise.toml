@@ -1,12 +1,43 @@
+[settings]
+lockfile = true
+
 [tools]
 node = "24"
 python = "3.11"
 uv = "0.11"
 aube = "2.2.4"
+ruff = "0.16.5"
+shellcheck = "0.11.0"
+"npm:portless" = "0.15.6"
+
+[tasks.deps]
+description = "Install Python, aube, and Playwright Chromium dependencies"
+run = "uv sync --all-extras && aube -C web install && aube -C web exec playwright install chromium"
 
 [tasks.test]
 description = "Run Python and standalone CLI tests"
-run = ["uv run --with pytest pytest -q", "bash tests/test_cli.sh"]
+depends = ["pytest", "test-cli"]
+
+[tasks.pytest]
+description = "Run the Python test suite"
+run = "uv sync --all-extras && uv run pytest -q"
+
+[tasks.lint]
+description = "Run ruff over the Python source tree"
+run = "ruff check src tests mise-tasks"
+
+[tasks.shellcheck]
+description = "Run shellcheck over the shell file tasks and container orchestration scripts"
+run = "shellcheck mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
+
+[tasks."validate-catalog"]
+description = "Validate every theme in the catalog"
+run = "uv run --project . python -m sf2_theme validate --all"
+
+[tasks."standalone-freshness"]
+description = "Fail if the committed sf2-themes executable is stale"
+depends = ["build-standalone"]
+run = "git diff --exit-code -- sf2-themes"
 
 [tasks.apply]
 description = "Apply a theme with the project CLI"
@@ -22,13 +53,13 @@ run = "uv run --project . sf2-themes setup"
 description = "Start the Astro development server"
 run = "aube -C web run dev -- --host 127.0.0.1"
 
+[tasks."web:dev:container"]
+description = "Start the Astro development server bound for container port publishing"
+run = "aube -C web run dev -- --host 0.0.0.0 --port 4322"
+
 [tasks."web:install"]
 description = "Install Astro dependencies from aube-lock.yaml"
 run = "aube -C web install"
-
-[tasks."web:test"]
-description = "Run Astro unit and end-to-end tests"
-run = "aube -C web run test"
 
 [tasks."web:check"]
 description = "Run Astro type and template checks"
@@ -37,3 +68,11 @@ run = "aube -C web run check"
 [tasks."web:build"]
 description = "Build the Astro site"
 run = "aube -C web run build"
+
+[tasks."web:test"]
+description = "Run Astro unit and end-to-end tests"
+run = "aube -C web run test"
+
+[tasks."web:dev:local"]
+description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install first)"
+run = "cd web && PORTLESS_TLD=test ASTRO_DEV_BACKGROUND=1 portless"

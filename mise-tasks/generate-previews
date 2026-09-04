@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#MISE description="Generate SVG preview swatches for every packaged theme"
 """Generate SVG swatches for every packaged theme."""
 
 import sys

@@ -16,7 +16,7 @@ import {
 
 const execFileAsync = promisify(execFile);
 const projectRoot = path.resolve("..");
-const generatorPath = path.join(projectRoot, "scripts", "generate-web-theme-data.py");
+const generatorPath = path.join(projectRoot, "mise-tasks", "generate-web-theme-data");
 const sourceRoot = path.join(projectRoot, "themes");
 const committedArtifactPath = path.join(
   projectRoot,

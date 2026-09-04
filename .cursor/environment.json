@@ -1,0 +1,15 @@
+{
+  "build": {
+    "dockerfile": "../docker/dev/Dockerfile",
+    "context": ".."
+  },
+  "user": "dev",
+  "install": "mise install --locked && mise run deps",
+  "terminals": [
+    {
+      "name": "web",
+      "command": "mise run web:dev:container",
+      "description": "Astro development server bound on 0.0.0.0:4322."
+    }
+  ]
+}

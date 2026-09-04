@@ -14,17 +14,19 @@ The committed root executable mirrors this package by embedding the standalone g
 | Theme values and names | `model.py` | Immutable palette types, exact hex parsing, canonical IDs, and adapter-facing IDs. |
 | TOML shape | `parse.py` | Schema, required fields, enum values, unknown keys, and typed construction. |
 | Semantic validity | `validation.py` | Contrast, ANSI distinctions, lookup-key uniqueness, and error versus warning severity. |
-| Catalog lifecycle | `catalog.py` | Embedded or filesystem discovery, deterministic order, validated loading, lookup, and defaults. |
+| Catalog lifecycle | `catalog.py` | Embedded or filesystem discovery, deterministic order, validated loading, lookup, pairing, and defaults. |
 | Public dispatch | `cli.py`, `__main__.py` | Argument handling, command behavior, error presentation, and adapter orchestration. |
 | Application formats | `adapters/` | Rendering, recognized configuration merges, managed markers, and app-specific paths. |
 | Mutation primitive | `filesystem.py` | No-op detection, dry-run diffs, backups, mode preservation, symlink policy, and atomic replacement. |
-| Standalone mirror | `scripts/build-standalone.py` | Runtime module allowlist and embedded theme files for the generated `sf2-themes`. |
+| Standalone mirror | `mise-tasks/build-standalone` | Runtime module allowlist and embedded theme files for the generated `sf2-themes`. |
 
 ## CONVENTIONS
 
 - Keep structural rejection in `parse.py`, semantic checks in `validation.py`, and their composition in `catalog.py`.
 - Route normal runtime consumers through `load_catalog()`; reserve `parse_catalog()` for callers that must inspect or report invalid catalog data.
 - Pass an already loaded catalog into repeated lookups and adapters so one operation uses one deterministic snapshot.
+- Resolve a selected catalog id to its dark and light siblings through `theme_pair()` instead of reconstructing `-light` names in adapters.
+- Resolve a managed `sf2-` pointer identity through `installed_theme()` so setup can refresh an existing pair without `--theme`.
 - Keep catalog and CLI selection IDs short, such as `ryu-light`.
 - Derive installed names through `ThemeMetadata.selectable_id` or `selectable_id()` so adapter-facing identities are consistently `sf2-<catalog-id>`.
 - Preserve the intentional spelling split: public distribution and command `sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.
@@ -49,6 +51,6 @@ The committed root executable mirrors this package by embedding the standalone g
 - Pair CLI dispatch changes with `tests/test_cli.py` and the affected adapter suite.
 - Pair rendered output changes with `tests/test_snapshots.py` and the owning adapter tests.
 - Any package or catalog change triggers standalone regeneration before verification; a new import also requires a generator roster update.
-- Treat `tests/test_cli.sh` as the installed-consumer contract because it copies the generated executable away from the repository and exercises all adapters.
+- Treat `mise-tasks/test-cli` as the installed-consumer contract because it copies the generated executable away from the repository and exercises all adapters.
 - Prove standalone freshness by regenerating from inputs and confirming the committed root executable has no remaining diff.
 - Finish with the root Python verification gate rather than duplicating its command sequence here.

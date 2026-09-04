@@ -10,17 +10,25 @@ on:
 # To roll back, revert the deployed commit and let this workflow redeploy it.
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Install dependencies
-        run: aube -C web ci
+        run: scripts/ci/run-in-dev-container.sh mise run web:install
       - name: Build
-        run: aube -C web run build
+        run: scripts/ci/run-in-dev-container.sh --bind-dist mise run web:build
+      - name: Remove this job's overlay volumes
+        if: always()
+        run: scripts/ci/gc-job-overlay-volumes.sh
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:

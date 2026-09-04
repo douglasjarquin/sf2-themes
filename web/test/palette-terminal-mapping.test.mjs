@@ -43,7 +43,7 @@ test("renders the ui.accent terminal row from divergent fixture data", async (t)
   await writeFile(path.join(fixtureThemesRoot, "main.toml"), fixtureSource);
 
   await execFileAsync("python3", [
-    path.join(projectRoot, "scripts/generate-web-theme-data.py"),
+    path.join(projectRoot, "mise-tasks/generate-web-theme-data"),
     "--source",
     fixtureThemesRoot,
     "--output",

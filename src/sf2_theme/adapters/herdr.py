@@ -3,8 +3,10 @@
 import os
 import re
 import tomllib
+from collections.abc import Sequence
 from pathlib import Path
 
+from sf2_theme.catalog import theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
@@ -65,22 +67,35 @@ def herdr_path(config_dir: Path | None) -> Path:
     return root / "herdr" / "config.toml"
 
 
-def render_block(theme: Theme) -> str:
-    """Render a fully resolved, marked Herdr theme block."""
+def _custom_token_lines(theme: Theme) -> list[str]:
     adapter = project_adapter_colors(theme.ui)
-    lines = [
-        MANAGED_START,
-        f"# sf2-themes: {theme.metadata.selectable_id}",
-        "[theme]",
-        f'name = "{herdr_base_theme_name(theme)}"',
-        "",
-        "[theme.custom]",
-    ]
+    lines: list[str] = []
     for token, group, field in HERDR_TOKENS:
         source = adapter if group == "adapter" else theme.ui if group == "ui" else theme.semantic
         lines.append(f'{token} = "{getattr(source, field)}"')
-    lines.append(MANAGED_END)
-    lines.append("")
+    return lines
+
+
+def render_block(dark: Theme, light: Theme) -> str:
+    """Render a marked Herdr block that auto-switches a dark/light pair,
+    including the SF2 character palette itself (requires herdr#2324)."""
+    lines = [
+        MANAGED_START,
+        f"# sf2-themes: {dark.metadata.selectable_id}",
+        "[theme]",
+        f'name = "{herdr_base_theme_name(dark)}"',
+        "auto_switch = true",
+        f'light_name = "{herdr_base_theme_name(light)}"',
+        f'dark_name = "{herdr_base_theme_name(dark)}"',
+        "",
+        "[theme.custom.dark]",
+        *_custom_token_lines(dark),
+        "",
+        "[theme.custom.light]",
+        *_custom_token_lines(light),
+        MANAGED_END,
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -116,8 +131,10 @@ def _strip_theme_sections(content: str) -> str:
     return "\n".join(kept).rstrip()
 
 
-def merge_theme(existing: str, theme: Theme, *, adopt: bool) -> str:
+def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme], *, adopt: bool) -> str:
     """Insert or replace the managed Herdr block."""
+    dark, light = theme_pair(theme, themes)
+    block = render_block(dark, light)
     if MANAGED_START in existing or MANAGED_END in existing:
         start = existing.find(MANAGED_START)
         end = existing.find(MANAGED_END)
@@ -126,34 +143,35 @@ def merge_theme(existing: str, theme: Theme, *, adopt: bool) -> str:
         after = end + len(MANAGED_END)
         if after < len(existing) and existing[after] == "\n":
             after += 1
-        merged = existing[:start] + render_block(theme) + existing[after:]
+        merged = existing[:start] + block + existing[after:]
     elif _has_unmarked_theme(existing):
         if not adopt:
             raise ThemeError("Herdr config already has a [theme] section; pass --adopt to replace it")
         preserved = _strip_theme_sections(existing)
-        merged = f"{preserved}\n\n{render_block(theme)}" if preserved else render_block(theme)
+        merged = f"{preserved}\n\n{block}" if preserved else block
     elif existing.strip():
-        merged = existing.rstrip() + "\n\n" + render_block(theme)
+        merged = existing.rstrip() + "\n\n" + block
     else:
-        merged = render_block(theme)
+        merged = block
     tomllib.loads(merged)
     return merged if merged.endswith("\n") else merged + "\n"
 
 
 def apply_herdr(
     theme: Theme,
+    themes: Sequence[Theme],
     *,
     config_dir: Path | None,
     dry_run: bool,
     follow_symlinks: bool,
     adopt: bool,
 ) -> WriteResult:
-    """Write the managed Herdr theme block."""
+    """Write the managed Herdr theme block for a dark/light pair."""
     path = herdr_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     if existing:
         tomllib.loads(existing)
-    merged = merge_theme(existing, theme, adopt=adopt)
+    merged = merge_theme(existing, theme, themes, adopt=adopt)
     return write_file(path, merged, dry_run=dry_run, follow_symlinks=follow_symlinks)
 
 

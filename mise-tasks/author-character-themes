@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#MISE description="Author fully resolved character TOMLs from identity seeds"
 """Author fully resolved character TOMLs from identity seeds. Not used at runtime."""
 
 from __future__ import annotations

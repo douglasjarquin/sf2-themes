@@ -1,4 +1,5 @@
 #!/bin/sh
+#MISE description="Exercise the copied standalone CLI across every adapter"
 set -eu
 
 # shellcheck disable=SC1007
@@ -19,15 +20,22 @@ import tomllib
 
 config = tomllib.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 assert config["ui"]["theme"] == "follow-system"
-custom = config["theme"]["custom"]
-assert custom["accent"] == "#ad8705"
-assert custom["text"] == "#cad1de"
-assert custom["active_row_bg"] == "#1d2433"
-assert custom["selection_bg"] == "#2a3243"
-assert custom["overlay0"] == "#7c8597"
-assert custom["mauve"]
-assert custom["peach"]
+assert config["theme"]["auto_switch"] is True
 assert config["theme"]["name"] == "catppuccin"
+assert config["theme"]["light_name"] == "catppuccin-latte"
+assert config["theme"]["dark_name"] == "catppuccin"
+custom = config["theme"]["custom"]
+dark = custom["dark"]
+light = custom["light"]
+assert dark["accent"] == "#ad8705"
+assert dark["text"] == "#cad1de"
+assert dark["active_row_bg"] == "#1d2433"
+assert dark["selection_bg"] == "#2a3243"
+assert dark["overlay0"] == "#7c8597"
+assert dark["mauve"]
+assert dark["peach"]
+assert light["accent"] != dark["accent"]
+assert light["text"] != dark["text"]
 print("Herdr merge preservation: PASS")
 PY
 
@@ -45,6 +53,8 @@ test -f "$test_dir/installed-nvim/colors/sf2-main.lua"
 test -f "$test_dir/installed-nvim/colors/sf2-ryu-light.lua"
 test -f "$test_dir/installed-nvim/plugin/sf2-theme.lua"
 grep -q 'colorscheme sf2-ryu-light' "$test_dir/installed-nvim/sf2-theme/current.lua"
+grep -q 'colorscheme sf2-ryu' "$test_dir/installed-nvim/sf2-theme/current.lua"
+grep -q 'TERM_THEME' "$test_dir/installed-nvim/sf2-theme/current.lua"
 printf '%s\n' 'Copy-only installed Neovim: PASS'
 "$repo_dir/sf2-themes" setup codex --config-dir "$test_dir/installed-codex"
 "$repo_dir/sf2-themes" apply codex --theme ryu-light --config-dir "$test_dir/installed-codex"
@@ -55,6 +65,15 @@ grep -q 'theme = "sf2-ryu-light"' "$test_dir/installed-codex/config.toml"
 grep -q '#131927' "$test_dir/installed-codex/themes/sf2-main.tmTheme"
 test "$("$repo_dir/sf2-themes" current codex --config-dir "$test_dir/installed-codex")" = "sf2-ryu-light"
 printf '%s\n' 'Copy-only installed Codex: PASS'
+"$repo_dir/sf2-themes" setup claude --config-dir "$test_dir/installed-claude"
+"$repo_dir/sf2-themes" apply claude --theme ryu-light --config-dir "$test_dir/installed-claude"
+test -f "$test_dir/installed-claude/themes/sf2-main.json"
+test -f "$test_dir/installed-claude/themes/sf2-main-light.json"
+test -f "$test_dir/installed-claude/themes/sf2-ryu-light.json"
+grep -q '"theme": "custom:sf2-ryu-light"' "$test_dir/installed-claude/settings.json"
+grep -q '#ad8705' "$test_dir/installed-claude/themes/sf2-main.json"
+test "$("$repo_dir/sf2-themes" current claude --config-dir "$test_dir/installed-claude")" = "sf2-ryu-light"
+printf '%s\n' 'Copy-only installed Claude: PASS'
 "$repo_dir/sf2-themes" setup lazygit --config-dir "$test_dir/installed-lazygit"
 "$repo_dir/sf2-themes" apply lazygit --theme ryu-light --config-dir "$test_dir/installed-lazygit"
 test "$(find "$test_dir/installed-lazygit/themes" -type f -name 'sf2-*.yml' | wc -l | tr -d ' ')" -eq 36
@@ -70,8 +89,13 @@ grep -q 'name = "sf2-main"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'sf2-street-fighter-2' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'ansi = \["#2b323f", "#c86e67", "#4e975b", "#a58324", "#5b89cc"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'accent = "#ad8705"' "$test_dir/installed-herdr/config.toml"
+grep -q 'auto_switch = true' "$test_dir/installed-herdr/config.toml"
+grep -q '^\[theme.custom.dark\]$' "$test_dir/installed-herdr/config.toml"
+grep -q '^\[theme.custom.light\]$' "$test_dir/installed-herdr/config.toml"
 test -f "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 grep -q 'sf2-themes: sf2-main' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
+grep -q 'get_appearance' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
+grep -q 'return "sf2-main-light"' "$XDG_CONFIG_HOME/sf2-theme/wezterm-current.lua"
 printf '%s\n' 'Copy-only installed CLI: PASS'
 
 mkdir -p "$test_dir/wezterm-existing"

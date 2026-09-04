@@ -45,18 +45,18 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 
 ## Regenerate every dependent representation.
 
-- Rebuild the committed root `sf2-themes` executable because `scripts/build-standalone.py` embeds the catalog's exact TOML sources.
-- Regenerate `docs/previews/` because `scripts/generate-previews.py` writes one SVG for every catalog ID.
+- Rebuild the committed root `sf2-themes` executable because `mise-tasks/build-standalone` embeds the catalog's exact TOML sources.
+- Regenerate `docs/previews/` because `mise run generate-previews` writes one SVG for every catalog ID.
 - Expect `web/src/data/theme-data.mjs` to parse the same files in catalog order and expose all 36 entries through `paletteVariants`.
 - Review adapter snapshots and `docs/roster.md` when an intentional token, identity, alias, era, or visual direction changes.
 
 ## Verify the focused contract before stopping.
 
-- Run `python3 scripts/build-standalone.py` and `python3 scripts/generate-previews.py` from the repository root after catalog edits.
-- Run `uv run --with pytest pytest -q tests/test_catalog.py tests/test_validation.py tests/test_snapshots.py` for catalog, contrast, and adapter-render coverage.
+- Run `mise run build-standalone` and `mise run generate-previews` from the repository root after catalog edits.
+- Run `uv run pytest -q tests/test_catalog.py tests/test_validation.py tests/test_snapshots.py` for catalog, contrast, and adapter-render coverage.
 - Run both `uv run sf2-themes validate --all` and `./sf2-themes validate --all` to prove source and embedded catalogs accept the same themes.
-- Run `bash tests/test_cli.sh` to exercise the copied standalone CLI and prefixed installed identities.
-- Run `uv run --with pytest pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` to verify complete Lazygit key coverage and all 36 generated identities.
+- Run `mise run test-cli` to exercise the copied standalone CLI and prefixed installed identities.
+- Run `uv run pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` to verify complete Lazygit key coverage and all 36 generated identities.
 - Run `aube -C web run test:unit`, `mise run web:check`, and `mise run web:build` for browser parsing, palette mapping, and static rendering.
 - Run `git diff --check` and inspect the scoped diff for the intended TOML and regenerated dependents.
 - Finish only when the source loader, standalone loader, browser catalog, and previews all agree on the same ordered 36-theme catalog.
