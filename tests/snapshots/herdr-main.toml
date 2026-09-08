@@ -6,7 +6,7 @@ auto_switch = true
 light_name = "catppuccin-latte"
 dark_name = "catppuccin"
 
-[theme.custom]
+[theme.custom.dark]
 sidebar_bg = "#131927"
 panel_bg = "#1d2433"
 active_row_bg = "#1d2433"
@@ -26,4 +26,25 @@ red = "#c86e67"
 blue = "#5b89cc"
 teal = "#1396a1"
 peach = "#c1753c"
+
+[theme.custom.light]
+sidebar_bg = "#edf1fa"
+panel_bg = "#e1e7f2"
+active_row_bg = "#e1e7f2"
+selection_bg = "#d4dae8"
+surface0 = "#e1e7f2"
+surface1 = "#d4dae8"
+surface_dim = "#edf1fa"
+overlay0 = "#606b83"
+overlay1 = "#444f69"
+text = "#2c313d"
+subtext0 = "#444f69"
+accent = "#7d6005"
+mauve = "#ab4945"
+green = "#247738"
+yellow = "#836401"
+red = "#a94b47"
+blue = "#3868b0"
+teal = "#01737d"
+peach = "#9f5517"
 # <<< sf2-themes managed theme

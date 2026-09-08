@@ -30,8 +30,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 ## Herdr
 
 - Both `setup herdr` and `apply herdr` delegate to `apply_herdr`, which owns exactly the block between the `sf2-themes managed theme` markers.
-- Resolve the selected catalog id to its dark/light sibling pair and write `auto_switch`, `light_name`, `dark_name`, and a single `[theme.custom]` overlay that stable Herdr v0.8.2 can load.
-- Do not emit `[theme.custom.dark]` or `[theme.custom.light]` until a Herdr release includes herdr#2324.
+- Resolve the selected catalog id to its dark/light sibling pair and write `auto_switch`, `light_name`, `dark_name`, and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays (requires a Herdr build with herdr#2324; stable releases before it silently drop these tables and stay pinned to one palette).
 - Selecting either sibling (`chun-li` or `chun-li-light`) writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Replace an existing complete managed block in place and fail closed on incomplete markers or invalid TOML.
 - An unmarked `[theme]`, `[theme.*]`, or top-level `theme =` remains user-owned unless `--adopt` is explicit.
