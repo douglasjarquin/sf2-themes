@@ -15,33 +15,31 @@ mise run deps
 
 ## Python / CLI
 
-Run when you touch `src/`, `tests/`, `themes/`, `mise-tasks/`, `scripts/`, `docker/`, `pyproject.toml`, `uv.lock`, or `mise.toml`:
+Run when you touch paths that select the Python CI jobs, including `src/`, `tests/`, `themes/`, `mise-tasks/`, `scripts/`, `docker/`, `.cursor/`, `pyproject.toml`, `uv.lock`, `mise.toml`, `mise.lock`, or the committed `sf2-themes` executable:
 
 ```sh
 mise run test
 mise run lint
 mise run validate-catalog
+mise run shellcheck
 ```
 
 - `mise run test` runs pytest and the standalone CLI shell harness.
 - `mise run lint` runs ruff over `src`, `tests`, and `mise-tasks`.
 - `mise run validate-catalog` validates every theme in `themes/`.
+- `mise run shellcheck` matches the CI toolchain job (it runs whenever the Python path set is selected, not only when shell scripts change).
 
-Optional when you change shell scripts:
-
-```sh
-mise run shellcheck
-```
-
-If you regenerate the committed `sf2-themes` executable, also run:
+The committed root `sf2-themes` executable embeds `src/sf2_theme` and `themes/`. CI always runs `mise run standalone-freshness` on the Python path set, so edits under `src/` or `themes/` (or other embed inputs) commonly make that binary stale even if you did not regenerate it by hand:
 
 ```sh
 mise run standalone-freshness
 ```
 
+If freshness fails, regenerate the standalone executable with the mise build task, then re-run freshness and commit both the regenerated file and your source changes.
+
 ## Web / Astro
 
-Run when you touch `web/` or theme data that feeds the site:
+Run when you touch paths that select the web CI jobs, including `web/`, `themes/`, `mise-tasks/generate-web-theme-data`, `docker/`, `scripts/ci/`, `mise.toml`, or `mise.lock`:
 
 ```sh
 mise run web:install
