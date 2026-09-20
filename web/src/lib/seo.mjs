@@ -5,7 +5,7 @@ export const SITE_ORIGIN = astroConfig.site;
 export const SITE_BASE = `${astroConfig.base.replace(/\/+$/, "")}/`;
 export const PRODUCT_NAME = "sf2-themes";
 export const PRODUCT_DESCRIPTION =
-  "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, and Starship.";
+  "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit.";
 export const REPOSITORY_URL = "https://github.com/douglasjarquin/sf2-themes";
 export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS, Windows";
 
@@ -53,7 +53,7 @@ export function llmsTxt() {
 
 > ${PRODUCT_DESCRIPTION}
 
-sf2-themes is a Python 3.11 CLI named \`sf2-themes\`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, and Starship.
+sf2-themes is a Python 3.11 CLI named \`sf2-themes\`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit.
 
 Live site: ${liveUrl}
 Repository: ${REPOSITORY_URL}

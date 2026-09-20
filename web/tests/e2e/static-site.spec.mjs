@@ -5,7 +5,7 @@ const routes = [
   {
     path: "./",
     title: "Street Fighter II terminal themes | sf2-themes",
-    description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, and Starship.",
+    description: "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit.",
     canonical: `${origin}/sf2-themes/`,
     heading: "Fight for your terminal.",
   },
@@ -13,7 +13,7 @@ const routes = [
     path: "themes/",
     title: "The roster - 18 theme families | sf2-themes",
     description:
-      "Browse all 18 Street Fighter II theme families, each with dark and light modes for WezTerm, Herdr, Neovim, Codex, and Starship.",
+      "Browse all 18 Street Fighter II theme families, each with dark and light modes for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit.",
     canonical: `${origin}/sf2-themes/themes/`,
     heading: "CHOOSE YOUR FIGHTER.",
   },
@@ -88,7 +88,7 @@ test("llms.txt summarizes the CLI, catalog, live site, and repository", async ({
   expect(body).toContain("36-theme TOML catalog");
   expect(body).toContain("Live site: https://douglasjarquin.github.io/sf2-themes/");
   expect(body).toContain("Repository: https://github.com/douglasjarquin/sf2-themes");
-  expect(body).not.toContain("Lazygit");
+  expect(body).toContain("Lazygit");
 });
 
 test("the project 404 page is branded, linked, and noindexed", async ({ page, request }) => {

@@ -71,7 +71,8 @@ test("llms.txt names the CLI, catalog size, live site, and repository", () => {
   assert.match(committed, /36-theme TOML catalog/);
   assert.match(committed, /Live site: https:\/\/douglasjarquin\.github\.io\/sf2-themes\//);
   assert.match(committed, /Repository: https:\/\/github\.com\/douglasjarquin\/sf2-themes/);
-  assert.doesNotMatch(committed, /Lazygit/);
+  assert.match(committed, /Claude Code/);
+  assert.match(committed, /Lazygit/);
 });
 
 test("JSON-LD describes the visible site and software without ratings or offers", () => {
