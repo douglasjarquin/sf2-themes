@@ -2,187 +2,109 @@
 
 A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit).
 
+## What it is
+
 The pack contains **36 fully resolved themes**: a dark and light variant for the shared `main` family theme plus every arcade roster theme through Super Street Fighter II Turbo.
 
 Unofficial fan project. Street Fighter and related names are trademarks of Capcom. This project is not affiliated with or endorsed by Capcom.
 
-## Install
+Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
 
-Run the CLI from GitHub with uv.
-You do not need a checkout or a globally installed binary.
+## Features
 
-One-shot:
+* **Seven apps.** WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit. Setup and apply rules are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
+
+* **Short catalog ids.** Input stays `ken` or `ryu-light`. Every adapter installs `sf2-ken` or `sf2-ryu-light`. The id rules are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
+
+* **Arcade cabinet.** The homepage includes a compact playable ASCII cabinet, and `/sf2-themes/game/` is the full cabinet. Controls and match rules are in [docs/sf2-themes/arcade.md](docs/sf2-themes/arcade.md).
+
+* **CLI.** `apps`, `themes`, `show`, `validate`, `current`, `setup`, and `apply`. The command list and boss aliases are in [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md).
+
+* **File writes.** Managed paths, marked blocks, symlink refusal, and timestamped backups. Paths and overrides are in [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md).
+
+* **GitHub or a checkout.** uv runs the CLI without a global binary. Checkout wrappers are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
+
+## Quick Start
+
+### Requirements
+
+The command requires uv and Python 3.11 or newer.
+
+`./sf2-themes` needs Python 3.11 on `PATH`. You do not need a checkout or a globally installed binary.
+
+The mise toolchain and the Astro site are in [docs/sf2-themes/development.md](docs/sf2-themes/development.md).
+
+### Install
 
 ```sh
 uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version
 ```
 
-Install once as a uv tool, then use the bare command:
+That one-shot runs the CLI from GitHub. A uv tool install, the checkout commands, and the older `uv run --with` form are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
 
-```sh
-uv tool install git+https://github.com/douglasjarquin/sf2-themes.git
-sf2-themes --version
-```
-
-From a checkout, use the committed CLI, a mise task, or the repo wrapper:
-
-```sh
-./sf2-themes --version
-mise run apply -- wezterm --theme vega
-scripts/sf2 --version
-```
-
-`./sf2-themes` needs Python 3.11 on `PATH`.
-`mise run apply` and `mise run setup` forward arguments to the project CLI.
-`scripts/sf2` does the same through `uv run --project .`.
-
-The older `uv run --with git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes …` form still works.
-
-The command requires uv and Python 3.11 or newer.
-
-## Development with mise
-
-The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, uv 0.11, and aube 2.2.4.
-
-```sh
-mise install
-mise run test
-mise run apply -- wezterm --theme vega
-mise run setup -- wezterm
-```
-
-For the Astro site:
-
-```sh
-mise run web:install
-mise run web:check
-mise run web:build
-mise run web:test
-mise run web:dev
-```
-
-`mise run web:dev` starts the Astro site at `http://127.0.0.1:4321`.
-For a stable HTTPS domain instead of a raw port, run `mise run web:install` once, then `mise run web:dev:local` for `https://sf2-themes.test` via [portless](https://github.com/vercel-labs/portless) - see `web/AGENTS.md` for setup notes.
-
-## Arcade game
-
-The homepage includes a compact playable ASCII cabinet, and `/sf2-themes/game/` provides the full cabinet with independent theme, Player One, and Player Two selectors.
-Use Arrow keys or WASD to move, Z or J for a light attack, X or K for a heavy attack, C for a projectile, Shift to block, Escape to pause, and Enter to insert a coin.
-Theme changes recolor the current snapshot, while fighter selections apply to the next match.
-The game is a static browser experience with a deterministic fixed-step core, authored terminal glyph art, and a visible static poster fallback when the renderer is unavailable.
-
-## Setup, then apply
-
-`setup` is one-time application integration.
-`apply` selects a theme (default: `main`).
-
-The CLI keeps short catalog ids such as `ken` and `ryu-light` for input.
-Every adapter installs and selects the corresponding prefixed ids such as `sf2-ken` and `sf2-ryu-light`.
-
-Examples below use a uv tool install.
-From a checkout, use `mise run apply -- …`, `mise run setup -- …`, or `scripts/sf2 …` in place of `sf2-themes …`.
+### First run
 
 ```sh
 sf2-themes setup wezterm
 sf2-themes apply wezterm
 sf2-themes apply wezterm --theme ryu
-
-sf2-themes setup herdr
-sf2-themes apply herdr --theme chun-li
-herdr server reload-config
-
-sf2-themes setup nvim
-sf2-themes apply nvim --theme ryu-light
-
-sf2-themes setup codex
-sf2-themes apply codex --theme ryu-light
-
-sf2-themes setup claude
-sf2-themes apply claude --theme ryu-light
-
-sf2-themes setup starship
-sf2-themes apply starship --theme vega
-
-sf2-themes setup lazygit
-sf2-themes apply lazygit --theme vega
 ```
 
-Starship apply also refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
+`setup` is one-time application integration. `apply` selects a theme (default: `main`).
 
-Lazygit setup and apply install all 36 complete theme fragments under its `themes/` directory and select the requested theme in `config.yml`.
-Use `--adopt` when an existing `gui.theme` section is not managed by sf2-themes.
+From a checkout, use `mise run apply -- …`, `mise run setup -- …`, or `scripts/sf2 …` in place of `sf2-themes …`. The other apps are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
 
-If WezTerm's `wezterm.lua` already selects `street-fighter-2` from an older install, `setup` upgrades that assignment to the managed pointer.
-If it selects some other scheme, pass `--adopt` or paste the printed snippet. `setup` will not guess at unknown Lua.
+## How it works
 
-WezTerm apply writes every catalog scheme and a pointer that returns the selected character's dark or light sibling from `wezterm.gui.get_appearance()`. Applying `ryu` or `ryu-light` selects the same pair.
-
-Neovim setup installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua`.
-The pointer selects the matching dark or light colorscheme from `TERM_THEME` (set by the WezTerm integration) or `'background'`. Applying `ryu` or `ryu-light` selects the same pair.
-
-Codex setup writes every catalog theme as `sf2-<catalog-id>.tmTheme` under `$CODEX_HOME/themes/` and selects the active prefixed theme with `[tui].theme` in `$CODEX_HOME/config.toml`.
-Restart Codex after applying a theme, or reselect it with `/theme` in an existing session.
-
-Claude Code setup writes every catalog theme as `sf2-<catalog-id>.json` under `~/.claude/themes/` and selects it with `theme` in `~/.claude/settings.json`. Reselect it with `/theme` in an existing session. Claude Code has no host-appearance auto-switch for custom themes, so applying `ryu` or `ryu-light` just pins that one sibling, like Codex.
-
-Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
-
-Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs a Herdr build with herdr#2324; not in a stable release yet). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
-
-Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
-
-`install` still works as a deprecated alias for `apply`.
-
-## Commands
-
-```sh
-sf2-themes apps
-sf2-themes themes
-sf2-themes show ryu
-sf2-themes show ryu-light
-sf2-themes validate --all
-sf2-themes current wezterm
-sf2-themes apply herdr --theme boxer --dry-run
-sf2-themes current nvim
-sf2-themes current codex
-sf2-themes current claude
-sf2-themes current starship
-sf2-themes current lazygit
+```
+themes/
+ │  short catalog id, default main
+ ▼
+setup once, then apply
+ │
+ └─ installed identity sf2-<catalog-id>
 ```
 
-From a checkout the same commands work as `scripts/sf2 …` or `./sf2-themes …`.
+WezTerm, Neovim, and Herdr select the same dark and light pair when you apply `ryu` or `ryu-light`. Codex and Claude Code pin the one sibling you name.
 
-Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
+Herdr appearance switching needs a build with herdr#2324 and is not in a stable release yet.
 
-## How it writes files
+Symlinks are refused unless you pass `--follow-symlinks`. Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
-- WezTerm schemes go in `~/.config/wezterm/colors/`.
-- WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
-- The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
-- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
-- Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
-- Neovim setup manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
-- Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
-- Claude Code custom themes go in `~/.claude/themes/`, with the active theme in `~/.claude/settings.json` under `theme`.
-- Starship updates the marked palette in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
-- Lazygit themes go in its `themes/` directory, and the selected `gui.theme` plus wildcard author color are managed in `config.yml`.
-- Symlinks are refused unless you pass `--follow-symlinks`.
-- Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
+Paths, overrides, and removal are in [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md) and [docs/sf2-themes/uninstall.md](docs/sf2-themes/uninstall.md).
 
-Override locations with `--config-dir`, `CODEX_HOME`, `CLAUDE_CONFIG_DIR`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`.
+## Documentation
 
-## Uninstall
+* [docs/sf2-themes/install.md](docs/sf2-themes/install.md) — uv, a uv tool install, and a checkout.
 
-Remove `~/.config/wezterm/colors/sf2-*.toml` and any remaining `street-fighter-ii-*.toml`, `~/.config/nvim/colors/sf2-*.lua` and any remaining `street-fighter-ii-*.lua`, `~/.config/nvim/sf2-theme/`, `~/.config/nvim/plugin/sf2-theme.lua`, `~/.codex/themes/sf2-*.tmTheme`, `~/.claude/themes/sf2-*.json`, the Lazygit `themes/sf2-*.yml` files and marked config sections, the Codex `[tui]` theme setting, the Claude Code `theme` setting, the WezTerm integration snippet, and the marked Herdr theme block.
+* [docs/sf2-themes/development.md](docs/sf2-themes/development.md) — mise pins and the Astro site.
 
-## Design
+* [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md) — setup, apply, and each app.
 
-See [docs/theme-guidelines.md](docs/theme-guidelines.md), [docs/roster.md](docs/roster.md), and [docs/previews/](docs/previews/).
+* [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md) — `apps`, `themes`, `show`, `validate`, `current`, and boss aliases.
 
-Theme data lives in [`themes/`](themes/). Dark themes keep their original IDs, and light variants use the corresponding `<id>-light` ID.
-Those catalog ids remain the short CLI names; generated adapter identities add the `sf2-` prefix.
-The committed `sf2-themes` script embeds a generated copy of that catalog. Do not hand-edit the embed.
+* [docs/sf2-themes/arcade.md](docs/sf2-themes/arcade.md) — cabinet, controls, and match rules.
+
+* [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md) — paths, overrides, symlinks, and backups.
+
+* [docs/sf2-themes/uninstall.md](docs/sf2-themes/uninstall.md) — files and settings to remove.
+
+* [docs/sf2-themes/design.md](docs/sf2-themes/design.md) — catalog ids and the generated embed.
+
+* [docs/theme-guidelines.md](docs/theme-guidelines.md) — theme guidelines.
+
+* [docs/roster.md](docs/roster.md) — arcade roster.
+
+* [docs/previews/](docs/previews/) — theme previews.
+
+* [themes/](themes/) — theme data.
+
+* [web/AGENTS.md](web/AGENTS.md) — portless setup for the local site.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Ordinary pull requests target `main`. The workflow and checks are in [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## License
+
+Street Fighter II Theme Pack is licensed under the [MIT License](LICENSE).
