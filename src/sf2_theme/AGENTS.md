@@ -29,7 +29,7 @@ The committed root executable mirrors this package by embedding the standalone g
 - Resolve a managed `sf2-` pointer identity through `installed_theme()` so setup can refresh an existing pair without `--theme`.
 - Keep catalog and CLI selection IDs short, such as `ryu-light`.
 - Derive installed names through `ThemeMetadata.selectable_id` or `selectable_id()` so adapter-facing identities are consistently `sf2-<catalog-id>`.
-- Preserve the intentional spelling split: public distribution and command `sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.
+- Preserve the intentional spelling split: public distribution and commands `sf2`/`sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.
 - In source mode, catalog discovery honors `SF2_THEME_DIR` before the repository catalog; the standalone uses `_embedded.THEME_FILES` instead of filesystem discovery.
 - Let adapters own syntax-aware reads and merges, then send final content through `write_file()`.
 - Keep runtime imports standard-library or package-local because the copied standalone runs without an installed project environment.

@@ -52,9 +52,12 @@ const PORTS = [
 ];
 
 const defaultSteps = [
-  { round: "Round 1", label: "Get the CLI", display: "sf2-themes --version" },
-  { round: "Round 2", label: "Set up WezTerm, once", display: "sf2-themes setup wezterm" },
-  { round: "Round 3", label: `Apply ${ryu.name}. K.O.`, display: `sf2-themes apply wezterm --theme ${ryu.id}` },
+  {
+    round: "Round 1",
+    label: "Install the CLI, once",
+    display: "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git",
+  },
+  { round: "Round 2", label: `Apply ${ryu.name} to WezTerm. K.O.`, display: `sf2 apply wezterm --theme ${ryu.id}` },
 ];
 ---
 
@@ -82,7 +85,7 @@ const defaultSteps = [
 
     <section id="install" aria-labelledby="install-heading">
       <h2 class="h2" id="install-heading"><span class="hp" aria-hidden="true">## </span>Install</h2>
-      <p class="section-sub">Three rounds. Pick your app:</p>
+      <p class="section-sub">Two rounds. Pick your app:</p>
       <div class="ports" role="group" aria-label="Target app">
         {
           PORTS.map((port, index) => (
@@ -115,7 +118,7 @@ const defaultSteps = [
           ))
         }
       </div>
-      <p class="port-note" data-port-note-out>{PORTS[0].note} Copied commands include the uvx prefix.</p>
+      <p class="port-note" data-port-note-out>{PORTS[0].note} sf2 and sf2-themes are the same command.</p>
     </section>
 
     <section id="ports" aria-labelledby="ports-heading">

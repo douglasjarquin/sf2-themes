@@ -46,8 +46,10 @@ test ! -e "$test_dir/bin/themes"
 (cd "$test_dir" && "$test_dir/bin/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm")
 (cd "$test_dir" && "$test_dir/bin/sf2-themes" apply herdr --config-dir "$test_dir/installed-herdr")
 test -f "$test_dir/wezterm/colors/sf2-main.toml"
+test -f "$test_dir/wezterm/wezterm.lua"
+grep -q 'dofile(sf2_current)' "$test_dir/wezterm/wezterm.lua"
+printf '%s\n' 'WezTerm one-step apply integrates wezterm.lua: PASS'
 test -f "$test_dir/installed-herdr/config.toml"
-"$repo_dir/sf2-themes" setup nvim --config-dir "$test_dir/installed-nvim"
 "$repo_dir/sf2-themes" apply nvim --theme ryu-light --config-dir "$test_dir/installed-nvim"
 test -f "$test_dir/installed-nvim/colors/sf2-main.lua"
 test -f "$test_dir/installed-nvim/colors/sf2-ryu-light.lua"
@@ -127,3 +129,28 @@ grep -q 'config.color_scheme = sf2_scheme' "$test_dir/wezterm-safe/wezterm.lua"
 grep -q 'TERM_THEME' "$test_dir/wezterm-safe/wezterm.lua"
 grep -q 'return config' "$test_dir/wezterm-safe/wezterm.lua"
 printf '%s\n' 'WezTerm safe builder integration: PASS'
+
+"$repo_dir/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm-safe" >"$test_dir/reapply-out.txt"
+grep -q 'no changes' "$test_dir/reapply-out.txt"
+printf '%s\n' 'Repeat apply reports no changes: PASS'
+
+mkdir -p "$test_dir/wezterm-blocked"
+cat >"$test_dir/wezterm-blocked/wezterm.lua" <<'LUA'
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())
+return config
+LUA
+
+if "$repo_dir/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm-blocked" >"$test_dir/blocked-out.txt" 2>"$test_dir/blocked-err.txt"; then
+  printf '%s\n' 'apply wezterm on an unknown config must exit nonzero' >&2
+  exit 1
+fi
+grep -q 'apply incomplete' "$test_dir/blocked-err.txt"
+grep -q 'dofile' "$test_dir/blocked-err.txt"
+grep -q 'scheme_for_appearance' "$test_dir/wezterm-blocked/wezterm.lua"
+printf '%s\n' 'Blocked apply reports incomplete: PASS'
+
+"$repo_dir/sf2-themes" apply --help | grep -q -- '--adopt'
+"$repo_dir/sf2-themes" apply --help | grep -q -- '--theme'
+printf '%s\n' 'Command-specific help: PASS'

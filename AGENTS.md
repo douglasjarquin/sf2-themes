@@ -36,7 +36,7 @@ docs/                Authored contracts and generated SVG previews
 
 | Task | Location | Notes |
 |---|---|---|
-| CLI dispatch | `src/sf2_theme/cli.py` | Public command is `sf2-themes`; `install` is deprecated |
+| CLI dispatch | `src/sf2_theme/cli.py` | Public commands are `sf2` and `sf2-themes`; `install` is deprecated |
 | Theme model and lookup | `src/sf2_theme/model.py`, `catalog.py`, `validation.py` | `themes/` remains the source of truth |
 | Adapter mutation | `src/sf2_theme/adapters/`, `filesystem.py` | Preserve unrelated user configuration and symlink policy |
 | Standalone generation | `mise-tasks/build-standalone` | Owns the committed root `sf2-themes` executable |

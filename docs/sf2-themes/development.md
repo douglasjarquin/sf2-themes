@@ -8,7 +8,6 @@ The repository's `mise.toml` pins the local toolchain to Python 3.11, Node 24, u
 mise install
 mise run test
 mise run apply -- wezterm --theme vega
-mise run setup -- wezterm
 ```
 
 ## Astro site
