@@ -47,7 +47,8 @@ WezTerm apply writes every catalog scheme, a pointer that returns the selected c
 Applying `ryu` or `ryu-light` selects the same pair.
 An empty or missing `wezterm.lua` gets a starter config, and a recognized `wezterm.config_builder()` shape gets the integration inserted before its return.
 If `wezterm.lua` already selects `street-fighter-2` from an older install, the assignment is upgraded to the managed pointer.
-Other shapes are left byte-for-byte unchanged: `apply` prints a pasteable snippet and exits nonzero, and `--adopt` is accepted when the config only assigns a foreign `color_scheme`.
+Other shapes are left byte-for-byte unchanged: `apply` prints a pasteable snippet and exits nonzero.
+`--adopt` replaces a foreign `color_scheme` assignment only on a recognized `wezterm.config_builder()` shape, so the stderr hint names it only when it would help.
 `setup` will not guess at unknown Lua either, but reports the snippet as a warning and still exits zero.
 
 Neovim apply installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua` so the pointer is read on every startup.

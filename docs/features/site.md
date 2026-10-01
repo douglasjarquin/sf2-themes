@@ -1,7 +1,7 @@
 # Static theme site
 
 The Astro site under `web/` builds to `web/dist` and deploys to `https://douglasjarquin.github.io/sf2-themes/` via the Pages workflow.
-It is a single-page catalog: hero, live fighter preview with a `SampleBlock` seven-pane sample, a `⌘K` theme palette, three-round install steps for seven apps, and a ports section, all re-themed at runtime by `web/src/scripts/site-theme.mjs` from the payload embedded by `web/src/layouts/SiteLayout.astro`.
+It is a single-page catalog: hero, live fighter preview with a `SampleBlock` seven-pane sample, a `⌘K` theme palette, two-round install steps for seven apps, and a ports section, all re-themed at runtime by `web/src/scripts/site-theme.mjs` from the payload embedded by `web/src/layouts/SiteLayout.astro`.
 The retired routes (`/themes/`, `/palette/`, `/preview/`, `/install/`, `/themes/<id>/`) are noindex meta-refresh stubs pointing at home anchors; the arcade cabinet and `/game/` were removed.
 
 ## Entry points

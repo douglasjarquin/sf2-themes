@@ -50,8 +50,33 @@ def test_apply_wezterm_leaves_unknown_lua_incomplete(tmp_path: Path, monkeypatch
     assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
     assert (tmp_path / "xdg" / "sf2-theme" / "wezterm-current.lua").is_file()
     captured = capsys.readouterr()
+    assert "apply wezterm: incomplete" in captured.out
+    assert "sf2-" not in captured.out
+    assert "restart WezTerm" not in captured.out
     assert "apply incomplete" in captured.err
     assert "dofile" in captured.err
+    assert "--adopt" not in captured.err
+
+
+def test_apply_wezterm_foreign_scheme_hints_adopt(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    lua_dir = tmp_path / "wezterm"
+    lua_dir.mkdir()
+    original = "\n".join(
+        (
+            'local wezterm = require("wezterm")',
+            "local config = wezterm.config_builder()",
+            'config.color_scheme = "Builtin Dark"',
+            "return config",
+            "",
+        )
+    )
+    (lua_dir / "wezterm.lua").write_text(original, encoding="utf-8")
+    assert dispatch(["apply", "wezterm", "--config-dir", str(lua_dir)]) == 1
+    assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
+    captured = capsys.readouterr()
+    assert "apply wezterm: incomplete" in captured.out
+    assert "--adopt" in captured.err
 
 
 def test_apply_wezterm_adopt_replaces_foreign_scheme(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -232,3 +257,23 @@ def test_setup_lazygit_selects_light_theme_and_current_reads_it(tmp_path: Path, 
     assert dispatch(["setup", "lazygit", "--theme", "ryu-light", "--config-dir", str(config_dir)]) == 0
     assert dispatch(["current", "lazygit", "--config-dir", str(config_dir)]) == 0
     assert capsys.readouterr().out.strip().endswith("sf2-ryu-light")
+
+
+def test_setup_keeps_existing_selection_for_block_adapters(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    for app in ("herdr", "starship", "lazygit"):
+        config_dir = tmp_path / app
+        assert dispatch(["apply", app, "--theme", "chun-li", "--config-dir", str(config_dir)]) == 0
+        capsys.readouterr()
+        assert dispatch(["setup", app, "--config-dir", str(config_dir)]) == 0
+        assert "existing selection kept" in capsys.readouterr().out
+        assert dispatch(["current", app, "--config-dir", str(config_dir)]) == 0
+        assert capsys.readouterr().out.strip().endswith("sf2-chun-li")
+
+
+def test_setup_without_selection_installs_default(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    assert dispatch(["setup", "starship", "--config-dir", str(tmp_path / "starship")]) == 0
+    out = capsys.readouterr().out
+    assert "setup starship: sf2-main" in out
+    assert "existing selection kept" not in out
