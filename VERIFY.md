@@ -4,6 +4,21 @@ How to verify changes in this repository before opening a pull request.
 
 Prefer [mise](https://mise.jdx.dev/) tasks from the repo root so local runs match CI.
 
+```verify
+entrypoint = "mise run verify"
+feature_maps = "docs/"
+artifacts = ".artifacts/verification"
+evidence = ".artifacts/evidence"
+task_owner = "."
+timeout_seconds = 3600
+policy_files = ["VERIFY.md", "docs/theme-guidelines.md", "themes/", "mise.toml"]
+
+[requires]
+commands = ["git", "mise", "python3", "uv", "node", "aube"]
+```
+
+`mise run verify` is the aggregate pre-PR gate: it runs `web:install`, `test`, `lint`, `validate-catalog`, `shellcheck`, `standalone-freshness`, `web:check`, `web:build`, and `web:test` in order.
+
 ## Setup
 
 ```sh
