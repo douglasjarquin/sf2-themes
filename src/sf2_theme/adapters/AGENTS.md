@@ -12,7 +12,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - `apply_wezterm` owns catalog scheme files under `<wezterm-config>/colors/` and the pointer `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua`; it never edits `wezterm.lua`.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
-- `setup_wezterm` adds one-time Lua integration after writing schemes, with the pointer replaced only when requested or absent.
+- `setup_wezterm` adds Lua integration after writing schemes, with the pointer replaced only when requested or absent; the `apply` and `setup` commands both run it and differ only in that flag (`apply` always selects, `setup` without `--theme` preserves).
 - Empty Lua receives a starter config, while a recognized `wezterm.config_builder()` shape receives pointer integration before its matching return.
 - Existing managed pointer integration is idempotent.
 - Unknown Lua shapes remain byte-for-byte unchanged and return a pasteable integration snippet.
@@ -42,7 +42,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - The adapter owns catalog files `<nvim-config>/colors/sf2-*.lua` and the selected pointer `<nvim-config>/sf2-theme/current.lua`.
 - The pointer selects the dark or light sibling from `TERM_THEME` or `'background'` so Neovim follows the same character pair as WezTerm and Herdr.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
-- `apply_nvim` writes the catalog and pointer, while `setup_nvim` additionally owns `<nvim-config>/plugin/sf2-theme.lua` as the startup loader.
+- `apply_nvim` writes the catalog and pointer, while `setup_nvim` additionally owns `<nvim-config>/plugin/sf2-theme.lua` as the startup loader; the `apply` command runs `setup_nvim` so the loader is installed in one step.
 - Setup without an explicit theme preserves a valid managed pointer and only normalizes a recognized legacy short ID.
 - Limit legacy cleanup to enumerated `street-fighter-ii-<catalog-id>.lua` files and leave every other `colors/` or `plugin/` entry untouched.
 

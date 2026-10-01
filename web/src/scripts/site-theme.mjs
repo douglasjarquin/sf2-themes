@@ -1,5 +1,5 @@
 const STORAGE_KEY = "sf2-site-theme";
-const UVX = "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes";
+const INSTALL = "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git";
 const root = document.documentElement;
 
 function readFamilies() {
@@ -164,12 +164,11 @@ if (families.length > 0) {
     const p = port;
     const name = portButtons.find((b) => b.dataset.portId === p)?.dataset.portName ?? p;
     return [
-      { label: "Get the CLI", display: "sf2-themes --version", cmd: `${UVX} --version` },
-      { label: `Set up ${name}, once`, display: `sf2-themes setup ${p}`, cmd: `${UVX} setup ${p}` },
+      { label: "Install the CLI, once", display: INSTALL, cmd: INSTALL },
       {
-        label: `Apply ${displayName()}. K.O.`,
-        display: `sf2-themes apply ${p} --theme ${catalogId()}`,
-        cmd: `${UVX} apply ${p} --theme ${catalogId()}`,
+        label: `Apply ${displayName()} to ${name}. K.O.`,
+        display: `sf2 apply ${p} --theme ${catalogId()}`,
+        cmd: `sf2 apply ${p} --theme ${catalogId()}`,
       },
     ];
   }
@@ -189,7 +188,7 @@ if (families.length > 0) {
     });
     if (portNote) {
       const note = portButtons.find((b) => b.dataset.portId === port)?.dataset.portNote;
-      if (note) portNote.textContent = `${note} Copied commands include the uvx prefix.`;
+      if (note) portNote.textContent = `${note} sf2 and sf2-themes are the same command.`;
     }
   }
 

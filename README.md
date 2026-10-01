@@ -18,11 +18,11 @@ Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/des
 
 * **Theme site.** `https://douglasjarquin.github.io/sf2-themes/` previews every fighter in both modes, with install commands for each port.
 
-* **CLI.** `apps`, `themes`, `show`, `validate`, `current`, `setup`, and `apply`. The command list and boss aliases are in [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md).
+* **CLI.** `apps`, `themes`, `show`, `validate`, `current`, `setup`, and `apply`, installed as both `sf2` and `sf2-themes`. The command list and boss aliases are in [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md).
 
 * **File writes.** Managed paths, marked blocks, symlink refusal, and timestamped backups. Paths and overrides are in [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md).
 
-* **GitHub or a checkout.** uv runs the CLI without a global binary. Checkout wrappers are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
+* **GitHub or a checkout.** uv installs the CLI, runs it one-shot, or launches it from a checkout. All three are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
 
 ## Quick Start
 
@@ -37,22 +37,20 @@ The mise toolchain and the Astro site are in [docs/sf2-themes/development.md](do
 ### Install
 
 ```sh
-uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version
+uv tool install git+https://github.com/douglasjarquin/sf2-themes.git
 ```
 
-That one-shot runs the CLI from GitHub. A uv tool install, the checkout commands, and the older `uv run --with` form are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
+That installs the `sf2` command (also available as `sf2-themes`) once, from GitHub. One-shot and checkout launchers are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
 
 ### First run
 
 ```sh
-sf2-themes setup wezterm
-sf2-themes apply wezterm
-sf2-themes apply wezterm --theme ryu
+sf2 apply wezterm --theme ryu
 ```
 
-`setup` is one-time application integration. `apply` selects a theme (default: `main`).
+`apply` prepares the theme assets, installs or repairs the app's integration, and selects the theme (default: `main`) in one idempotent step. Repeating it reports `no changes`.
 
-From a checkout, use `mise run apply -- …`, `mise run setup -- …`, or `scripts/sf2 …` in place of `sf2-themes …`. The other apps are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
+From a checkout, use `mise run apply -- …` or `scripts/sf2 …` in place of `sf2 …`. The other apps are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
 
 ## How it works
 
@@ -60,7 +58,7 @@ From a checkout, use `mise run apply -- …`, `mise run setup -- …`, or `scrip
 themes/
  │  short catalog id, default main
  ▼
-setup once, then apply
+apply, one step
  │
  └─ installed identity sf2-<catalog-id>
 ```

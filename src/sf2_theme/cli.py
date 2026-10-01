@@ -1,27 +1,28 @@
 """Command-line interface for the Street Fighter II theme pack."""
 
+import argparse
 import json
 import sys
 import tomllib
+from collections import Counter
 from collections.abc import Sequence
-from dataclasses import dataclass
 from pathlib import Path
 
 from sf2_theme import __version__
-from sf2_theme.adapters.claude import apply_claude, setup_claude
 from sf2_theme.adapters.claude import read_current_id as claude_current
-from sf2_theme.adapters.codex import apply_codex, setup_codex
+from sf2_theme.adapters.claude import setup_claude
 from sf2_theme.adapters.codex import read_current_id as codex_current
+from sf2_theme.adapters.codex import setup_codex
 from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
-from sf2_theme.adapters.lazygit import apply_lazygit, setup_lazygit
 from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
-from sf2_theme.adapters.nvim import apply_nvim, setup_nvim
+from sf2_theme.adapters.lazygit import setup_lazygit
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
+from sf2_theme.adapters.nvim import setup_nvim
 from sf2_theme.adapters.starship import apply_starship
 from sf2_theme.adapters.starship import read_current_id as starship_current
-from sf2_theme.adapters.wezterm import apply_wezterm, setup_wezterm
 from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
+from sf2_theme.adapters.wezterm import setup_wezterm
 from sf2_theme.adapters.zsh_syntax import SOURCE_HINT, apply_zsh_syntax
 from sf2_theme.catalog import (
     catalog_issues,
@@ -30,298 +31,108 @@ from sf2_theme.catalog import (
     load_catalog,
     parse_catalog,
     show_theme,
+    theme_pair,
 )
 from sf2_theme.errors import CliError, ThemeError
-from sf2_theme.filesystem import WriteResult
+from sf2_theme.filesystem import WriteAction, WriteResult
 from sf2_theme.model import Theme
 from sf2_theme.validation import validate_theme
 
 APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit", "claude")
-HELP_TEXT = """Street Fighter II theme pack
+ADOPT_APPS = ("wezterm", "herdr", "lazygit")
+# Apps whose selection is appearance-aware: both siblings are installed and the
+# managed identity follows the host's light/dark mode.
+PAIR_APPS = ("wezterm", "herdr", "nvim")
+# Apps with a preserved-selection path: setup without --theme keeps it.
+PRESERVE_APPS = ("wezterm", "nvim", "codex", "claude")
 
-Usage:
-  sf2-themes apps
-  sf2-themes themes
-  sf2-themes show THEME
-  sf2-themes validate [THEME | --all]
-  sf2-themes setup APP [--config-dir PATH] [--dry-run] [--follow-symlinks] [--adopt]
-  sf2-themes apply APP [--theme THEME] [--config-dir PATH] [--dry-run] [--follow-symlinks]
-  sf2-themes current APP [--config-dir PATH]
-  sf2-themes install APP ...
-
-setup performs one-time application integration.
-apply writes or selects the active theme (default: main).
-install is a deprecated alias for apply.
-starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
-Lazygit installs one YAML fragment per catalog theme under its themes directory.
-WezTerm, Herdr, and Neovim apply both dark and light siblings and auto-switch with host appearance.
-Claude installs one theme file per catalog entry under ~/.claude/themes/ and selects it in settings.json;
-select it or switch siblings yourself in /theme, since Claude Code has no host-appearance auto-switch.
+HELP_EPILOG = """\
+notes:
+  apply prepares theme assets, installs or repairs the app integration, and
+  selects a theme (default: main) in one idempotent step.
+  setup performs the same integration but keeps an existing selection unless
+  --theme is given. install is a deprecated alias for apply.
+  starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
+  Lazygit installs one YAML fragment per catalog theme under its themes directory.
+  WezTerm, Herdr, and Neovim apply both dark and light siblings and auto-switch
+  with host appearance. Claude installs one theme file per catalog entry under
+  ~/.claude/themes/ and selects it in settings.json; select it or switch
+  siblings yourself in /theme, since Claude Code has no host-appearance
+  auto-switch.
 """
 
+_ACTION_TEXT = {
+    WriteAction.CREATED: "created",
+    WriteAction.UPDATED: "updated",
+    WriteAction.UNCHANGED: "unchanged",
+    WriteAction.WOULD_CREATE: "would create",
+    WriteAction.WOULD_UPDATE: "would update",
+}
 
-@dataclass(frozen=True, slots=True)
-class Options:
-    """Shared flags parsed from a command's trailing arguments."""
-
-    theme: str | None = None
-    config_dir: Path | None = None
-    dry_run: bool = False
-    follow_symlinks: bool = False
-    adopt: bool = False
-    all_themes: bool = False
-    rest: tuple[str, ...] = ()
+# What the user still has to do by hand after a completed apply.
+_RELOAD_NOTES = {
+    "wezterm": "restart WezTerm, or let a config reload pick up the managed pointer",
+    "herdr": "run `herdr server reload-config` to apply the selection",
+    "nvim": "restart Neovim to load the new colorscheme",
+    "codex": "restart Codex, or reselect with /theme",
+    "claude": "reselect with /theme in a running Claude Code session",
+    "lazygit": "restart lazygit to render the new theme",
+}
 
 
-def parse_options(arguments: Sequence[str]) -> Options:
-    """Parse shared flags. Remaining positional args stay in `rest`."""
-    theme: str | None = None
-    config_dir: Path | None = None
-    dry_run = False
-    follow_symlinks = False
-    adopt = False
-    all_themes = False
-    rest: list[str] = []
-    index = 0
-    while index < len(arguments):
-        item = arguments[index]
-        match item:
-            case "--theme":
-                theme = _need_value(arguments, index, item)
-                index += 2
-            case "--config-dir":
-                config_dir = Path(_need_value(arguments, index, item)).expanduser()
-                index += 2
-            case "--dry-run":
-                dry_run = True
-                index += 1
-            case "--follow-symlinks":
-                follow_symlinks = True
-                index += 1
-            case "--adopt":
-                adopt = True
-                index += 1
-            case "--all":
-                all_themes = True
-                index += 1
-            case flag if flag.startswith("-"):
-                raise CliError(f"unknown option: {flag}")
-            case _:
-                rest.append(item)
-                index += 1
-    return Options(
-        theme=theme,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-        adopt=adopt,
-        all_themes=all_themes,
-        rest=tuple(rest),
+def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
+    parser = argparse.ArgumentParser(
+        prog="sf2-themes",
+        description=(
+            "Street Fighter II theme pack for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit."
+        ),
+        epilog=HELP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
+    parser.add_argument("--version", "-V", action="version", version=__version__)
+    commands = parser.add_subparsers(dest="command", metavar="COMMAND")
+    commands.add_parser("apps", help="list supported applications")
+    commands.add_parser("themes", help="list catalog themes")
+    show = commands.add_parser("show", help="print a theme's canonical TOML")
+    show.add_argument("theme", help="theme id, alias, or display name")
+    validate = commands.add_parser("validate", help="validate theme definitions")
+    validate.add_argument("themes", nargs="*", metavar="THEME", help="catalog ids (default: the whole catalog)")
+    validate.add_argument("--all", dest="all_themes", action="store_true", help="validate every catalog theme")
+    mutation: dict[str, argparse.ArgumentParser] = {}
+    mutation["setup"] = commands.add_parser(
+        "setup", help="install or repair app integration (keeps an existing selection unless --theme is given)"
+    )
+    mutation["apply"] = commands.add_parser("apply", help="integrate the app and select a theme in one step")
+    mutation["install"] = commands.add_parser("install", help="deprecated alias for apply")
+    for sub in mutation.values():
+        _mutation_args(sub)
+    current = commands.add_parser("current", help="print the selected theme id, or none")
+    current.add_argument("app", choices=APP_NAMES)
+    current.add_argument("--config-dir", type=Path, metavar="PATH")
+    return parser, mutation
 
 
-def _need_value(arguments: Sequence[str], index: int, flag: str) -> str:
-    if index + 1 >= len(arguments):
-        raise CliError(f"{flag} requires a value")
-    return arguments[index + 1]
+def _mutation_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("app", choices=APP_NAMES, help="application to configure")
+    parser.add_argument("--theme", metavar="THEME", help="theme id, alias, or display name (default: main)")
+    parser.add_argument(
+        "--config-dir", type=Path, metavar="PATH", help="write under PATH instead of the app's config location"
+    )
+    parser.add_argument("--dry-run", action="store_true", help="print the full plan without writing anything")
+    parser.add_argument("--follow-symlinks", action="store_true", help="write through destination symlinks")
+    parser.add_argument(
+        "--adopt", action="store_true", help=f"replace an unmanaged theme setting ({', '.join(ADOPT_APPS)} only)"
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="print every file operation, not just the summary")
 
 
-def _app(name: str) -> str:
-    if name not in APP_NAMES:
-        raise CliError(f"unsupported app: {name}; choose {', '.join(APP_NAMES)}")
-    return name
-
-
-def _report(results: Sequence[WriteResult]) -> None:
-    for result in results:
-        print(f"{result.action.value}: {result.path}")
-        if result.diff and result.action.value.startswith("would_"):
-            print(result.diff, end="")
-
-
-def _apply_starship(theme: Theme, options: Options) -> list[WriteResult]:
-    return [
-        apply_starship(
-            theme,
-            config_dir=options.config_dir,
-            dry_run=options.dry_run,
-            follow_symlinks=options.follow_symlinks,
-        ),
-        apply_zsh_syntax(
-            theme,
-            dry_run=options.dry_run,
-            follow_symlinks=options.follow_symlinks,
-        ),
-    ]
-
-
-def _setup(app: str, options: Options) -> None:
-    catalog = load_catalog()
-    theme = default_theme(catalog) if options.theme is None else get_theme(options.theme, catalog)
-    match app:
-        case "wezterm":
-            results, lua = setup_wezterm(
-                theme,
-                catalog,
-                config_dir=options.config_dir,
-                dry_run=options.dry_run,
-                follow_symlinks=options.follow_symlinks,
-                adopt=options.adopt,
-                replace_pointer=options.theme is not None,
-            )
-            _report(results)
-            if lua.snippet is not None:
-                print(
-                    "WezTerm config was left unchanged because it already selects a color scheme.\n"
-                    "Pass --adopt to replace it, or add this integration:\n",
-                    file=sys.stderr,
-                )
-                print(lua.snippet, end="", file=sys.stderr)
-        case "herdr":
-            result = apply_herdr(
-                theme,
-                catalog,
-                config_dir=options.config_dir,
-                dry_run=options.dry_run,
-                follow_symlinks=options.follow_symlinks,
-                adopt=options.adopt,
-            )
-            _report((result,))
-        case "nvim":
-            _report(
-                setup_nvim(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                    replace_pointer=options.theme is not None,
-                )
-            )
-        case "codex":
-            _report(
-                setup_codex(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                    replace_theme=options.theme is not None,
-                )
-            )
-        case "lazygit":
-            _report(
-                setup_lazygit(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                    adopt=options.adopt,
-                )
-            )
-        case "starship":
-            _report(_apply_starship(theme, options))
-            print(
-                f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
-                file=sys.stderr,
-            )
-        case "claude":
-            _report(
-                setup_claude(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                    replace_theme=options.theme is not None,
-                )
-            )
-        case unreachable:
-            raise CliError(f"unsupported app: {unreachable}")
-
-
-def _apply(app: str, options: Options) -> None:
-    catalog = load_catalog()
-    theme = default_theme(catalog) if options.theme is None else get_theme(options.theme, catalog)
-    match app:
-        case "wezterm":
-            _report(
-                apply_wezterm(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                )
-            )
-        case "herdr":
-            _report(
-                (
-                    apply_herdr(
-                        theme,
-                        catalog,
-                        config_dir=options.config_dir,
-                        dry_run=options.dry_run,
-                        follow_symlinks=options.follow_symlinks,
-                        adopt=options.adopt,
-                    ),
-                )
-            )
-        case "nvim":
-            _report(
-                apply_nvim(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                )
-            )
-        case "codex":
-            _report(
-                apply_codex(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                )
-            )
-        case "lazygit":
-            _report(
-                apply_lazygit(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                    adopt=options.adopt,
-                )
-            )
-        case "starship":
-            _report(_apply_starship(theme, options))
-        case "claude":
-            _report(
-                apply_claude(
-                    theme,
-                    catalog,
-                    config_dir=options.config_dir,
-                    dry_run=options.dry_run,
-                    follow_symlinks=options.follow_symlinks,
-                )
-            )
-        case unreachable:
-            raise CliError(f"unsupported app: {unreachable}")
-
-
-def _validate(options: Options) -> int:
+def _validate(ns: argparse.Namespace) -> int:
     catalog = parse_catalog()
-    if options.all_themes or not options.rest:
+    if ns.all_themes or not ns.themes:
         themes = catalog
         lines = catalog_issues(themes)
     else:
-        themes = tuple(get_theme(name, catalog) for name in options.rest)
+        themes = tuple(get_theme(name, catalog) for name in ns.themes)
         lines = []
         for theme in themes:
             for issue in validate_theme(theme):
@@ -339,77 +150,204 @@ def _validate(options: Options) -> int:
     return 1 if failed else 0
 
 
-def _current(app: str, options: Options) -> None:
+def _starship_results(theme: Theme, ns: argparse.Namespace, config_dir: Path | None) -> list[WriteResult]:
+    return [
+        apply_starship(theme, config_dir=config_dir, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
+        apply_zsh_syntax(theme, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
+    ]
+
+
+def _report(results: Sequence[WriteResult], *, verbose: bool) -> None:
+    """Print the plan. Dry-run always lists planned writes; otherwise --verbose."""
+    for result in results:
+        planned = result.action in (WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
+        if not (verbose or planned):
+            continue
+        print(f"{_ACTION_TEXT[result.action]}: {result.path}")
+        if result.diff:
+            print(result.diff, end="")
+
+
+def _summarize(
+    command: str, app: str, select: bool, theme: Theme, catalog: Sequence[Theme], results: Sequence[WriteResult]
+) -> None:
+    counts = Counter(result.action for result in results)
+    changed = sum(
+        counts[action]
+        for action in (WriteAction.CREATED, WriteAction.UPDATED, WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
+    )
+    if changed:
+        order = (
+            WriteAction.CREATED,
+            WriteAction.UPDATED,
+            WriteAction.WOULD_CREATE,
+            WriteAction.WOULD_UPDATE,
+            WriteAction.UNCHANGED,
+        )
+        changes = ", ".join(f"{counts[action]} {_ACTION_TEXT[action]}" for action in order if counts[action])
+    else:
+        changes = "no changes"
+    verb = "apply" if command == "install" else command
+    if select or app not in PRESERVE_APPS:
+        if app in PAIR_APPS:
+            dark, light = theme_pair(theme, catalog)
+            selection = f"{dark.metadata.selectable_id} + {light.metadata.selectable_id} (follows host appearance)"
+        else:
+            selection = theme.metadata.selectable_id
+        print(f"{verb} {app}: {selection}")
+    else:
+        print(f"{verb} {app}: existing selection kept")
+    print(f"  changes: {changes}")
+    note = _RELOAD_NOTES.get(app)
+    if note:
+        print(f"  note: {note}")
+
+
+def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+    if command == "install":
+        print("warning: install is deprecated; use apply", file=sys.stderr)
+    if ns.adopt and ns.app not in ADOPT_APPS:
+        parser.error(f"{ns.app} does not support --adopt")
+    catalog = load_catalog()
+    theme = default_theme(catalog) if ns.theme is None else get_theme(ns.theme, catalog)
+    config_dir = ns.config_dir.expanduser() if ns.config_dir is not None else None
+    # Every mutation command runs one complete plan: assets plus integration.
+    # apply (and install) always (re)select the resolved theme; setup keeps an
+    # existing selection unless --theme names one.
+    select = command != "setup" or ns.theme is not None
+    manual: str | None = None
+    match ns.app:
+        case "wezterm":
+            results, lua = setup_wezterm(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                adopt=ns.adopt,
+                replace_pointer=select,
+            )
+            manual = lua.snippet
+        case "nvim":
+            results = setup_nvim(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                replace_pointer=select,
+            )
+        case "codex":
+            results = setup_codex(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                replace_theme=select,
+            )
+        case "lazygit":
+            results = setup_lazygit(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                adopt=ns.adopt,
+            )
+        case "starship":
+            results = _starship_results(theme, ns, config_dir)
+        case "claude":
+            results = setup_claude(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                replace_theme=select,
+            )
+        case "herdr":
+            results = [
+                apply_herdr(
+                    theme,
+                    catalog,
+                    config_dir=config_dir,
+                    dry_run=ns.dry_run,
+                    follow_symlinks=ns.follow_symlinks,
+                    adopt=ns.adopt,
+                )
+            ]
+        case unreachable:
+            raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
+    _report(results, verbose=ns.verbose)
+    _summarize(command, ns.app, select, theme, catalog, results)
+    if ns.app == "starship":
+        print(
+            f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
+            file=sys.stderr,
+        )
+    if manual is not None:
+        if command == "setup":
+            print(
+                "WezTerm config was left unchanged because it already selects a color scheme.\n"
+                "Pass --adopt to replace it, or add this integration:\n",
+                file=sys.stderr,
+            )
+        else:
+            print(
+                "apply incomplete: WezTerm config was left unchanged, so nothing loads the theme yet.\n"
+                "Pass --adopt if it only assigns a color scheme, or add this integration:\n",
+                file=sys.stderr,
+            )
+        print(manual, end="", file=sys.stderr)
+        return 0 if command == "setup" else 1
+    return 0
+
+
+def _current(app: str, config_dir: Path | None) -> None:
     match app:
         case "wezterm":
             print(wezterm_current())
         case "herdr":
-            print(herdr_current(options.config_dir))
+            print(herdr_current(config_dir))
         case "nvim":
-            print(nvim_current(options.config_dir))
+            print(nvim_current(config_dir))
         case "codex":
-            print(codex_current(options.config_dir))
+            print(codex_current(config_dir))
         case "lazygit":
-            print(lazygit_current(options.config_dir))
+            print(lazygit_current(config_dir))
         case "starship":
-            print(starship_current(options.config_dir))
+            print(starship_current(config_dir))
         case "claude":
-            print(claude_current(options.config_dir))
+            print(claude_current(config_dir))
         case unreachable:
-            raise CliError(f"unsupported app: {unreachable}")
+            raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
 
 
 def dispatch(arguments: list[str]) -> int:
     """Run one CLI command. Returns a process exit code."""
-    if not arguments or arguments in (["--help"], ["-h"]):
-        print(HELP_TEXT, end="")
-        return 0
-    if arguments in (["--version"], ["-V"]):
-        print(__version__)
-        return 0
-    command, *rest = arguments
-    apps_hint = ", ".join(APP_NAMES)
+    parser, mutation = _build_parser()
     try:
-        match command:
+        ns = parser.parse_args(arguments)
+        if ns.command is None:
+            parser.print_help()
+            return 0
+        match ns.command:
             case "apps":
-                if rest:
-                    raise CliError("apps does not take options")
                 print("\n".join(APP_NAMES))
             case "themes":
-                if rest:
-                    raise CliError("themes does not take options")
                 for theme in load_catalog():
                     print(f"{theme.metadata.id}\t{theme.metadata.display_name}")
             case "show":
-                options = parse_options(rest)
-                if len(options.rest) != 1:
-                    raise CliError("show requires a theme id")
-                print(show_theme(get_theme(options.rest[0])), end="")
+                print(show_theme(get_theme(ns.theme)), end="")
             case "validate":
-                return _validate(parse_options(rest))
-            case "setup":
-                options = parse_options(rest)
-                if len(options.rest) != 1:
-                    raise CliError(f"setup requires an app: {apps_hint}")
-                _setup(_app(options.rest[0]), options)
-            case "apply":
-                options = parse_options(rest)
-                if len(options.rest) != 1:
-                    raise CliError(f"apply requires an app: {apps_hint}")
-                _apply(_app(options.rest[0]), options)
-            case "install":
-                print("warning: install is deprecated; use apply", file=sys.stderr)
-                options = parse_options(rest)
-                if len(options.rest) != 1:
-                    raise CliError(f"install requires an app: {apps_hint}")
-                _apply(_app(options.rest[0]), options)
+                return _validate(ns)
             case "current":
-                options = parse_options(rest)
-                if len(options.rest) != 1:
-                    raise CliError(f"current requires an app: {apps_hint}")
-                _current(_app(options.rest[0]), options)
-            case _:
-                raise CliError(f"unknown command: {command}; run sf2-themes --help")
+                _current(ns.app, ns.config_dir.expanduser() if ns.config_dir else None)
+            case "setup" | "apply" | "install":
+                return _mutate(ns.command, ns, mutation[ns.command])
+    except SystemExit as exit_:
+        return int(exit_.code) if isinstance(exit_.code, int) else 0
     except (ThemeError, OSError, tomllib.TOMLDecodeError, json.JSONDecodeError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

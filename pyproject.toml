@@ -8,6 +8,7 @@ license = "MIT"
 authors = [{ name = "Douglas Jarquin" }]
 
 [project.scripts]
+sf2 = "sf2_theme.cli:main"
 sf2-themes = "sf2_theme.cli:main"
 
 [project.optional-dependencies]
