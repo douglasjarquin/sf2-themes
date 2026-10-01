@@ -6,7 +6,7 @@
 
 ## OVERVIEW
 
-SF2 Themes is a Python CLI and static Astro site for one TOML theme catalog shared by terminal adapters, documentation, and a deterministic browser arcade game.
+SF2 Themes is a Python CLI and static Astro site for one TOML theme catalog shared by terminal adapters and documentation.
 The committed standalone CLI is a generated product with a freshness check in CI.
 
 ## MAINTAINING THIS FILE
@@ -28,7 +28,6 @@ docker/              toolchain (mise + Python + Node + aube, no app source) and 
 .cursor/             Cursor Cloud environment.json; builds docker/dev/Dockerfile
 tests/               Pytest contracts and snapshots
 web/                 Static Astro site, Node tests, and Playwright
-web/src/game/        Fixed-step game core plus browser, renderer, and input adapters
 docs/                Authored contracts and generated SVG previews
 .github/workflows/   Path-selected CI, Pages build/deploy, image publishing, and issue automation
 ```
@@ -43,7 +42,7 @@ docs/                Authored contracts and generated SVG previews
 | Standalone generation | `mise-tasks/build-standalone` | Owns the committed root `sf2-themes` executable |
 | Theme design contract | `docs/theme-guidelines.md`, `docs/roster.md` | Covers IDs, dark/light pairs, semantics, and validation |
 | Astro shell and routes | `web/src/layouts/`, `web/src/pages/`, `web/src/lib/site-path.mjs` | Static Pages base is `/sf2-themes` |
-| Browser game | `web/src/game/`, `docs/game-architecture.md` | Shared by `/game/` |
+| Site theme runtime | `web/src/scripts/site-theme.mjs`, `web/src/data/site-theme-data.mjs` | Header controls, `⌘K` palette, `?theme=` deep links |
 | Python verification | `tests/`, `mise.toml` | Pytest plus the copied standalone CLI harness |
 | Web verification | `web/test/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
 | Starship / zsh prompt | `adapters/starship.py`, `adapters/zsh_syntax.py` | Managed palette + sourcable command highlight snippet |
@@ -58,10 +57,7 @@ docs/                Authored contracts and generated SVG previews
 | `load_catalog` | function | `src/sf2_theme/catalog.py` | 5 callers | Validated catalog entry point |
 | `main` | function | `src/sf2_theme/cli.py` | 1 caller | Installed and module CLI entry |
 | `write_file` | function | `src/sf2_theme/filesystem.py` | adapter boundary | Atomic writes, backups, dry-run, and symlinks |
-| `createGameCore` | function | `web/src/game/core/state-machine.ts` | 7 callers | Deterministic simulation API |
-| `validateFighterDefinition` | function | `web/src/game/fighter-registry.ts` | 6 callers | Closed 17-fighter runtime contract |
-| `BrowserGameHost` | class | `web/src/game/BrowserGameHost.ts` | 2 callers | DOM lifecycle, input, scheduling, and status |
-| `TextmodeRenderer` | class | `web/src/game/render/TextmodeRenderer.ts` | shared boundary | Sole `textmode.js` integration |
+| `siteThemeFamilies` | data | `web/src/data/site-theme-data.mjs` | layout boundary | Flattened site payload from the canonical catalog |
 
 ## CONVENTIONS
 
@@ -69,7 +65,6 @@ docs/                Authored contracts and generated SVG previews
 - Catalog IDs stay short; adapter-installed identities use `sf2-<catalog-id>`.
 - Catalog order is `main.toml`, optional `main-light.toml`, then sorted character TOMLs.
 - The Astro app uses static output and the `/sf2-themes` Pages base; internal URLs go through `sitePath()`.
-- The game uses integer fixed ticks, seeded RNG, immutable snapshots, and explicit browser adapters.
 - CI path filtering fails open when filter data is missing or invalid.
 - Pull requests build the Pages artifact but deployment occurs only on non-PR events.
 
@@ -80,8 +75,6 @@ docs/                Authored contracts and generated SVG previews
 - Do not duplicate catalog parsing or semantic color rules inside adapters or pages.
 - Do not modify unknown WezTerm Lua, unmarked Herdr theme blocks, or unrelated adapter configuration.
 - Do not follow configuration symlinks unless the caller explicitly selects `--follow-symlinks`.
-- Do not introduce DOM, browser globals, timers, animation frames, wall-clock reads, or `Math.random` into `web/src/game/core/`.
-- Do not import `textmode.js` outside `TextmodeRenderer.ts`.
 - Do not use npm, npx, pnpm, or yarn for web installs or scripts; use aube through `mise run web:*` or `aube -C web ...`.
 
 ## COMMANDS

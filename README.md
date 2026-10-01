@@ -16,7 +16,7 @@ Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/des
 
 * **Short catalog ids.** Input stays `ken` or `ryu-light`. Every adapter installs `sf2-ken` or `sf2-ryu-light`. The id rules are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
 
-* **Arcade cabinet.** The homepage includes a compact playable ASCII cabinet, and `/sf2-themes/game/` is the full cabinet. Controls and match rules are in [docs/sf2-themes/arcade.md](docs/sf2-themes/arcade.md).
+* **Theme site.** `https://douglasjarquin.github.io/sf2-themes/` previews every fighter in both modes, with install commands for each port.
 
 * **CLI.** `apps`, `themes`, `show`, `validate`, `current`, `setup`, and `apply`. The command list and boss aliases are in [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md).
 
@@ -83,7 +83,7 @@ Paths, overrides, and removal are in [docs/sf2-themes/file-writes.md](docs/sf2-t
 
 * [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md) — `apps`, `themes`, `show`, `validate`, `current`, and boss aliases.
 
-* [docs/sf2-themes/arcade.md](docs/sf2-themes/arcade.md) — cabinet, controls, and match rules.
+* [docs/sf2-themes/development.md](docs/sf2-themes/development.md) — the Astro site and its tooling.
 
 * [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md) — paths, overrides, symlinks, and backups.
 

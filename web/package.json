@@ -15,14 +15,10 @@
     "test:unit": "python3 ../mise-tasks/generate-web-theme-data --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
     "themes:generate": "python3 ../mise-tasks/generate-web-theme-data",
     "themes:check": "python3 ../mise-tasks/generate-web-theme-data --check",
-    "test:game": "node --test test/game-core.test.mjs test/fighter-registry.test.mjs",
     "test:e2e": "playwright test",
     "test": "aubr test:unit && aubr test:e2e"
   },
-  "dependencies": {
-    "smol-toml": "1.8.0",
-    "textmode.js": "0.18.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@astrojs/check": "0.9.10",
     "@playwright/test": "1.62.1",

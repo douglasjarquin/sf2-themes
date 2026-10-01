@@ -1,22 +1,15 @@
 import astroConfig from "../../astro.config.mjs";
-import { themeFamilies } from "../data/site-theme-data.mjs";
 
 export const SITE_ORIGIN = astroConfig.site;
 export const SITE_BASE = `${astroConfig.base.replace(/\/+$/, "")}/`;
 export const PRODUCT_NAME = "sf2-themes";
 export const PRODUCT_DESCRIPTION =
-  "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, and Starship.";
+  "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.";
 export const REPOSITORY_URL = "https://github.com/douglasjarquin/sf2-themes";
 export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS, Windows";
 
 export const INDEXABLE_PATHS = Object.freeze([
   SITE_BASE,
-  `${SITE_BASE}themes/`,
-  `${SITE_BASE}palette/`,
-  `${SITE_BASE}preview/`,
-  `${SITE_BASE}install/`,
-  `${SITE_BASE}game/`,
-  ...themeFamilies.map(({ id }) => `${SITE_BASE}themes/${id}/`),
 ]);
 
 export function withTrailingSlash(pathname) {
@@ -53,7 +46,7 @@ export function llmsTxt() {
 
 > ${PRODUCT_DESCRIPTION}
 
-sf2-themes is a Python 3.11 CLI named \`sf2-themes\`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, and Starship.
+sf2-themes is a Python 3.11 CLI named \`sf2-themes\`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
 
 Live site: ${liveUrl}
 Repository: ${REPOSITORY_URL}
@@ -68,12 +61,7 @@ Catalog ids stay short (\`ryu\`, \`ken-light\`). Installed identities use \`sf2-
 
 ## Pages
 
-- [Home](${liveUrl})
-- [Themes](${canonicalUrl(`${SITE_BASE}themes/`)})
-- [Palette catalog](${canonicalUrl(`${SITE_BASE}palette/`)})
-- [Palette preview](${canonicalUrl(`${SITE_BASE}preview/`)})
-- [Install](${canonicalUrl(`${SITE_BASE}install/`)})
-- [Arcade game](${canonicalUrl(`${SITE_BASE}game/`)})
+- [Home](${liveUrl}) — palette preview, install commands, and per-app ports
 `;
 }
 

@@ -1,73 +1,317 @@
 ---
-import FeaturedPalettePreview from "../components/FeaturedPalettePreview.astro";
+import SampleBlock from "../components/SampleBlock.astro";
+import { siteThemeFamilies } from "../data/site-theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
-import { PRODUCT_DESCRIPTION } from "../lib/seo.mjs";
-import { sitePath } from "../lib/site-path.mjs";
+import { PRODUCT_DESCRIPTION, REPOSITORY_URL } from "../lib/seo.mjs";
 
+const ryu = siteThemeFamilies.find(({ id }) => id === "ryu") ?? siteThemeFamilies[0];
 
+const PORTS = [
+  {
+    id: "wezterm",
+    name: "WezTerm",
+    desc: "Writes every scheme to WezTerm's colors directory and wires a managed current-theme pointer into your config.",
+    note: "Already pointing at another scheme? Pass --adopt or paste the printed snippet.",
+  },
+  {
+    id: "herdr",
+    name: "Herdr",
+    desc: "Writes a marked theme block to config.toml and leaves the rest of your config alone.",
+    note: "Run herdr server reload-config after applying. An unmarked [theme] section needs --adopt.",
+  },
+  {
+    id: "nvim",
+    name: "Neovim",
+    desc: "Installs every colorscheme plus a startup loader for the one you pick.",
+    note: "The loader applies your pick every time Neovim starts.",
+  },
+  {
+    id: "codex",
+    name: "Codex",
+    desc: "Writes each theme as a .tmTheme and selects it in Codex's config.toml.",
+    note: "Restart Codex, or reselect the theme with /theme.",
+  },
+  {
+    id: "starship",
+    name: "Starship",
+    desc: "Writes a managed palette block to starship.toml and refreshes the zsh-syntax highlight snippet.",
+    note: "Source the snippet after zsh-syntax-highlighting.zsh.",
+  },
+  {
+    id: "lazygit",
+    name: "Lazygit",
+    desc: "Writes a theme file per palette and a marked gui.theme block in config.yml.",
+    note: "An unmarked gui.theme section stays unless you pass --adopt.",
+  },
+  {
+    id: "claude",
+    name: "Claude Code",
+    desc: "Installs a theme JSON per palette under ~/.claude/themes/ and selects it in settings.json.",
+    note: "No host-appearance auto-switch. Reselect with /theme to change themes.",
+  },
+];
+
+const defaultSteps = [
+  { round: "Round 1", label: "Get the CLI", display: "sf2-themes --version" },
+  { round: "Round 2", label: "Set up WezTerm, once", display: "sf2-themes setup wezterm" },
+  { round: "Round 3", label: `Apply ${ryu.name}. K.O.`, display: `sf2-themes apply wezterm --theme ${ryu.id}` },
+];
 ---
 
 <SiteLayout
   title="Street Fighter II terminal themes"
   description={PRODUCT_DESCRIPTION}
 >
-  <div class="home-page">
-    <section class="home-hero site-frame" aria-labelledby="home-heading">
-      <div class="home-hero__copy">
-        <p class="home-kicker">ROUND ONE — TERMINAL EDITION</p>
-        <h1 id="home-heading">Fight for your terminal.</h1>
-        <p class="home-lede">
-          A complete Street Fighter II color pack for WezTerm, Herdr, Neovim, Codex, and Starship,
-          tuned from the arcade floor to your command line.
-        </p>
-        <div class="home-actions">
-          <a class="home-action home-action--primary" href={sitePath("themes")}>VIEW THE ROSTER</a>
-          <a class="home-action" href={sitePath("install")}>INSTALL THE PACK</a>
-        </div>
+  <div class="page">
+    <h1 class="h1"><span class="hp" aria-hidden="true"># </span>Fight for your terminal.</h1>
+    <p class="lede">36 Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code. Pick a fighter and this whole site wears the palette.</p>
+    <p class="meta">36 themes · 7 apps · needs only Python 3.11+</p>
+
+    <section id="preview" aria-labelledby="preview-heading">
+      <h2 class="h2" id="preview-heading">
+        <span class="hp" aria-hidden="true">## </span><span data-t="displayName">{ryu.name}</span><span class="h2__sub"> — <span data-t="stage">{ryu.stage}</span></span>
+      </h2>
+      <div class="preview-meta">
+        <span data-t="fileId">sf2-{ryu.id}</span>
+        <span class="preview-swatches" aria-hidden="true">
+          {Array.from({ length: 16 }, (_, i) => <span style={`background:var(--c${i})`} />)}
+        </span>
       </div>
+      <SampleBlock />
     </section>
 
-    <FeaturedPalettePreview />
+    <section id="install" aria-labelledby="install-heading">
+      <h2 class="h2" id="install-heading"><span class="hp" aria-hidden="true">## </span>Install</h2>
+      <p class="section-sub">Three rounds. Pick your app:</p>
+      <div class="ports" role="group" aria-label="Target app">
+        {
+          PORTS.map((port, index) => (
+            <button
+              type="button"
+              data-port-id={port.id}
+              data-port-name={port.name}
+              data-port-note={port.note}
+              aria-pressed={index === 0 ? "true" : "false"}
+            >
+              {port.id}
+            </button>
+          ))
+        }
+      </div>
+      <div class="steps">
+        {
+          defaultSteps.map((step) => (
+            <div class="step" data-step>
+              <div class="step__label">
+                <span class="acc">{step.round}</span>
+                {"  "}
+                <span data-step-label>{step.label}</span>
+              </div>
+              <div class="step__cmd">
+                <code><span class="dim">$ </span><span data-step-cmd>{step.display}</span></code>
+                <button type="button" data-step-copy>copy</button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+      <p class="port-note" data-port-note-out>{PORTS[0].note} Copied commands include the uvx prefix.</p>
+    </section>
 
-    <section class="home-values site-frame" aria-label="Pack highlights">
-      <article>
-        <span>36</span>
-        <h2>FULLY RESOLVED THEMES</h2>
-        <p>Dark and light main variants plus the Super Street Fighter II Turbo roster.</p>
-      </article>
-      <article>
-        <span>05</span>
-        <h2>SUPPORTED TERMINALS</h2>
-        <p>Install a matching palette in WezTerm, Herdr, Neovim, Codex, or Starship with the same command.</p>
-      </article>
-      <article>
-        <span>00</span>
-        <h2>RUNTIME DEPENDENCIES</h2>
-        <p>The standalone CLI needs Python 3.11 or newer and nothing else.</p>
-      </article>
+    <section id="ports" aria-labelledby="ports-heading">
+      <h2 class="h2" id="ports-heading"><span class="hp" aria-hidden="true">## </span>Ports</h2>
+      <div class="port-list">
+        {
+          PORTS.map((port) => (
+            <div class="port-row">
+              <span class="acc">{port.id}</span>
+              <span>{port.desc}</span>
+            </div>
+          ))
+        }
+      </div>
+      <p class="port-issue">
+        Missing your app? <a href={`${REPOSITORY_URL}/issues`}>Challenge us with an issue ↗</a>
+      </p>
     </section>
   </div>
 </SiteLayout>
 
 <style>
-  .home-page { display: flex; flex-direction: column; }
-  .home-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding-block: 110px 0; }
-  .home-hero__copy { min-inline-size: 0; }
-  .home-kicker { margin: 0 0 var(--space-7); color: var(--ac); font: 600 var(--text-overline)/1.4 var(--font-mono); letter-spacing: 0.22em; }
-  h1, h2 { margin: 0; font-family: var(--font-display); line-height: 0.95; text-transform: uppercase; }
-  .home-hero h1 { max-inline-size: 100%; color: var(--fg); font-size: var(--text-hero); letter-spacing: -.02em; text-wrap: balance; }
-  h2 { color: var(--fg); font-size: var(--text-section); }
-  .home-lede { max-inline-size: 760px; margin: var(--space-10) 0 0; color: var(--mu); font-size: var(--text-body-lg); line-height: 1.5; }
-  .home-actions { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-12); }
-  .home-action { min-block-size: 60px; border: var(--border-thin) solid var(--ov); border-radius: 8px; color: var(--fg); font: 600 18px/1.4 var(--font-mono); letter-spacing: 0.08em; padding: var(--space-5) var(--space-8); }
-  .home-action:hover { border-color: var(--ac); color: var(--ac); transform: translateY(-2px); }
-  .home-action--primary { border-color: var(--ac); background: var(--ac); color: var(--bg); }
-  .home-action--primary:hover { color: var(--bg); filter: brightness(1.1); }
-  .home-values { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6); padding-block: 0 110px; }
-  .home-values article { padding: var(--space-9); border: var(--border-thin) solid var(--ov); border-radius: var(--radius-panel); }
-  .home-values span { color: var(--ac); font-family: var(--font-display); font-size: 96px; line-height: 1; }
-  .home-values h2 { margin-block: var(--space-4) var(--space-3); font-family: var(--font-body); font-size: 26px; line-height: 1.15; letter-spacing: 0.04em; }
-  .home-values p { max-inline-size: 32ch; margin: 0; color: var(--mu); font-size: 19px; line-height: 1.55; }
-  @media (max-width: 760px) { .home-hero { padding-block: var(--space-20) 0; } .home-hero .home-kicker { max-inline-size: 28ch; } .home-hero h1 { font-size: clamp(52px, 15vw, 164px); } .home-action { inline-size: 100%; } .home-values { grid-template-columns: 1fr; padding-block-end: var(--space-15); } .home-values span { font-size: var(--text-stat-mobile); } }
-  @media (prefers-reduced-motion: reduce) { .home-action { transition: none; } }
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 64px 24px 40px;
+  }
+
+  .h1 {
+    margin: 0 0 14px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .h2 {
+    margin: 56px 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .hp {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .h2__sub {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .lede {
+    margin: 0 0 10px;
+    text-wrap: pretty;
+  }
+
+  .meta {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  section {
+    margin-top: 64px;
+  }
+
+  section:first-of-type {
+    margin-top: 56px;
+  }
+
+  .preview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .preview-swatches {
+    display: flex;
+    gap: 3px;
+  }
+
+  .preview-swatches span {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .section-sub {
+    margin: 0 0 18px;
+    color: var(--muted);
+  }
+
+  .ports {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin-bottom: 24px;
+  }
+
+  .ports button {
+    border: none;
+    padding: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .ports button[aria-pressed="true"] {
+    color: var(--fg);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 6px;
+    text-decoration-thickness: 2px;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .step__label {
+    margin-bottom: 6px;
+  }
+
+  .acc {
+    color: var(--accent);
+  }
+
+  .dim {
+    color: var(--muted);
+  }
+
+  .step__cmd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+  }
+
+  .step__cmd code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    font: inherit;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .step__cmd button {
+    flex: none;
+    border: none;
+    padding: 0;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .step__cmd button:hover {
+    color: var(--fg);
+  }
+
+  .port-note {
+    margin: 16px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+    text-wrap: pretty;
+  }
+
+  .port-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .port-row {
+    display: grid;
+    grid-template-columns: 12ch minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .port-row span:last-child {
+    text-wrap: pretty;
+  }
+
+  .port-issue {
+    margin: 18px 0 0;
+    color: var(--muted);
+  }
 </style>

@@ -1,33 +1,14 @@
 ---
-import { sitePath } from "../lib/site-path.mjs";
-
-const pages = [
-  { label: "Home", href: sitePath() },
-  { label: "Themes", href: sitePath("themes") },
-  { label: "Install", href: sitePath("install") },
-];
+import { REPOSITORY_URL } from "../lib/seo.mjs";
 ---
 
 <footer class="site-footer">
-  <div class="site-frame site-footer__inner">
-    <div class="site-footer__identity">
-      <div class="site-footer__brand">SF2 THEMES</div>
-      <p>
-        A fan-made color palette for terminals. Not affiliated with or endorsed by
-        Capcom. Street Fighter is a trademark of Capcom Co., Ltd.
-      </p>
-    </div>
-    <nav class="site-footer__links" aria-label="Site">
-      {
-        pages.map((item) => (
-          <a href={item.href}>{item.label}</a>
-        ))
-      }
-      <a
-        href="https://github.com/douglasjarquin/sf2-themes"
-        rel="noreferrer"
-        target="_blank">GitHub <span aria-hidden="true">↗</span></a
-      >
-    </nav>
-  </div>
+  <p class="site-footer__disclaimer">
+    A fan-made color palette for terminals. Not affiliated with or endorsed by
+    Capcom. Street Fighter is a trademark of Capcom Co., Ltd.
+  </p>
+  <nav class="site-footer__links" aria-label="Site">
+    <a href={REPOSITORY_URL} rel="noreferrer" target="_blank">github <span aria-hidden="true">↗</span></a>
+    <a href={`${REPOSITORY_URL}/issues`} rel="noreferrer" target="_blank">issues <span aria-hidden="true">↗</span></a>
+  </nav>
 </footer>

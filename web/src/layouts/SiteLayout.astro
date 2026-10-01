@@ -1,8 +1,8 @@
 ---
+import SiteCommandPalette from "../components/SiteCommandPalette.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import { characterVariants, themeTokens } from "../data/theme-data.mjs";
-import { themeFamilies } from "../data/site-theme-data.mjs";
+import { siteThemeFamilies } from "../data/site-theme-data.mjs";
 import {
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
@@ -10,67 +10,50 @@ import {
   productJsonLd,
 } from "../lib/seo.mjs";
 import "../styles/global.css";
+import "../styles/site-chrome.css";
 
 const { description = PRODUCT_DESCRIPTION, noindex = false, title } = Astro.props;
 const pageTitle = `${title} | ${PRODUCT_NAME}`;
 const pageUrl = canonicalUrl(Astro.url.pathname);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
-const main = themeTokens.main;
 const colorVariables = new Map();
 
-for (const variant of characterVariants) {
-  for (const [role, value] of Object.entries(variant.colors)) {
-    colorVariables.set(`--character-${variant.id}-${role}`, value);
-  }
-}
-
+const defaultFamily =
+  siteThemeFamilies.find(({ id }) => id === "ryu") ?? siteThemeFamilies[0];
+const defaultPalette = defaultFamily.dark;
 const siteVariables = [
-  ["--bg", main.ui.background],
-  ["--su", main.ui.surface0],
-  ["--ov", main.ui.surface1],
-  ["--mu", main.ui.muted],
-  ["--fg", main.ui.foreground],
-  ["--ac", main.ui.accent],
-  ["--se", main.ui.accent_secondary],
-  ...[
-    ...Object.values(main.ansi.normal),
-    ...Object.values(main.ansi.bright),
-  ].map((value, index) => [`--a${index}`, value]),
+  ["--bg", defaultPalette.bg],
+  ["--surface", defaultPalette.surface],
+  ["--border", defaultPalette.border],
+  ["--line", defaultPalette.border],
+  ["--fg", defaultPalette.fg],
+  ["--muted", defaultPalette.muted],
+  ["--subtle", defaultPalette.subtle],
+  ["--accent", defaultPalette.accent],
+  ["--accent2", defaultPalette.accent2],
+  ["--sel", defaultPalette.sel],
+  ["--orange", defaultPalette.orange],
+  ...defaultPalette.n.map((value, index) => [`--c${index}`, value]),
+  ...defaultPalette.b.map((value, index) => [`--c${index + 8}`, value]),
 ];
 for (const [property, value] of siteVariables) colorVariables.set(property, value);
 
 const customProperties = [...colorVariables]
   .map(([property, value]) => `${property}: ${value}`)
   .join("; ");
-const siteThemePayload = JSON.stringify(
-  themeFamilies.map(({ id, name, world, dark, light }) => ({
-    id,
-    name,
-    world,
-    dark: {
-      uiValues: [dark.ui.background, dark.ui.surface0, dark.ui.surface1, dark.ui.muted, dark.ui.foreground],
-      accent: dark.ui.accent,
-      secondary: dark.ui.accent_secondary,
-      ansi: [
-        ...Object.values(dark.ansi.normal),
-        ...Object.values(dark.ansi.bright),
-      ],
-    },
-    light: {
-      uiValues: [light.ui.background, light.ui.surface0, light.ui.surface1, light.ui.muted, light.ui.foreground],
-      accent: light.ui.accent,
-      secondary: light.ui.accent_secondary,
-      ansi: [
-        ...Object.values(light.ansi.normal),
-        ...Object.values(light.ansi.bright),
-      ],
-    },
-  })),
-).replaceAll("<", "\\u003c");
+const siteThemePayload = JSON.stringify({ families: siteThemeFamilies })
+  .replaceAll("<", "\\u003c")
+  .replaceAll("\u2028", "\\u2028")
+  .replaceAll("\u2029", "\\u2029");
 ---
 
 <!doctype html>
-<html lang="en" style={customProperties}>
+<html
+  lang="en"
+  style={customProperties}
+  data-theme={defaultFamily.id}
+  data-mode="dark"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
@@ -87,7 +70,7 @@ const siteThemePayload = JSON.stringify(
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&display=swap"
       rel="stylesheet"
     />
     <script is:inline type="application/json" id="site-theme-data" set:html={siteThemePayload} />
@@ -95,44 +78,62 @@ const siteThemePayload = JSON.stringify(
       (() => {
         const data = document.getElementById("site-theme-data");
         if (!data) return;
-        let saved = { id: "main", mode: "dark" };
+        let payload;
+        try { payload = JSON.parse(data.textContent || "null"); } catch { return; }
+        const families = payload && payload.families;
+        const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
+        const validVariant = (variant) => variant
+          && typeof variant.id === "string"
+          && isColor(variant.bg)
+          && isColor(variant.surface)
+          && isColor(variant.border)
+          && isColor(variant.fg)
+          && isColor(variant.muted)
+          && isColor(variant.subtle)
+          && isColor(variant.accent)
+          && isColor(variant.accent2)
+          && isColor(variant.sel)
+          && isColor(variant.orange)
+          && Array.isArray(variant.n) && variant.n.length === 8 && variant.n.every(isColor)
+          && Array.isArray(variant.b) && variant.b.length === 8 && variant.b.every(isColor);
+        if (!Array.isArray(families) || families.length === 0
+          || !families.every((family) => family && typeof family.id === "string"
+            && validVariant(family.dark) && validVariant(family.light))) return;
+        const params = new URLSearchParams(location.search);
+        const urlId = params.get("theme");
+        const urlMode = params.get("mode");
+        let saved = null;
         try {
           const candidate = JSON.parse(localStorage.getItem("sf2-site-theme") || "null");
-          if (candidate?.id) saved = candidate;
+          if (candidate && typeof candidate.id === "string") saved = candidate;
         } catch {}
-        let themes;
-        try { themes = JSON.parse(data.textContent || "[]"); } catch { return; }
-        const isColor = (value) => typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value);
-        const validPalette = (palette) => palette
-          && Array.isArray(palette.uiValues)
-          && palette.uiValues.length === 5
-          && palette.uiValues.every(isColor)
-          && isColor(palette.accent)
-          && isColor(palette.secondary)
-          && Array.isArray(palette.ansi)
-          && palette.ansi.length === 16
-          && palette.ansi.every(isColor);
-        if (!Array.isArray(themes) || themes.length === 0 || !themes.every((theme) => theme && typeof theme.id === "string" && typeof theme.name === "string" && validPalette(theme.dark) && validPalette(theme.light))) return;
-        const theme = themes.find((item) => item.id === saved.id) || themes[0];
-        const mode = saved.mode === "light" ? "light" : "dark";
-        const palette = theme?.[mode];
+        const id = urlId || (saved && saved.id) || "ryu";
+        const mode = urlMode === "light" || urlMode === "dark"
+          ? urlMode
+          : saved && saved.mode === "light" ? "light" : "dark";
+        const family = families.find((item) => item.id === id) || families.find((item) => item.id === "ryu") || families[0];
+        const palette = family[mode];
         if (!palette) return;
         const root = document.documentElement;
-        const [bg, surface, overlay, muted, foreground] = palette.uiValues;
         const values = {
-          "--bg": bg,
-          "--su": surface,
-          "--ov": overlay,
-          "--mu": muted,
-          "--fg": foreground,
-          "--ac": palette.accent,
-          "--se": palette.secondary,
+          "--bg": palette.bg,
+          "--surface": palette.surface,
+          "--border": palette.border,
+          "--line": palette.border,
+          "--fg": palette.fg,
+          "--muted": palette.muted,
+          "--subtle": palette.subtle,
+          "--accent": palette.accent,
+          "--accent2": palette.accent2,
+          "--sel": palette.sel,
+          "--orange": palette.orange,
         };
-        palette.ansi.forEach((color, index) => { values[`--a${index}`] = color; });
+        palette.n.forEach((color, index) => { values[`--c${index}`] = color; });
+        palette.b.forEach((color, index) => { values[`--c${index + 8}`] = color; });
         Object.entries(values).forEach(([property, value]) => root.style.setProperty(property, value));
         root.style.colorScheme = mode;
-        root.dataset.siteTheme = theme.id;
-        root.dataset.siteMode = mode;
+        root.dataset.theme = family.id;
+        root.dataset.mode = mode;
       })();
     </script>
     <title>{pageTitle}</title>
@@ -141,9 +142,13 @@ const siteThemePayload = JSON.stringify(
   <body>
     <a class="skip-link" href="#main-content">Skip to main content</a>
     <div class="site-shell">
-      <SiteHeader currentPath={Astro.url.pathname} />
+      <SiteHeader />
       <main id="main-content" tabindex="-1"><slot /></main>
       <SiteFooter />
     </div>
+    <SiteCommandPalette />
+    <script>
+      import "../scripts/site-theme.mjs";
+    </script>
   </body>
 </html>

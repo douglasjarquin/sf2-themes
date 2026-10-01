@@ -1,0 +1,21 @@
+---
+import { SITE_ORIGIN } from "../lib/seo.mjs";
+
+const { target } = Astro.props;
+const canonical = new URL(target, SITE_ORIGIN).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="robots" content="noindex" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="refresh" content={`0;url=${target}`} />
+    <link rel="canonical" href={canonical} />
+    <title>Redirecting | sf2-themes</title>
+  </head>
+  <body>
+    <p>This page moved to <a href={target}>{canonical}</a>.</p>
+  </body>
+</html>
