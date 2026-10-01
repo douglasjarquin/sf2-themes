@@ -1,152 +1,126 @@
 import { expect, test } from "@playwright/test";
 
-test("the home features the live theme preview instead of the arcade", async ({ page }) => {
+const noOverflow = () =>
+  document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
+
+test("home renders the hero, live preview, install steps, and ports", async ({ page }) => {
   await page.goto("./");
-  const preview = page.locator("[data-home-theme-preview]");
-  await expect(preview).toHaveCount(1);
-  await expect(preview).toContainText("LIVE PREVIEW - THIS SITE WEARS THE THEME YOU PICK");
-  await expect(preview).toContainText("sf2-themes show main");
-  await expect(preview.locator("[data-home-ansi]")).toHaveCount(16);
-  await expect(page.locator("[data-arcade-game]")).toHaveCount(0);
+
+  await expect(page).toHaveTitle("Street Fighter II terminal themes | sf2-themes");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Fight for your terminal." }),
+  ).toBeVisible();
+  await expect(page.locator(".meta")).toContainText("36 themes · 7 apps");
+
+  await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText("sf2-ryu");
+  await expect(page.locator("[data-pane]")).toHaveCount(7);
+  await expect(page.locator("[data-tab]")).toHaveCount(7);
+
+  await expect(page.locator("[data-step]")).toHaveCount(3);
+  await expect(page.locator("[data-port-id]")).toHaveCount(7);
+  await expect(page.locator(".port-row")).toHaveCount(7);
 });
 
-test("the home preview keeps its terminal hierarchy", async ({ page }) => {
+test("theme selection rewrites the preview and install steps", async ({ page }) => {
   await page.goto("./");
-  const preview = page.locator("[data-home-theme-preview]");
-  await expect(preview.locator(".home-preview__window-header")).toContainText("TERMINAL / main");
-  await expect(preview.locator("pre")).toContainText("mode");
-  await expect(preview.locator(".home-preview__ramp")).toBeVisible();
+
+  await page.locator("[data-site-select]").selectOption("ken");
+  await expect(page.locator("#preview [data-t='displayName']").first()).toHaveText("Ken");
+  await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText("sf2-ken");
+  await expect(page.locator("[data-step]").nth(2).locator("[data-step-cmd]")).toHaveText(
+    "sf2-themes apply wezterm --theme ken",
+  );
+  await expect.poll(() => page.url()).toContain("theme=ken");
 });
 
-test("the site theme updates the home live preview", async ({ page }) => {
+test("SampleBlock tabs switch panes with roving selection state", async ({ page }) => {
   await page.goto("./");
-  const preview = page.locator("[data-home-theme-preview]");
-  await page.locator("[data-site-picker-toggle]").click();
-  await page.getByRole("button", { name: "CHUN-LI", exact: true }).click();
-  await expect(preview.locator("[data-home-theme-label]")).toContainText("CHUN-LI");
-  await expect(preview).toContainText("sf2-themes show chun-li");
+
+  const tabs = page.locator("[data-tab]");
+  await expect(tabs.first()).toHaveAttribute("aria-selected", "true");
+  await expect(page.locator('[data-pane="shell"]')).toBeVisible();
+  await expect(page.locator('[data-pane="nvim"]')).toBeHidden();
+
+  await page.locator('[data-tab="ansi"]').click();
+  await expect(page.locator('[data-pane="ansi"]')).toBeVisible();
+  await expect(page.locator('[data-pane="shell"]')).toBeHidden();
+  await expect(page.locator('[data-tab="ansi"]')).toHaveAttribute("aria-selected", "true");
+  await expect(tabs.first()).toHaveAttribute("aria-selected", "false");
 });
 
-test("the home preview labels the canonical light theme id", async ({ page }) => {
+test("port selection rewrites the install steps", async ({ page }) => {
   await page.goto("./");
-  const preview = page.locator("[data-home-theme-preview]");
-  await page.locator("[data-site-picker-toggle]").click();
-  await page.locator('[data-site-mode="light"]').click();
 
-  await expect(preview).toContainText("sf2-themes show main-light");
-  await expect(preview.locator("[data-home-terminal-label]")).toHaveText("TERMINAL / main-light");
+  await page.locator('[data-port-id="nvim"]').click();
+  await expect(page.locator('[data-port-id="nvim"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('[data-port-id="wezterm"]')).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("[data-step]").nth(1).locator("[data-step-cmd]")).toHaveText(
+    "sf2-themes setup nvim",
+  );
+  await expect(page.locator("[data-step]").nth(2).locator("[data-step-cmd]")).toHaveText(
+    "sf2-themes apply nvim --theme ryu",
+  );
+  await expect(page.locator("[data-port-note-out]")).toContainText(
+    "The loader applies your pick every time Neovim starts.",
+  );
 });
 
-test("the home live preview remains useful without client JavaScript", async ({ browser }) => {
-  const context = await browser.newContext({
-    baseURL: `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? "4321"}/sf2-themes/`,
-    javaScriptEnabled: false,
+test("step copy buttons send the uvx payload and confirm only after success", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async (value) => { window.__copied = value; } },
+    });
   });
+  await page.goto("./");
+
+  const firstCopy = page.locator("[data-step-copy]").first();
+  await firstCopy.click();
+  await expect(firstCopy).toHaveText("copied");
+  await expect
+    .poll(() => page.evaluate(() => window.__copied))
+    .toBe(
+      "uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version",
+    );
+
+  const applyCopy = page.locator("[data-step]").nth(2).locator("[data-step-copy]");
+  await applyCopy.click();
+  await expect
+    .poll(() => page.evaluate(() => window.__copied))
+    .toContain("sf2-themes apply wezterm --theme ryu");
+});
+
+test("copy buttons are hidden when the clipboard API is unavailable", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined });
+  });
+  await page.goto("./");
+
+  await expect(page.locator("[data-step-copy]")).toHaveCount(3);
+  await expect(page.locator("[data-step-copy]:visible")).toHaveCount(0);
+});
+
+test("the home page remains useful without client JavaScript", async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
+  await page.goto("./");
 
-  try {
-    await page.goto("./");
-    const preview = page.locator("[data-home-theme-preview]");
-    await expect(preview).toContainText("sf2-themes show main");
-    await expect(preview.locator("[data-home-ansi]")).toHaveCount(16);
-    await expect(page.locator("html")).toHaveAttribute("style", /--bg:/);
-  } finally {
-    await context.close();
-  }
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Fight for your terminal." }),
+  ).toBeVisible();
+  await expect(page.locator("[data-step-cmd]").first()).toHaveText("sf2-themes --version");
+  await expect(page.locator(".port-row")).toHaveCount(7);
+  await expect(page.locator('[data-pane="shell"]')).toBeVisible();
+  await context.close();
 });
 
-test("malformed site theme data preserves the static home preview", async ({ page }) => {
-  const runtimeErrors = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.route("**/sf2-themes/", async (route) => {
-    const response = await route.fetch();
-    const body = await response.text();
-    const corrupted = body.replace(
-      /(<script[^>]*id=\"site-theme-data\"[^>]*>)[\s\S]*?(<\/script>)/,
-      "$1{bad json$2",
-    );
-    expect(corrupted).not.toBe(body);
-    await route.fulfill({ response, body: corrupted });
-  });
+test("the home column reflows without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("./");
-  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  expect(runtimeErrors).toEqual([]);
-});
+  await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
 
-test("structurally malformed site theme data preserves the static home preview", async ({ page }) => {
-  const runtimeErrors = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.route("**/sf2-themes/", async (route) => {
-    const response = await route.fetch();
-    const body = await response.text();
-    const corrupted = body.replace(
-      /(<script[^>]*id=\"site-theme-data\"[^>]*>)[\s\S]*?(<\/script>)/,
-      '$1[{"id":"malformed"}]$2',
-    );
-    expect(corrupted).not.toBe(body);
-    await route.fulfill({ response, body: corrupted });
-  });
-  await page.goto("./");
-  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  await page.locator("[data-site-picker-toggle]").click();
-  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
-  expect(runtimeErrors).toEqual([]);
-});
-
-test("empty site theme data preserves the static home preview", async ({ page }) => {
-  const runtimeErrors = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.route("**/sf2-themes/", async (route) => {
-    const response = await route.fetch();
-    const body = await response.text();
-    const corrupted = body.replace(
-      /(<script[^>]*id=\"site-theme-data\"[^>]*>)[\s\S]*?(<\/script>)/,
-      "$1[]$2",
-    );
-    expect(corrupted).not.toBe(body);
-    await route.fulfill({ response, body: corrupted });
-  });
-  await page.goto("./");
-  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  await page.locator("[data-site-picker-toggle]").click();
-  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
-  expect(runtimeErrors).toEqual([]);
-});
-
-test("object site theme data preserves the static home preview", async ({ page }) => {
-  const runtimeErrors = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.route("**/sf2-themes/", async (route) => {
-    const response = await route.fetch();
-    const body = await response.text();
-    const marker = "id=\"site-theme-data\"";
-    const markerStart = body.indexOf(marker);
-    const openEnd = body.indexOf(">", markerStart) + 1;
-    const close = body.indexOf("</script>", openEnd);
-    await route.fulfill({ response, body: body.slice(0, openEnd) + "{}" + body.slice(close) });
-  });
-  await page.goto("./");
-  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  await page.locator("[data-site-picker-toggle]").click();
-  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
-  expect(runtimeErrors).toEqual([]);
-});
-
-test("selected malformed site theme data preserves the static home preview", async ({ page }) => {
-  const runtimeErrors = [];
-  page.on("pageerror", (error) => runtimeErrors.push(error.message));
-  await page.route("**/sf2-themes/", async (route) => {
-    const response = await route.fetch();
-    const body = await response.text();
-    const marker = "id=\"site-theme-data\"";
-    const markerStart = body.indexOf(marker);
-    const openEnd = body.indexOf(">", markerStart) + 1;
-    const close = body.indexOf("</script>", openEnd);
-    await route.fulfill({ response, body: body.slice(0, openEnd) + "[{\"id\":\"main\",\"name\":\"MAIN\",\"dark\":{}}]" + body.slice(close) });
-  });
-  await page.goto("./");
-  await expect(page.locator("[data-home-theme-preview]")).toContainText("sf2-themes show main");
-  await page.locator("[data-site-picker-toggle]").click();
-  await expect(page.locator("[data-site-picker-toggle]")).toHaveAttribute("aria-expanded", "false");
-  expect(runtimeErrors).toEqual([]);
+  await page.setViewportSize({ width: 375, height: 844 });
+  await expect.poll(() => page.evaluate(noOverflow)).toBe(true);
 });

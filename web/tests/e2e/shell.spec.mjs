@@ -1,137 +1,149 @@
 import { expect, test } from "@playwright/test";
 
-const routes = [
-  { label: "HOME", pathname: "/sf2-themes/" },
-  { label: "THEMES", pathname: "/sf2-themes/themes/" },
-  { label: "INSTALL", pathname: "/sf2-themes/install/" },
-];
-const publicRoutes = [
-  ...routes,
-  { label: "PALETTE", pathname: "/sf2-themes/palette/" },
-  { label: "PREVIEW", pathname: "/sf2-themes/preview/" },
-  { label: "GAME", pathname: "/sf2-themes/game/" },
-];
-
-const viewports = [
-  { name: "desktop", width: 1440, height: 900 },
-  { name: "mobile", width: 375, height: 844 },
-];
-
-for (const viewport of viewports) {
-  test(`shared shell works at ${viewport.name} size`, async ({ page }) => {
-    // Given: a visitor opens the statically rendered site at its configured base.
-    await page.setViewportSize(viewport);
-    await page.goto("./");
-
-    // When: keyboard focus enters the page.
-    await page.keyboard.press("Tab");
-    await page.waitForTimeout(150);
-
-    // Then: the skip link is focused first, then the document does not overflow horizontally.
-    const focusedLink = page.locator(":focus-visible");
-    await expect(focusedLink).toHaveAttribute("href", "#main-content");
-    await expect(focusedLink).toHaveText("Skip to main content");
-    const focusedBox = await focusedLink.boundingBox();
-    expect(focusedBox).not.toBeNull();
-    expect(focusedBox?.y ?? -1).toBeGreaterThanOrEqual(8);
-    await expect
-      .poll(() => focusedLink.evaluate((element) => getComputedStyle(element).outlineStyle))
-      .not.toBe("none");
-    await expect
-      .poll(() =>
-        focusedLink.evaluate((element) =>
-          Number.parseFloat(getComputedStyle(element).outlineWidth) > 0,
-        ),
-      )
-      .toBe(true);
-    await expect
-      .poll(() =>
-        page.evaluate(
-          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-        ),
-      )
-      .toBe(true);
-
-    for (const route of routes) {
-      // When: the visitor follows each shared primary navigation link.
-      await page.getByRole("navigation", { name: "Primary" }).getByRole("link", {
-        name: route.label,
-        exact: true,
-      }).click();
-
-      // Then: navigation keeps the base prefix and marks exactly that route active.
-      await expect(page).toHaveURL(new RegExp(`${route.pathname.replaceAll("/", "\\/")}$`));
-      const activeLinks = page.locator('[data-nav-link][aria-current="page"]');
-      await expect(activeLinks).toHaveCount(1);
-      await expect(activeLinks).toHaveText(route.label);
-      await expect
-        .poll(() =>
-          page.evaluate(
-            () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-          ),
-        )
-        .toBe(true);
-    }
-  });
-}
-
-test("site picker mode controls keep the documented hit target", async ({ page }) => {
+test("the header exposes brand, anchors, fighter select, modes, and the palette trigger", async ({
+  page,
+}) => {
   await page.goto("./");
-  await page.locator("[data-site-picker-toggle]").click();
 
-  for (const mode of ["dark", "light"]) {
-    const box = await page.locator(`[data-site-picker] [data-site-mode="${mode}"]`).boundingBox();
-    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
-  }
+  await expect(page.locator(".site-brand")).toHaveText("sf2-themes");
+  const nav = page.getByRole("navigation", { name: "Primary" });
+  await expect(nav.getByRole("link", { name: "install" })).toHaveAttribute(
+    "href",
+    "/sf2-themes/#install",
+  );
+  await expect(nav.getByRole("link", { name: "ports" })).toHaveAttribute(
+    "href",
+    "/sf2-themes/#ports",
+  );
+  await expect(nav.getByRole("link", { name: /github/ })).toHaveAttribute(
+    "href",
+    "https://github.com/douglasjarquin/sf2-themes",
+  );
+
+  await expect(page.locator("[data-site-select]")).toHaveValue("ryu");
+  await expect(page.locator("[data-site-select] option")).toHaveCount(18);
+  await expect(page.locator('[data-site-mode="dark"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(
+    page.getByRole("button", { name: "Open theme palette" }),
+  ).toHaveAttribute("aria-expanded", "false");
 });
 
-const readShell = () => {
-  const readStyles = (selector, pseudo) => {
-    const element = document.querySelector(selector);
-    if (!(element instanceof Element)) throw new Error(`Missing ${selector}`);
-    const styles = getComputedStyle(element, pseudo);
-    return {
-      backgroundColor: styles.backgroundColor,
-      borderBlockEndColor: styles.borderBlockEndColor,
-      borderBlockEndWidth: styles.borderBlockEndWidth,
-      borderColor: styles.borderColor,
-      borderRadius: styles.borderRadius,
-      boxShadow: styles.boxShadow,
-      color: styles.color,
-      display: styles.display,
-      fontFamily: styles.fontFamily,
-      fontSize: styles.fontSize,
-      fontWeight: styles.fontWeight,
-      letterSpacing: styles.letterSpacing,
-      textShadow: styles.textShadow,
-    };
-  };
-  const current = document.querySelector('.primary-nav__link[aria-current="page"]');
-  return {
-    bodyBackground: readStyles("body").backgroundColor,
-    bodyScanlines: readStyles("body", "::before").display,
-    brand: readStyles(".site-brand"),
-    footer: readStyles(".site-footer"),
-    nav: readStyles(".primary-nav__link:not([aria-current])"),
-    navAction: readStyles(".primary-nav__link--github"),
-    navCurrent: current ? readStyles('.primary-nav__link[aria-current="page"]') : null,
-  };
-};
+test("mode buttons switch the palette and update aria-pressed", async ({ page }) => {
+  await page.goto("./");
 
-test("all public routes use the preview page shell", async ({ page }) => {
-  // Given: the preview page is the visual source of truth for shared site chrome.
-  await page.goto("preview/");
-  const previewShell = await page.evaluate(readShell);
+  await page.locator('[data-site-mode="light"]').click();
+  await expect(page.locator('[data-site-mode="light"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator('[data-site-mode="dark"]')).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+  await expect(page.locator("html")).toHaveCSS("color-scheme", "light");
+  await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText(
+    "sf2-ryu-light",
+  );
+  await expect.poll(() => page.url()).toContain("mode=light");
+});
 
-  // When: a visitor opens every public route directly.
-  for (const route of publicRoutes) {
-    await page.goto(route.pathname);
+test("theme and mode persist through localStorage and deep links", async ({ page }) => {
+  await page.goto("./?theme=guile&mode=light");
 
-    // Then: the shared shell computes to the same values as the preview template.
-    const shell = await page.evaluate(readShell);
-    const expectedShell = { ...previewShell };
-    delete shell.navCurrent;
-    delete expectedShell.navCurrent;
-    expect(shell, route.pathname).toEqual(expectedShell);
-  }
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "guile");
+  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+  await expect(page.locator("[data-site-select]")).toHaveValue("guile");
+  await expect(page.locator("#preview [data-t='displayName']").first()).toHaveText(
+    "Guile Light",
+  );
+
+  await page.locator("[data-site-select]").selectOption("ken");
+  await page.goto("./");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "ken");
+  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+});
+
+test("arrow keys step fighters and t toggles the mode", async ({ page }) => {
+  await page.goto("./?theme=ryu&mode=dark");
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "sagat");
+  await page.keyboard.press("ArrowLeft");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "ryu");
+
+  await page.keyboard.press("t");
+  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+});
+
+test("the command palette filters, applies selections, and restores focus", async ({
+  page,
+}) => {
+  await page.goto("./");
+
+  await page.keyboard.press("Control+k");
+  const dialog = page.getByRole("dialog", { name: "Theme palette" });
+  await expect(dialog).toBeVisible();
+  await expect(page.locator("[data-palette-input]")).toBeFocused();
+  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(37);
+
+  await page.locator("[data-palette-input]").fill("boxer");
+  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(2);
+  await page.locator("[data-palette-input]").press("Enter");
+  await expect(dialog).toBeHidden();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "balrog");
+  await expect.poll(() => page.url()).toContain("theme=balrog");
+});
+
+test("the palette filters by mode words and shows an empty state", async ({ page }) => {
+  await page.goto("./");
+
+  await page.getByRole("button", { name: "Open theme palette" }).click();
+  await page.locator("[data-palette-input]").fill("claw light");
+  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(1);
+  await expect(page.locator("[data-palette-item]:visible")).toContainText("Vega Light");
+
+  await page.locator("[data-palette-input]").fill("dan hibiki");
+  await expect(page.locator("[data-palette-empty]")).toBeVisible();
+  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(0);
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Theme palette" })).toBeHidden();
+  await expect(page.getByRole("button", { name: "Open theme palette" })).toBeFocused();
+});
+
+test("the palette mode toggle switches without leaving the overlay", async ({ page }) => {
+  await page.goto("./");
+
+  await page.getByRole("button", { name: "Open theme palette" }).click();
+  await page.getByRole("option", { name: /Switch to light mode/ }).click();
+
+  await expect(page.getByRole("dialog", { name: "Theme palette" })).toBeHidden();
+  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+  await expect(page.locator('[data-site-mode="light"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("the skip link reaches main content and the footer links externally", async ({
+  page,
+}) => {
+  await page.goto("./");
+
+  const skip = page.getByRole("link", { name: "Skip to main content" });
+  await page.keyboard.press("Tab");
+  await expect(skip).toBeFocused();
+  await skip.press("Enter");
+  await expect(page.locator("#main-content")).toBeInViewport();
+
+  const footer = page.getByRole("contentinfo");
+  await expect(footer).toContainText("Not affiliated with or endorsed by Capcom");
+  await expect(footer.getByRole("link", { name: /github/i }).first()).toHaveAttribute(
+    "href",
+    "https://github.com/douglasjarquin/sf2-themes",
+  );
 });

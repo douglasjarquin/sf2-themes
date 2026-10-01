@@ -7,13 +7,6 @@ settings:
 importers:
 
   .:
-    dependencies:
-      smol-toml:
-        specifier: 1.8.0
-        version: 1.8.0
-      textmode.js:
-        specifier: 0.18.0
-        version: 0.18.0
     devDependencies:
       '@astrojs/check':
         specifier: 0.9.10
@@ -1409,10 +1402,6 @@ packages:
     resolution: {integrity: sha512-bkxnTg1kSU0guhIBmibA6UUhrQmPVA1XsQLN+ylCd+UWzbnLkySOcXpyk1mrl05f+pcaCx2eHb+sp6BgMZWX+Q==}
     engines: {node: '>=16'}
     hasBin: true
-
-  textmode.js@0.18.0:
-    resolution: {integrity: sha512-8XuwoYTiJyWs9CHrEj+R+Jx8a2mn2KDJTbS/QbVVGAiBW62xNCL7thS+2Bc1QpjwElgeRySM7k0sYTLJufLGaQ==}
-    engines: {node: '>=20.8.1'}
 
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
@@ -3052,8 +3041,6 @@ snapshots:
       csso: 5.0.5
       picocolors: 1.1.1
       sax: 1.6.1
-
-  textmode.js@0.18.0: {}
 
   tiny-inflate@1.0.3: {}
 

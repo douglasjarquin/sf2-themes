@@ -1,0 +1,81 @@
+---
+import { siteThemeFamilies } from "../data/site-theme-data.mjs";
+
+const entries = siteThemeFamilies.flatMap((family) =>
+  (["dark", "light"] as const).map((mode) => {
+    const palette = family[mode];
+    return {
+      id: family.id,
+      mode,
+      label: mode === "light" ? `${family.name} Light` : family.name,
+      sub: family.stage,
+      swatches: [palette.bg, palette.accent, palette.n[1], palette.n[2], palette.n[4]],
+      hay: [family.id, family.name, family.stage, mode, ...family.aliases]
+        .join(" ")
+        .toLowerCase(),
+    };
+  }),
+);
+---
+
+<div class="cmdk-backdrop" data-palette-backdrop hidden>
+  <div class="cmdk" id="site-palette" role="dialog" aria-modal="true" aria-label="Theme palette">
+    <div class="cmdk__query">
+      <span class="cmdk__prompt" aria-hidden="true">❯</span>
+      <input
+        class="cmdk__input"
+        data-palette-input
+        type="text"
+        placeholder="choose your fighter…"
+        aria-label="Filter themes"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <span class="cmdk__esc" aria-hidden="true">esc</span>
+    </div>
+    <div class="cmdk__list" data-palette-list role="listbox" aria-label="Themes">
+      <button
+        class="cmdk__item"
+        type="button"
+        role="option"
+        aria-selected="false"
+        data-palette-item
+        data-mode-toggle
+        data-hay="toggle mode light dark switch"
+      >
+        <span class="cmdk__glyph" aria-hidden="true">◐</span>
+        <span class="cmdk__label" data-mode-toggle-label>Switch to light mode</span>
+        <span class="cmdk__sub">t</span>
+      </button>
+      {
+        entries.map((entry) => (
+          <button
+            class="cmdk__item"
+            type="button"
+            role="option"
+            aria-selected="false"
+            data-palette-item
+            data-theme-id={entry.id}
+            data-theme-mode={entry.mode}
+            data-hay={entry.hay}
+          >
+            <span class="cmdk__swatches" aria-hidden="true">
+              {entry.swatches.map((color) => <span style={`background:${color}`} />)}
+            </span>
+            <span class="cmdk__label">{entry.label}</span>
+            <span class="cmdk__sub">{entry.sub}</span>
+          </button>
+        ))
+      }
+      <div class="cmdk__empty" data-palette-empty hidden>
+        No fighter by that name. Try ryu, boxer, or light.
+      </div>
+    </div>
+    <div class="cmdk__hints" aria-hidden="true">
+      <span>↑↓ move</span>
+      <span>↵ select</span>
+      <span>esc close</span>
+      <span>outside: ← → fighter · t mode</span>
+    </div>
+  </div>
+</div>

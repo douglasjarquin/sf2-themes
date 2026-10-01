@@ -53,12 +53,6 @@ test("sitemap.xml lists every indexable trailing-slash URL", () => {
     INDEXABLE_PATHS.map((pathname) => canonicalUrl(pathname)),
     [
       "https://douglasjarquin.github.io/sf2-themes/",
-      "https://douglasjarquin.github.io/sf2-themes/themes/",
-      "https://douglasjarquin.github.io/sf2-themes/palette/",
-      "https://douglasjarquin.github.io/sf2-themes/preview/",
-      "https://douglasjarquin.github.io/sf2-themes/install/",
-      "https://douglasjarquin.github.io/sf2-themes/game/",
-      ...["main", "akuma", "balrog", "blanka", "cammy", "chun-li", "dee-jay", "dhalsim", "e-honda", "fei-long", "guile", "ken", "m-bison", "ryu", "sagat", "t-hawk", "vega", "zangief"].map((id) => `https://douglasjarquin.github.io/sf2-themes/themes/${id}/`),
     ],
   );
 });
@@ -71,7 +65,7 @@ test("llms.txt names the CLI, catalog size, live site, and repository", () => {
   assert.match(committed, /36-theme TOML catalog/);
   assert.match(committed, /Live site: https:\/\/douglasjarquin\.github\.io\/sf2-themes\//);
   assert.match(committed, /Repository: https:\/\/github\.com\/douglasjarquin\/sf2-themes/);
-  assert.doesNotMatch(committed, /Lazygit/);
+  assert.match(committed, /WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code/);
 });
 
 test("JSON-LD describes the visible site and software without ratings or offers", () => {

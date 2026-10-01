@@ -1,0 +1,250 @@
+---
+import { siteThemeFamilies } from "../data/site-theme-data.mjs";
+
+const TABS = [
+  ["shell", "shell"],
+  ["nvim", "neovim"],
+  ["python", "python"],
+  ["toml", "toml"],
+  ["diff", "diff"],
+  ["prose", "prose"],
+  ["ansi", "ansi"],
+];
+
+const ryu = siteThemeFamilies.find(({ id }) => id === "ryu") ?? siteThemeFamilies[0];
+const v = ryu.dark;
+const NAMES = ["black", "red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+const ansiRows = NAMES.flatMap((name, i) => [
+  { i, name, hex: v.n[i], var: `--c${i}` },
+  { i: i + 8, name: `bright ${name}`, hex: v.b[i], var: `--c${i + 8}` },
+]);
+const chips = [...NAMES.slice(1, 7).map((name, i) => ({ name, var: `--c${i + 1}` })),
+  { name: "accent", var: "--accent" }, { name: "orange", var: "--orange" }];
+---
+
+<div class="sample">
+  <div class="sample__tabs" role="tablist" aria-label="Preview panes">
+    {
+      TABS.map(([id, label], index) => (
+        <button
+          class="sample__tab"
+          type="button"
+          role="tab"
+          aria-selected={index === 0 ? "true" : "false"}
+          data-tab={id}
+        >
+          {label}
+        </button>
+      ))
+    }
+  </div>
+  <div class="sample__body">
+    <div class="sample__pane" data-pane="shell" role="tabpanel">
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> sf2-themes show <span data-t="catalogId">{ryu.id}</span></div>
+      <div class="pl"><span class="dim">theme       </span><span data-t="fileId">sf2-{ryu.id}</span></div>
+      <div class="pl"><span class="dim">stage       </span><span data-t="stage">{ryu.stage}</span></div>
+      <div class="pl"><span class="dim">variant     </span><span data-t="mode">dark</span></div>
+      <div class="pl"><span class="dim">background  </span><span class="c3" data-t="bg">{v.bg}</span></div>
+      <div class="pl"><span class="dim">foreground  </span><span class="c3" data-t="fg">{v.fg}</span></div>
+      <div class="pl"><span class="dim">accent      </span><span class="c3" data-t="accent">{v.accent}</span></div>
+      <div class="gap"></div>
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> git status -sb</div>
+      <div class="pl"><span class="dim">## </span><span class="c2">main</span>...<span class="c1">origin/main</span> [ahead <span class="c2">1</span>]</div>
+      <div class="pl"><span class="c2">M </span> web/src/pages/index.astro</div>
+      <div class="pl"> <span class="c1">M</span> themes/<span data-t="catalogId">{ryu.id}</span>.toml</div>
+      <div class="pl"><span class="c1">??</span> docs/previews/<span data-t="id">{ryu.id}</span>.png</div>
+      <div class="gap"></div>
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> git log --oneline -4</div>
+      <div class="pl"><span class="c3">a41c9e2 </span><span class="c6">(HEAD -&gt; </span><span class="c2">main</span><span class="c6">) </span>Tune <span data-t="name">{ryu.name}</span> accent for contrast</div>
+      <div class="pl"><span class="c3">7be20d1 </span>Add Starship adapter</div>
+      <div class="pl"><span class="c3">3f9a0c4 </span>Light variants for the full roster</div>
+      <div class="pl"><span class="c3">e02b5d8 </span>Back up files before the first write</div>
+      <div class="gap"></div>
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> sf2-themes validate --all</div>
+      <div class="pl"><span class="c2">✓</span> 36 themes valid</div>
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> sf2-themes apply wezterm --theme boxer --dry-run</div>
+      <div class="pl"><span class="c3">dry run</span>  would write ~/.config/wezterm/colors/sf2-balrog.toml</div>
+      <div class="pl"><span class="c6">~/code/sf2-themes</span> <span class="c5">main</span> <span class="acc">❯</span> <span class="cursor"></span></div>
+    </div>
+
+    <div class="sample__pane" data-pane="nvim" role="tabpanel" hidden>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">1</span><span class="dim it">-- colors/<span data-t="fileId">sf2-{ryu.id}</span>.lua</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">2</span><span><span class="c5">local</span> palette = <span class="c6">require</span>(<span class="c2">"sf2.palette"</span>)</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">3</span><span><span class="c5">local</span> M = {}</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">4</span><span></span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">5</span><span class="dim it">---@param name string</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">6</span><span><span class="c5">function</span> <span class="c4">M.apply</span>(name)</span></div>
+      <div class="ln"><span class="ln__mark c1">E</span><span class="ln__no">7</span><span class="pl2"><span class="c5">local</span> p = palette[name] <span class="c5">or</span> palette.mian<span class="c1">   ■ Undefined field `mian`.</span></span></div>
+      <div class="ln ln--current"><span class="ln__mark"></span><span class="ln__no ln__no--accent">8</span><span class="pl2">vim.o.background = p.<span class="selected">variant</span></span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">9</span><span class="pl2"><span class="c5">for</span> group, spec <span class="c5">in</span> <span class="c6">pairs</span>(p.highlights) <span class="c5">do</span></span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">10</span><span class="pl4">vim.api.<span class="c4">nvim_set_hl</span>(<span class="org">0</span>, group, spec)</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">11</span><span class="pl2 c5">end</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">12</span><span class="c5">end</span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">13</span><span></span></div>
+      <div class="ln"><span class="ln__mark"></span><span class="ln__no">14</span><span><span class="c5">return</span> M</span></div>
+      <div class="ln c4"><span class="ln__mark"></span><span>~</span></div>
+      <div class="ln c4"><span class="ln__mark"></span><span>~</span></div>
+      <div class="statusline">
+        <span class="statusline__left"><span class="statusline__mode">NORMAL</span><span class="statusline__branch"> main</span><span class="statusline__file"> <span data-t="fileId">sf2-{ryu.id}</span>.lua <span class="c1">E1</span></span></span>
+        <span class="statusline__right">lua  utf-8  8:26  57%</span>
+      </div>
+      <div class="pl">:colorscheme <span data-t="fileId">sf2-{ryu.id}</span></div>
+    </div>
+
+    <div class="sample__pane" data-pane="python" role="tabpanel" hidden>
+      <div class="pl"><span class="c5">from</span> pathlib <span class="c5">import</span> Path</div>
+      <div class="pl"><span class="c5">from</span> dataclasses <span class="c5">import</span> dataclass</div>
+      <div class="gap"></div>
+      <div class="pl"><span class="org">@dataclass</span>(frozen=<span class="org">True</span>)</div>
+      <div class="pl"><span class="c5">class</span> <span class="c6">Theme</span>:</div>
+      <div class="pl pl4">id: <span class="c6">str</span></div>
+      <div class="pl pl4">variant: <span class="c6">str</span> = <span class="c2">"<span data-t="mode">dark</span>"</span></div>
+      <div class="gap"></div>
+      <div class="pl pl4"><span class="c5">def</span> <span class="c4">installed_id</span>(self) -&gt; <span class="c6">str</span>:</div>
+      <div class="pl pl8 dim it"># every adapter prefixes the catalog id</div>
+      <div class="pl pl8"><span class="c5">return</span> <span class="c2">f"sf2-</span><span class="org">{`{self.id}`}</span><span class="c2">"</span></div>
+      <div class="gap"></div>
+      <div class="pl"><span class="c5">def</span> <span class="c4">apply</span>(app: <span class="c6">str</span>, theme: <span class="c6">Theme</span>, dry_run: <span class="c6">bool</span> = <span class="org">False</span>) -&gt; <span class="c6">int</span>:</div>
+      <div class="pl pl4">target = Path(<span class="c2">"~/.config"</span>).expanduser() / app</div>
+      <div class="pl pl4"><span class="c5">if</span> dry_run:</div>
+      <div class="pl pl8"><span class="c6">print</span>(<span class="c2">f"would write </span><span class="org">{`{theme.installed_id()}`}</span><span class="c2"> to </span><span class="org">{`{target}`}</span><span class="c2">"</span>)</div>
+      <div class="pl pl8"><span class="c5">return</span> <span class="org">0</span></div>
+      <div class="pl pl4"><span class="c5">raise</span> <span class="c1">NotImplementedError</span>(<span class="c2">"Here comes a new challenger"</span>)</div>
+      <div class="gap"></div>
+      <div class="pl">apply(<span class="c2">"wezterm"</span>, Theme(<span class="c2">"<span data-t="catalogId">{ryu.id}</span>"</span>), dry_run=<span class="org">True</span>)</div>
+    </div>
+
+    <div class="sample__pane" data-pane="toml" role="tabpanel" hidden>
+      <div class="pl dim it"># themes/<span data-t="catalogId">{ryu.id}</span>.toml</div>
+      <div class="pl c5">[meta]</div>
+      <div class="pl"><span class="c4">id</span> = <span class="c2">"<span data-t="catalogId">{ryu.id}</span>"</span></div>
+      <div class="pl"><span class="c4">name</span> = <span class="c2">"<span data-t="name">{ryu.name}</span>"</span></div>
+      <div class="pl"><span class="c4">variant</span> = <span class="c2">"<span data-t="mode">dark</span>"</span></div>
+      <div class="pl"><span class="c4">stage</span> = <span class="c2">"<span data-t="stage">{ryu.stage}</span>"</span></div>
+      <div class="gap"></div>
+      <div class="pl c5">[ui]</div>
+      <div class="pl"><span class="c4">background</span> = <span class="c2">"<span data-t="bg">{v.bg}</span>"</span></div>
+      <div class="pl"><span class="c4">foreground</span> = <span class="c2">"<span data-t="fg">{v.fg}</span>"</span></div>
+      <div class="pl"><span class="c4">accent</span> = <span class="c2">"<span data-t="accent">{v.accent}</span>"</span></div>
+      <div class="pl"><span class="c4">selection_background</span> = <span class="c2">"<span data-t="sel">{v.sel}</span>"</span></div>
+      <div class="gap"></div>
+      <div class="pl c5">[ansi.normal]</div>
+      {
+        NAMES.map((name, i) => (
+          <div class="pl"><span class="c4">{name}</span> = <span class="c2">"<span data-t={`n${i}`}>{v.n[i]}</span>"</span></div>
+        ))
+      }
+    </div>
+
+    <div class="sample__pane" data-pane="diff" role="tabpanel" hidden>
+      <div class="pl strong">diff --git a/themes/<span data-t="catalogId">{ryu.id}</span>.toml b/themes/<span data-t="catalogId">{ryu.id}</span>.toml</div>
+      <div class="pl dim">index 3f9a0c4..a41c9e2 100644</div>
+      <div class="pl strong">--- a/themes/<span data-t="catalogId">{ryu.id}</span>.toml</div>
+      <div class="pl strong">+++ b/themes/<span data-t="catalogId">{ryu.id}</span>.toml</div>
+      <div class="pl"><span class="c6">@@ -9,7 +9,8 @@</span> <span class="dim">[ui]</span></div>
+      <div class="pl"> background = "<span data-t="bg">{v.bg}</span>"</div>
+      <div class="pl"> foreground = "<span data-t="fg">{v.fg}</span>"</div>
+      <div class="pl diff-del">-accent = "#c9a227"</div>
+      <div class="pl diff-add">+accent = "<span data-t="accent">{v.accent}</span>"</div>
+      <div class="pl diff-add">+cursor = "<span data-t="accent">{v.accent}</span>"</div>
+      <div class="pl"> selection_background = "<span data-t="sel">{v.sel}</span>"</div>
+      <div class="gap"></div>
+      <div class="pl dim"> 1 file changed, <span class="c2">2 insertions(+)</span>, <span class="c1">1 deletion(-)</span></div>
+    </div>
+
+    <div class="sample__pane sample__pane--prose" data-pane="prose" role="tabpanel" hidden>
+      <div class="prose-h"><span class="dim">### </span>How it writes files</div>
+      <p>The pack contains <strong>36 fully resolved themes</strong>: a dark and light variant of the shared <code>main</code> theme plus every fighter through <em>Super Street Fighter II Turbo</em>.</p>
+      <p>Existing files keep their mode and get a timestamped <code>.bak.*</code> copy before the first real change. Symlinks are refused unless you pass <code>--follow-symlinks</code>.</p>
+      <p class="dim"><span class="acc">&gt;</span> Boss aliases work too: <span class="fg">boxer</span> (Balrog), <span class="fg">claw</span> (Vega), and <span class="fg">dictator</span> (M. Bison).</p>
+      <p class="prose-last">See the <a href="https://github.com/douglasjarquin/sf2-themes/blob/main/docs/theme-guidelines.md">theme guidelines</a> for how each palette is tuned.</p>
+    </div>
+
+    <div class="sample__pane" data-pane="ansi" role="tabpanel" hidden>
+      <div class="ansi-grid">
+        <div class="ansi-head">normal</div>
+        <div class="ansi-head">bright</div>
+        {
+          ansiRows.map((row) => (
+            <div class="ansi-row">
+              <span class="ansi-i">{row.i}</span>
+              <span class="ansi-swatch" style={`background:var(${row.var})`}></span>
+              <span class="ansi-name" style={`color:var(${row.var})`}>{row.name}</span>
+              <span class="ansi-hex" data-t={row.i < 8 ? `n${row.i}` : `b${row.i - 8}`}>{row.hex}</span>
+            </div>
+          ))
+        }
+      </div>
+      <div class="ansi-chips">
+        {chips.map((chip) => <span class="ansi-chip" style={`background:var(${chip.var})`}>{chip.name}</span>)}
+      </div>
+    </div>
+  </div>
+  <div class="sample__footer">
+    <span><span data-t="fileId">sf2-{ryu.id}</span> · <span data-t="mode">dark</span></span>
+    <span>← → fighter · t mode · ⌘K search</span>
+  </div>
+</div>
+
+<style>
+  .sample { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .sample__tabs { display: flex; overflow-x: auto; border-bottom: 1px solid var(--border); background: var(--surface); font-size: 12.5px; }
+  .sample__tab { flex: none; border: none; border-right: 1px solid var(--border); padding: 8px 16px; background: transparent; color: var(--muted); font: inherit; cursor: pointer; }
+  .sample__tab[aria-selected="true"] { background: var(--bg); color: var(--fg); text-decoration: underline; }
+  .sample__body { padding: 20px 22px; }
+  .sample__footer { display: flex; justify-content: space-between; gap: 12px; padding: 6px 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px; }
+  .sample__pane { min-width: 0; overflow-x: auto; color: var(--fg); font-size: 13px; line-height: 1.7; }
+  .sample__pane[hidden] { display: none; }
+
+  .pl { white-space: pre; }
+  .pl2 { padding-left: 2ch; }
+  .pl4 { padding-left: 4ch; }
+  .pl8 { padding-left: 8ch; }
+  .gap { height: 1.7em; }
+  .it { font-style: italic; }
+  .strong { font-weight: 600; }
+  .fg { color: var(--fg); }
+  .dim { color: var(--muted); }
+  .acc { color: var(--accent); }
+  .org { color: var(--orange); }
+  .c1 { color: var(--c1); }
+  .c2 { color: var(--c2); }
+  .c3 { color: var(--c3); }
+  .c4 { color: var(--c4); }
+  .c5 { color: var(--c5); }
+  .c6 { color: var(--c6); }
+  .cursor { display: inline-block; width: 0.62em; height: 1.15em; vertical-align: -0.22em; background: var(--accent); }
+  .selected { background: var(--sel); }
+
+  .ln { display: flex; white-space: pre; }
+  .ln--current { background: color-mix(in oklch, var(--fg) 7%, transparent); }
+  .ln__mark { width: 2ch; flex: none; }
+  .ln__no { width: 3ch; flex: none; margin-right: 2ch; color: var(--muted); text-align: right; }
+  .ln__no--accent { color: var(--accent); }
+
+  .statusline { display: flex; justify-content: space-between; gap: 16px; margin-top: 10px; background: var(--surface); white-space: pre; }
+  .statusline__left { display: flex; }
+  .statusline__mode { padding: 0 1ch; background: var(--accent); color: var(--bg); font-weight: 600; }
+  .statusline__branch { padding: 0 1ch; background: var(--border); }
+  .statusline__file { padding: 0 1ch; }
+  .statusline__right { padding-right: 1ch; color: var(--muted); }
+
+  .diff-del { color: var(--c1); background: color-mix(in oklch, var(--c1) 12%, transparent); }
+  .diff-add { color: var(--c2); background: color-mix(in oklch, var(--c2) 12%, transparent); }
+
+  .sample__pane--prose { font-size: 14px; line-height: 1.75; max-width: 64ch; text-wrap: pretty; }
+  .prose-h { margin-bottom: 8px; font-weight: 600; }
+  .sample__pane--prose p { margin: 0 0 14px; }
+  .sample__pane--prose .prose-last { margin: 0; }
+  .sample__pane--prose code { padding: 1px 5px; border-radius: 3px; background: var(--surface); color: var(--accent); font-family: inherit; }
+
+  .ansi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 32px; }
+  .ansi-head { margin-bottom: 4px; color: var(--muted); }
+  .ansi-row { display: flex; align-items: center; gap: 12px; white-space: pre; }
+  .ansi-i { width: 2ch; color: var(--muted); text-align: right; }
+  .ansi-swatch { width: 10px; height: 10px; flex: none; border-radius: 2px; box-shadow: 0 0 0 1px var(--border); }
+  .ansi-name { width: 15ch; }
+  .ansi-hex { color: var(--muted); }
+  .ansi-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+  .ansi-chip { padding: 0 8px; border-radius: 3px; color: var(--bg); }
+</style>

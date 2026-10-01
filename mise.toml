@@ -73,6 +73,10 @@ run = "aube -C web run build"
 description = "Run Astro unit and end-to-end tests"
 run = "aube -C web run test"
 
+[tasks.verify]
+description = "Run every documented pre-PR check: Python, catalog, shell, and web"
+run = "mise run web:install && mise run test && mise run lint && mise run validate-catalog && mise run shellcheck && mise run standalone-freshness && mise run web:check && mise run web:build && mise run web:test"
+
 [tasks."web:dev:local"]
 description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install first)"
 run = "cd web && PORTLESS_TLD=test ASTRO_DEV_BACKGROUND=1 portless"
