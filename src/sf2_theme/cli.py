@@ -17,10 +17,12 @@ from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
 from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
 from sf2_theme.adapters.lazygit import setup_lazygit
+from sf2_theme.adapters.nvim import current_pointer_path as nvim_pointer_path
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
 from sf2_theme.adapters.nvim import setup_nvim
 from sf2_theme.adapters.starship import apply_starship
 from sf2_theme.adapters.starship import read_current_id as starship_current
+from sf2_theme.adapters.wezterm import current_pointer_path as wezterm_pointer_path
 from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
 from sf2_theme.adapters.wezterm import setup_wezterm
 from sf2_theme.adapters.zsh_syntax import SOURCE_HINT, apply_zsh_syntax
@@ -28,6 +30,7 @@ from sf2_theme.catalog import (
     catalog_issues,
     default_theme,
     get_theme,
+    installed_theme,
     load_catalog,
     parse_catalog,
     show_theme,
@@ -43,8 +46,10 @@ ADOPT_APPS = ("wezterm", "herdr", "lazygit")
 # Apps whose selection is appearance-aware: both siblings are installed and the
 # managed identity follows the host's light/dark mode.
 PAIR_APPS = ("wezterm", "herdr", "nvim")
-# Apps with a preserved-selection path: setup without --theme keeps it.
-PRESERVE_APPS = ("wezterm", "nvim", "codex", "claude")
+# Apps whose adapter always writes the theme it is given, so setup without
+# --theme preserves by re-resolving the managed selection before dispatch.
+# The other adapters preserve internally through their replace_* flags.
+RESOLVED_PRESERVE_APPS = ("herdr", "starship", "lazygit")
 
 HELP_EPILOG = """\
 notes:
@@ -169,7 +174,15 @@ def _report(results: Sequence[WriteResult], *, verbose: bool) -> None:
 
 
 def _summarize(
-    command: str, app: str, select: bool, theme: Theme, catalog: Sequence[Theme], results: Sequence[WriteResult]
+    command: str,
+    app: str,
+    select: bool,
+    theme: Theme,
+    catalog: Sequence[Theme],
+    results: Sequence[WriteResult],
+    *,
+    kept: bool,
+    blocked: bool,
 ) -> None:
     counts = Counter(result.action for result in results)
     changed = sum(
@@ -188,7 +201,12 @@ def _summarize(
     else:
         changes = "no changes"
     verb = "apply" if command == "install" else command
-    if select or app not in PRESERVE_APPS:
+    if blocked:
+        print(f"{verb} {app}: incomplete (config left unchanged)")
+        print(f"  changes: {changes}")
+        print("  note: see stderr for the pasteable integration snippet")
+        return
+    if select or not kept:
         if app in PAIR_APPS:
             dark, light = theme_pair(theme, catalog)
             selection = f"{dark.metadata.selectable_id} + {light.metadata.selectable_id} (follows host appearance)"
@@ -212,10 +230,19 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
     theme = default_theme(catalog) if ns.theme is None else get_theme(ns.theme, catalog)
     config_dir = ns.config_dir.expanduser() if ns.config_dir is not None else None
     # Every mutation command runs one complete plan: assets plus integration.
-    # apply (and install) always (re)select the resolved theme; setup keeps an
-    # existing selection unless --theme names one.
+    # apply (and install) always (re)select the resolved theme; setup keeps a
+    # managed selection unless --theme names one.
     select = command != "setup" or ns.theme is not None
+    kept = False
+    if not select:
+        kept = _selection_exists(ns.app, config_dir)
+        if kept and ns.app in RESOLVED_PRESERVE_APPS:
+            try:
+                theme = installed_theme(_current_id(ns.app, config_dir), catalog)
+            except ThemeError:
+                kept = False
     manual: str | None = None
+    adoptable = False
     match ns.app:
         case "wezterm":
             results, lua = setup_wezterm(
@@ -228,6 +255,7 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
                 replace_pointer=select,
             )
             manual = lua.snippet
+            adoptable = lua.adoptable
         case "nvim":
             results = setup_nvim(
                 theme,
@@ -280,7 +308,7 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
     _report(results, verbose=ns.verbose)
-    _summarize(command, ns.app, select, theme, catalog, results)
+    _summarize(command, ns.app, select, theme, catalog, results, kept=kept, blocked=manual is not None)
     if ns.app == "starship":
         print(
             f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
@@ -288,15 +316,21 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
         )
     if manual is not None:
         if command == "setup":
+            reason = (
+                "it already selects a color scheme"
+                if adoptable
+                else "its Lua shape is not one sf2-themes can safely edit"
+            )
+            hint = "Pass --adopt to replace it, or add" if adoptable else "Add"
             print(
-                "WezTerm config was left unchanged because it already selects a color scheme.\n"
-                "Pass --adopt to replace it, or add this integration:\n",
+                f"WezTerm config was left unchanged because {reason}.\n{hint} this integration to wezterm.lua:\n",
                 file=sys.stderr,
             )
         else:
+            hint = "Pass --adopt to replace its color scheme, or add" if adoptable else "Add"
             print(
                 "apply incomplete: WezTerm config was left unchanged, so nothing loads the theme yet.\n"
-                "Pass --adopt if it only assigns a color scheme, or add this integration:\n",
+                f"{hint} this integration to wezterm.lua:\n",
                 file=sys.stderr,
             )
         print(manual, end="", file=sys.stderr)
@@ -304,24 +338,39 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
     return 0
 
 
-def _current(app: str, config_dir: Path | None) -> None:
+def _current_id(app: str, config_dir: Path | None) -> str:
     match app:
         case "wezterm":
-            print(wezterm_current())
+            return wezterm_current()
         case "herdr":
-            print(herdr_current(config_dir))
+            return herdr_current(config_dir)
         case "nvim":
-            print(nvim_current(config_dir))
+            return nvim_current(config_dir)
         case "codex":
-            print(codex_current(config_dir))
+            return codex_current(config_dir)
         case "lazygit":
-            print(lazygit_current(config_dir))
+            return lazygit_current(config_dir)
         case "starship":
-            print(starship_current(config_dir))
+            return starship_current(config_dir)
         case "claude":
-            print(claude_current(config_dir))
+            return claude_current(config_dir)
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
+
+
+def _selection_exists(app: str, config_dir: Path | None) -> bool:
+    """True when the app already holds a selection that setup will keep."""
+    match app:
+        case "wezterm":
+            return wezterm_pointer_path().is_file()
+        case "nvim":
+            return nvim_pointer_path(config_dir).is_file()
+        case _:
+            try:
+                _current_id(app, config_dir)
+            except ThemeError:
+                return False
+            return True
 
 
 def dispatch(arguments: list[str]) -> int:
@@ -343,7 +392,7 @@ def dispatch(arguments: list[str]) -> int:
             case "validate":
                 return _validate(ns)
             case "current":
-                _current(ns.app, ns.config_dir.expanduser() if ns.config_dir else None)
+                print(_current_id(ns.app, ns.config_dir.expanduser() if ns.config_dir else None))
             case "setup" | "apply" | "install":
                 return _mutate(ns.command, ns, mutation[ns.command])
     except SystemExit as exit_:

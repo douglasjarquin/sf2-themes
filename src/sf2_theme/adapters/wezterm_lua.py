@@ -21,6 +21,8 @@ class LuaSetup:
     content: str
     mutated: bool
     snippet: str | None
+    # True when --adopt would turn this refused shape into a mutation.
+    adoptable: bool = False
 
 
 def lua_path_literal(path: Path) -> str:
@@ -139,7 +141,7 @@ def setup_lua(existing: str, pointer: Path, *, adopt: bool = False) -> LuaSetup:
     has_foreign = _has_scheme_kind(existing, "other")
     has_sf2 = _has_scheme_kind(existing, "sf2")
     if has_foreign and not adopt:
-        return LuaSetup(content=existing, mutated=False, snippet=snippet)
+        return LuaSetup(content=existing, mutated=False, snippet=snippet, adoptable=True)
     strip_kinds = {"sf2"}
     if adopt:
         strip_kinds.add("other")
