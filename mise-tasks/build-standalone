@@ -27,6 +27,7 @@ MODULES: tuple[tuple[str, Path, bool], ...] = (
     ("sf2_theme.adapters.claude", SRC / "adapters" / "claude.py", False),
     ("sf2_theme.adapters.starship", SRC / "adapters" / "starship.py", False),
     ("sf2_theme.adapters.zsh_syntax", SRC / "adapters" / "zsh_syntax.py", False),
+    ("sf2_theme.adapters.slack", SRC / "adapters" / "slack.py", False),
     ("sf2_theme.cli", SRC / "cli.py", False),
 )
 

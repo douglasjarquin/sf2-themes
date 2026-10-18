@@ -20,6 +20,7 @@ from sf2_theme.adapters.lazygit import setup_lazygit
 from sf2_theme.adapters.nvim import current_pointer_path as nvim_pointer_path
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
 from sf2_theme.adapters.nvim import setup_nvim
+from sf2_theme.adapters.slack import render_theme as slack_import_line
 from sf2_theme.adapters.starship import apply_starship
 from sf2_theme.adapters.starship import read_current_id as starship_current
 from sf2_theme.adapters.wezterm import current_pointer_path as wezterm_pointer_path
@@ -38,10 +39,10 @@ from sf2_theme.catalog import (
 )
 from sf2_theme.errors import CliError, ThemeError
 from sf2_theme.filesystem import WriteAction, WriteResult
-from sf2_theme.model import Theme
+from sf2_theme.model import Theme, ThemeVariant
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit", "claude")
+APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit", "claude", "slack")
 ADOPT_APPS = ("wezterm", "herdr", "lazygit")
 # Apps whose selection is appearance-aware: both siblings are installed and the
 # managed identity follows the host's light/dark mode.
@@ -64,6 +65,7 @@ notes:
   ~/.claude/themes/ and selects it in settings.json; select it or switch
   siblings yourself in /theme, since Claude Code has no host-appearance
   auto-switch.
+  Slack prints a paste string and does not install an sf2- identity.
 """
 
 _ACTION_TEXT = {
@@ -89,7 +91,7 @@ def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argumen
     parser = argparse.ArgumentParser(
         prog="sf2-themes",
         description=(
-            "Street Fighter II theme pack for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit."
+            "Street Fighter II theme pack for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, Lazygit, and Slack."
         ),
         epilog=HELP_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -114,6 +116,7 @@ def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argumen
     current = commands.add_parser("current", help="print the selected theme id, or none")
     current.add_argument("app", choices=APP_NAMES)
     current.add_argument("--config-dir", type=Path, metavar="PATH")
+    current.add_argument("--theme", help=argparse.SUPPRESS)
     return parser, mutation
 
 
@@ -221,9 +224,30 @@ def _summarize(
         print(f"  note: {note}")
 
 
+def _print_slack(theme: Theme) -> None:
+    mode = "Light" if theme.metadata.variant is ThemeVariant.LIGHT else "Dark"
+    print(slack_import_line(theme))
+    print(
+        "\n".join(
+            (
+                theme.metadata.id,
+                f"Set Slack Color Mode to {mode}.",
+                "Turn Darker sidebars off.",
+                "Paste the line into Preferences, Appearance, Custom theme, Import theme.",
+            )
+        ),
+        file=sys.stderr,
+    )
+
+
 def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
     if command == "install":
         print("warning: install is deprecated; use apply", file=sys.stderr)
+    if ns.app == "slack":
+        catalog = load_catalog()
+        theme = default_theme(catalog) if ns.theme is None else get_theme(ns.theme, catalog)
+        _print_slack(theme)
+        return 0
     if ns.adopt and ns.app not in ADOPT_APPS:
         parser.error(f"{ns.app} does not support --adopt")
     catalog = load_catalog()
@@ -354,6 +378,8 @@ def _current_id(app: str, config_dir: Path | None) -> str:
             return starship_current(config_dir)
         case "claude":
             return claude_current(config_dir)
+        case "slack":
+            raise ThemeError("no Slack theme to read")
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
 
