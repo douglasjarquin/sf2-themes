@@ -129,6 +129,9 @@ Codex receives the current UI and semantic colors through its supported Syntect/
 
 Lazygit receives every current `gui.theme` key plus the wildcard `gui.authorColors` entry, mapped from accent and semantic tokens, as YAML fragments under its `themes/` directory.
 
+Slack receives `ui.background`, `ui.accent`, `semantic.green`, and `semantic.red` as a four-color paste string.
+The rest of the theme contract has no Slack field.
+
 ## 10. Automated validation
 
 Every theme must pass schema validation, exact `#RRGGBB` validation, unique id and alias checks, contrast tests, ANSI completeness tests, renderer parsing, golden-output snapshots, and idempotent apply tests.
