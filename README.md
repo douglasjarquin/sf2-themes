@@ -16,7 +16,7 @@ Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/des
 
 * **Short catalog ids.** Input stays `ken` or `ryu-light`. File-writing adapters install `sf2-ken` or `sf2-ryu-light`. The id rules are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
 
-* **Theme site.** `https://douglasjarquin.github.io/sf2-themes/` previews every fighter in both modes, with install commands for each port.
+* **Theme site.** `https://douglasjarquin.github.io/sf2-themes/` previews every fighter in both modes, with install commands for each port. Machine-readable summary: `https://douglasjarquin.github.io/sf2-themes/llms.txt`.
 
 * **CLI.** `apps`, `themes`, `show`, `validate`, `current`, `setup`, and `apply`, installed as both `sf2` and `sf2-themes`. The command list and boss aliases are in [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md).
 
