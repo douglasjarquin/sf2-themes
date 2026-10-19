@@ -86,6 +86,15 @@ grep -q 'authorColors:' "$test_dir/installed-lazygit/themes/sf2-main.yml"
 grep -q '# sf2-themes: sf2-ryu-light' "$test_dir/installed-lazygit/config.yml"
 test "$("$repo_dir/sf2-themes" current lazygit --config-dir "$test_dir/installed-lazygit")" = "sf2-ryu-light"
 printf '%s\n' 'Copy-only installed Lazygit: PASS'
+slack_out=$("$test_dir/bin/sf2-themes" apply slack --theme ken --config-dir "$test_dir/slack")
+test "$slack_out" = "#221616,#de6767,#549657,#c76e67"
+test ! -e "$test_dir/slack"
+if "$test_dir/bin/sf2-themes" current slack --config-dir "$test_dir/slack"; then
+  printf '%s\n' 'copied CLI: current slack should fail' >&2
+  exit 1
+fi
+test ! -e "$test_dir/slack"
+printf '%s\n' 'Copy-only Slack paste string: PASS'
 grep -q 'background = "#131927"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'name = "sf2-main"' "$test_dir/wezterm/colors/sf2-main.toml"
 grep -q 'sf2-street-fighter-2' "$test_dir/wezterm/colors/sf2-main.toml"

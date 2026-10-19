@@ -69,6 +69,13 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Preserve every other `settings.json` key; only ever touch the top-level `theme` string, written as `custom:<selectable-id>`.
 - Setup without an explicit theme preserves an existing `custom:sf2-*` selection, while apply always selects the requested or default theme.
 
+## Slack
+
+- Slack has no config file and no `write_file` path. `render_theme` returns the four-color import line for the requested catalog theme.
+- Do not install an `sf2-` identity, resolve a dark/light pair, or call `project_adapter_colors()`.
+- `current slack` fails closed, prints no theme id, and writes nothing.
+- `--config-dir`, `--follow-symlinks`, and `--adopt` do not apply.
+
 ## Shared write contract
 
 - Route managed text writes through `write_file` so every adapter shares one mutation contract.
@@ -85,6 +92,7 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Run `uv run pytest -q tests/test_codex.py` for Codex theme or config changes.
 - Run `uv run pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` for Lazygit rendering, merge, or dispatch changes.
 - Run `uv run pytest -q tests/test_claude.py` for Claude Code theme or settings changes.
+- Run `uv run pytest -q tests/test_slack.py` for Slack import-line or dispatch changes.
 - Run `uv run pytest -q tests/test_filesystem.py` plus every touched adapter suite for shared write changes.
 - After adapter behavior changes, follow the inherited standalone regeneration rule and run `mise run test-cli` to exercise the copied CLI across all adapters.
 - Completion requires focused tests to pass with dry-run, backup, symlink, preservation, and exact-path ownership expectations intact.

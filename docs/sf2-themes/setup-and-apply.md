@@ -12,7 +12,8 @@ Use it to repair integration without changing the active theme.
 `install` still works as a deprecated alias for `apply`.
 
 The CLI keeps short catalog ids such as `ken` and `ryu-light` for input.
-Every adapter installs and selects the corresponding prefixed ids such as `sf2-ken` and `sf2-ryu-light`.
+File-writing adapters install and select the corresponding prefixed ids such as `sf2-ken` and `sf2-ryu-light`.
+Slack prints a paste string and does not install an `sf2-` identity.
 
 Every mutation command takes `--dry-run` to print the full plan without writing, `--verbose` to list every file operation, `--config-dir` to write under a different directory, and `--follow-symlinks` to write through destination symlinks.
 `--adopt` is valid only for `wezterm`, `herdr`, and `lazygit`.
@@ -36,12 +37,19 @@ sf2 apply claude --theme ryu-light
 sf2 apply starship --theme vega
 
 sf2 apply lazygit --theme vega
+
+sf2 apply slack --theme ken
 ```
 
 Starship apply also refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`; source it after `zsh-syntax-highlighting.zsh` to tint zsh command tokens.
 
 Lazygit installs all 36 complete theme fragments under its `themes/` directory and selects the requested theme in `config.yml`.
 Use `--adopt` when an existing `gui.theme` section is not managed by sf2-themes.
+
+Slack setup and apply print one four-color import line: `ui.background`, `ui.accent`, `semantic.green`, and `semantic.red`.
+Paste that line into Preferences, Appearance, Custom theme, Import theme.
+Set Color Mode to match the theme and turn Darker sidebars off.
+Slack writes no file, ignores `--config-dir`, `--follow-symlinks`, and `--adopt`, and `current slack` fails because there is no theme file to read.
 
 WezTerm apply writes every catalog scheme, a pointer that returns the selected character's dark or light sibling from `wezterm.gui.get_appearance()`, and a Lua integration in `wezterm.lua` that loads the pointer.
 Applying `ryu` or `ryu-light` selects the same pair.
