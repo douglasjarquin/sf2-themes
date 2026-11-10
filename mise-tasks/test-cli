@@ -50,6 +50,26 @@ test -f "$test_dir/wezterm/wezterm.lua"
 grep -q 'dofile(sf2_current)' "$test_dir/wezterm/wezterm.lua"
 printf '%s\n' 'WezTerm one-step apply integrates wezterm.lua: PASS'
 test -f "$test_dir/installed-herdr/config.toml"
+
+(cd "$test_dir" && "$test_dir/bin/sf2-themes" apply herdr-app --theme ryu-light --config-dir "$test_dir/herdr-app")
+python3 - "$test_dir/herdr-app" <<'PYAPP'
+import json
+import sys
+from pathlib import Path
+
+home = Path(sys.argv[1])
+settings = json.loads((home / "settings.json").read_text())
+assert settings == {"theme": {"dark": "sf2-ryu", "light": "sf2-ryu-light"}}
+assert len(list((home / "themes").glob("sf2-*.json"))) == 36
+for name in ("sf2-ryu", "sf2-ryu-light"):
+    theme = json.loads((home / "themes" / f"{name}.json").read_text())
+    assert len(theme["ansi"]) == 16
+    assert set(theme["colors"]) == {"canvas", "chrome", "surface", "border", "accent"}
+PYAPP
+"$test_dir/bin/sf2-themes" setup herdr-app --config-dir "$test_dir/herdr-app"
+test "$("$test_dir/bin/sf2-themes" current herdr-app --config-dir "$test_dir/herdr-app")" = "sf2-ryu"
+printf '%s\n' 'Copy-only installed Herdr app: PASS'
+
 "$repo_dir/sf2-themes" apply nvim --theme ryu-light --config-dir "$test_dir/installed-nvim"
 test -f "$test_dir/installed-nvim/colors/sf2-main.lua"
 test -f "$test_dir/installed-nvim/colors/sf2-ryu-light.lua"

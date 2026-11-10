@@ -37,6 +37,17 @@ Treat `theme.metadata.selectable_id` as the generated filename and configured id
 - Adoption removes only the existing theme namespace and preserves unrelated tables, keys, and top-level values.
 - Parse the merged document before writing so preservation never produces invalid Herdr configuration.
 
+## Herdr app
+
+- `herdr-app` is the desktop JSON adapter; `herdr` remains the independent TUI TOML adapter.
+- Install the catalog under `<config-dir>/themes/sf2-<catalog-id>.json` and merge only `theme.light`/`theme.dark` in `settings.json`.
+- Default to `$XDG_CONFIG_HOME/herdr-app` or `~/.config/herdr-app`; preserve appearance, layout, top-level colors, and other settings.
+- Setup without `--theme` keeps any existing selection byte-for-byte, including foreign and mixed pairs.
+- Current reports the dark installed ID only for a matching catalog pair; it reads settings, not effective layout/picker state.
+- Terminal fields use canonical UI/ANSI colors; per-file UI overrides map canvas/background, chrome/surface, surface/overlay, border/border, and accent/accent.
+- Parse settings before installing assets and route every mutation through `write_file()`.
+- Verify through `tests/test_herdr_app.py` and the copied standalone harness.
+
 ## Neovim
 
 - The adapter owns catalog files `<nvim-config>/colors/sf2-*.lua` and the selected pointer `<nvim-config>/sf2-theme/current.lua`.

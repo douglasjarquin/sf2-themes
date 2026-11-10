@@ -72,3 +72,24 @@ Applying or setting up a theme replaces the managed unprefixed files from older 
 Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs a Herdr build with herdr#2324; not in a stable release yet). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
 
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
+
+## Herdr desktop app
+
+```sh
+sf2 apply herdr-app --theme chun-li
+sf2 setup herdr-app
+sf2 current herdr-app
+```
+
+`herdr-app` installs all catalog entries as `sf2-<catalog-id>.json` in `~/.config/herdr-app/themes/`.
+It merges `theme.light` and `theme.dark` into `settings.json` in that directory's parent, preserving unrelated settings and theme keys.
+Applying either sibling selects the same character pair.
+Setup without `--theme` refreshes files while keeping any existing selection, including foreign or independently mixed pairs.
+Use `--config-dir` for a different app directory, or `XDG_CONFIG_HOME` to change the config root.
+
+Each theme contains its terminal palette and mode-specific canvas, chrome, surface, border, and accent colors.
+Settings apply live.
+Appearance is preserved: omit it in Herdr settings to follow the system, or use Herdr's `appearance` setting to force light or dark.
+Layout themes take precedence over settings, and the theme picker overrides both.
+Top-level settings and layout color overrides apply to both modes; SF2 keeps its mode-specific colors inside theme files.
+The `herdr` target continues to configure the TUI separately.

@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/), Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit), and prints a Slack custom-theme paste string.
+A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/) TUI and desktop app, Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit), and prints a Slack custom-theme paste string.
 
 ## What it is
 
@@ -12,7 +12,7 @@ Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/des
 
 ## Features
 
-* **Seven apps, plus Slack.** WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit install a theme. Slack prints a paste string and does not install an `sf2-` identity. Setup and apply rules are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
+* **Eight app targets, plus Slack.** WezTerm, Herdr TUI, Herdr app, Neovim, Codex, Claude Code, Starship, and Lazygit install a theme. Slack prints a paste string and does not install an `sf2-` identity. Setup and apply rules are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
 
 * **Short catalog ids.** Input stays `ken` or `ryu-light`. File-writing adapters install `sf2-ken` or `sf2-ryu-light`. The id rules are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
 
@@ -63,13 +63,16 @@ apply, one step
  └─ installed identity sf2-<catalog-id>
 ```
 
-WezTerm, Neovim, and Herdr select the same dark and light pair when you apply `ryu` or `ryu-light`. Codex and Claude Code pin the one sibling you name.
+WezTerm, Neovim, Herdr TUI, and Herdr app select the same dark and light pair when you apply `ryu` or `ryu-light`. Codex and Claude Code pin the one sibling you name.
 
 Slack apply prints one four-color import line.
 Paste it into Preferences, Appearance, Custom theme, Import theme, set Color Mode to match the theme, and turn Darker sidebars off.
 Slack writes no file and does not install an `sf2-` identity.
 
-Herdr appearance switching needs a build with herdr#2324 and is not in a stable release yet.
+`sf2 apply herdr-app --theme ryu` installs desktop JSON themes and selects the light/dark pair in `~/.config/herdr-app/settings.json`.
+Settings apply live; layout themes and the theme picker can override the selection.
+
+Herdr TUI appearance switching needs a build with herdr#2324 and is not in a stable release yet.
 
 Symlinks are refused unless you pass `--follow-symlinks`. Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 
