@@ -1,5 +1,3 @@
-"""Herdr desktop JSON themes and appearance-specific settings."""
-
 import json
 import os
 from collections.abc import Sequence
@@ -78,7 +76,6 @@ def setup_herdr_app(
         content = json.dumps(data, indent=2) + "\n"
     else:
         content = existing
-    # Validate settings and their write policy before installing catalog assets.
     write_file(path, content, dry_run=True, follow_symlinks=follow_symlinks)
     results = [
         write_file(
