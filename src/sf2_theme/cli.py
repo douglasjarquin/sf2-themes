@@ -15,6 +15,9 @@ from sf2_theme.adapters.codex import read_current_id as codex_current
 from sf2_theme.adapters.codex import setup_codex
 from sf2_theme.adapters.herdr import apply_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
+from sf2_theme.adapters.herdr_app import read_current_id as herdr_app_current
+from sf2_theme.adapters.herdr_app import selection_exists as herdr_app_selection_exists
+from sf2_theme.adapters.herdr_app import setup_herdr_app
 from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
 from sf2_theme.adapters.lazygit import setup_lazygit
 from sf2_theme.adapters.nvim import current_pointer_path as nvim_pointer_path
@@ -42,11 +45,11 @@ from sf2_theme.filesystem import WriteAction, WriteResult
 from sf2_theme.model import Theme, ThemeVariant
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "nvim", "codex", "starship", "lazygit", "claude", "slack")
+APP_NAMES = ("wezterm", "herdr", "herdr-app", "nvim", "codex", "starship", "lazygit", "claude", "slack")
 ADOPT_APPS = ("wezterm", "herdr", "lazygit")
 # Apps whose selection is appearance-aware: both siblings are installed and the
 # managed identity follows the host's light/dark mode.
-PAIR_APPS = ("wezterm", "herdr", "nvim")
+PAIR_APPS = ("wezterm", "herdr", "herdr-app", "nvim")
 # Apps whose adapter always writes the theme it is given, so setup without
 # --theme preserves by re-resolving the managed selection before dispatch.
 # The other adapters preserve internally through their replace_* flags.
@@ -60,7 +63,9 @@ notes:
   --theme is given. install is a deprecated alias for apply.
   starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
   Lazygit installs one YAML fragment per catalog theme under its themes directory.
-  WezTerm, Herdr, and Neovim apply both dark and light siblings and auto-switch
+  Herdr app installs JSON themes in ~/.config/herdr-app/themes/ and selects
+  a light/dark pair in settings.json. Layout themes and the picker take precedence.
+  WezTerm, Herdr TUI/app, and Neovim apply both dark and light siblings and auto-switch
   with host appearance. Claude installs one theme file per catalog entry under
   ~/.claude/themes/ and selects it in settings.json; select it or switch
   siblings yourself in /theme, since Claude Code has no host-appearance
@@ -79,6 +84,7 @@ _ACTION_TEXT = {
 # What the user still has to do by hand after a completed apply.
 _RELOAD_NOTES = {
     "wezterm": "restart WezTerm, or let a config reload pick up the managed pointer",
+    "herdr-app": "settings apply live; appearance, layout themes, and the theme picker can override the pair",
     "herdr": "run `herdr server reload-config` to apply the selection",
     "nvim": "restart Neovim to load the new colorscheme",
     "codex": "restart Codex, or reselect with /theme",
@@ -91,7 +97,8 @@ def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argumen
     parser = argparse.ArgumentParser(
         prog="sf2-themes",
         description=(
-            "Street Fighter II theme pack for WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, Lazygit, and Slack."
+            "Street Fighter II theme pack for WezTerm, Herdr TUI, Herdr app, Neovim, "
+            "Codex, Claude Code, Starship, Lazygit, and Slack."
         ),
         epilog=HELP_EPILOG,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -309,6 +316,15 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
             )
         case "starship":
             results = _starship_results(theme, ns, config_dir)
+        case "herdr-app":
+            results = setup_herdr_app(
+                theme,
+                catalog,
+                config_dir=config_dir,
+                dry_run=ns.dry_run,
+                follow_symlinks=ns.follow_symlinks,
+                replace_theme=select,
+            )
         case "claude":
             results = setup_claude(
                 theme,
@@ -366,6 +382,8 @@ def _current_id(app: str, config_dir: Path | None) -> str:
     match app:
         case "wezterm":
             return wezterm_current()
+        case "herdr-app":
+            return herdr_app_current(config_dir)
         case "herdr":
             return herdr_current(config_dir)
         case "nvim":
@@ -387,6 +405,8 @@ def _current_id(app: str, config_dir: Path | None) -> str:
 def _selection_exists(app: str, config_dir: Path | None) -> bool:
     """True when the app already holds a selection that setup will keep."""
     match app:
+        case "herdr-app":
+            return herdr_app_selection_exists(config_dir)
         case "wezterm":
             return wezterm_pointer_path().is_file()
         case "nvim":
