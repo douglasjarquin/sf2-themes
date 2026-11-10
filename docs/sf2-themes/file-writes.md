@@ -5,7 +5,8 @@ Paths, overrides, symlinks, and backups. Moved out of the README.
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
 - The active WezTerm scheme is a managed pointer at `~/.config/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
-- Herdr updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
+- Herdr app installs `~/.config/herdr-app/themes/sf2-*.json` and selects a light/dark pair in `~/.config/herdr-app/settings.json`.
+- Herdr TUI updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
 - Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
 - Neovim also manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
