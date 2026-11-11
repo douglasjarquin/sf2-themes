@@ -72,7 +72,7 @@ Slack writes no file and does not install an `sf2-` identity.
 `sf2 apply herdr-app --theme ryu` installs desktop JSON themes and selects the light/dark pair in `~/.config/herdr-app/settings.json`.
 Settings apply live; layout themes and the theme picker can override the selection.
 
-Herdr TUI appearance switching needs a build with herdr#2324 and is not in a stable release yet.
+Herdr TUI appearance switching needs Herdr v0.9.0 or newer (herdr#2324).
 
 Symlinks are refused unless you pass `--follow-symlinks`. Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 

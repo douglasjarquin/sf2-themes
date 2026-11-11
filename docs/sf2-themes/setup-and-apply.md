@@ -69,7 +69,7 @@ Claude Code apply writes every catalog theme as `sf2-<catalog-id>.json` under `~
 
 Applying or setting up a theme replaces the managed unprefixed files from older versions so the old and `sf2-` identities are not left side by side.
 
-Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs a Herdr build with herdr#2324; not in a stable release yet). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
+Herdr apply enables `auto_switch` for the selected character (or `main`) and writes per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays, so the character palette itself follows host appearance (needs Herdr v0.9.0 or newer, which ships herdr#2324). Applying `chun-li` or `chun-li-light` selects the same pair. Reload with `herdr server reload-config` after applying.
 
 Herdr configs that already have an unmarked `[theme]` section are left alone unless you pass `--adopt`.
 
