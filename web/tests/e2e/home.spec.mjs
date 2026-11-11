@@ -10,7 +10,7 @@ test("home renders the hero, live preview, install steps, and ports", async ({ p
   await expect(
     page.getByRole("heading", { level: 1, name: "Fight for your terminal." }),
   ).toBeVisible();
-  await expect(page.locator(".meta")).toContainText("36 themes · 7 apps");
+  await expect(page.locator(".meta")).toContainText("36 themes · 8 apps plus Slack");
 
   await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText("sf2-ryu");
   await expect(page.locator("[data-pane]")).toHaveCount(7);
