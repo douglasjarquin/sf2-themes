@@ -1,0 +1,36 @@
+
+gui:
+  # >>> sf2-themes managed theme
+  # sf2-themes: sf2-ken
+  theme:
+    activeBorderColor:
+      - '#de6767'
+      - bold
+    inactiveBorderColor:
+      - '#3e2d2d'
+    searchingActiveBorderColor:
+      - '#a88225'
+    optionsTextColor:
+      - '#de6767'
+    selectedLineBgColor:
+      - '#522d2c'
+    inactiveViewSelectedLineBgColor:
+      - '#2e2020'
+    cherryPickedCommitFgColor:
+      - '#549657'
+    cherryPickedCommitBgColor:
+      - '#3e2d2d'
+    markedBaseCommitFgColor:
+      - '#c1753c'
+    markedBaseCommitBgColor:
+      - '#3e2d2d'
+    unstagedChangesColor:
+      - '#c76e67'
+    defaultFgColor:
+      - '#decdcc'
+  # <<< sf2-themes managed theme
+  # >>> sf2-themes managed author colors
+  # sf2-themes: sf2-ken
+  authorColors:
+    '*': '#ae8012'
+  # <<< sf2-themes managed author colors

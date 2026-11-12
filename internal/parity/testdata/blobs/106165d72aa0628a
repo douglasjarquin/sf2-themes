@@ -1,0 +1,6 @@
+gui:
+  authorColors:
+    'alice': '#ff0000'
+    '*': '#00ff00'
+git:
+  paging: {}

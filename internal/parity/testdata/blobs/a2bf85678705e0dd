@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Cammy",
+  "base": "dark",
+  "overrides": {
+    "claude": "#509c54",
+    "error": "#c86e67",
+    "success": "#549657",
+    "warning": "#a38424",
+    "text": "#c7d2dd",
+    "permission": "#c1753c",
+    "bashBorder": "#29333f",
+    "diffAdded": "#549657",
+    "diffRemoved": "#c86e67",
+    "suggestion": "#ca6d66"
+  }
+}

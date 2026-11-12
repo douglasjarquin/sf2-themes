@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Main Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#7d6005",
+    "error": "#a94b47",
+    "success": "#247738",
+    "warning": "#836401",
+    "text": "#2c313d",
+    "permission": "#9f5517",
+    "bashBorder": "#d4dae8",
+    "diffAdded": "#247738",
+    "diffRemoved": "#a94b47",
+    "suggestion": "#ab4945"
+  }
+}

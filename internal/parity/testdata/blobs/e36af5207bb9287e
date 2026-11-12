@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Balrog",
+  "base": "dark",
+  "overrides": {
+    "claude": "#d465a8",
+    "error": "#c86d6e",
+    "success": "#469760",
+    "warning": "#a28424",
+    "text": "#d0cfdd",
+    "permission": "#c1753c",
+    "bashBorder": "#32303e",
+    "diffAdded": "#469760",
+    "diffRemoved": "#c86d6e",
+    "suggestion": "#a5840e"
+  }
+}

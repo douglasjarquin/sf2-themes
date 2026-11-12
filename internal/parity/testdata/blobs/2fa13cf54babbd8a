@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-fei-long.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#181822",
++  "foreground": "#cfcfdd",
++  "selection": "#522e29",
++  "cursor": "#dd685b",
++  "ansi": [
++    "#30303e",
++    "#c86e63",
++    "#4e975b",
++    "#a88225",
++    "#558acb",
++    "#b271ac",
++    "#1396a1",
++    "#b3b3c2",
++    "#828397",
++    "#ee8578",
++    "#60b46e",
++    "#c89c30",
++    "#68a5f2",
++    "#d588ce",
++    "#1db3c0",
++    "#d9dae5"
++  ],
++  "colors": {
++    "canvas": "#181822",
++    "chrome": "#23232f",
++    "surface": "#31313f",
++    "border": "#31313f",
++    "accent": "#dd685b"
++  }
++}

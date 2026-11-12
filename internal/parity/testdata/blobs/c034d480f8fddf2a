@@ -1,0 +1,7 @@
+-- sf2-themes: sf2-main
+local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")
+if light_mode then
+  vim.cmd("colorscheme sf2-main-light")
+else
+  vim.cmd("colorscheme sf2-main")
+end

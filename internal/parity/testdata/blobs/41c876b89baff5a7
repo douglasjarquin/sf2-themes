@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-zangief.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#0f1c20",
++  "foreground": "#c4d4da",
++  "selection": "#522d2b",
++  "cursor": "#df6862",
++  "ansi": [
++    "#23353a",
++    "#c96f68",
++    "#559758",
++    "#a38525",
++    "#3a90c5",
++    "#b372ad",
++    "#0396a8",
++    "#a8b8be",
++    "#718990",
++    "#ef867e",
++    "#68b56b",
++    "#c3a031",
++    "#48acea",
++    "#d689cf",
++    "#11b4c9",
++    "#d1dee2"
++  ],
++  "colors": {
++    "canvas": "#0f1c20",
++    "chrome": "#18272c",
++    "surface": "#24353b",
++    "border": "#24353b",
++    "accent": "#df6862"
++  }
++}

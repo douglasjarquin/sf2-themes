@@ -44,6 +44,8 @@ jobs:
               - 'cmd/**'
               - 'internal/**'
               - 'themes/**'
+              - 'src/**'
+              - 'sf2-themes'
               - 'mise.toml'
               - 'mise.lock'
             web:
@@ -163,6 +165,13 @@ jobs:
         run: mise run go:test
       - name: Lint
         run: mise run go:lint
+      - name: Check the Python reference against the parity goldens
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          MISE_ENABLE_TOOLS: go,python
+        run: |
+          mise install python
+          mise run parity:check
 
   web:
     needs: changes

@@ -1,0 +1,10 @@
+step current herdr-app --config-dir {SANDBOX}/config/herdr-app
+exit 0
+stdout
+| sf2-ryu
+stderr
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+file 0644 5398969b71e5a3eb config/herdr-app/settings.json
+dir 0755 home

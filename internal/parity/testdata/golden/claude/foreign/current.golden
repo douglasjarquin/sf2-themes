@@ -1,0 +1,10 @@
+step current claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: Claude Code uses a theme sf2-themes does not manage
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 ceb7d0245faec668 config/claude/settings.json
+dir 0755 home

@@ -1,0 +1,50 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-chun-li
+[theme]
+name = "catppuccin"
+auto_switch = true
+light_name = "catppuccin-latte"
+dark_name = "catppuccin"
+
+[theme.custom.dark]
+sidebar_bg = "#131a23"
+panel_bg = "#1d252f"
+active_row_bg = "#1d252f"
+selection_bg = "#2a333f"
+surface0 = "#1d252f"
+surface1 = "#2a333f"
+surface_dim = "#131a23"
+overlay0 = "#788696"
+overlay1 = "#98a8bc"
+text = "#c8d2de"
+subtext0 = "#98a8bc"
+accent = "#498ee2"
+mauve = "#a4841b"
+green = "#4e975b"
+yellow = "#a38424"
+red = "#c86e67"
+blue = "#558acb"
+teal = "#1396a1"
+peach = "#c2753c"
+
+[theme.custom.light]
+sidebar_bg = "#ebf2fa"
+panel_bg = "#e0e7f1"
+active_row_bg = "#e0e7f1"
+selection_bg = "#d1dbe7"
+surface0 = "#e0e7f1"
+surface1 = "#d1dbe7"
+surface_dim = "#ebf2fa"
+overlay0 = "#5c6c82"
+overlay1 = "#3e5168"
+text = "#2a323d"
+subtext0 = "#3e5168"
+accent = "#1e64b5"
+mauve = "#816501"
+green = "#247738"
+yellow = "#816501"
+red = "#a94b47"
+blue = "#3169af"
+teal = "#02747d"
+peach = "#9f5517"
+# <<< sf2-themes managed theme

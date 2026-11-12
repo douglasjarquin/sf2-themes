@@ -1,0 +1,31 @@
+step apply starship --theme chun-li-light --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| apply starship: sf2-chun-li-light
+|   changes: 2 created
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+step setup starship --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| setup starship: kept sf2-chun-li-light
+|   changes: no changes
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+step current starship --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| sf2-chun-li-light
+stderr
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 148f10a30a898477 config/starship/starship.toml
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 f2de376559544dc5 home/.config/sf2-theme/zsh-syntax-highlighting.zsh

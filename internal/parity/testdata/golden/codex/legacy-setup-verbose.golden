@@ -1,0 +1,129 @@
+step setup codex --verbose --config-dir {SANDBOX}/config/codex
+exit 0
+stdout
+| created: {SANDBOX}/config/codex/themes/sf2-main.tmTheme
+= 8bb792645878019a
+| created: {SANDBOX}/config/codex/themes/sf2-main-light.tmTheme
+= 732e04de1e962a31
+| created: {SANDBOX}/config/codex/themes/sf2-akuma-light.tmTheme
+= 6eb698152762bc63
+| created: {SANDBOX}/config/codex/themes/sf2-akuma.tmTheme
+= f3899744227dc2f4
+| created: {SANDBOX}/config/codex/themes/sf2-balrog-light.tmTheme
+= 9f91b853262f0d2b
+| created: {SANDBOX}/config/codex/themes/sf2-balrog.tmTheme
+= aaf266c83b321d5b
+| created: {SANDBOX}/config/codex/themes/sf2-blanka-light.tmTheme
+= 2f32576e850739ed
+| created: {SANDBOX}/config/codex/themes/sf2-blanka.tmTheme
+= 329a561735157078
+| created: {SANDBOX}/config/codex/themes/sf2-cammy-light.tmTheme
+= e39919e9bb38021f
+| created: {SANDBOX}/config/codex/themes/sf2-cammy.tmTheme
+= adc5a12ab44eab32
+| created: {SANDBOX}/config/codex/themes/sf2-chun-li-light.tmTheme
+= fa82ecd51b6e799c
+| created: {SANDBOX}/config/codex/themes/sf2-chun-li.tmTheme
+= 4e8a4b65843ec167
+| created: {SANDBOX}/config/codex/themes/sf2-dee-jay-light.tmTheme
+= 681be49f842681a9
+| created: {SANDBOX}/config/codex/themes/sf2-dee-jay.tmTheme
+= 654232a42ba72a34
+| created: {SANDBOX}/config/codex/themes/sf2-dhalsim-light.tmTheme
+= 38ff3b395d53cb56
+| created: {SANDBOX}/config/codex/themes/sf2-dhalsim.tmTheme
+= 0ab09f6d2f371a7b
+| created: {SANDBOX}/config/codex/themes/sf2-e-honda-light.tmTheme
+= 9c9296ddd527b754
+| created: {SANDBOX}/config/codex/themes/sf2-e-honda.tmTheme
+= 6a192fe6bd953ff6
+| created: {SANDBOX}/config/codex/themes/sf2-fei-long-light.tmTheme
+= 3bc2b6509871b17a
+| created: {SANDBOX}/config/codex/themes/sf2-fei-long.tmTheme
+= 3798bafe377e95f3
+| created: {SANDBOX}/config/codex/themes/sf2-guile-light.tmTheme
+= 5d89527ec0dd6576
+| created: {SANDBOX}/config/codex/themes/sf2-guile.tmTheme
+= 35c6c4640422cc71
+| created: {SANDBOX}/config/codex/themes/sf2-ken-light.tmTheme
+= 96584af457a891b7
+| created: {SANDBOX}/config/codex/themes/sf2-ken.tmTheme
+= 1fd9d7834d03b89c
+| created: {SANDBOX}/config/codex/themes/sf2-m-bison-light.tmTheme
+= 78ead35e7832ca06
+| created: {SANDBOX}/config/codex/themes/sf2-m-bison.tmTheme
+= a1985fb0632a0e0c
+| created: {SANDBOX}/config/codex/themes/sf2-ryu-light.tmTheme
+= 3bfee82b9f0d43ad
+| created: {SANDBOX}/config/codex/themes/sf2-ryu.tmTheme
+= c9b909c55aea9efe
+| created: {SANDBOX}/config/codex/themes/sf2-sagat-light.tmTheme
+= a4bf68686ac92f0e
+| created: {SANDBOX}/config/codex/themes/sf2-sagat.tmTheme
+= 261fd3ad78796895
+| created: {SANDBOX}/config/codex/themes/sf2-t-hawk-light.tmTheme
+= 32c4a32a1fbba90a
+| created: {SANDBOX}/config/codex/themes/sf2-t-hawk.tmTheme
+= 795568baf269e088
+| created: {SANDBOX}/config/codex/themes/sf2-vega-light.tmTheme
+= 3d6918ab56e39182
+| created: {SANDBOX}/config/codex/themes/sf2-vega.tmTheme
+= f9a0e320941ba5fb
+| created: {SANDBOX}/config/codex/themes/sf2-zangief-light.tmTheme
+= 584bffeedc89dc8d
+| created: {SANDBOX}/config/codex/themes/sf2-zangief.tmTheme
+= 5a7aaaa2cee039f9
+| updated: {SANDBOX}/config/codex/config.toml
+| --- {SANDBOX}/config/codex/config.toml
+| +++ {SANDBOX}/config/codex/config.toml
+| @@ -1,2 +1,2 @@
+|  [tui]
+| -theme = "ryu"
+| +theme = "sf2-ryu"
+| setup codex: kept sf2-ryu
+|   changes: 36 created, 1 updated
+|   note: restart Codex, or reselect with /theme
+stderr
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 710d192abf95abca config/codex/config.toml
+file 0644 c8ad27d9f5894f27 config/codex/config.toml.bak.<STAMP>
+dir 0755 config/codex/themes
+file 0644 125cb1d614cfd14e config/codex/themes/sf2-akuma-light.tmTheme
+file 0644 b110d62e2dc9d24c config/codex/themes/sf2-akuma.tmTheme
+file 0644 7f02948cdec4c67e config/codex/themes/sf2-balrog-light.tmTheme
+file 0644 ad6a7ce4addd223f config/codex/themes/sf2-balrog.tmTheme
+file 0644 6546bfd1184865d6 config/codex/themes/sf2-blanka-light.tmTheme
+file 0644 520e442ac6dda658 config/codex/themes/sf2-blanka.tmTheme
+file 0644 027a450e90ea9381 config/codex/themes/sf2-cammy-light.tmTheme
+file 0644 48c36c4ae526b7d4 config/codex/themes/sf2-cammy.tmTheme
+file 0644 4c9160134309a789 config/codex/themes/sf2-chun-li-light.tmTheme
+file 0644 06949233d7d1f706 config/codex/themes/sf2-chun-li.tmTheme
+file 0644 f1b9a34933213653 config/codex/themes/sf2-dee-jay-light.tmTheme
+file 0644 8a1ad7191a6b04f4 config/codex/themes/sf2-dee-jay.tmTheme
+file 0644 f72561fa6619dbc7 config/codex/themes/sf2-dhalsim-light.tmTheme
+file 0644 7dce8e3731b1c9a9 config/codex/themes/sf2-dhalsim.tmTheme
+file 0644 4ade910150c9d0f0 config/codex/themes/sf2-e-honda-light.tmTheme
+file 0644 fad30b96aed88ab4 config/codex/themes/sf2-e-honda.tmTheme
+file 0644 3c21308adfe13d9c config/codex/themes/sf2-fei-long-light.tmTheme
+file 0644 e044fa90e61c2654 config/codex/themes/sf2-fei-long.tmTheme
+file 0644 65cab4e0d431be0c config/codex/themes/sf2-guile-light.tmTheme
+file 0644 3c563cc4a39eb5ce config/codex/themes/sf2-guile.tmTheme
+file 0644 8b73184b0dc35e92 config/codex/themes/sf2-ken-light.tmTheme
+file 0644 af8ed9c7d02daa71 config/codex/themes/sf2-ken.tmTheme
+file 0644 68dc937d58216886 config/codex/themes/sf2-m-bison-light.tmTheme
+file 0644 9c88a46e2a383a0b config/codex/themes/sf2-m-bison.tmTheme
+file 0644 ee90ed06ab0dc3be config/codex/themes/sf2-main-light.tmTheme
+file 0644 d12435f942ec0373 config/codex/themes/sf2-main.tmTheme
+file 0644 d69b2abb232d0ce5 config/codex/themes/sf2-ryu-light.tmTheme
+file 0644 d3bf5fe7f31be590 config/codex/themes/sf2-ryu.tmTheme
+file 0644 a565b71db3337c3b config/codex/themes/sf2-sagat-light.tmTheme
+file 0644 6c005b489bb36db2 config/codex/themes/sf2-sagat.tmTheme
+file 0644 a8c85fba09bdd5eb config/codex/themes/sf2-t-hawk-light.tmTheme
+file 0644 afc540aad401e25c config/codex/themes/sf2-t-hawk.tmTheme
+file 0644 6cd27a86fa2328e8 config/codex/themes/sf2-vega-light.tmTheme
+file 0644 41a797b37eacaab6 config/codex/themes/sf2-vega.tmTheme
+file 0644 1f68f5acbb2103b2 config/codex/themes/sf2-zangief-light.tmTheme
+file 0644 8f5655ffc6020565 config/codex/themes/sf2-zangief.tmTheme
+dir 0755 home

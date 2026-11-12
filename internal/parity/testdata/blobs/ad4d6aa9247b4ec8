@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-akuma.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#dc6560'
++      - bold
++    inactiveBorderColor:
++      - '#382c2d'
++    searchingActiveBorderColor:
++      - '#a68022'
++    optionsTextColor:
++      - '#dc6560'
++    selectedLineBgColor:
++      - '#522d2b'
++    inactiveViewSelectedLineBgColor:
++      - '#281f20'
++    cherryPickedCommitFgColor:
++      - '#609261'
++    cherryPickedCommitBgColor:
++      - '#382c2d'
++    markedBaseCommitFgColor:
++      - '#bf733a'
++    markedBaseCommitBgColor:
++      - '#382c2d'
++    unstagedChangesColor:
++      - '#c66c66'
++    defaultFgColor:
++      - '#dbcaca'
++  authorColors:
++    '*': '#9a76c3'

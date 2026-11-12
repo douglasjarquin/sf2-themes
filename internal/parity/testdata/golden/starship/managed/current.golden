@@ -1,0 +1,13 @@
+step current starship --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| sf2-ryu
+stderr
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 5dcceeeaf035e875 config/starship/starship.toml
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 085dfa691dc4f4cb home/.config/sf2-theme/zsh-syntax-highlighting.zsh

@@ -1,0 +1,17 @@
+step validate ryu-light
+exit 0
+stdout
+| warning: ryu-light: #ecf1fa reused by ui.background, ui.cursor_text
+| warning: ryu-light: #d3dae8 reused by ui.overlay, ui.border
+| warning: ryu-light: #2b313d reused by ui.foreground, ui.selection_foreground
+| warning: ryu-light: #ab4043 reused by ui.accent, ui.cursor
+| warning: ryu-light: #a94a4b reused by semantic.red, ansi.normal.red
+| warning: ryu-light: #3e7347 reused by semantic.green, ansi.normal.green
+| warning: ryu-light: #7b6600 reused by semantic.yellow, ansi.normal.yellow
+| warning: ryu-light: #3169af reused by semantic.blue, ansi.normal.blue
+| warning: ryu-light: #815893 reused by semantic.magenta, ansi.normal.magenta
+| warning: ryu-light: #0f7285 reused by semantic.cyan, ansi.normal.cyan
+| valid: ryu-light
+stderr
+tree
+dir 0755 home

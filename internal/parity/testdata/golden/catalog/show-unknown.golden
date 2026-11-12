@@ -1,0 +1,7 @@
+step show nope
+exit 1
+stdout
+stderr
+| error: unknown theme: nope
+tree
+dir 0755 home

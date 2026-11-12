@@ -1,0 +1,10 @@
+step apply herdr --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: Herdr already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup herdr` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 9e205c8dabdc1c9e config/herdr/config.toml
+dir 0755 home

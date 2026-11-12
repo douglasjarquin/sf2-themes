@@ -1,0 +1,8 @@
+gui:  # interface
+  theme:
+    activeBorderColor:
+      - red
+  authorColors:
+    'bob': '#0000ff'
+os:
+  edit: vim

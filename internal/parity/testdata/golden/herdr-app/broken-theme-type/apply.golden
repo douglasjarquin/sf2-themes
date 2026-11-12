@@ -1,0 +1,10 @@
+step apply herdr-app --config-dir {SANDBOX}/config/herdr-app
+exit 1
+stdout
+stderr
+| error: Herdr app config cannot be changed safely: {SANDBOX}/config/herdr-app/settings.json theme must be a name or object
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+file 0644 152572f72bcacf6a config/herdr-app/settings.json
+dir 0755 home

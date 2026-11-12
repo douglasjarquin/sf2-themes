@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Akuma Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#af3d3b",
+    "error": "#a94a46",
+    "success": "#437345",
+    "warning": "#846301",
+    "text": "#3c2e2e",
+    "permission": "#9e5517",
+    "bashBorder": "#e7d5d6",
+    "diffAdded": "#437345",
+    "diffRemoved": "#a94a46",
+    "suggestion": "#7c57a3"
+  }
+}

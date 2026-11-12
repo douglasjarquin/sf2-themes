@@ -1,0 +1,26 @@
+step apply starship --theme ryu --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| apply starship: sf2-ryu
+|   changes: 2 created
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+step apply starship --theme ryu --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| apply starship: sf2-ryu
+|   changes: no changes
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 5dcceeeaf035e875 config/starship/starship.toml
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 085dfa691dc4f4cb home/.config/sf2-theme/zsh-syntax-highlighting.zsh

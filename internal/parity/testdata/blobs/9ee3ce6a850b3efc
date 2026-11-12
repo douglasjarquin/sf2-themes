@@ -1,0 +1,8 @@
+{
+  "theme": {
+    "dark": "sf2-ryu",
+    "light": "sf2-ryu-light",
+    "mode": "auto"
+  },
+  "fontSize": 14
+}

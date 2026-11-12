@@ -1,0 +1,87 @@
+step apply codex --theme ken --dry-run --config-dir {SANDBOX}/config/codex
+exit 0
+stdout
+| would create: {SANDBOX}/config/codex/themes/sf2-main.tmTheme
+= 8bb792645878019a
+| would create: {SANDBOX}/config/codex/themes/sf2-main-light.tmTheme
+= 732e04de1e962a31
+| would create: {SANDBOX}/config/codex/themes/sf2-akuma-light.tmTheme
+= 6eb698152762bc63
+| would create: {SANDBOX}/config/codex/themes/sf2-akuma.tmTheme
+= f3899744227dc2f4
+| would create: {SANDBOX}/config/codex/themes/sf2-balrog-light.tmTheme
+= 9f91b853262f0d2b
+| would create: {SANDBOX}/config/codex/themes/sf2-balrog.tmTheme
+= aaf266c83b321d5b
+| would create: {SANDBOX}/config/codex/themes/sf2-blanka-light.tmTheme
+= 2f32576e850739ed
+| would create: {SANDBOX}/config/codex/themes/sf2-blanka.tmTheme
+= 329a561735157078
+| would create: {SANDBOX}/config/codex/themes/sf2-cammy-light.tmTheme
+= e39919e9bb38021f
+| would create: {SANDBOX}/config/codex/themes/sf2-cammy.tmTheme
+= adc5a12ab44eab32
+| would create: {SANDBOX}/config/codex/themes/sf2-chun-li-light.tmTheme
+= fa82ecd51b6e799c
+| would create: {SANDBOX}/config/codex/themes/sf2-chun-li.tmTheme
+= 4e8a4b65843ec167
+| would create: {SANDBOX}/config/codex/themes/sf2-dee-jay-light.tmTheme
+= 681be49f842681a9
+| would create: {SANDBOX}/config/codex/themes/sf2-dee-jay.tmTheme
+= 654232a42ba72a34
+| would create: {SANDBOX}/config/codex/themes/sf2-dhalsim-light.tmTheme
+= 38ff3b395d53cb56
+| would create: {SANDBOX}/config/codex/themes/sf2-dhalsim.tmTheme
+= 0ab09f6d2f371a7b
+| would create: {SANDBOX}/config/codex/themes/sf2-e-honda-light.tmTheme
+= 9c9296ddd527b754
+| would create: {SANDBOX}/config/codex/themes/sf2-e-honda.tmTheme
+= 6a192fe6bd953ff6
+| would create: {SANDBOX}/config/codex/themes/sf2-fei-long-light.tmTheme
+= 3bc2b6509871b17a
+| would create: {SANDBOX}/config/codex/themes/sf2-fei-long.tmTheme
+= 3798bafe377e95f3
+| would create: {SANDBOX}/config/codex/themes/sf2-guile-light.tmTheme
+= 5d89527ec0dd6576
+| would create: {SANDBOX}/config/codex/themes/sf2-guile.tmTheme
+= 35c6c4640422cc71
+| would create: {SANDBOX}/config/codex/themes/sf2-ken-light.tmTheme
+= 96584af457a891b7
+| would create: {SANDBOX}/config/codex/themes/sf2-ken.tmTheme
+= 1fd9d7834d03b89c
+| would create: {SANDBOX}/config/codex/themes/sf2-m-bison-light.tmTheme
+= 78ead35e7832ca06
+| would create: {SANDBOX}/config/codex/themes/sf2-m-bison.tmTheme
+= a1985fb0632a0e0c
+| would create: {SANDBOX}/config/codex/themes/sf2-ryu-light.tmTheme
+= 3bfee82b9f0d43ad
+| would create: {SANDBOX}/config/codex/themes/sf2-ryu.tmTheme
+= c9b909c55aea9efe
+| would create: {SANDBOX}/config/codex/themes/sf2-sagat-light.tmTheme
+= a4bf68686ac92f0e
+| would create: {SANDBOX}/config/codex/themes/sf2-sagat.tmTheme
+= 261fd3ad78796895
+| would create: {SANDBOX}/config/codex/themes/sf2-t-hawk-light.tmTheme
+= 32c4a32a1fbba90a
+| would create: {SANDBOX}/config/codex/themes/sf2-t-hawk.tmTheme
+= 795568baf269e088
+| would create: {SANDBOX}/config/codex/themes/sf2-vega-light.tmTheme
+= 3d6918ab56e39182
+| would create: {SANDBOX}/config/codex/themes/sf2-vega.tmTheme
+= f9a0e320941ba5fb
+| would create: {SANDBOX}/config/codex/themes/sf2-zangief-light.tmTheme
+= 584bffeedc89dc8d
+| would create: {SANDBOX}/config/codex/themes/sf2-zangief.tmTheme
+= 5a7aaaa2cee039f9
+| would create: {SANDBOX}/config/codex/config.toml
+| --- /dev/null
+| +++ {SANDBOX}/config/codex/config.toml
+| @@ -0,0 +1,2 @@
+| +[tui]
+| +theme = "sf2-ken"
+| apply codex: sf2-ken
+|   changes: 37 would create
+|   note: restart Codex, or reselect with /theme
+stderr
+tree
+dir 0755 home

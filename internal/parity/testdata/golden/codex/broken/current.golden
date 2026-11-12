@@ -1,0 +1,10 @@
+step current codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/codex/config.toml is not valid TOML: <masked>
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 e2006d1e1759b70f config/codex/config.toml
+dir 0755 home

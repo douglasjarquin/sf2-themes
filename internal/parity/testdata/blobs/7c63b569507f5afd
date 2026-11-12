@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-sagat-light.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#f8eef4",
++  "foreground": "#3a2e36",
++  "selection": "#e3d4b0",
++  "cursor": "#7d6007",
++  "ansi": [
++    "#483943",
++    "#a94a46",
++    "#3b7449",
++    "#826401",
++    "#4565b1",
++    "#8056a3",
++    "#0f7378",
++    "#e5dae1",
++    "#63505c",
++    "#9c3332",
++    "#1e6434",
++    "#6e5403",
++    "#3253a7",
++    "#724198",
++    "#026166",
++    "#f8f2f6"
++  ],
++  "colors": {
++    "canvas": "#f8eef4",
++    "chrome": "#eee3ea",
++    "surface": "#e4d5de",
++    "border": "#e4d5de",
++    "accent": "#7d6007"
++  }
++}

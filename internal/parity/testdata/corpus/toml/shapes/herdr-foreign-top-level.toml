@@ -1,0 +1,4 @@
+theme = "dracula"
+
+[ui]
+sidebar = true

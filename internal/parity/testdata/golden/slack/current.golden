@@ -1,0 +1,7 @@
+step current slack --config-dir {SANDBOX}/config/slack
+exit 1
+stdout
+stderr
+| error: no Slack theme to read
+tree
+dir 0755 home

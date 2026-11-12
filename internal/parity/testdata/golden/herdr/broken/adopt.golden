@@ -1,0 +1,10 @@
+step apply herdr --adopt --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: Herdr config cannot be changed safely: {SANDBOX}/config/herdr/config.toml is not valid TOML: <masked>
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 d66297ae3c240904 config/herdr/config.toml
+dir 0755 home

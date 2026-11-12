@@ -1,0 +1,15 @@
+step apps
+exit 0
+stdout
+| wezterm
+| herdr
+| herdr-app
+| nvim
+| codex
+| starship
+| lazygit
+| claude
+| slack
+stderr
+tree
+dir 0755 home

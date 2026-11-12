@@ -1,0 +1,10 @@
+step current herdr --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: Herdr uses a theme sf2-themes does not manage
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 9e205c8dabdc1c9e config/herdr/config.toml
+dir 0755 home

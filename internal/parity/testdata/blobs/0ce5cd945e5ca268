@@ -1,0 +1,25 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-main
+palette = "sf2"
+
+[palettes.sf2]
+black = "#131927"
+red = "#c86e67"
+green = "#4e975b"
+yellow = "#a58324"
+blue = "#ad8705"
+purple = "#cf6a63"
+cyan = "#1396a1"
+white = "#cad1de"
+bright-black = "#7c8597"
+bright-red = "#c86e67"
+bright-green = "#4e975b"
+bright-yellow = "#a58324"
+bright-blue = "#ad8705"
+bright-purple = "#cf6a63"
+bright-cyan = "#1396a1"
+bright-white = "#cad1de"
+# <<< sf2-themes managed theme
+
+[palettes.mine]
+blue = "#0000ff"

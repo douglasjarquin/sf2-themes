@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Sagat Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#7d6007",
+    "error": "#a94a46",
+    "success": "#3b7449",
+    "warning": "#826401",
+    "text": "#3a2e36",
+    "permission": "#9e5517",
+    "bashBorder": "#e4d5de",
+    "diffAdded": "#3b7449",
+    "diffRemoved": "#a94a46",
+    "suggestion": "#7f57a1"
+  }
+}

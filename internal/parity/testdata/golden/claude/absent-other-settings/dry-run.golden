@@ -1,0 +1,749 @@
+step apply claude --theme ken --dry-run --config-dir {SANDBOX}/config/claude
+exit 0
+stdout
+| would create: {SANDBOX}/config/claude/themes/sf2-main.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-main.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Main",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#ad8705",
+| +    "error": "#c86e67",
+| +    "success": "#4e975b",
+| +    "warning": "#a58324",
+| +    "text": "#cad1de",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#2a3243",
+| +    "diffAdded": "#4e975b",
+| +    "diffRemoved": "#c86e67",
+| +    "suggestion": "#cf6a63"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-main-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-main-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Main Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#7d6005",
+| +    "error": "#a94b47",
+| +    "success": "#247738",
+| +    "warning": "#836401",
+| +    "text": "#2c313d",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#d4dae8",
+| +    "diffAdded": "#247738",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#ab4945"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-akuma-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-akuma-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Akuma Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#af3d3b",
+| +    "error": "#a94a46",
+| +    "success": "#437345",
+| +    "warning": "#846301",
+| +    "text": "#3c2e2e",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#e7d5d6",
+| +    "diffAdded": "#437345",
+| +    "diffRemoved": "#a94a46",
+| +    "suggestion": "#7c57a3"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-akuma.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-akuma.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Akuma",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#dc6560",
+| +    "error": "#c66c66",
+| +    "success": "#609261",
+| +    "warning": "#a68022",
+| +    "text": "#dbcaca",
+| +    "permission": "#bf733a",
+| +    "bashBorder": "#382c2d",
+| +    "diffAdded": "#609261",
+| +    "diffRemoved": "#c66c66",
+| +    "suggestion": "#9a76c3"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-balrog-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-balrog-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Balrog Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#a63b7f",
+| +    "error": "#a94a4e",
+| +    "success": "#15783f",
+| +    "warning": "#806500",
+| +    "text": "#32303d",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#d9d8e7",
+| +    "diffAdded": "#15783f",
+| +    "diffRemoved": "#a94a4e",
+| +    "suggestion": "#806501"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-balrog.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-balrog.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Balrog",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#d465a8",
+| +    "error": "#c86d6e",
+| +    "success": "#469760",
+| +    "warning": "#a28424",
+| +    "text": "#d0cfdd",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#32303e",
+| +    "diffAdded": "#469760",
+| +    "diffRemoved": "#c86d6e",
+| +    "suggestion": "#a5840e"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-blanka-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-blanka-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Blanka Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#027433",
+| +    "error": "#a94c3f",
+| +    "success": "#247738",
+| +    "warning": "#896106",
+| +    "text": "#28352d",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#cfded6",
+| +    "diffAdded": "#247738",
+| +    "diffRemoved": "#a94c3f",
+| +    "suggestion": "#9f5605"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-blanka.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-blanka.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Blanka",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#3b9f58",
+| +    "error": "#c86f61",
+| +    "success": "#4e975b",
+| +    "warning": "#ad8028",
+| +    "text": "#c6d5cc",
+| +    "permission": "#c2753c",
+| +    "bashBorder": "#27362e",
+| +    "diffAdded": "#4e975b",
+| +    "diffRemoved": "#c86f61",
+| +    "suggestion": "#c4752e"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-cammy-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-cammy-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Cammy Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#25732d",
+| +    "error": "#a94b47",
+| +    "success": "#2d7733",
+| +    "warning": "#816501",
+| +    "text": "#29323c",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#d1dbe7",
+| +    "diffAdded": "#2d7733",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#a74d48"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-cammy.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-cammy.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Cammy",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#509c54",
+| +    "error": "#c86e67",
+| +    "success": "#549657",
+| +    "warning": "#a38424",
+| +    "text": "#c7d2dd",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#29333f",
+| +    "diffAdded": "#549657",
+| +    "diffRemoved": "#c86e67",
+| +    "suggestion": "#ca6d66"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-chun-li-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-chun-li-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Chun-Li Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#1e64b5",
+| +    "error": "#a94b47",
+| +    "success": "#247738",
+| +    "warning": "#816501",
+| +    "text": "#2a323d",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#d1dbe7",
+| +    "diffAdded": "#247738",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#816501"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-chun-li.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-chun-li.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Chun-Li",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#498ee2",
+| +    "error": "#c86e67",
+| +    "success": "#4e975b",
+| +    "warning": "#a38424",
+| +    "text": "#c8d2de",
+| +    "permission": "#c2753c",
+| +    "bashBorder": "#2a333f",
+| +    "diffAdded": "#4e975b",
+| +    "diffRemoved": "#c86e67",
+| +    "suggestion": "#a4841b"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-dee-jay-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-dee-jay-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Dee Jay Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#975404",
+| +    "error": "#a94c42",
+| +    "success": "#2e7734",
+| +    "warning": "#886205",
+| +    "text": "#243535",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#ccdede",
+| +    "diffAdded": "#2e7734",
+| +    "diffRemoved": "#a94c42",
+| +    "suggestion": "#37753b"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-dee-jay.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-dee-jay.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Dee Jay",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#cc7822",
+| +    "error": "#c86f64",
+| +    "success": "#559658",
+| +    "warning": "#ab8127",
+| +    "text": "#c2d5d4",
+| +    "permission": "#c2753c",
+| +    "bashBorder": "#233636",
+| +    "diffAdded": "#559658",
+| +    "diffRemoved": "#c86f64",
+| +    "suggestion": "#57965a"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-dhalsim-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-dhalsim-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Dhalsim Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#925602",
+| +    "error": "#a94b42",
+| +    "success": "#49731c",
+| +    "warning": "#826401",
+| +    "text": "#3b2f27",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#e4d7cd",
+| +    "diffAdded": "#49731c",
+| +    "diffRemoved": "#a94b42",
+| +    "suggestion": "#01756c"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-dhalsim.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-dhalsim.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Dhalsim",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#c77a14",
+| +    "error": "#c76e63",
+| +    "success": "#6a9346",
+| +    "warning": "#a48324",
+| +    "text": "#dbcec4",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#3c2f26",
+| +    "diffAdded": "#6a9346",
+| +    "diffRemoved": "#c76e63",
+| +    "suggestion": "#10988c"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-e-honda-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-e-honda-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - E. Honda Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#ad3f3c",
+| +    "error": "#a94a46",
+| +    "success": "#2d7633",
+| +    "warning": "#846301",
+| +    "text": "#3c2e2b",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#e7d6d2",
+| +    "diffAdded": "#2d7633",
+| +    "diffRemoved": "#a94a46",
+| +    "suggestion": "#4867a2"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-e-honda.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-e-honda.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - E. Honda",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#db6962",
+| +    "error": "#c76e67",
+| +    "success": "#549657",
+| +    "warning": "#a88225",
+| +    "text": "#decdc9",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#3e2e2b",
+| +    "diffAdded": "#549657",
+| +    "diffRemoved": "#c76e67",
+| +    "suggestion": "#6688c4"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-fei-long-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-fei-long-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Fei Long Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#af3e35",
+| +    "error": "#a94b42",
+| +    "success": "#247738",
+| +    "warning": "#856302",
+| +    "text": "#30303d",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#d8d9e7",
+| +    "diffAdded": "#247738",
+| +    "diffRemoved": "#a94b42",
+| +    "suggestion": "#06737d"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-fei-long.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-fei-long.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Fei Long",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#dd685b",
+| +    "error": "#c86e63",
+| +    "success": "#4e975b",
+| +    "warning": "#a88225",
+| +    "text": "#cfcfdd",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#31313f",
+| +    "diffAdded": "#4e975b",
+| +    "diffRemoved": "#c86e63",
+| +    "suggestion": "#1595a1"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-guile-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-guile-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Guile Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#4f6e1b",
+| +    "error": "#a94b47",
+| +    "success": "#447422",
+| +    "warning": "#7c6702",
+| +    "text": "#2c3429",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#d5ddd0",
+| +    "diffAdded": "#447422",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#1f6e9e"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-guile.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-guile.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Guile",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#769746",
+| +    "error": "#c96e68",
+| +    "success": "#66954b",
+| +    "warning": "#9e8726",
+| +    "text": "#cbd4c7",
+| +    "permission": "#c2763d",
+| +    "bashBorder": "#2d3529",
+| +    "diffAdded": "#66954b",
+| +    "diffRemoved": "#c96e68",
+| +    "suggestion": "#438fbf"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-ken-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-ken-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Ken Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#af3c40",
+| +    "error": "#a94a46",
+| +    "success": "#2d7633",
+| +    "warning": "#846301",
+| +    "text": "#3c2e2d",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#e7d5d5",
+| +    "diffAdded": "#2d7633",
+| +    "diffRemoved": "#a94a46",
+| +    "suggestion": "#876204"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-ken.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-ken.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Ken",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#de6767",
+| +    "error": "#c76e67",
+| +    "success": "#549657",
+| +    "warning": "#a88225",
+| +    "text": "#decdcc",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#3e2d2d",
+| +    "diffAdded": "#549657",
+| +    "diffRemoved": "#c76e67",
+| +    "suggestion": "#ae8012"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-m-bison-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-m-bison-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - M. Bison Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#8c48a1",
+| +    "error": "#a94a4b",
+| +    "success": "#247738",
+| +    "warning": "#826401",
+| +    "text": "#352f3b",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#ddd7e5",
+| +    "diffAdded": "#247738",
+| +    "diffRemoved": "#a94a4b",
+| +    "suggestion": "#a64c4c"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-m-bison.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-m-bison.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - M. Bison",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#b771cc",
+| +    "error": "#c86d6b",
+| +    "success": "#4e975b",
+| +    "warning": "#a48324",
+| +    "text": "#d3cedb",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#352f3d",
+| +    "diffAdded": "#4e975b",
+| +    "diffRemoved": "#c86d6b",
+| +    "suggestion": "#ca6c6a"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-ryu-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-ryu-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Ryu Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#ab4043",
+| +    "error": "#a94a4b",
+| +    "success": "#3e7347",
+| +    "warning": "#7b6600",
+| +    "text": "#2b313d",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#d3dae8",
+| +    "diffAdded": "#3e7347",
+| +    "diffRemoved": "#a94a4b",
+| +    "suggestion": "#3c69a3"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-ryu.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-ryu.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Ryu",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#da6a6a",
+| +    "error": "#c86e6c",
+| +    "success": "#5e9465",
+| +    "warning": "#9e8625",
+| +    "text": "#cad2df",
+| +    "permission": "#c2753c",
+| +    "bashBorder": "#2b333f",
+| +    "diffAdded": "#5e9465",
+| +    "diffRemoved": "#c86e6c",
+| +    "suggestion": "#5b8ac6"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-sagat-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-sagat-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Sagat Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#7d6007",
+| +    "error": "#a94a46",
+| +    "success": "#3b7449",
+| +    "warning": "#826401",
+| +    "text": "#3a2e36",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#e4d5de",
+| +    "diffAdded": "#3b7449",
+| +    "diffRemoved": "#a94a46",
+| +    "suggestion": "#7f57a1"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-sagat.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-sagat.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Sagat",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#ad8709",
+| +    "error": "#c76e67",
+| +    "success": "#5b9467",
+| +    "warning": "#a48324",
+| +    "text": "#dbccd5",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#3b2d36",
+| +    "diffAdded": "#5b9467",
+| +    "diffRemoved": "#c76e67",
+| +    "suggestion": "#9f76c3"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-t-hawk-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-t-hawk-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - T. Hawk Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#0a706c",
+| +    "error": "#a94b47",
+| +    "success": "#39752b",
+| +    "warning": "#856302",
+| +    "text": "#3c2e29",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#e6d6cf",
+| +    "diffAdded": "#39752b",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#a35129"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-t-hawk.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-t-hawk.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - T. Hawk",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#0f9c97",
+| +    "error": "#c86e67",
+| +    "success": "#5d9550",
+| +    "warning": "#a88225",
+| +    "text": "#ddcec7",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#3d2e28",
+| +    "diffAdded": "#5d9550",
+| +    "diffRemoved": "#c86e67",
+| +    "suggestion": "#c6714a"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-vega-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-vega-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Vega Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#a83b77",
+| +    "error": "#a84a55",
+| +    "success": "#3b7449",
+| +    "warning": "#826401",
+| +    "text": "#362f3a",
+| +    "permission": "#9e5517",
+| +    "bashBorder": "#dfd6e3",
+| +    "diffAdded": "#3b7449",
+| +    "diffRemoved": "#a84a55",
+| +    "suggestion": "#7758a9"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-vega.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-vega.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Vega",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#d6659f",
+| +    "error": "#c76d75",
+| +    "success": "#5b9467",
+| +    "warning": "#a58324",
+| +    "text": "#d6ceda",
+| +    "permission": "#c1753c",
+| +    "bashBorder": "#372f3b",
+| +    "diffAdded": "#5b9467",
+| +    "diffRemoved": "#c76d75",
+| +    "suggestion": "#9778cb"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-zangief-light.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-zangief-light.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Zangief Light",
+| +  "base": "light",
+| +  "overrides": {
+| +    "claude": "#af3d3b",
+| +    "error": "#a94b47",
+| +    "success": "#2d7633",
+| +    "warning": "#806500",
+| +    "text": "#253439",
+| +    "permission": "#9f5517",
+| +    "bashBorder": "#ccdee3",
+| +    "diffAdded": "#2d7633",
+| +    "diffRemoved": "#a94b47",
+| +    "suggestion": "#2e6e91"
+| +  }
+| +}
+| would create: {SANDBOX}/config/claude/themes/sf2-zangief.json
+| --- /dev/null
+| +++ {SANDBOX}/config/claude/themes/sf2-zangief.json
+| @@ -0,0 +1,16 @@
+| +{
+| +  "name": "SF2 Street Fighter II - Zangief",
+| +  "base": "dark",
+| +  "overrides": {
+| +    "claude": "#df6862",
+| +    "error": "#c96f68",
+| +    "success": "#559758",
+| +    "warning": "#a38525",
+| +    "text": "#c4d4da",
+| +    "permission": "#c2763d",
+| +    "bashBorder": "#24353b",
+| +    "diffAdded": "#559758",
+| +    "diffRemoved": "#c96f68",
+| +    "suggestion": "#508fb3"
+| +  }
+| +}
+| would update: {SANDBOX}/config/claude/settings.json
+| --- {SANDBOX}/config/claude/settings.json
+| +++ {SANDBOX}/config/claude/settings.json
+| @@ -1 +1,13 @@
+| -{"model": "opus", "nested": {"a": [1, 2.5, null, true]}, "unicode": "café 😀"}+{
+| +  "model": "opus",
+| +  "nested": {
+| +    "a": [
+| +      1,
+| +      2.5,
+| +      null,
+| +      true
+| +    ]
+| +  },
+| +  "unicode": "caf\u00e9 \ud83d\ude00",
+| +  "theme": "custom:sf2-ken"
+| +}
+| apply claude: sf2-ken
+|   changes: 36 would create, 1 would update
+|   note: reselect with /theme in a running Claude Code session
+stderr
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 d732e70e00a66bf8 config/claude/settings.json
+dir 0755 home

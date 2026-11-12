@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - E. Honda",
+  "base": "dark",
+  "overrides": {
+    "claude": "#db6962",
+    "error": "#c76e67",
+    "success": "#549657",
+    "warning": "#a88225",
+    "text": "#decdc9",
+    "permission": "#c1753c",
+    "bashBorder": "#3e2e2b",
+    "diffAdded": "#549657",
+    "diffRemoved": "#c76e67",
+    "suggestion": "#6688c4"
+  }
+}

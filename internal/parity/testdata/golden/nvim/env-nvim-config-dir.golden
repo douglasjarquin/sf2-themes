@@ -1,0 +1,51 @@
+step apply nvim
+exit 0
+stdout
+| apply nvim: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 38 created
+|   note: restart Neovim to load the new colorscheme
+stderr
+tree
+dir 0755 home
+dir 0755 nvim
+dir 0755 nvim/colors
+file 0644 f03355ec60d1473f nvim/colors/sf2-akuma-light.lua
+file 0644 861927a03ee81bf8 nvim/colors/sf2-akuma.lua
+file 0644 ed7285ea5ffd6f31 nvim/colors/sf2-balrog-light.lua
+file 0644 5377b966e6e491be nvim/colors/sf2-balrog.lua
+file 0644 9a79da58c3f09f0b nvim/colors/sf2-blanka-light.lua
+file 0644 73f116ba4cedaf10 nvim/colors/sf2-blanka.lua
+file 0644 3ea4a1e656e80d31 nvim/colors/sf2-cammy-light.lua
+file 0644 a6413bd73aee0fe6 nvim/colors/sf2-cammy.lua
+file 0644 b961e22a3e107769 nvim/colors/sf2-chun-li-light.lua
+file 0644 de847a42b0a286f6 nvim/colors/sf2-chun-li.lua
+file 0644 a3781558b7928def nvim/colors/sf2-dee-jay-light.lua
+file 0644 0a97af9a1d4704ee nvim/colors/sf2-dee-jay.lua
+file 0644 a0418f093ceaad32 nvim/colors/sf2-dhalsim-light.lua
+file 0644 95d057e5c9e39001 nvim/colors/sf2-dhalsim.lua
+file 0644 ce30bceaaa720236 nvim/colors/sf2-e-honda-light.lua
+file 0644 e2aa28eb96b8ac0b nvim/colors/sf2-e-honda.lua
+file 0644 57268924868b284d nvim/colors/sf2-fei-long-light.lua
+file 0644 fe7fb79d1202e1fd nvim/colors/sf2-fei-long.lua
+file 0644 1cfc564108a27d73 nvim/colors/sf2-guile-light.lua
+file 0644 567d5e1bedef4564 nvim/colors/sf2-guile.lua
+file 0644 1a7dc1c885a75360 nvim/colors/sf2-ken-light.lua
+file 0644 3506db643626be5a nvim/colors/sf2-ken.lua
+file 0644 33569db9db5ae2d4 nvim/colors/sf2-m-bison-light.lua
+file 0644 32f7bcf18ae6c507 nvim/colors/sf2-m-bison.lua
+file 0644 b8735fd9c841360c nvim/colors/sf2-main-light.lua
+file 0644 fbdf0683a223055d nvim/colors/sf2-main.lua
+file 0644 2dad54947c39aaaf nvim/colors/sf2-ryu-light.lua
+file 0644 831cb93e3b87cd1c nvim/colors/sf2-ryu.lua
+file 0644 028128044d296ece nvim/colors/sf2-sagat-light.lua
+file 0644 e91dc31068290512 nvim/colors/sf2-sagat.lua
+file 0644 e14cbcb41dd12690 nvim/colors/sf2-t-hawk-light.lua
+file 0644 0ccc36f0e9f99bd4 nvim/colors/sf2-t-hawk.lua
+file 0644 221ed82002447a48 nvim/colors/sf2-vega-light.lua
+file 0644 910eb72defbafc59 nvim/colors/sf2-vega.lua
+file 0644 f542293d3af5b2c8 nvim/colors/sf2-zangief-light.lua
+file 0644 3b6ef14483eb2afa nvim/colors/sf2-zangief.lua
+dir 0755 nvim/plugin
+file 0644 beb70a25f49a87b2 nvim/plugin/sf2-theme.lua
+dir 0755 nvim/sf2-theme
+file 0644 c034d480f8fddf2a nvim/sf2-theme/current.lua

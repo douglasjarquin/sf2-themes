@@ -1,0 +1,10 @@
+step apply wezterm --theme ken --verbose --config-dir {SANDBOX}/config/wezterm
+exit 1
+stdout
+stderr
+| error: WezTerm already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup wezterm` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/wezterm
+file 0644 051424cc30612a25 config/wezterm/wezterm.lua
+dir 0755 home

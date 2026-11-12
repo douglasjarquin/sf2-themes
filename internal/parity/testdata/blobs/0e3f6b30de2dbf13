@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Dhalsim Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#925602",
+    "error": "#a94b42",
+    "success": "#49731c",
+    "warning": "#826401",
+    "text": "#3b2f27",
+    "permission": "#9e5517",
+    "bashBorder": "#e4d7cd",
+    "diffAdded": "#49731c",
+    "diffRemoved": "#a94b42",
+    "suggestion": "#01756c"
+  }
+}

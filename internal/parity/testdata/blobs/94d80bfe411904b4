@@ -1,0 +1,42 @@
+--- {SANDBOX}/config/starship/starship.toml
++++ {SANDBOX}/config/starship/starship.toml
+@@ -1,22 +1,22 @@
+ # >>> sf2-themes managed theme
+-# sf2-themes: sf2-ryu
++# sf2-themes: sf2-ken
+ palette = "sf2"
+ 
+ [palettes.sf2]
+-black = "#141a23"
+-red = "#c86e6c"
+-green = "#5e9465"
+-yellow = "#9e8625"
+-blue = "#da6a6a"
+-purple = "#5b8ac6"
+-cyan = "#1195ad"
+-white = "#cad2df"
+-bright-black = "#7b8598"
+-bright-red = "#c86e6c"
+-bright-green = "#5e9465"
+-bright-yellow = "#9e8625"
+-bright-blue = "#da6a6a"
+-bright-purple = "#5b8ac6"
+-bright-cyan = "#1195ad"
+-bright-white = "#cad2df"
++black = "#221616"
++red = "#c76e67"
++green = "#549657"
++yellow = "#a88225"
++blue = "#de6767"
++purple = "#ae8012"
++cyan = "#1396a1"
++white = "#decdcc"
++bright-black = "#977f7e"
++bright-red = "#c76e67"
++bright-green = "#549657"
++bright-yellow = "#a88225"
++bright-blue = "#de6767"
++bright-purple = "#ae8012"
++bright-cyan = "#1396a1"
++bright-white = "#decdcc"
+ # <<< sf2-themes managed theme

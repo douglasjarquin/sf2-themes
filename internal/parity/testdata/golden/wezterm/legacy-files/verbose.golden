@@ -1,0 +1,151 @@
+step apply wezterm --theme ken --verbose --config-dir {SANDBOX}/config/wezterm
+exit 0
+stdout
+| removed: {SANDBOX}/config/wezterm/colors/street-fighter-ii-main.toml
+| removed: {SANDBOX}/config/wezterm/colors/street-fighter-ii-ryu.toml
+| created: {SANDBOX}/config/wezterm/colors/sf2-main.toml
+= 6d2956c21fce986e
+| created: {SANDBOX}/config/wezterm/colors/sf2-main-light.toml
+= a0cc063adbb4c411
+| created: {SANDBOX}/config/wezterm/colors/sf2-akuma-light.toml
+= ba270fbe02a009a4
+| created: {SANDBOX}/config/wezterm/colors/sf2-akuma.toml
+= d5186867fb0f988d
+| created: {SANDBOX}/config/wezterm/colors/sf2-balrog-light.toml
+= 5eedb37b0ab38f0c
+| created: {SANDBOX}/config/wezterm/colors/sf2-balrog.toml
+= b4e0f282242d9fee
+| created: {SANDBOX}/config/wezterm/colors/sf2-blanka-light.toml
+= de0c794b49bedabb
+| created: {SANDBOX}/config/wezterm/colors/sf2-blanka.toml
+= 62c885f81b3d63ad
+| created: {SANDBOX}/config/wezterm/colors/sf2-cammy-light.toml
+= cbc85c3cdef4c6c0
+| created: {SANDBOX}/config/wezterm/colors/sf2-cammy.toml
+= 65567de380108a1d
+| created: {SANDBOX}/config/wezterm/colors/sf2-chun-li-light.toml
+= 3ba2a9b53bba245b
+| created: {SANDBOX}/config/wezterm/colors/sf2-chun-li.toml
+= a932814cf4c7134c
+| created: {SANDBOX}/config/wezterm/colors/sf2-dee-jay-light.toml
+= 5b7879a575ef41e5
+| created: {SANDBOX}/config/wezterm/colors/sf2-dee-jay.toml
+= 37fa94d8688a0bbf
+| created: {SANDBOX}/config/wezterm/colors/sf2-dhalsim-light.toml
+= f37c8e748abbc696
+| created: {SANDBOX}/config/wezterm/colors/sf2-dhalsim.toml
+= b3cd96fce5dbe070
+| created: {SANDBOX}/config/wezterm/colors/sf2-e-honda-light.toml
+= f90b696164ed86b9
+| created: {SANDBOX}/config/wezterm/colors/sf2-e-honda.toml
+= 0f57fc80d11b3c7a
+| created: {SANDBOX}/config/wezterm/colors/sf2-fei-long-light.toml
+= 7c52c8e65384c79a
+| created: {SANDBOX}/config/wezterm/colors/sf2-fei-long.toml
+= 1dfd0ec3a487eef8
+| created: {SANDBOX}/config/wezterm/colors/sf2-guile-light.toml
+= 88b06ccce422c02d
+| created: {SANDBOX}/config/wezterm/colors/sf2-guile.toml
+= 83d5e9f67a0d4e7e
+| created: {SANDBOX}/config/wezterm/colors/sf2-ken-light.toml
+= af1eeaadc70f5dc1
+| created: {SANDBOX}/config/wezterm/colors/sf2-ken.toml
+= eb050a6ccad19b91
+| created: {SANDBOX}/config/wezterm/colors/sf2-m-bison-light.toml
+= 8361de4c5b8ec737
+| created: {SANDBOX}/config/wezterm/colors/sf2-m-bison.toml
+= 1674b055543a790f
+| created: {SANDBOX}/config/wezterm/colors/sf2-ryu-light.toml
+= 388368c480a3c3ac
+| created: {SANDBOX}/config/wezterm/colors/sf2-ryu.toml
+= cc05fe955f028b3f
+| created: {SANDBOX}/config/wezterm/colors/sf2-sagat-light.toml
+= 839d842359c87e73
+| created: {SANDBOX}/config/wezterm/colors/sf2-sagat.toml
+= 89271c41c72836fc
+| created: {SANDBOX}/config/wezterm/colors/sf2-t-hawk-light.toml
+= 10f08ae48f499fc8
+| created: {SANDBOX}/config/wezterm/colors/sf2-t-hawk.toml
+= 99dd6e9c3fad5b36
+| created: {SANDBOX}/config/wezterm/colors/sf2-vega-light.toml
+= d866254055654560
+| created: {SANDBOX}/config/wezterm/colors/sf2-vega.toml
+= ccb88b65c0e74435
+| created: {SANDBOX}/config/wezterm/colors/sf2-zangief-light.toml
+= 01c4167e830f84c0
+| created: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
+= 528b9ef8421415b0
+| created: {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
+| --- /dev/null
+| +++ {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
+| @@ -0,0 +1,7 @@
+| +-- sf2-themes: sf2-ken
+| +local wezterm = require("wezterm")
+| +local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"
+| +if appearance:find("Dark") then
+| +  return "sf2-ken"
+| +end
+| +return "sf2-ken-light"
+| created: {SANDBOX}/config/wezterm/wezterm.lua
+| --- /dev/null
+| +++ {SANDBOX}/config/wezterm/wezterm.lua
+| @@ -0,0 +1,10 @@
+| +local wezterm = require("wezterm")
+| +local config = wezterm.config_builder()
+| +local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+| +wezterm.add_to_config_reload_watch_list(sf2_current)
+| +local sf2_scheme = dofile(sf2_current)
+| +config.color_scheme = sf2_scheme
+| +local sf2_env = config.set_environment_variables or {}
+| +sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"
+| +config.set_environment_variables = sf2_env
+| +return config
+| apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 38 created, 2 removed
+|   note: restart WezTerm, or let a config reload pick up the managed pointer
+stderr
+tree
+dir 0755 config
+dir 0755 config/wezterm
+dir 0755 config/wezterm/colors
+file 0644 3e2aa6b84092660c config/wezterm/colors/sf2-akuma-light.toml
+file 0644 09785a96892c85f1 config/wezterm/colors/sf2-akuma.toml
+file 0644 e7e1e6a72ef994eb config/wezterm/colors/sf2-balrog-light.toml
+file 0644 4a8969bbef03d1d8 config/wezterm/colors/sf2-balrog.toml
+file 0644 d35d364e2a11f5ed config/wezterm/colors/sf2-blanka-light.toml
+file 0644 4e8e77cff634032a config/wezterm/colors/sf2-blanka.toml
+file 0644 d10c805a8d44a75c config/wezterm/colors/sf2-cammy-light.toml
+file 0644 83bccde9f690b51c config/wezterm/colors/sf2-cammy.toml
+file 0644 71a42805e85c86ed config/wezterm/colors/sf2-chun-li-light.toml
+file 0644 a1c383e53470fb21 config/wezterm/colors/sf2-chun-li.toml
+file 0644 07db311716f56147 config/wezterm/colors/sf2-dee-jay-light.toml
+file 0644 b6f65063067b7935 config/wezterm/colors/sf2-dee-jay.toml
+file 0644 379233cc7960f2ae config/wezterm/colors/sf2-dhalsim-light.toml
+file 0644 f8284e128f4f5360 config/wezterm/colors/sf2-dhalsim.toml
+file 0644 7de446b44e7206c6 config/wezterm/colors/sf2-e-honda-light.toml
+file 0644 925f8365469ea3e3 config/wezterm/colors/sf2-e-honda.toml
+file 0644 b63dde9e81ebe2df config/wezterm/colors/sf2-fei-long-light.toml
+file 0644 df7d0ba3cff2aeb4 config/wezterm/colors/sf2-fei-long.toml
+file 0644 2904fd31f0e0d5b4 config/wezterm/colors/sf2-guile-light.toml
+file 0644 a8fb4c5992588a44 config/wezterm/colors/sf2-guile.toml
+file 0644 a32e5667e21fe95e config/wezterm/colors/sf2-ken-light.toml
+file 0644 cc280837a1b597de config/wezterm/colors/sf2-ken.toml
+file 0644 032b8b8d9f393789 config/wezterm/colors/sf2-m-bison-light.toml
+file 0644 9206a4e8378b5aa2 config/wezterm/colors/sf2-m-bison.toml
+file 0644 cc0b2333bf6efdcb config/wezterm/colors/sf2-main-light.toml
+file 0644 a5684fafe2af4e7e config/wezterm/colors/sf2-main.toml
+file 0644 e77b8cf566dd503d config/wezterm/colors/sf2-ryu-light.toml
+file 0644 5fdc113f0ec7b4f1 config/wezterm/colors/sf2-ryu.toml
+file 0644 3adccbc8b2c06941 config/wezterm/colors/sf2-sagat-light.toml
+file 0644 919aa94141322280 config/wezterm/colors/sf2-sagat.toml
+file 0644 176328a2dc6991c2 config/wezterm/colors/sf2-t-hawk-light.toml
+file 0644 e7f1447e897b2ac2 config/wezterm/colors/sf2-t-hawk.toml
+file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
+file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
+file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
+file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
+file 0644 7d8f6d344297802e config/wezterm/wezterm.lua
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 f5d29221086e7845 home/.config/sf2-theme/wezterm-current.lua

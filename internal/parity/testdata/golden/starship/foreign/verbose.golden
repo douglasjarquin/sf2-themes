@@ -1,0 +1,10 @@
+step apply starship --theme ken --verbose --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: Starship already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup starship` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 7ca9d6dc4561eba6 config/starship/starship.toml
+dir 0755 home

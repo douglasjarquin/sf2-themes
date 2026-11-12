@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-guile-light.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#4f6e1b'
++      - bold
++    inactiveBorderColor:
++      - '#d5ddd0'
++    searchingActiveBorderColor:
++      - '#7c6702'
++    optionsTextColor:
++      - '#4f6e1b'
++    selectedLineBgColor:
++      - '#cbdcb9'
++    inactiveViewSelectedLineBgColor:
++      - '#e2e9df'
++    cherryPickedCommitFgColor:
++      - '#447422'
++    cherryPickedCommitBgColor:
++      - '#d5ddd0'
++    markedBaseCommitFgColor:
++      - '#9f5517'
++    markedBaseCommitBgColor:
++      - '#d5ddd0'
++    unstagedChangesColor:
++      - '#a94b47'
++    defaultFgColor:
++      - '#2c3429'
++  authorColors:
++    '*': '#1f6e9e'

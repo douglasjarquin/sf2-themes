@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Ken",
+  "base": "dark",
+  "overrides": {
+    "claude": "#de6767",
+    "error": "#c76e67",
+    "success": "#549657",
+    "warning": "#a88225",
+    "text": "#decdcc",
+    "permission": "#c1753c",
+    "bashBorder": "#3e2d2d",
+    "diffAdded": "#549657",
+    "diffRemoved": "#c76e67",
+    "suggestion": "#ae8012"
+  }
+}

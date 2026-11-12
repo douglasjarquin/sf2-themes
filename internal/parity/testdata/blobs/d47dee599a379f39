@@ -1,0 +1,6 @@
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+wezterm.add_to_config_reload_watch_list(sf2_current)
+config.color_scheme = dofile(sf2_current)
+return config

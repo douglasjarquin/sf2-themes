@@ -59,6 +59,16 @@ run = "go test -count=1 ./..."
 description = "Check Go formatting, vet, and golangci-lint"
 run = "test -z \"$(gofmt -l cmd internal)\" || { gofmt -l cmd internal; exit 1; }; go vet ./... && golangci-lint run ./..."
 
+[tasks."parity:record"]
+description = "Record the parity goldens and parser verdicts from the Python reference on Python 3.11"
+env = { SF2_PARITY_REFERENCE = "{{config_root}}/sf2-themes", SF2_PARITY_RECORD = "1" }
+run = "go test -count=1 ./internal/parity"
+
+[tasks."parity:check"]
+description = "Check the Python reference on Python 3.11 against the parity goldens and parser verdicts"
+env = { SF2_PARITY_REFERENCE = "{{config_root}}/sf2-themes" }
+run = "go test -count=1 ./internal/parity"
+
 [tasks."go:build"]
 description = "Compile every Go package and command"
 run = "go build ./..."

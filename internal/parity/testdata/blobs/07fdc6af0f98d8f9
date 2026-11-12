@@ -1,0 +1,4 @@
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+-- local sf2_current = "{SANDBOX}/xdg/sf2-theme/wezterm-current.lua" -- dofile(sf2_current) TERM_THEME
+return config

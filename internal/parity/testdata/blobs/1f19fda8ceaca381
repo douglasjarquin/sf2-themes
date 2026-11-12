@@ -1,0 +1,6 @@
+# mine
+model = "o3"
+
+[tui]
+theme = "sf2-main"
+animations = false

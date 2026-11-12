@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-e-honda-light.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#ad3f3c'
++      - bold
++    inactiveBorderColor:
++      - '#e7d6d2'
++    searchingActiveBorderColor:
++      - '#846301'
++    optionsTextColor:
++      - '#ad3f3c'
++    selectedLineBgColor:
++      - '#f4c9c4'
++    inactiveViewSelectedLineBgColor:
++      - '#f1e3e0'
++    cherryPickedCommitFgColor:
++      - '#2d7633'
++    cherryPickedCommitBgColor:
++      - '#e7d6d2'
++    markedBaseCommitFgColor:
++      - '#9e5517'
++    markedBaseCommitBgColor:
++      - '#e7d6d2'
++    unstagedChangesColor:
++      - '#a94a46'
++    defaultFgColor:
++      - '#3c2e2b'
++  authorColors:
++    '*': '#4867a2'

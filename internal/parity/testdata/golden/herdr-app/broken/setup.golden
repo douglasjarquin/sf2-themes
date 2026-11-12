@@ -1,0 +1,10 @@
+step setup herdr-app --config-dir {SANDBOX}/config/herdr-app
+exit 1
+stdout
+stderr
+| error: Herdr app config cannot be changed safely: {SANDBOX}/config/herdr-app/settings.json is not valid JSON: <masked>
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+file 0644 021fb596db81e6d0 config/herdr-app/settings.json
+dir 0755 home

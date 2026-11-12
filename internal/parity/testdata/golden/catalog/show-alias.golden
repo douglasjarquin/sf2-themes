@@ -1,0 +1,62 @@
+step show street-fighter-2
+exit 0
+stdout
+| schema_version = 1
+| 
+| [meta]
+| id = "main"
+| display_name = "Street Fighter II - Main"
+| kind = "main"
+| introduced_in = "main"
+| aliases = ["street-fighter-2", "street-fighter-ii-main"]
+| name = "Main"
+| variant = "dark"
+| family = "sf2"
+| stage = "Arcade · Family baseline"
+| 
+| [ui]
+| background = "#131927"
+| surface = "#1d2433"
+| overlay = "#2a3243"
+| border = "#2a3243"
+| foreground = "#cad1de"
+| muted = "#7c8597"
+| subtle = "#9ca7bd"
+| accent = "#ad8705"
+| accent_secondary = "#cf6a63"
+| cursor = "#ad8705"
+| cursor_text = "#131927"
+| selection_background = "#453714"
+| selection_foreground = "#cad1de"
+| 
+| [semantic]
+| red = "#c86e67"
+| green = "#4e975b"
+| yellow = "#a58324"
+| blue = "#5b89cc"
+| magenta = "#b371ad"
+| cyan = "#1396a1"
+| orange = "#c1753c"
+| 
+| [ansi.normal]
+| black = "#2b323f"
+| red = "#c86e67"
+| green = "#4e975b"
+| yellow = "#a58324"
+| blue = "#5b89cc"
+| magenta = "#b371ad"
+| cyan = "#1396a1"
+| white = "#aeb5c2"
+| 
+| [ansi.bright]
+| black = "#7c8597"
+| red = "#ee857d"
+| green = "#60b46f"
+| yellow = "#c59e30"
+| blue = "#6ea4f3"
+| magenta = "#d589cf"
+| cyan = "#1db3c0"
+| white = "#d6dbe5"
+stderr
+tree
+dir 0755 home

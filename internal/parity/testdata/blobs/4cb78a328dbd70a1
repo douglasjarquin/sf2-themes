@@ -1,0 +1,8 @@
+{
+  "theme": {
+    "dark": "sf2-main",
+    "light": "sf2-main-light",
+    "mode": "auto"
+  },
+  "fontSize": 14
+}

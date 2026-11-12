@@ -1,0 +1,6 @@
+step show
+exit 2
+stdout
+stderr exempt
+tree
+dir 0755 home

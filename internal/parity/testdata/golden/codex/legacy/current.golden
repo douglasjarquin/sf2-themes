@@ -1,0 +1,10 @@
+step current codex --config-dir {SANDBOX}/config/codex
+exit 0
+stdout
+| sf2-ryu
+stderr
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 c8ad27d9f5894f27 config/codex/config.toml
+dir 0755 home

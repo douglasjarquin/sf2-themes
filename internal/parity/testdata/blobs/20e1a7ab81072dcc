@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Zangief Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#af3d3b",
+    "error": "#a94b47",
+    "success": "#2d7633",
+    "warning": "#806500",
+    "text": "#253439",
+    "permission": "#9f5517",
+    "bashBorder": "#ccdee3",
+    "diffAdded": "#2d7633",
+    "diffRemoved": "#a94b47",
+    "suggestion": "#2e6e91"
+  }
+}

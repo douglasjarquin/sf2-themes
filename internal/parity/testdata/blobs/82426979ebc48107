@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Chun-Li",
+  "base": "dark",
+  "overrides": {
+    "claude": "#498ee2",
+    "error": "#c86e67",
+    "success": "#4e975b",
+    "warning": "#a38424",
+    "text": "#c8d2de",
+    "permission": "#c2753c",
+    "bashBorder": "#2a333f",
+    "diffAdded": "#4e975b",
+    "diffRemoved": "#c86e67",
+    "suggestion": "#a4841b"
+  }
+}

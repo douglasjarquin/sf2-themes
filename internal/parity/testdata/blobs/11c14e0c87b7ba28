@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-fei-long.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#dd685b'
++      - bold
++    inactiveBorderColor:
++      - '#31313f'
++    searchingActiveBorderColor:
++      - '#a88225'
++    optionsTextColor:
++      - '#dd685b'
++    selectedLineBgColor:
++      - '#522e29'
++    inactiveViewSelectedLineBgColor:
++      - '#23232f'
++    cherryPickedCommitFgColor:
++      - '#4e975b'
++    cherryPickedCommitBgColor:
++      - '#31313f'
++    markedBaseCommitFgColor:
++      - '#c1753c'
++    markedBaseCommitBgColor:
++      - '#31313f'
++    unstagedChangesColor:
++      - '#c86e63'
++    defaultFgColor:
++      - '#cfcfdd'
++  authorColors:
++    '*': '#1595a1'

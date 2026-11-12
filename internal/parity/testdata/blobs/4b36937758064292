@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-vega-light.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#a83b77'
++      - bold
++    inactiveBorderColor:
++      - '#dfd6e3'
++    searchingActiveBorderColor:
++      - '#826401'
++    optionsTextColor:
++      - '#a83b77'
++    selectedLineBgColor:
++      - '#f0c8d9'
++    inactiveViewSelectedLineBgColor:
++      - '#ebe4ee'
++    cherryPickedCommitFgColor:
++      - '#3b7449'
++    cherryPickedCommitBgColor:
++      - '#dfd6e3'
++    markedBaseCommitFgColor:
++      - '#9e5517'
++    markedBaseCommitBgColor:
++      - '#dfd6e3'
++    unstagedChangesColor:
++      - '#a84a55'
++    defaultFgColor:
++      - '#362f3a'
++  authorColors:
++    '*': '#7758a9'

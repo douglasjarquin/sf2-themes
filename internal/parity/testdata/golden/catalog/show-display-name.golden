@@ -1,0 +1,63 @@
+step show "Street Fighter II - Chun-Li"
+exit 0
+stdout
+| schema_version = 1
+| 
+| [meta]
+| id = "chun-li"
+| display_name = "Street Fighter II - Chun-Li"
+| kind = "character"
+| introduced_in = "world-warrior"
+| character = "Chun-Li"
+| aliases = []
+| name = "Chun-Li"
+| variant = "dark"
+| family = "sf2"
+| stage = "China · Market street"
+| 
+| [ui]
+| background = "#131a23"
+| surface = "#1d252f"
+| overlay = "#2a333f"
+| border = "#2a333f"
+| foreground = "#c8d2de"
+| muted = "#788696"
+| subtle = "#98a8bc"
+| accent = "#498ee2"
+| accent_secondary = "#a4841b"
+| cursor = "#498ee2"
+| cursor_text = "#131a23"
+| selection_background = "#253a55"
+| selection_foreground = "#c8d2de"
+| 
+| [semantic]
+| red = "#c86e67"
+| green = "#4e975b"
+| yellow = "#a38424"
+| blue = "#558acb"
+| magenta = "#b371ad"
+| cyan = "#1396a1"
+| orange = "#c2753c"
+| 
+| [ansi.normal]
+| black = "#29323e"
+| red = "#c86e67"
+| green = "#4e975b"
+| yellow = "#a38424"
+| blue = "#558acb"
+| magenta = "#b371ad"
+| cyan = "#1396a1"
+| white = "#acb6c2"
+| 
+| [ansi.bright]
+| black = "#788696"
+| red = "#ee857d"
+| green = "#61b56f"
+| yellow = "#c29f30"
+| blue = "#69a6f3"
+| magenta = "#d589cf"
+| cyan = "#00b4c2"
+| white = "#d4dce5"
+stderr
+tree
+dir 0755 home

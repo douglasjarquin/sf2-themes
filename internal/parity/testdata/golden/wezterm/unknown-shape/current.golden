@@ -1,0 +1,10 @@
+step current wezterm --config-dir {SANDBOX}/config/wezterm
+exit 1
+stdout
+stderr
+| error: no WezTerm theme applied yet
+tree
+dir 0755 config
+dir 0755 config/wezterm
+file 0644 fc7a6d7726e69903 config/wezterm/wezterm.lua
+dir 0755 home

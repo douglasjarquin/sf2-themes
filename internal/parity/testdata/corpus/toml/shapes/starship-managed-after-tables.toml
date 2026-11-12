@@ -1,0 +1,10 @@
+[directory]
+style = "blue"
+
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-ken
+palette = "sf2"
+
+[palettes.sf2]
+blue = "#000000"
+# <<< sf2-themes managed theme

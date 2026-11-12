@@ -1,0 +1,779 @@
+package parity
+
+import (
+	"bytes"
+	"errors"
+	"flag"
+	"fmt"
+	"io/fs"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
+	"sync"
+	"syscall"
+	"testing"
+)
+
+// The binary under test is chosen by environment, not by a go test flag, because
+// `go test ./...` rejects a flag the other packages do not define.
+const (
+	// envReference holds the path of the Python standalone. When set, the cases run
+	// against it on a Python 3.11 interpreter found on PATH instead of the Go binary.
+	envReference = "SF2_PARITY_REFERENCE"
+	// envRecord, set to 1 together with envReference, rewrites goldens and parser verdicts.
+	envRecord = "SF2_PARITY_RECORD"
+)
+
+const (
+	goldenDir = "testdata/golden"
+	blobDir   = "testdata/blobs"
+)
+
+// subject is the binary under test.
+type subject struct {
+	reference bool
+	command   []string // program and leading arguments
+}
+
+var (
+	subjectOnce sync.Once
+	subjectVal  subject
+	subjectErr  error
+	buildDir    string
+)
+
+func recording() bool { return os.Getenv(envRecord) == "1" }
+
+func referenceMode() bool { return os.Getenv(envReference) != "" }
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	// Every case runs under umask 022 so new files and directories get the modes a user sees.
+	syscall.Umask(0o022)
+	code := m.Run()
+	if buildDir != "" {
+		_ = os.RemoveAll(buildDir)
+	}
+	if code == 0 && recording() && flag.Lookup("test.run").Value.String() == "" {
+		if err := pruneGoldens(); err != nil {
+			fmt.Fprintln(os.Stderr, "prune goldens:", err)
+			code = 1
+		}
+	}
+	os.Exit(code)
+}
+
+// python311 finds the Python 3.11 interpreter that runs the reference and checks its version.
+func python311() (string, error) {
+	python, err := exec.LookPath("python3.11")
+	if err != nil {
+		if python, err = exec.LookPath("python3"); err != nil {
+			return "", fmt.Errorf("no python3.11 or python3 on PATH: %w", err)
+		}
+	}
+	out, err := exec.Command(python, "-I", "-c", `import sys; print("%d.%d" % sys.version_info[:2])`).Output()
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", python, err)
+	}
+	if version := strings.TrimSpace(string(out)); version != "3.11" {
+		return "", fmt.Errorf("the reference runs on Python 3.11, but %s is Python %s", python, version)
+	}
+	return python, nil
+}
+
+func underTest(t *testing.T) subject {
+	t.Helper()
+	subjectOnce.Do(func() {
+		if recording() && !referenceMode() {
+			subjectErr = fmt.Errorf("%s=1 records from the reference; set %s too", envRecord, envReference)
+			return
+		}
+		if referenceMode() {
+			ref, err := filepath.Abs(os.Getenv(envReference))
+			if err != nil {
+				subjectErr = err
+				return
+			}
+			if _, err := os.Stat(ref); err != nil {
+				subjectErr = fmt.Errorf("%s: %w", envReference, err)
+				return
+			}
+			python, err := python311()
+			if err != nil {
+				subjectErr = err
+				return
+			}
+			subjectVal = subject{reference: true, command: []string{python, ref}}
+			return
+		}
+		dir, err := os.MkdirTemp("", "sf2-parity-bin-")
+		if err != nil {
+			subjectErr = err
+			return
+		}
+		buildDir = dir
+		bin := filepath.Join(dir, "sf2-themes")
+		build := exec.Command("go", "build", "-o", bin, "./cmd/sf2-themes")
+		build.Dir = filepath.Join("..", "..")
+		if out, err := build.CombinedOutput(); err != nil {
+			subjectErr = fmt.Errorf("go build ./cmd/sf2-themes: %w\n%s", err, out)
+			return
+		}
+		subjectVal = subject{command: []string{bin}}
+	})
+	if subjectErr != nil {
+		t.Fatal(subjectErr)
+	}
+	return subjectVal
+}
+
+// pendingReason returns why the Go binary cannot run a case yet, or "".
+func pendingReason(c Case) string {
+	var reasons []string
+	for _, group := range c.Groups {
+		if reason, pending := PendingInGo[group]; pending {
+			reasons = append(reasons, reason)
+		}
+	}
+	return strings.Join(reasons, "; ")
+}
+
+// skipReason returns why a case does not run in the current mode, or "".
+func skipReason(c Case) string {
+	if c.PerOS && runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
+		return "default locations are recorded for darwin and linux only"
+	}
+	if referenceMode() {
+		if c.GoOnly != nil {
+			return "Go-only expectation: the reference behaves differently here on purpose"
+		}
+		return ""
+	}
+	return pendingReason(c)
+}
+
+func goldenPath(c Case) string {
+	name := c.Name
+	if c.PerOS {
+		name += "." + runtime.GOOS
+	}
+	return filepath.Join(goldenDir, filepath.FromSlash(name)+".golden")
+}
+
+func casesByName() map[string]Case {
+	byName := map[string]Case{}
+	for _, c := range Cases() {
+		byName[c.Name] = c
+	}
+	return byName
+}
+
+// blobs is the golden blob store. In record mode it writes through to testdata.
+type blobs struct {
+	mu     sync.Mutex
+	actual map[string][]byte
+}
+
+var store = &blobs{actual: map[string][]byte{}}
+
+func (b *blobs) put(content []byte) string {
+	hash := Hash(content)
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if _, seen := b.actual[hash]; seen {
+		return hash
+	}
+	b.actual[hash] = content
+	if recording() {
+		path := filepath.Join(blobDir, hash)
+		if existing, err := os.ReadFile(path); err != nil || !bytes.Equal(existing, content) {
+			if err := os.MkdirAll(blobDir, 0o755); err != nil {
+				panic(err)
+			}
+			if err := os.WriteFile(path, content, 0o644); err != nil {
+				panic(err)
+			}
+		}
+	}
+	return hash
+}
+
+func (b *blobs) get(hash string) ([]byte, bool) {
+	b.mu.Lock()
+	content, ok := b.actual[hash]
+	b.mu.Unlock()
+	return content, ok
+}
+
+func readBlob(hash string) ([]byte, error) {
+	return os.ReadFile(filepath.Join(blobDir, hash))
+}
+
+// newSandbox creates an empty sandbox root resolved through symlinks.
+func newSandbox(t *testing.T, dir string) string {
+	t.Helper()
+	root, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.MkdirAll(filepath.Join(root, "home"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	return root
+}
+
+func seedSandbox(t *testing.T, c Case, root string) {
+	t.Helper()
+	if c.SeedFrom != "" {
+		source, ok := casesByName()[c.SeedFrom]
+		if !ok {
+			t.Fatalf("seed case %q does not exist", c.SeedFrom)
+		}
+		golden, err := os.ReadFile(goldenPath(source))
+		if err != nil {
+			t.Fatalf("seed from %s: %v", c.SeedFrom, err)
+		}
+		tree, _, err := ParseGolden(string(golden))
+		if err != nil {
+			t.Fatalf("seed from %s: %v", c.SeedFrom, err)
+		}
+		for _, entry := range tree {
+			if strings.Contains(entry.Path, backupStamp) {
+				continue
+			}
+			path := filepath.Join(root, filepath.FromSlash(entry.Path))
+			switch entry.Kind {
+			case "dir":
+				must(t, os.MkdirAll(path, entry.Mode))
+				must(t, os.Chmod(path, entry.Mode))
+			case "file":
+				content, err := readBlob(entry.Hash)
+				must(t, err)
+				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
+				must(t, os.WriteFile(path, []byte(Expand(string(content), root)), entry.Mode))
+				must(t, os.Chmod(path, entry.Mode))
+			case "link":
+				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
+				must(t, os.Symlink(Expand(entry.Target, root), path))
+			}
+		}
+	}
+	for _, file := range c.Seed {
+		path := filepath.Join(root, filepath.FromSlash(file.Path))
+		must(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		if file.Link != "" {
+			must(t, os.Symlink(Expand(file.Link, root), path))
+			continue
+		}
+		mode := fs.FileMode(0o644)
+		if file.Mode != 0 {
+			mode = fs.FileMode(file.Mode)
+		}
+		must(t, os.WriteFile(path, []byte(Expand(file.Content, root)), mode))
+		must(t, os.Chmod(path, mode))
+	}
+}
+
+func must(t *testing.T, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+// environment is the cleared environment a step runs in. Every adapter variable
+// (XDG_CONFIG_HOME, WEZTERM_CONFIG_DIR, WEZTERM_CONFIG_FILE, STARSHIP_CONFIG,
+// NVIM_CONFIG_DIR, LAZYGIT_CONFIG_DIR, HERDR_CONFIG_PATH, CODEX_HOME,
+// CLAUDE_CONFIG_DIR, SF2_THEME_DIR) is unset unless the case sets it.
+func environment(c Case, root string) []string {
+	env := []string{
+		"HOME=" + filepath.Join(root, "home"),
+		"PATH=/usr/bin:/bin",
+		"TZ=UTC",
+		"LANG=C.UTF-8",
+		"LC_ALL=C.UTF-8",
+		"COLUMNS=80",
+	}
+	keys := make([]string, 0, len(c.Env))
+	for key := range c.Env {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	for _, key := range keys {
+		env = append(env, key+"="+Expand(c.Env[key], root))
+	}
+	return env
+}
+
+type rawStep struct {
+	exit           int
+	stdout, stderr []byte
+}
+
+func runSteps(t *testing.T, bin subject, c Case, root string, todo []Step) []rawStep {
+	t.Helper()
+	env := environment(c, root)
+	var steps []rawStep
+	for _, s := range todo {
+		args := make([]string, len(s.Args))
+		for i, arg := range s.Args {
+			args[i] = Expand(arg, root)
+		}
+		command := exec.Command(bin.command[0], append(bin.command[1:], args...)...)
+		command.Dir = root
+		command.Env = env
+		var stdout, stderr bytes.Buffer
+		command.Stdout, command.Stderr = &stdout, &stderr
+		err := command.Run()
+		exit := 0
+		var exitErr *exec.ExitError
+		switch {
+		case errors.As(err, &exitErr) && exitErr.ExitCode() >= 0:
+			exit = exitErr.ExitCode()
+		case err != nil:
+			t.Fatalf("run %v: %v", s.Args, err)
+		}
+		steps = append(steps, rawStep{exit: exit, stdout: stdout.Bytes(), stderr: stderr.Bytes()})
+	}
+	return steps
+}
+
+// runCase runs a case in a fresh sandbox under dir and returns its normalized result,
+// the tail masks that matched nothing, and the tree as it stood before the last step.
+func runCase(t *testing.T, bin subject, c Case, dir string) (result Result, unmatched []Mask, beforeLast []Entry) {
+	t.Helper()
+	root := newSandbox(t, dir)
+	seedSandbox(t, c, root)
+	last := len(c.Steps) - 1
+	raws := runSteps(t, bin, c, root, c.Steps[:last])
+	beforeLast, err := Snapshot(root)
+	must(t, err)
+	raws = append(raws, runSteps(t, bin, c, root, c.Steps[last:])...)
+	for i, raw := range raws {
+		s := c.Steps[i]
+		stdout, stdoutExempt, missOut := ApplyMasks(string(Normalize(raw.stdout, root)), Stdout, s.Masks)
+		stderr, stderrExempt, missErr := ApplyMasks(string(Normalize(raw.stderr, root)), Stderr, s.Masks)
+		unmatched = append(append(unmatched, missOut...), missErr...)
+		result.Steps = append(result.Steps, StepResult{
+			Args: s.Args, Exit: raw.exit,
+			Stdout: stdout, Stderr: stderr,
+			StdoutExempt: stdoutExempt, StderrExempt: stderrExempt,
+		})
+	}
+	result.Tree, err = Snapshot(root)
+	must(t, err)
+	return result, unmatched, beforeLast
+}
+
+func TestParity(t *testing.T) {
+	var direct, seeded []Case
+	for _, c := range Cases() {
+		if c.SeedFrom != "" {
+			seeded = append(seeded, c)
+		} else {
+			direct = append(direct, c)
+		}
+	}
+	// Seeded cases read another case's golden, so they run after every golden is recorded.
+	for _, phase := range []struct {
+		name  string
+		cases []Case
+	}{{"direct", direct}, {"seeded", seeded}} {
+		t.Run(phase.name, func(t *testing.T) {
+			for _, c := range phase.cases {
+				t.Run(c.Name, func(t *testing.T) {
+					t.Parallel()
+					if reason := skipReason(c); reason != "" {
+						t.Skip(reason)
+					}
+					checkCase(t, underTest(t), c)
+				})
+			}
+		})
+	}
+}
+
+func checkCase(t *testing.T, bin subject, c Case) {
+	if c.GoOnly != nil {
+		checkGoOnly(t, bin, c)
+		return
+	}
+	var before map[string]string
+	if c.GuardRealHome {
+		before = realHomeSnapshot(t)
+	}
+	result, unmatched, beforeLast := runCase(t, bin, c, t.TempDir())
+	if c.GuardRealHome {
+		if after := realHomeSnapshot(t); !equalMaps(before, after) {
+			t.Errorf("the real home directory changed: before %v, after %v", before, after)
+		}
+	}
+	if c.NoChanges {
+		checkNoChanges(t, result, beforeLast)
+	}
+	text := Render(result, store.put)
+	path := goldenPath(c)
+	if recording() {
+		if len(unmatched) > 0 {
+			t.Fatalf("masks matched no reference output: %+v", unmatched)
+		}
+		must(t, os.MkdirAll(filepath.Dir(path), 0o755))
+		must(t, os.WriteFile(path, []byte(text), 0o644))
+		return
+	}
+	want, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("no golden for %s (record with `mise run parity:record` on %s): %v", c.Name, runtime.GOOS, err)
+	}
+	if string(want) != text {
+		t.Errorf("%s differs from its golden %s:\n%s", c.Name, path, describeDifference(string(want), text))
+	}
+}
+
+// checkNoChanges requires the last step to report no changes and to leave the tree as it was.
+func checkNoChanges(t *testing.T, result Result, before []Entry) {
+	t.Helper()
+	last := result.Steps[len(result.Steps)-1]
+	if !strings.Contains(last.Stdout, "  changes: no changes\n") {
+		t.Errorf("last step did not report no changes:\n%s", last.Stdout)
+	}
+	if was, now := Render(Result{Tree: before}, Hash), Render(Result{Tree: result.Tree}, Hash); was != now {
+		t.Errorf("last step changed the tree, backups included:\n%s", describeDifference(was, now))
+	}
+}
+
+func checkGoOnly(t *testing.T, bin subject, c Case) {
+	root := newSandbox(t, t.TempDir())
+	seedSandbox(t, c, root)
+	before, err := Snapshot(root)
+	must(t, err)
+	steps := runSteps(t, bin, c, root, c.Steps)
+	last := steps[len(steps)-1]
+	if last.exit != c.GoOnly.Exit {
+		t.Errorf("exit %d, want %d (stderr %q)", last.exit, c.GoOnly.Exit, last.stderr)
+	}
+	if !strings.HasPrefix(string(last.stderr), c.GoOnly.StderrPrefix) {
+		t.Errorf("stderr %q does not start with %q", last.stderr, c.GoOnly.StderrPrefix)
+	}
+	after, err := Snapshot(root)
+	must(t, err)
+	if Render(Result{Tree: before}, Hash) != Render(Result{Tree: after}, Hash) {
+		t.Errorf("the sandbox changed:\nbefore\n%s\nafter\n%s", Render(Result{Tree: before}, Hash), Render(Result{Tree: after}, Hash))
+	}
+}
+
+// realHomeSnapshot hashes the real home directory's config files the CLI could write by default.
+func realHomeSnapshot(t *testing.T) map[string]string {
+	t.Helper()
+	home, err := os.UserHomeDir()
+	must(t, err)
+	exact := []string{
+		".config/wezterm/wezterm.lua", ".wezterm.lua", ".config/sf2-theme/wezterm-current.lua",
+		".config/sf2-theme/zsh-syntax-highlighting.zsh", ".config/starship.toml", ".config/herdr/config.toml",
+		".config/herdr-app/settings.json", ".codex/config.toml", ".claude/settings.json",
+		"Library/Application Support/lazygit/config.yml", ".config/lazygit/config.yml",
+	}
+	globs := []string{
+		".config/wezterm/colors/sf2-*.toml", ".config/nvim/colors/sf2-*.lua", ".config/nvim/sf2-theme/*",
+		".config/nvim/plugin/sf2-theme.lua", ".config/herdr-app/themes/sf2-*.json", ".codex/themes/sf2-*.tmTheme",
+		".claude/themes/sf2-*.json", "Library/Application Support/lazygit/themes/sf2-*.yml", ".config/lazygit/themes/sf2-*.yml",
+	}
+	paths := []string{}
+	for _, rel := range exact {
+		paths = append(paths, filepath.Join(home, rel))
+	}
+	for _, pattern := range globs {
+		matches, err := filepath.Glob(filepath.Join(home, pattern))
+		must(t, err)
+		paths = append(paths, matches...)
+	}
+	snapshot := map[string]string{}
+	for _, path := range paths {
+		if content, err := os.ReadFile(path); err == nil {
+			snapshot[path] = Hash(content)
+		}
+	}
+	return snapshot
+}
+
+func equalMaps(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for key, value := range a {
+		if b[key] != value {
+			return false
+		}
+	}
+	return true
+}
+
+// describeDifference shows the first differing line of a golden and, when it names a blob,
+// the first differing line inside that blob.
+func describeDifference(want, got string) string {
+	wantLines, gotLines := strings.Split(want, "\n"), strings.Split(got, "\n")
+	for i := 0; i < len(wantLines) || i < len(gotLines); i++ {
+		w, g := lineAt(wantLines, i), lineAt(gotLines, i)
+		if w == g {
+			continue
+		}
+		var b strings.Builder
+		from := max(0, i-3)
+		for j := from; j < i; j++ {
+			fmt.Fprintf(&b, "  %s\n", wantLines[j])
+		}
+		fmt.Fprintf(&b, "- %s\n+ %s\n", w, g)
+		wantHash, gotHash := blobIn(w), blobIn(g)
+		if wantHash != "" && gotHash != "" {
+			wantBlob, _ := readBlob(wantHash)
+			gotBlob, _ := store.get(gotHash)
+			fmt.Fprintf(&b, "inside the blob:\n%s", firstLineDifference(string(wantBlob), string(gotBlob)))
+		}
+		return b.String()
+	}
+	return "(no line differs)"
+}
+
+func lineAt(lines []string, i int) string {
+	if i < len(lines) {
+		return lines[i]
+	}
+	return "<end of golden>"
+}
+
+func blobIn(line string) string {
+	fields := strings.Fields(line)
+	switch {
+	case len(fields) >= 4 && fields[0] == "file":
+		return fields[2]
+	case len(fields) == 2 && fields[0] == "=":
+		return fields[1]
+	}
+	return ""
+}
+
+func firstLineDifference(want, got string) string {
+	wantLines, gotLines := strings.Split(want, "\n"), strings.Split(got, "\n")
+	for i := 0; i < len(wantLines) || i < len(gotLines); i++ {
+		if w, g := lineAt(wantLines, i), lineAt(gotLines, i); w != g {
+			return fmt.Sprintf("line %d\n- %s\n+ %s\n", i+1, w, g)
+		}
+	}
+	return "(no line differs)\n"
+}
+
+// pruneGoldens removes goldens no case records and blobs no golden refers to. It runs
+// only after a full record.
+func pruneGoldens() error {
+	allowed := map[string]bool{}
+	for _, c := range Cases() {
+		if c.GoOnly != nil {
+			continue
+		}
+		name := filepath.Join(goldenDir, filepath.FromSlash(c.Name))
+		if c.PerOS {
+			allowed[name+".darwin.golden"] = true
+			allowed[name+".linux.golden"] = true
+		} else {
+			allowed[name+".golden"] = true
+		}
+	}
+	referenced := map[string]bool{}
+	err := filepath.WalkDir(goldenDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		if !allowed[path] {
+			return os.Remove(path)
+		}
+		golden, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		_, refs, err := ParseGolden(string(golden))
+		if err != nil {
+			return fmt.Errorf("%s: %w", path, err)
+		}
+		for _, ref := range refs {
+			referenced[ref] = true
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	entries, err := os.ReadDir(blobDir)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if !referenced[entry.Name()] {
+			if err := os.Remove(filepath.Join(blobDir, entry.Name())); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// TestGoldenStoreMatchesTheCaseTable needs no binary: every golden belongs to a case,
+// every blob a golden names exists, and no blob is orphaned.
+func TestGoldenStoreMatchesTheCaseTable(t *testing.T) {
+	if recording() {
+		t.Skip("record mode rewrites the store and prunes it afterwards")
+	}
+	byName := map[string]Case{}
+	for _, c := range Cases() {
+		if _, dup := byName[c.Name]; dup {
+			t.Errorf("duplicate case name %s", c.Name)
+		}
+		byName[c.Name] = c
+		if len(c.Steps) == 0 && c.GoOnly == nil {
+			t.Errorf("%s has no steps", c.Name)
+		}
+		if len(c.Groups) == 0 {
+			t.Errorf("%s belongs to no group", c.Name)
+		}
+		if c.SeedFrom != "" {
+			if source, ok := byName[c.SeedFrom]; !ok || source.GoOnly != nil || source.SeedFrom != "" {
+				t.Errorf("%s seeds from %s, which must be an earlier recorded case without a seed of its own", c.Name, c.SeedFrom)
+			}
+		}
+	}
+	referenced := map[string]bool{}
+	goldens := map[string]bool{}
+	err := filepath.WalkDir(goldenDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		goldens[path] = true
+		golden, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		_, refs, err := ParseGolden(string(golden))
+		if err != nil {
+			t.Errorf("%s: %v", path, err)
+			return nil
+		}
+		for _, ref := range refs {
+			referenced[ref] = true
+			if _, err := os.Stat(filepath.Join(blobDir, ref)); err != nil {
+				t.Errorf("%s names missing blob %s", path, ref)
+			}
+		}
+		return nil
+	})
+	must(t, err)
+	for _, c := range Cases() {
+		if c.GoOnly != nil {
+			continue
+		}
+		if c.PerOS {
+			for _, goos := range []string{"darwin", "linux"} {
+				path := filepath.Join(goldenDir, filepath.FromSlash(c.Name)+"."+goos+".golden")
+				if !goldens[path] {
+					t.Errorf("no %s golden for %s", goos, c.Name)
+				}
+				delete(goldens, path)
+			}
+			continue
+		}
+		path := goldenPath(c)
+		if !goldens[path] {
+			t.Errorf("no golden for %s", c.Name)
+		}
+		delete(goldens, path)
+	}
+	for path := range goldens {
+		t.Errorf("golden %s belongs to no case", path)
+	}
+	entries, err := os.ReadDir(blobDir)
+	must(t, err)
+	for _, entry := range entries {
+		if !referenced[entry.Name()] {
+			t.Errorf("blob %s is referred to by no golden", entry.Name())
+		}
+	}
+}
+
+// A sandbox reached through a symlink, as macOS temp directories are, records the same golden.
+func TestSymlinkedSandboxRecordsTheSameGolden(t *testing.T) {
+	c := casesByName()["wezterm/absent/apply"]
+	if reason := skipReason(c); reason != "" {
+		t.Skip(reason)
+	}
+	bin := underTest(t)
+	base := t.TempDir()
+	target := filepath.Join(base, "target")
+	link := filepath.Join(base, "link")
+	must(t, os.Mkdir(target, 0o755))
+	must(t, os.Symlink(target, link))
+	result, _, _ := runCase(t, bin, c, link)
+	want, err := os.ReadFile(goldenPath(c))
+	must(t, err)
+	if got := Render(result, store.put); got != string(want) {
+		t.Errorf("a symlinked sandbox changed the golden:\n%s", describeDifference(string(want), got))
+	}
+}
+
+// A tail mask hides only the text after the fixed prefix; a changed prefix still fails.
+func TestTailMaskStillComparesItsPrefix(t *testing.T) {
+	mask := []Mask{Tail(" is not valid TOML: ")}
+	golden, _, _ := ApplyMasks("error: {SANDBOX}/config/starship/starship.toml is not valid TOML: Invalid value (at line 1, column 11)\n", Stderr, mask)
+	if want := "error: {SANDBOX}/config/starship/starship.toml is not valid TOML: <masked>\n"; golden != want {
+		t.Fatalf("masked golden = %q, want %q", golden, want)
+	}
+	for _, tc := range []struct {
+		name   string
+		actual string
+		same   bool
+	}{
+		{"another decoder's message", "error: {SANDBOX}/config/starship/starship.toml is not valid TOML: toml: line 1: expected value\n", true},
+		{"changed wording before the marker", "error: {SANDBOX}/config/starship/starship.toml is invalid TOML: Invalid value\n", false},
+		{"changed path before the marker", "error: {SANDBOX}/config/starship.toml is not valid TOML: Invalid value\n", false},
+		{"missing error prefix", "{SANDBOX}/config/starship/starship.toml is not valid TOML: Invalid value\n", false},
+		{"extra line", "error: {SANDBOX}/config/starship/starship.toml is not valid TOML: x\nmore\n", false},
+	} {
+		got, _, _ := ApplyMasks(tc.actual, Stderr, mask)
+		if (got == golden) != tc.same {
+			t.Errorf("%s: masked %q against golden %q, want same=%v", tc.name, got, golden, tc.same)
+		}
+	}
+	// The mask leaves stdout alone.
+	if out, _, unmatched := ApplyMasks("is not valid TOML: x\n", Stdout, mask); out != "is not valid TOML: x\n" || unmatched != nil {
+		t.Errorf("stdout was masked: %q %v", out, unmatched)
+	}
+}
+
+// Backups of one file compare as one entry holding the newest backup, with the stamp
+// masked, whether two runs fell in one second or straddled a second boundary.
+func TestBackupsCompareAsASet(t *testing.T) {
+	render := func(files map[string]string) string {
+		root := t.TempDir()
+		for name, content := range files {
+			must(t, os.WriteFile(filepath.Join(root, name), []byte(content), 0o644))
+		}
+		tree, err := Snapshot(root)
+		must(t, err)
+		return Render(Result{Tree: tree}, Hash)
+	}
+	oneSecond := render(map[string]string{
+		"config.toml":                      "third\n",
+		"config.toml.bak.20261112T101500Z": "second\n",
+	})
+	twoSeconds := render(map[string]string{
+		"config.toml":                      "third\n",
+		"config.toml.bak.20261112T101459Z": "first\n",
+		"config.toml.bak.20261112T101500Z": "second\n",
+	})
+	want := "tree\n" +
+		"file 0644 " + Hash([]byte("third\n")) + " config.toml\n" +
+		"file 0644 " + Hash([]byte("second\n")) + " config.toml.bak.<STAMP>\n"
+	if oneSecond != want || twoSeconds != want {
+		t.Errorf("backups did not collapse to the newest:\none second:\n%s\ntwo seconds:\n%s\nwant:\n%s", oneSecond, twoSeconds, want)
+	}
+}

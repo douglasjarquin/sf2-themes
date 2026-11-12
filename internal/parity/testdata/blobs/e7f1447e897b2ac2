@@ -1,0 +1,66 @@
+[colors]
+foreground = "#ddcec7"
+background = "#211712"
+cursor_bg = "#0f9c97"
+cursor_fg = "#211712"
+cursor_border = "#0f9c97"
+selection_bg = "#0a4240"
+selection_fg = "#ddcec7"
+split = "#3d2e28"
+scrollbar_thumb = "#958076"
+compose_cursor = "#c6714a"
+visual_bell = "#3d2e28"
+ansi = ["#3d2e27", "#c86e67", "#5d9550", "#a88225", "#438dc7", "#ba6fa1", "#159791", "#c1b2ab"]
+brights = ["#958076", "#ee857d", "#71b363", "#c89c30", "#52a9ed", "#dd86c1", "#09b6af", "#e4d9d3"]
+
+[colors.indexed]
+16 = "#c1753c"
+17 = "#0f9c97"
+
+[colors.tab_bar]
+background = "#211712"
+inactive_tab_edge = "#3d2e28"
+
+[colors.tab_bar.active_tab]
+bg_color = "#0f9c97"
+fg_color = "#211712"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab]
+bg_color = "#2e211c"
+fg_color = "#958076"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab_hover]
+bg_color = "#3d2e28"
+fg_color = "#ddcec7"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab]
+bg_color = "#2e211c"
+fg_color = "#958076"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab_hover]
+bg_color = "#3d2e28"
+fg_color = "#ddcec7"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[metadata]
+name = "sf2-t-hawk"
+aliases = []

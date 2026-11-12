@@ -1,0 +1,11 @@
+local wezterm = require("wezterm")
+local config = wezterm.config_builder()
+config.font_size = 13
+local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+wezterm.add_to_config_reload_watch_list(sf2_current)
+local sf2_scheme = dofile(sf2_current)
+config.color_scheme = sf2_scheme
+local sf2_env = config.set_environment_variables or {}
+sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"
+config.set_environment_variables = sf2_env
+return config

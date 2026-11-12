@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-balrog-light.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#a63b7f'
++      - bold
++    inactiveBorderColor:
++      - '#d9d8e7'
++    searchingActiveBorderColor:
++      - '#806500'
++    optionsTextColor:
++      - '#a63b7f'
++    selectedLineBgColor:
++      - '#eec8dc'
++    inactiveViewSelectedLineBgColor:
++      - '#e6e5f1'
++    cherryPickedCommitFgColor:
++      - '#15783f'
++    cherryPickedCommitBgColor:
++      - '#d9d8e7'
++    markedBaseCommitFgColor:
++      - '#9f5517'
++    markedBaseCommitBgColor:
++      - '#d9d8e7'
++    unstagedChangesColor:
++      - '#a94a4e'
++    defaultFgColor:
++      - '#32303d'
++  authorColors:
++    '*': '#806501'

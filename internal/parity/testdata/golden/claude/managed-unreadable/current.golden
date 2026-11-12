@@ -1,0 +1,10 @@
+step current claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: could not read the sf2 theme Claude Code selects
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 77f5e4bcdb45a758 config/claude/settings.json
+dir 0755 home

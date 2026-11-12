@@ -1,0 +1,137 @@
+step apply nvim --theme ken --verbose --config-dir {SANDBOX}/config/nvim
+exit 0
+stdout
+| created: {SANDBOX}/config/nvim/colors/sf2-main.lua
+= 832b5617fb70ae76
+| created: {SANDBOX}/config/nvim/colors/sf2-main-light.lua
+= 4973448293049496
+| created: {SANDBOX}/config/nvim/colors/sf2-akuma-light.lua
+= 71899ac842078299
+| created: {SANDBOX}/config/nvim/colors/sf2-akuma.lua
+= 104561bc0c917667
+| created: {SANDBOX}/config/nvim/colors/sf2-balrog-light.lua
+= f35a2723cc90e45d
+| created: {SANDBOX}/config/nvim/colors/sf2-balrog.lua
+= c3be609a3ccc44f8
+| created: {SANDBOX}/config/nvim/colors/sf2-blanka-light.lua
+= da0971267ab8dc99
+| created: {SANDBOX}/config/nvim/colors/sf2-blanka.lua
+= 18d309eb6d56a459
+| created: {SANDBOX}/config/nvim/colors/sf2-cammy-light.lua
+= f6c9976b1c7cf0c6
+| created: {SANDBOX}/config/nvim/colors/sf2-cammy.lua
+= 53933fca9a9ab3f2
+| created: {SANDBOX}/config/nvim/colors/sf2-chun-li-light.lua
+= c7da3d5222b1f319
+| created: {SANDBOX}/config/nvim/colors/sf2-chun-li.lua
+= 2be1c0487c066436
+| created: {SANDBOX}/config/nvim/colors/sf2-dee-jay-light.lua
+= 712e805a6693d82a
+| created: {SANDBOX}/config/nvim/colors/sf2-dee-jay.lua
+= b9622fb8f4afcb3e
+| created: {SANDBOX}/config/nvim/colors/sf2-dhalsim-light.lua
+= cdff0e5a5c50ec37
+| created: {SANDBOX}/config/nvim/colors/sf2-dhalsim.lua
+= 10e8b1fa640d2391
+| created: {SANDBOX}/config/nvim/colors/sf2-e-honda-light.lua
+= f29f0815ccf8d7d6
+| created: {SANDBOX}/config/nvim/colors/sf2-e-honda.lua
+= 0f688c063160a354
+| created: {SANDBOX}/config/nvim/colors/sf2-fei-long-light.lua
+= 585786fac2d9f79d
+| created: {SANDBOX}/config/nvim/colors/sf2-fei-long.lua
+= 9a087effd199c9f0
+| created: {SANDBOX}/config/nvim/colors/sf2-guile-light.lua
+= afe1a06eadc62a71
+| created: {SANDBOX}/config/nvim/colors/sf2-guile.lua
+= 0bc593fd00f55090
+| created: {SANDBOX}/config/nvim/colors/sf2-ken-light.lua
+= 6607f1579bff5a10
+| created: {SANDBOX}/config/nvim/colors/sf2-ken.lua
+= 6634ed834341dba2
+| created: {SANDBOX}/config/nvim/colors/sf2-m-bison-light.lua
+= f80d887d991086f9
+| created: {SANDBOX}/config/nvim/colors/sf2-m-bison.lua
+= 06ed5b9cc654cb73
+| created: {SANDBOX}/config/nvim/colors/sf2-ryu-light.lua
+= f62b078835feb79a
+| created: {SANDBOX}/config/nvim/colors/sf2-ryu.lua
+= 5dd9121a1694027c
+| created: {SANDBOX}/config/nvim/colors/sf2-sagat-light.lua
+= fc3a3fe1dec79ce8
+| created: {SANDBOX}/config/nvim/colors/sf2-sagat.lua
+= 24a87b92eeef1807
+| created: {SANDBOX}/config/nvim/colors/sf2-t-hawk-light.lua
+= 50a43a0c1ef08dff
+| created: {SANDBOX}/config/nvim/colors/sf2-t-hawk.lua
+= 41567f4cd6cdbd38
+| created: {SANDBOX}/config/nvim/colors/sf2-vega-light.lua
+= 06731620da456e76
+| created: {SANDBOX}/config/nvim/colors/sf2-vega.lua
+= 6d3ea86347fd9055
+| created: {SANDBOX}/config/nvim/colors/sf2-zangief-light.lua
+= 70b9285e42bb9a11
+| created: {SANDBOX}/config/nvim/colors/sf2-zangief.lua
+= dd85ffe2d6aa366a
+| created: {SANDBOX}/config/nvim/sf2-theme/current.lua
+| --- /dev/null
+| +++ {SANDBOX}/config/nvim/sf2-theme/current.lua
+| @@ -0,0 +1,7 @@
+| +-- sf2-themes: sf2-ken
+| +local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")
+| +if light_mode then
+| +  vim.cmd("colorscheme sf2-ken-light")
+| +else
+| +  vim.cmd("colorscheme sf2-ken")
+| +end
+| created: {SANDBOX}/config/nvim/plugin/sf2-theme.lua
+= faa519854ea998a3
+| apply nvim: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 38 created
+|   note: restart Neovim to load the new colorscheme
+stderr
+tree
+dir 0755 config
+dir 0755 config/nvim
+dir 0755 config/nvim/colors
+file 0644 f03355ec60d1473f config/nvim/colors/sf2-akuma-light.lua
+file 0644 861927a03ee81bf8 config/nvim/colors/sf2-akuma.lua
+file 0644 ed7285ea5ffd6f31 config/nvim/colors/sf2-balrog-light.lua
+file 0644 5377b966e6e491be config/nvim/colors/sf2-balrog.lua
+file 0644 9a79da58c3f09f0b config/nvim/colors/sf2-blanka-light.lua
+file 0644 73f116ba4cedaf10 config/nvim/colors/sf2-blanka.lua
+file 0644 3ea4a1e656e80d31 config/nvim/colors/sf2-cammy-light.lua
+file 0644 a6413bd73aee0fe6 config/nvim/colors/sf2-cammy.lua
+file 0644 b961e22a3e107769 config/nvim/colors/sf2-chun-li-light.lua
+file 0644 de847a42b0a286f6 config/nvim/colors/sf2-chun-li.lua
+file 0644 a3781558b7928def config/nvim/colors/sf2-dee-jay-light.lua
+file 0644 0a97af9a1d4704ee config/nvim/colors/sf2-dee-jay.lua
+file 0644 a0418f093ceaad32 config/nvim/colors/sf2-dhalsim-light.lua
+file 0644 95d057e5c9e39001 config/nvim/colors/sf2-dhalsim.lua
+file 0644 ce30bceaaa720236 config/nvim/colors/sf2-e-honda-light.lua
+file 0644 e2aa28eb96b8ac0b config/nvim/colors/sf2-e-honda.lua
+file 0644 57268924868b284d config/nvim/colors/sf2-fei-long-light.lua
+file 0644 fe7fb79d1202e1fd config/nvim/colors/sf2-fei-long.lua
+file 0644 1cfc564108a27d73 config/nvim/colors/sf2-guile-light.lua
+file 0644 567d5e1bedef4564 config/nvim/colors/sf2-guile.lua
+file 0644 1a7dc1c885a75360 config/nvim/colors/sf2-ken-light.lua
+file 0644 3506db643626be5a config/nvim/colors/sf2-ken.lua
+file 0644 33569db9db5ae2d4 config/nvim/colors/sf2-m-bison-light.lua
+file 0644 32f7bcf18ae6c507 config/nvim/colors/sf2-m-bison.lua
+file 0644 b8735fd9c841360c config/nvim/colors/sf2-main-light.lua
+file 0644 fbdf0683a223055d config/nvim/colors/sf2-main.lua
+file 0644 2dad54947c39aaaf config/nvim/colors/sf2-ryu-light.lua
+file 0644 831cb93e3b87cd1c config/nvim/colors/sf2-ryu.lua
+file 0644 028128044d296ece config/nvim/colors/sf2-sagat-light.lua
+file 0644 e91dc31068290512 config/nvim/colors/sf2-sagat.lua
+file 0644 e14cbcb41dd12690 config/nvim/colors/sf2-t-hawk-light.lua
+file 0644 0ccc36f0e9f99bd4 config/nvim/colors/sf2-t-hawk.lua
+file 0644 221ed82002447a48 config/nvim/colors/sf2-vega-light.lua
+file 0644 910eb72defbafc59 config/nvim/colors/sf2-vega.lua
+file 0644 f542293d3af5b2c8 config/nvim/colors/sf2-zangief-light.lua
+file 0644 3b6ef14483eb2afa config/nvim/colors/sf2-zangief.lua
+dir 0755 config/nvim/plugin
+file 0644 beb70a25f49a87b2 config/nvim/plugin/sf2-theme.lua
+dir 0755 config/nvim/sf2-theme
+file 0644 7e40daab59e81eed config/nvim/sf2-theme/current.lua
+dir 0755 home

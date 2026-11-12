@@ -1,0 +1,13 @@
+{
+  "model": "opus",
+  "nested": {
+    "a": [
+      1,
+      2.5,
+      null,
+      true
+    ]
+  },
+  "unicode": "caf\u00e9 \ud83d\ude00",
+  "theme": "custom:sf2-main"
+}

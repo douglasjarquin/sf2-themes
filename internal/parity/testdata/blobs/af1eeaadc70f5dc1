@@ -1,0 +1,69 @@
+--- /dev/null
++++ {SANDBOX}/config/wezterm/colors/sf2-ken-light.toml
+@@ -0,0 +1,66 @@
++[colors]
++foreground = "#3c2e2d"
++background = "#faeeed"
++cursor_bg = "#af3c40"
++cursor_fg = "#faeeed"
++cursor_border = "#af3c40"
++selection_bg = "#f4c9c6"
++selection_fg = "#3c2e2d"
++split = "#e7d5d5"
++scrollbar_thumb = "#826363"
++compose_cursor = "#876204"
++visual_bell = "#e7d5d5"
++ansi = ["#4b3939", "#a94a46", "#2d7633", "#846301", "#0d6caa", "#a34a71", "#01737d", "#e8dada"]
++brights = ["#675050", "#9c3332", "#006618", "#705304", "#025b92", "#953361", "#04616a", "#faf2f2"]
++
++[colors.indexed]
++16 = "#9e5517"
++17 = "#af3c40"
++
++[colors.tab_bar]
++background = "#faeeed"
++inactive_tab_edge = "#e7d5d5"
++
++[colors.tab_bar.active_tab]
++bg_color = "#af3c40"
++fg_color = "#faeeed"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab]
++bg_color = "#f1e3e2"
++fg_color = "#826363"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab_hover]
++bg_color = "#e7d5d5"
++fg_color = "#3c2e2d"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab]
++bg_color = "#f1e3e2"
++fg_color = "#826363"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab_hover]
++bg_color = "#e7d5d5"
++fg_color = "#3c2e2d"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[metadata]
++name = "sf2-ken-light"
++aliases = []

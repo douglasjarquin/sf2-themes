@@ -1,0 +1,69 @@
+--- /dev/null
++++ {SANDBOX}/config/wezterm/colors/sf2-chun-li.toml
+@@ -0,0 +1,66 @@
++[colors]
++foreground = "#c8d2de"
++background = "#131a23"
++cursor_bg = "#498ee2"
++cursor_fg = "#131a23"
++cursor_border = "#498ee2"
++selection_bg = "#253a55"
++selection_fg = "#c8d2de"
++split = "#2a333f"
++scrollbar_thumb = "#788696"
++compose_cursor = "#a4841b"
++visual_bell = "#2a333f"
++ansi = ["#29323e", "#c86e67", "#4e975b", "#a38424", "#558acb", "#b371ad", "#1396a1", "#acb6c2"]
++brights = ["#788696", "#ee857d", "#61b56f", "#c29f30", "#69a6f3", "#d589cf", "#00b4c2", "#d4dce5"]
++
++[colors.indexed]
++16 = "#c2753c"
++17 = "#498ee2"
++
++[colors.tab_bar]
++background = "#131a23"
++inactive_tab_edge = "#2a333f"
++
++[colors.tab_bar.active_tab]
++bg_color = "#498ee2"
++fg_color = "#131a23"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab]
++bg_color = "#1d252f"
++fg_color = "#788696"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab_hover]
++bg_color = "#2a333f"
++fg_color = "#c8d2de"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab]
++bg_color = "#1d252f"
++fg_color = "#788696"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab_hover]
++bg_color = "#2a333f"
++fg_color = "#c8d2de"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[metadata]
++name = "sf2-chun-li"
++aliases = []

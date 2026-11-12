@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-chun-li.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#131a23",
++  "foreground": "#c8d2de",
++  "selection": "#253a55",
++  "cursor": "#498ee2",
++  "ansi": [
++    "#29323e",
++    "#c86e67",
++    "#4e975b",
++    "#a38424",
++    "#558acb",
++    "#b371ad",
++    "#1396a1",
++    "#acb6c2",
++    "#788696",
++    "#ee857d",
++    "#61b56f",
++    "#c29f30",
++    "#69a6f3",
++    "#d589cf",
++    "#00b4c2",
++    "#d4dce5"
++  ],
++  "colors": {
++    "canvas": "#131a23",
++    "chrome": "#1d252f",
++    "surface": "#2a333f",
++    "border": "#2a333f",
++    "accent": "#498ee2"
++  }
++}

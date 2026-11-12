@@ -1,0 +1,10 @@
+step apply starship --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: <masked>
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 2b438513ea2513dd config/starship/starship.toml
+dir 0755 home

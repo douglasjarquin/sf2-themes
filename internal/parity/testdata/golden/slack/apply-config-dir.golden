@@ -1,0 +1,11 @@
+step apply slack --theme ken --config-dir {SANDBOX}/config/slack
+exit 0
+stdout
+| #221616,#de6767,#549657,#c76e67
+stderr
+| ken
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

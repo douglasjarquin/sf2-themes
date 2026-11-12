@@ -1,0 +1,7 @@
+-- sf2-themes: sf2-main
+local wezterm = require("wezterm")
+local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"
+if appearance:find("Dark") then
+  return "sf2-main"
+end
+return "sf2-main-light"

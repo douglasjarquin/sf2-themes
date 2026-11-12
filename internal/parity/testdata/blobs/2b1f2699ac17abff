@@ -1,0 +1,41 @@
+--- {SANDBOX}/elsewhere/lazygit/config.yml
++++ {SANDBOX}/elsewhere/lazygit/config.yml
+@@ -1,2 +1,38 @@
+ os:
+   edit: vim
++
++gui:
++  # >>> sf2-themes managed theme
++  # sf2-themes: sf2-main
++  theme:
++    activeBorderColor:
++      - '#ad8705'
++      - bold
++    inactiveBorderColor:
++      - '#2a3243'
++    searchingActiveBorderColor:
++      - '#a58324'
++    optionsTextColor:
++      - '#ad8705'
++    selectedLineBgColor:
++      - '#453714'
++    inactiveViewSelectedLineBgColor:
++      - '#1d2433'
++    cherryPickedCommitFgColor:
++      - '#4e975b'
++    cherryPickedCommitBgColor:
++      - '#2a3243'
++    markedBaseCommitFgColor:
++      - '#c1753c'
++    markedBaseCommitBgColor:
++      - '#2a3243'
++    unstagedChangesColor:
++      - '#c86e67'
++    defaultFgColor:
++      - '#cad1de'
++  # <<< sf2-themes managed theme
++  # >>> sf2-themes managed author colors
++  # sf2-themes: sf2-main
++  authorColors:
++    '*': '#cf6a63'
++  # <<< sf2-themes managed author colors

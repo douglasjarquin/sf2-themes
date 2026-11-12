@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-main.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#131927",
++  "foreground": "#cad1de",
++  "selection": "#453714",
++  "cursor": "#ad8705",
++  "ansi": [
++    "#2b323f",
++    "#c86e67",
++    "#4e975b",
++    "#a58324",
++    "#5b89cc",
++    "#b371ad",
++    "#1396a1",
++    "#aeb5c2",
++    "#7c8597",
++    "#ee857d",
++    "#60b46f",
++    "#c59e30",
++    "#6ea4f3",
++    "#d589cf",
++    "#1db3c0",
++    "#d6dbe5"
++  ],
++  "colors": {
++    "canvas": "#131927",
++    "chrome": "#1d2433",
++    "surface": "#2a3243",
++    "border": "#2a3243",
++    "accent": "#ad8705"
++  }
++}

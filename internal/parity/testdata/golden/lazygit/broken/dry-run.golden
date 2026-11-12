@@ -1,0 +1,10 @@
+step apply lazygit --theme ken --dry-run --config-dir {SANDBOX}/config/lazygit
+exit 1
+stdout
+stderr
+| error: Lazygit config cannot be changed safely: {SANDBOX}/config/lazygit/config.yml has incomplete sf2-themes markers
+tree
+dir 0755 config
+dir 0755 config/lazygit
+file 0644 c0e10f97d5039a6b config/lazygit/config.yml
+dir 0755 home

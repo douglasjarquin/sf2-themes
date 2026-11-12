@@ -1,0 +1,89 @@
+step apply lazygit --follow-symlinks --dry-run --config-dir {SANDBOX}/config/lazygit
+exit 0
+stdout
+| would create: {SANDBOX}/config/lazygit/themes/sf2-main.yml
+= 26b32a57a5037571
+| would create: {SANDBOX}/config/lazygit/themes/sf2-main-light.yml
+= 02c1f50249e18b24
+| would create: {SANDBOX}/config/lazygit/themes/sf2-akuma-light.yml
+= e1bc0fe4c81d2ef6
+| would create: {SANDBOX}/config/lazygit/themes/sf2-akuma.yml
+= ad4d6aa9247b4ec8
+| would create: {SANDBOX}/config/lazygit/themes/sf2-balrog-light.yml
+= fe307d55c3c91af3
+| would create: {SANDBOX}/config/lazygit/themes/sf2-balrog.yml
+= c2ed27cfe37d2832
+| would create: {SANDBOX}/config/lazygit/themes/sf2-blanka-light.yml
+= c8fc540ee0a4e192
+| would create: {SANDBOX}/config/lazygit/themes/sf2-blanka.yml
+= c22c9425d78cb4f4
+| would create: {SANDBOX}/config/lazygit/themes/sf2-cammy-light.yml
+= 26352d85ec1aa8e4
+| would create: {SANDBOX}/config/lazygit/themes/sf2-cammy.yml
+= 7f4a245c811474ef
+| would create: {SANDBOX}/config/lazygit/themes/sf2-chun-li-light.yml
+= 4e61cca256e6341d
+| would create: {SANDBOX}/config/lazygit/themes/sf2-chun-li.yml
+= e54871e42ad73f57
+| would create: {SANDBOX}/config/lazygit/themes/sf2-dee-jay-light.yml
+= e6c3974409b560a9
+| would create: {SANDBOX}/config/lazygit/themes/sf2-dee-jay.yml
+= 8578831a3f7ecb04
+| would create: {SANDBOX}/config/lazygit/themes/sf2-dhalsim-light.yml
+= dbdf8e6febb4287b
+| would create: {SANDBOX}/config/lazygit/themes/sf2-dhalsim.yml
+= 6e4fa0692c189a5a
+| would create: {SANDBOX}/config/lazygit/themes/sf2-e-honda-light.yml
+= 5d2cfbe99754c273
+| would create: {SANDBOX}/config/lazygit/themes/sf2-e-honda.yml
+= cb327b01c3560a23
+| would create: {SANDBOX}/config/lazygit/themes/sf2-fei-long-light.yml
+= b1f17d5a08cfda4c
+| would create: {SANDBOX}/config/lazygit/themes/sf2-fei-long.yml
+= 11c14e0c87b7ba28
+| would create: {SANDBOX}/config/lazygit/themes/sf2-guile-light.yml
+= 1863dcdcacc72629
+| would create: {SANDBOX}/config/lazygit/themes/sf2-guile.yml
+= bfac8ac72574cdbe
+| would create: {SANDBOX}/config/lazygit/themes/sf2-ken-light.yml
+= 84004cd2751caaef
+| would create: {SANDBOX}/config/lazygit/themes/sf2-ken.yml
+= caba149317e814ef
+| would create: {SANDBOX}/config/lazygit/themes/sf2-m-bison-light.yml
+= 992b61bcc148dc6f
+| would create: {SANDBOX}/config/lazygit/themes/sf2-m-bison.yml
+= 522767462a4468f4
+| would create: {SANDBOX}/config/lazygit/themes/sf2-ryu-light.yml
+= de421bb788fafd4f
+| would create: {SANDBOX}/config/lazygit/themes/sf2-ryu.yml
+= 1a1d3348a3184073
+| would create: {SANDBOX}/config/lazygit/themes/sf2-sagat-light.yml
+= c63ae18698a96174
+| would create: {SANDBOX}/config/lazygit/themes/sf2-sagat.yml
+= 434fce6acc680b41
+| would create: {SANDBOX}/config/lazygit/themes/sf2-t-hawk-light.yml
+= a448a6404f80fc6f
+| would create: {SANDBOX}/config/lazygit/themes/sf2-t-hawk.yml
+= ff2574ea318add92
+| would create: {SANDBOX}/config/lazygit/themes/sf2-vega-light.yml
+= 4b36937758064292
+| would create: {SANDBOX}/config/lazygit/themes/sf2-vega.yml
+= 6c48949c641613c8
+| would create: {SANDBOX}/config/lazygit/themes/sf2-zangief-light.yml
+= 9810a74a2f76ad9d
+| would create: {SANDBOX}/config/lazygit/themes/sf2-zangief.yml
+= 3d06bad84734e573
+| would update: {SANDBOX}/elsewhere/lazygit/config.yml
+= 2b1f2699ac17abff
+| apply lazygit: sf2-main
+|   changes: 36 would create, 1 would update
+|   note: restart lazygit to render the new theme
+stderr
+tree
+dir 0755 config
+dir 0755 config/lazygit
+link config/lazygit/config.yml -> {SANDBOX}/elsewhere/lazygit/config.yml
+dir 0755 elsewhere
+dir 0755 elsewhere/lazygit
+file 0644 3bd5032c1145d3d8 elsewhere/lazygit/config.yml
+dir 0755 home

@@ -1,0 +1,66 @@
+[colors]
+foreground = "#3c2e2b"
+background = "#faeeec"
+cursor_bg = "#ad3f3c"
+cursor_fg = "#faeeec"
+cursor_border = "#ad3f3c"
+selection_bg = "#f4c9c4"
+selection_fg = "#3c2e2b"
+split = "#e7d6d2"
+scrollbar_thumb = "#82645f"
+compose_cursor = "#4867a2"
+visual_bell = "#e7d6d2"
+ansi = ["#4b3936", "#a94a46", "#2d7633", "#846301", "#3c67b0", "#974e89", "#01737d", "#e8dbd8"]
+brights = ["#66504d", "#9c3332", "#006618", "#705304", "#2555a6", "#8a387c", "#04616a", "#faf3f1"]
+
+[colors.indexed]
+16 = "#9e5517"
+17 = "#ad3f3c"
+
+[colors.tab_bar]
+background = "#faeeec"
+inactive_tab_edge = "#e7d6d2"
+
+[colors.tab_bar.active_tab]
+bg_color = "#ad3f3c"
+fg_color = "#faeeec"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab]
+bg_color = "#f1e3e0"
+fg_color = "#82645f"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.inactive_tab_hover]
+bg_color = "#e7d6d2"
+fg_color = "#3c2e2b"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab]
+bg_color = "#f1e3e0"
+fg_color = "#82645f"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[colors.tab_bar.new_tab_hover]
+bg_color = "#e7d6d2"
+fg_color = "#3c2e2b"
+intensity = "Normal"
+italic = false
+strikethrough = false
+underline = "None"
+
+[metadata]
+name = "sf2-e-honda-light"
+aliases = []
