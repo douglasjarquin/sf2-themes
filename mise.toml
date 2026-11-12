@@ -10,8 +10,8 @@ go = "1.27"
 golangci-lint = "2.15"
 
 [tasks.deps]
-description = "Download Go modules and install aube and Playwright Chromium dependencies"
-run = "go mod download && aube -C web install && aube -C web exec playwright install chromium"
+description = "Download Go modules, install aube dependencies, and download the Chromium the e2e suite drives"
+run = "go mod download && aube -C web install && aube -C web exec playwright-core install chromium"
 
 [tasks.build]
 description = "Compile every Go package and command"

@@ -1,149 +1,133 @@
-import { expect, test } from "@playwright/test";
+import {
+  by,
+  click,
+  expectAttr,
+  expectCount,
+  expectContainsText,
+  expectCSS,
+  expectFocused,
+  expectHidden,
+  expectInViewport,
+  expectText,
+  expectURLContains,
+  expectValue,
+  expectVisible,
+  open,
+  test,
+} from "./support.mjs";
 
-test("the header exposes brand, anchors, fighter select, modes, and the palette trigger", async ({
-  page,
-}) => {
-  await page.goto("./");
+const PRIMARY = 'nav[aria-label="Primary"] a';
+const PALETTE = '[role="dialog"][aria-label="Theme palette"]';
+const PALETTE_TRIGGER = 'button[aria-label="Open theme palette"]';
+const PALETTE_ITEMS = by("[data-palette-item]", undefined, { visible: true });
 
-  await expect(page.locator(".site-brand")).toHaveText("sf2-themes");
-  const nav = page.getByRole("navigation", { name: "Primary" });
-  await expect(nav.getByRole("link", { name: "install" })).toHaveAttribute(
-    "href",
-    "/sf2-themes/#install",
-  );
-  await expect(nav.getByRole("link", { name: "ports" })).toHaveAttribute(
-    "href",
-    "/sf2-themes/#ports",
-  );
-  await expect(nav.getByRole("link", { name: /github/ })).toHaveAttribute(
-    "href",
-    "https://github.com/douglasjarquin/sf2-themes",
-  );
+test("the header exposes brand, anchors, fighter select, modes, and the palette trigger", async (page) => {
+  await open(page, "./");
 
-  await expect(page.locator("[data-site-select]")).toHaveValue("ryu");
-  await expect(page.locator("[data-site-select] option")).toHaveCount(18);
-  await expect(page.locator('[data-site-mode="dark"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(
-    page.getByRole("button", { name: "Open theme palette" }),
-  ).toHaveAttribute("aria-expanded", "false");
+  await expectText(page, ".site-brand", "sf2-themes");
+  await expectAttr(page, by(PRIMARY, "install"), "href", "/sf2-themes/#install");
+  await expectAttr(page, by(PRIMARY, "ports"), "href", "/sf2-themes/#ports");
+  await expectAttr(page, by(PRIMARY, /github/), "href", "https://github.com/douglasjarquin/sf2-themes");
+
+  await expectValue(page, "[data-site-select]", "ryu");
+  await expectCount(page, "[data-site-select] option", 18);
+  await expectAttr(page, '[data-site-mode="dark"]', "aria-pressed", "true");
+  await expectAttr(page, PALETTE_TRIGGER, "aria-expanded", "false");
 });
 
-test("mode buttons switch the palette and update aria-pressed", async ({ page }) => {
-  await page.goto("./");
+test("mode buttons switch the palette and update aria-pressed", async (page) => {
+  await open(page, "./");
 
-  await page.locator('[data-site-mode="light"]').click();
-  await expect(page.locator('[data-site-mode="light"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.locator('[data-site-mode="dark"]')).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
-  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
-  await expect(page.locator("html")).toHaveCSS("color-scheme", "light");
-  await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText(
-    "sf2-ryu-light",
-  );
-  await expect.poll(() => page.url()).toContain("mode=light");
+  await click(page, '[data-site-mode="light"]');
+  await expectAttr(page, '[data-site-mode="light"]', "aria-pressed", "true");
+  await expectAttr(page, '[data-site-mode="dark"]', "aria-pressed", "false");
+  await expectAttr(page, "html", "data-mode", "light");
+  await expectCSS(page, "html", "color-scheme", "light");
+  await expectText(page, "#preview [data-t='fileId']", "sf2-ryu-light");
+  await expectURLContains(page, "mode=light");
 });
 
-test("theme and mode persist through localStorage and deep links", async ({ page }) => {
-  await page.goto("./?theme=guile&mode=light");
+test("theme and mode persist through localStorage and deep links", async (page) => {
+  await open(page, "./?theme=guile&mode=light");
 
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "guile");
-  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
-  await expect(page.locator("[data-site-select]")).toHaveValue("guile");
-  await expect(page.locator("#preview [data-t='displayName']").first()).toHaveText(
-    "Guile Light",
-  );
+  await expectAttr(page, "html", "data-theme", "guile");
+  await expectAttr(page, "html", "data-mode", "light");
+  await expectValue(page, "[data-site-select]", "guile");
+  await expectText(page, "#preview [data-t='displayName']", "Guile Light");
 
   await page.locator("[data-site-select]").selectOption("ken");
-  await page.goto("./");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "ken");
-  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+  await expectAttr(page, "html", "data-theme", "ken");
+  await open(page, "./");
+  await expectAttr(page, "html", "data-theme", "ken");
+  await expectAttr(page, "html", "data-mode", "light");
 });
 
-test("arrow keys step fighters and t toggles the mode", async ({ page }) => {
-  await page.goto("./?theme=ryu&mode=dark");
+test("arrow keys step fighters and t toggles the mode", async (page) => {
+  await open(page, "./?theme=ryu&mode=dark");
 
-  await page.keyboard.press("ArrowRight");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "sagat");
-  await page.keyboard.press("ArrowLeft");
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "ryu");
+  await page.keyPress("ArrowRight");
+  await expectAttr(page, "html", "data-theme", "sagat");
+  await page.keyPress("ArrowLeft");
+  await expectAttr(page, "html", "data-theme", "ryu");
 
-  await page.keyboard.press("t");
-  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
+  await page.type("t");
+  await expectAttr(page, "html", "data-mode", "light");
 });
 
-test("the command palette filters, applies selections, and restores focus", async ({
-  page,
-}) => {
-  await page.goto("./");
+test("the command palette filters, applies selections, and restores focus", async (page) => {
+  await open(page, "./");
 
-  await page.keyboard.press("Control+k");
-  const dialog = page.getByRole("dialog", { name: "Theme palette" });
-  await expect(dialog).toBeVisible();
-  await expect(page.locator("[data-palette-input]")).toBeFocused();
-  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(37);
+  await page.keyPress("Control+k");
+  await expectVisible(page, PALETTE);
+  await expectFocused(page, "[data-palette-input]");
+  await expectCount(page, PALETTE_ITEMS, 37);
 
   await page.locator("[data-palette-input]").fill("boxer");
-  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(2);
-  await page.locator("[data-palette-input]").press("Enter");
-  await expect(dialog).toBeHidden();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "balrog");
-  await expect.poll(() => page.url()).toContain("theme=balrog");
+  await expectCount(page, PALETTE_ITEMS, 2);
+  await page.keyPress("Enter");
+  await expectHidden(page, PALETTE);
+  await expectAttr(page, "html", "data-theme", "balrog");
+  await expectURLContains(page, "theme=balrog");
 });
 
-test("the palette filters by mode words and shows an empty state", async ({ page }) => {
-  await page.goto("./");
+test("the palette filters by mode words and shows an empty state", async (page) => {
+  await open(page, "./");
 
-  await page.getByRole("button", { name: "Open theme palette" }).click();
+  await click(page, PALETTE_TRIGGER);
   await page.locator("[data-palette-input]").fill("claw light");
-  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(1);
-  await expect(page.locator("[data-palette-item]:visible")).toContainText("Vega Light");
+  await expectCount(page, PALETTE_ITEMS, 1);
+  await expectContainsText(page, PALETTE_ITEMS, "Vega Light");
 
   await page.locator("[data-palette-input]").fill("dan hibiki");
-  await expect(page.locator("[data-palette-empty]")).toBeVisible();
-  await expect(page.locator("[data-palette-item]:visible")).toHaveCount(0);
+  await expectVisible(page, "[data-palette-empty]");
+  await expectCount(page, PALETTE_ITEMS, 0);
 
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog", { name: "Theme palette" })).toBeHidden();
-  await expect(page.getByRole("button", { name: "Open theme palette" })).toBeFocused();
+  await page.keyPress("Escape");
+  await expectHidden(page, PALETTE);
+  await expectFocused(page, PALETTE_TRIGGER);
 });
 
-test("the palette mode toggle switches without leaving the overlay", async ({ page }) => {
-  await page.goto("./");
+test("the palette mode toggle switches without leaving the overlay", async (page) => {
+  await open(page, "./");
 
-  await page.getByRole("button", { name: "Open theme palette" }).click();
-  await page.getByRole("option", { name: /Switch to light mode/ }).click();
+  await click(page, PALETTE_TRIGGER);
+  await expectVisible(page, by('[role="option"]', /Switch to light mode/));
+  await click(page, '[role="option"][data-mode-toggle]');
 
-  await expect(page.getByRole("dialog", { name: "Theme palette" })).toBeHidden();
-  await expect(page.locator("html")).toHaveAttribute("data-mode", "light");
-  await expect(page.locator('[data-site-mode="light"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expectHidden(page, PALETTE);
+  await expectAttr(page, "html", "data-mode", "light");
+  await expectAttr(page, '[data-site-mode="light"]', "aria-pressed", "true");
 });
 
-test("the skip link reaches main content and the footer links externally", async ({
-  page,
-}) => {
-  await page.goto("./");
+test("the skip link reaches main content and the footer links externally", async (page) => {
+  await open(page, "./");
 
-  const skip = page.getByRole("link", { name: "Skip to main content" });
-  await page.keyboard.press("Tab");
-  await expect(skip).toBeFocused();
-  await skip.press("Enter");
-  await expect(page.locator("#main-content")).toBeInViewport();
+  const skip = by("a", "Skip to main content");
+  await page.keyPress("Tab");
+  await expectFocused(page, skip);
+  await page.keyPress("Enter");
+  await expectInViewport(page, "#main-content");
 
-  const footer = page.getByRole("contentinfo");
-  await expect(footer).toContainText("Not affiliated with or endorsed by Capcom");
-  await expect(footer.getByRole("link", { name: /github/i }).first()).toHaveAttribute(
-    "href",
-    "https://github.com/douglasjarquin/sf2-themes",
-  );
+  await expectContainsText(page, "footer", "Not affiliated with or endorsed by Capcom");
+  await expectAttr(page, by("footer a", /github/i), "href", "https://github.com/douglasjarquin/sf2-themes");
 });

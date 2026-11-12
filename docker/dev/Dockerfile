@@ -72,10 +72,10 @@ RUN mise exec -- go mod download && \
     cd web && mise exec -- aube ci
 
 USER root
-RUN cd web && mise exec -- aube exec playwright install-deps chromium
+RUN cd web && mise exec -- aube exec playwright-core install-deps chromium
 
 USER dev
-RUN cd web && mise exec -- aube exec playwright install chromium
+RUN cd web && mise exec -- aube exec playwright-core install chromium
 
 USER root
 RUN chmod -R a+rX /opt/sf2-themes/manifests /home/dev/.cache

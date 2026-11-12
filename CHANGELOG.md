@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Upgrade the website to Astro 7.4 and run its browser tests on Stagehand v4 instead of Playwright Test.
 - Upgrade the website to Astro 7.3.
 - Add a `claude` app: installs every catalog theme under `~/.claude/themes/` and selects one with `theme` in `~/.claude/settings.json`. Claude Code's custom-theme format has no host-appearance auto-switch, so applying a sibling pins it like Codex rather than following like WezTerm/Herdr/Neovim.
 - WezTerm, Herdr, and Neovim apply a selected character as a dark/light pair and auto-switch with host appearance instead of pinning a single variant.

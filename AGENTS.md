@@ -28,7 +28,7 @@ install.sh           One-line installer published with every release
 scripts/ci/          Release build, install rehearsal, and container orchestration
 docker/              toolchain (mise + Go + Node + aube, no app source) and dev (+ prefetched deps) images
 .cursor/             Cursor Cloud environment.json; builds docker/dev/Dockerfile
-web/                 Static Astro site, Node tests, and Playwright
+web/                 Static Astro site, Node tests, and Stagehand e2e
 docs/                Authored contracts and generated SVG previews
 .github/workflows/   Path-selected CI, release, Pages build/deploy, image publishing, and issue automation
 ```
@@ -51,7 +51,7 @@ docs/                Authored contracts and generated SVG previews
 | Site theme runtime | `web/src/scripts/site-theme.mjs`, `web/src/data/site-theme-data.mjs` | Header controls, `⌘K` palette, `?theme=` deep links |
 | Site install command and SEO | `web/src/lib/seo.mjs`, `web/public/llms.txt` | `llms.txt` is generated from `seo.mjs` and a unit test holds them equal |
 | Go verification | `mise.toml`, `internal/*/..._test.go` | `mise run test` runs everything uncached |
-| Web verification | `web/test/`, `web/tests/unit/`, `web/tests/e2e/`, `web/playwright.config.mjs` | Node contracts plus real browser coverage |
+| Web verification | `web/test/`, `web/tests/unit/`, `web/tests/e2e/` | Node contracts plus real browser coverage through Stagehand |
 | Starship / zsh prompt | `internal/adapters/starship/` | Managed palette + sourcable command highlight snippet |
 | Containerized dev/CI | `docker/`, `scripts/ci/run-in-dev-container.sh` | `mise run <task>` runs identically on bare host or through the wrapper |
 | Cursor Cloud | `.cursor/environment.json`, `docker/dev/Dockerfile` | Cloud agents build the dev image with no toolchain build-arg |
