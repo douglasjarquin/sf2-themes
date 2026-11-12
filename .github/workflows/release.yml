@@ -5,12 +5,10 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -40,6 +38,34 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: scripts/ci/build-release.sh "${TAG#v}" dist
 
+      - name: Render release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: sed "s/{{VERSION}}/${TAG#v}/g" .github/release-notes.md > notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            dist/
+            notes.md
+          if-no-files-found: error
+
+  # Publishing and attestation get their own job so the permissions that can mint
+  # an OIDC token and write a release never reach the toolchain, lint, test, or build steps.
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+
       - name: Attest build provenance
         uses: actions/attest-build-provenance@v3
         with:
@@ -50,10 +76,9 @@ jobs:
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
           TAG: ${{ github.ref_name }}
         run: |
-          version="${TAG#v}"
-          sed "s/{{VERSION}}/$version/g" .github/release-notes.md > "$RUNNER_TEMP/notes.md"
           prerelease=()
-          [[ "$version" == *-rc.* ]] && prerelease=(--prerelease)
-          gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" "${prerelease[@]}"
+          [[ "$TAG" == *-rc.* ]] && prerelease=(--prerelease)
+          gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file notes.md "${prerelease[@]}"

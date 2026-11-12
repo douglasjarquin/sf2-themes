@@ -41,9 +41,9 @@ fetch() {
 	case "$base" in
 	http://* | https://*)
 		if command -v curl >/dev/null 2>&1; then
-			curl -fsSL "$base/$1" -o "$2" || fail "could not download $base/$1"
+			curl -fsSL --retry 3 --connect-timeout 15 "$base/$1" -o "$2" || fail "could not download $base/$1"
 		elif command -v wget >/dev/null 2>&1; then
-			wget -q "$base/$1" -O "$2" || fail "could not download $base/$1"
+			wget -q --tries=3 --timeout=30 "$base/$1" -O "$2" || fail "could not download $base/$1"
 		else
 			fail "curl or wget is required to download $base/$1"
 		fi
@@ -109,7 +109,10 @@ main() {
 	mkdir -p "$dir"
 	chmod 755 "$tmp/$asset"
 	mv "$tmp/$asset" "$dir/.sf2-themes.new"
-	mv -f "$dir/.sf2-themes.new" "$target"
+	mv -f "$dir/.sf2-themes.new" "$target" || {
+		rm -f "$dir/.sf2-themes.new"
+		fail "could not move the new binary into $target"
+	}
 	[ -L "$link" ] || ln -s sf2-themes "$link"
 
 	printf 'installed sf2-themes %s to %s\n' "$("$target" --version)" "$target"
