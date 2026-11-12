@@ -1,0 +1,10 @@
+step current starship --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: Starship uses a theme sf2-themes does not manage
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 7ca9d6dc4561eba6 config/starship/starship.toml
+dir 0755 home

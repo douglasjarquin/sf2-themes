@@ -1,0 +1,9 @@
+step apply codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: <masked>
+tree
+dir 0755 config
+file 0644 2fa094a71c4db348 config/codex
+dir 0755 home

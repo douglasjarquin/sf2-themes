@@ -1,0 +1,53 @@
+--- {SANDBOX}/config/lazygit/config.yml
++++ {SANDBOX}/config/lazygit/config.yml
+@@ -1,36 +1,36 @@
+ 
+ gui:
+   # >>> sf2-themes managed theme
+-  # sf2-themes: sf2-ryu
++  # sf2-themes: sf2-ken
+   theme:
+     activeBorderColor:
+-      - '#da6a6a'
++      - '#de6767'
+       - bold
+     inactiveBorderColor:
+-      - '#2b333f'
++      - '#3e2d2d'
+     searchingActiveBorderColor:
+-      - '#9e8625'
++      - '#a88225'
+     optionsTextColor:
+-      - '#da6a6a'
++      - '#de6767'
+     selectedLineBgColor:
+       - '#522d2c'
+     inactiveViewSelectedLineBgColor:
+-      - '#1f252f'
++      - '#2e2020'
+     cherryPickedCommitFgColor:
+-      - '#5e9465'
++      - '#549657'
+     cherryPickedCommitBgColor:
+-      - '#2b333f'
++      - '#3e2d2d'
+     markedBaseCommitFgColor:
+-      - '#c2753c'
++      - '#c1753c'
+     markedBaseCommitBgColor:
+-      - '#2b333f'
++      - '#3e2d2d'
+     unstagedChangesColor:
+-      - '#c86e6c'
++      - '#c76e67'
+     defaultFgColor:
+-      - '#cad2df'
++      - '#decdcc'
+   # <<< sf2-themes managed theme
+   # >>> sf2-themes managed author colors
+-  # sf2-themes: sf2-ryu
++  # sf2-themes: sf2-ken
+   authorColors:
+-    '*': '#5b8ac6'
++    '*': '#ae8012'
+   # <<< sf2-themes managed author colors

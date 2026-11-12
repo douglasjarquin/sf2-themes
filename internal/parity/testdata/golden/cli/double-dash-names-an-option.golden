@@ -1,0 +1,7 @@
+step validate ryu -- --all
+exit 1
+stdout
+stderr
+| error: unknown theme: --all
+tree
+dir 0755 home

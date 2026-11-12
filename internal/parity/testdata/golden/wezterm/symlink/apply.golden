@@ -1,0 +1,13 @@
+step apply wezterm --config-dir {SANDBOX}/config/wezterm
+exit 1
+stdout
+stderr
+| error: refusing to replace symlink {SANDBOX}/config/wezterm/wezterm.lua; pass --follow-symlinks to write through
+tree
+dir 0755 config
+dir 0755 config/wezterm
+link config/wezterm/wezterm.lua -> {SANDBOX}/elsewhere/wezterm/wezterm.lua
+dir 0755 elsewhere
+dir 0755 elsewhere/wezterm
+file 0644 785b9fe39fe7f4d0 elsewhere/wezterm/wezterm.lua
+dir 0755 home

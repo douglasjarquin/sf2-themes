@@ -1,0 +1,7 @@
+step current nvim --config-dir {SANDBOX}/config/nvim
+exit 1
+stdout
+stderr
+| error: no Neovim theme applied yet
+tree
+dir 0755 home

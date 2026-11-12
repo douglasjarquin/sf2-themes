@@ -1,0 +1,16 @@
+step setup codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: Codex config has a shape sf2-themes cannot edit safely.
+| Convert the inline tui value in {SANDBOX}/config/codex/config.toml into a [tui] table, for example:
+| 
+| [tui]
+| theme = "..."
+| 
+| Then run the command again.
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 82737bc907cbd4c6 config/codex/config.toml
+dir 0755 home

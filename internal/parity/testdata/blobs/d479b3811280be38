@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-ryu.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#141a23",
++  "foreground": "#cad2df",
++  "selection": "#522d2c",
++  "cursor": "#da6a6a",
++  "ansi": [
++    "#2b323f",
++    "#c86e6c",
++    "#5e9465",
++    "#9e8625",
++    "#558acc",
++    "#a278b5",
++    "#1195ad",
++    "#aeb6c2",
++    "#7b8598",
++    "#ee8582",
++    "#70b27a",
++    "#bda131",
++    "#69a6f3",
++    "#c291d9",
++    "#1bb2ce",
++    "#d6dce5"
++  ],
++  "colors": {
++    "canvas": "#141a23",
++    "chrome": "#1f252f",
++    "surface": "#2b333f",
++    "border": "#2b333f",
++    "accent": "#da6a6a"
++  }
++}

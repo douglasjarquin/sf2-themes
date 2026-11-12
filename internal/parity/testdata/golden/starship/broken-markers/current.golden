@@ -1,0 +1,10 @@
+step current starship --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/starship/starship.toml has incomplete sf2-themes markers
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 45a3c03f5cdf0d70 config/starship/starship.toml
+dir 0755 home

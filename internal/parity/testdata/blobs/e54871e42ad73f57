@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-chun-li.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#498ee2'
++      - bold
++    inactiveBorderColor:
++      - '#2a333f'
++    searchingActiveBorderColor:
++      - '#a38424'
++    optionsTextColor:
++      - '#498ee2'
++    selectedLineBgColor:
++      - '#253a55'
++    inactiveViewSelectedLineBgColor:
++      - '#1d252f'
++    cherryPickedCommitFgColor:
++      - '#4e975b'
++    cherryPickedCommitBgColor:
++      - '#2a333f'
++    markedBaseCommitFgColor:
++      - '#c2753c'
++    markedBaseCommitBgColor:
++      - '#2a333f'
++    unstagedChangesColor:
++      - '#c86e67'
++    defaultFgColor:
++      - '#c8d2de'
++  authorColors:
++    '*': '#a4841b'

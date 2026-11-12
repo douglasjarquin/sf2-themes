@@ -1,0 +1,12 @@
+step setup herdr --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| setup herdr: kept sf2-ryu + sf2-ryu-light (follows host appearance)
+|   changes: no changes
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 bdd4e8859d705030 config/herdr/config.toml
+dir 0755 home

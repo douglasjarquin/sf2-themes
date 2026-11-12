@@ -1,0 +1,110 @@
+step apply wezterm --theme ken --dry-run --config-dir {SANDBOX}/config/wezterm
+exit 0
+stdout
+| would create: {SANDBOX}/config/wezterm/colors/sf2-main.toml
+= 6d2956c21fce986e
+| would create: {SANDBOX}/config/wezterm/colors/sf2-main-light.toml
+= a0cc063adbb4c411
+| would create: {SANDBOX}/config/wezterm/colors/sf2-akuma-light.toml
+= ba270fbe02a009a4
+| would create: {SANDBOX}/config/wezterm/colors/sf2-akuma.toml
+= d5186867fb0f988d
+| would create: {SANDBOX}/config/wezterm/colors/sf2-balrog-light.toml
+= 5eedb37b0ab38f0c
+| would create: {SANDBOX}/config/wezterm/colors/sf2-balrog.toml
+= b4e0f282242d9fee
+| would create: {SANDBOX}/config/wezterm/colors/sf2-blanka-light.toml
+= de0c794b49bedabb
+| would create: {SANDBOX}/config/wezterm/colors/sf2-blanka.toml
+= 62c885f81b3d63ad
+| would create: {SANDBOX}/config/wezterm/colors/sf2-cammy-light.toml
+= cbc85c3cdef4c6c0
+| would create: {SANDBOX}/config/wezterm/colors/sf2-cammy.toml
+= 65567de380108a1d
+| would create: {SANDBOX}/config/wezterm/colors/sf2-chun-li-light.toml
+= 3ba2a9b53bba245b
+| would create: {SANDBOX}/config/wezterm/colors/sf2-chun-li.toml
+= a932814cf4c7134c
+| would create: {SANDBOX}/config/wezterm/colors/sf2-dee-jay-light.toml
+= 5b7879a575ef41e5
+| would create: {SANDBOX}/config/wezterm/colors/sf2-dee-jay.toml
+= 37fa94d8688a0bbf
+| would create: {SANDBOX}/config/wezterm/colors/sf2-dhalsim-light.toml
+= f37c8e748abbc696
+| would create: {SANDBOX}/config/wezterm/colors/sf2-dhalsim.toml
+= b3cd96fce5dbe070
+| would create: {SANDBOX}/config/wezterm/colors/sf2-e-honda-light.toml
+= f90b696164ed86b9
+| would create: {SANDBOX}/config/wezterm/colors/sf2-e-honda.toml
+= 0f57fc80d11b3c7a
+| would create: {SANDBOX}/config/wezterm/colors/sf2-fei-long-light.toml
+= 7c52c8e65384c79a
+| would create: {SANDBOX}/config/wezterm/colors/sf2-fei-long.toml
+= 1dfd0ec3a487eef8
+| would create: {SANDBOX}/config/wezterm/colors/sf2-guile-light.toml
+= 88b06ccce422c02d
+| would create: {SANDBOX}/config/wezterm/colors/sf2-guile.toml
+= 83d5e9f67a0d4e7e
+| would create: {SANDBOX}/config/wezterm/colors/sf2-ken-light.toml
+= af1eeaadc70f5dc1
+| would create: {SANDBOX}/config/wezterm/colors/sf2-ken.toml
+= eb050a6ccad19b91
+| would create: {SANDBOX}/config/wezterm/colors/sf2-m-bison-light.toml
+= 8361de4c5b8ec737
+| would create: {SANDBOX}/config/wezterm/colors/sf2-m-bison.toml
+= 1674b055543a790f
+| would create: {SANDBOX}/config/wezterm/colors/sf2-ryu-light.toml
+= 388368c480a3c3ac
+| would create: {SANDBOX}/config/wezterm/colors/sf2-ryu.toml
+= cc05fe955f028b3f
+| would create: {SANDBOX}/config/wezterm/colors/sf2-sagat-light.toml
+= 839d842359c87e73
+| would create: {SANDBOX}/config/wezterm/colors/sf2-sagat.toml
+= 89271c41c72836fc
+| would create: {SANDBOX}/config/wezterm/colors/sf2-t-hawk-light.toml
+= 10f08ae48f499fc8
+| would create: {SANDBOX}/config/wezterm/colors/sf2-t-hawk.toml
+= 99dd6e9c3fad5b36
+| would create: {SANDBOX}/config/wezterm/colors/sf2-vega-light.toml
+= d866254055654560
+| would create: {SANDBOX}/config/wezterm/colors/sf2-vega.toml
+= ccb88b65c0e74435
+| would create: {SANDBOX}/config/wezterm/colors/sf2-zangief-light.toml
+= 01c4167e830f84c0
+| would create: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
+= 528b9ef8421415b0
+| would create: {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
+| --- /dev/null
+| +++ {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
+| @@ -0,0 +1,7 @@
+| +-- sf2-themes: sf2-ken
+| +local wezterm = require("wezterm")
+| +local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"
+| +if appearance:find("Dark") then
+| +  return "sf2-ken"
+| +end
+| +return "sf2-ken-light"
+| would update: {SANDBOX}/config/wezterm/wezterm.lua
+| --- {SANDBOX}/config/wezterm/wezterm.lua
+| +++ {SANDBOX}/config/wezterm/wezterm.lua
+| @@ -1,4 +1,10 @@
+|  local wezterm = require("wezterm")
+|  local config = wezterm.config_builder()
+| -config.color_scheme = "sf2-ryu"
+| +local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+| +wezterm.add_to_config_reload_watch_list(sf2_current)
+| +local sf2_scheme = dofile(sf2_current)
+| +config.color_scheme = sf2_scheme
+| +local sf2_env = config.set_environment_variables or {}
+| +sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"
+| +config.set_environment_variables = sf2_env
+|  return config
+| apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 37 would create, 1 would update
+|   note: restart WezTerm, or let a config reload pick up the managed pointer
+stderr
+tree
+dir 0755 config
+dir 0755 config/wezterm
+file 0644 2ef93bb21b4d0f44 config/wezterm/wezterm.lua
+dir 0755 home

@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Zangief",
+  "base": "dark",
+  "overrides": {
+    "claude": "#df6862",
+    "error": "#c96f68",
+    "success": "#559758",
+    "warning": "#a38525",
+    "text": "#c4d4da",
+    "permission": "#c2763d",
+    "bashBorder": "#24353b",
+    "diffAdded": "#559758",
+    "diffRemoved": "#c96f68",
+    "suggestion": "#508fb3"
+  }
+}

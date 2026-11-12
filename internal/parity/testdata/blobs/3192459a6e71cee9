@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Dee Jay",
+  "base": "dark",
+  "overrides": {
+    "claude": "#cc7822",
+    "error": "#c86f64",
+    "success": "#559658",
+    "warning": "#ab8127",
+    "text": "#c2d5d4",
+    "permission": "#c2753c",
+    "bashBorder": "#233636",
+    "diffAdded": "#559658",
+    "diffRemoved": "#c86f64",
+    "suggestion": "#57965a"
+  }
+}

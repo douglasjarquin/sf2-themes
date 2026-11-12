@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-m-bison-light.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#8c48a1'
++      - bold
++    inactiveBorderColor:
++      - '#ddd7e5'
++    searchingActiveBorderColor:
++      - '#826401'
++    optionsTextColor:
++      - '#8c48a1'
++    selectedLineBgColor:
++      - '#e3cbeb'
++    inactiveViewSelectedLineBgColor:
++      - '#e9e4ef'
++    cherryPickedCommitFgColor:
++      - '#247738'
++    cherryPickedCommitBgColor:
++      - '#ddd7e5'
++    markedBaseCommitFgColor:
++      - '#9e5517'
++    markedBaseCommitBgColor:
++      - '#ddd7e5'
++    unstagedChangesColor:
++      - '#a94a4b'
++    defaultFgColor:
++      - '#352f3b'
++  authorColors:
++    '*': '#a64c4c'

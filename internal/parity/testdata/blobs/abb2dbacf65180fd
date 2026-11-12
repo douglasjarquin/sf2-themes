@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-akuma-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#faeeee"
+red = "#a94a46"
+green = "#437345"
+yellow = "#846301"
+blue = "#af3d3b"
+purple = "#7c57a3"
+cyan = "#0f7378"
+white = "#3c2e2e"
+bright-black = "#826365"
+bright-red = "#a94a46"
+bright-green = "#437345"
+bright-yellow = "#846301"
+bright-blue = "#af3d3b"
+bright-purple = "#7c57a3"
+bright-cyan = "#0f7378"
+bright-white = "#3c2e2e"
+# <<< sf2-themes managed theme

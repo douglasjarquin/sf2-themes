@@ -1,0 +1,11 @@
+step apply slack --theme balrog
+exit 0
+stdout
+| #191822,#d465a8,#469760,#c86d6e
+stderr
+| balrog
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

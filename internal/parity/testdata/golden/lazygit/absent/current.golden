@@ -1,0 +1,7 @@
+step current lazygit --config-dir {SANDBOX}/config/lazygit
+exit 1
+stdout
+stderr
+| error: no Lazygit theme applied yet
+tree
+dir 0755 home

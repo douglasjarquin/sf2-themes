@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-t-hawk-light.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#f9efea",
++  "foreground": "#3c2e29",
++  "selection": "#b0e0dc",
++  "cursor": "#0a706c",
++  "ansi": [
++    "#4a3a34",
++    "#a94b47",
++    "#39752b",
++    "#856302",
++    "#0f6daa",
++    "#9b4d83",
++    "#067570",
++    "#e7dbd6",
++    "#655149",
++    "#9c3332",
++    "#1e6506",
++    "#705304",
++    "#025b92",
++    "#8e3675",
++    "#07625f",
++    "#f9f3f0"
++  ],
++  "colors": {
++    "canvas": "#f9efea",
++    "chrome": "#f0e3de",
++    "surface": "#e6d6cf",
++    "border": "#e6d6cf",
++    "accent": "#0a706c"
++  }
++}

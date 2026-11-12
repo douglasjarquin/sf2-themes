@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-ken.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#de6767'
++      - bold
++    inactiveBorderColor:
++      - '#3e2d2d'
++    searchingActiveBorderColor:
++      - '#a88225'
++    optionsTextColor:
++      - '#de6767'
++    selectedLineBgColor:
++      - '#522d2c'
++    inactiveViewSelectedLineBgColor:
++      - '#2e2020'
++    cherryPickedCommitFgColor:
++      - '#549657'
++    cherryPickedCommitBgColor:
++      - '#3e2d2d'
++    markedBaseCommitFgColor:
++      - '#c1753c'
++    markedBaseCommitBgColor:
++      - '#3e2d2d'
++    unstagedChangesColor:
++      - '#c76e67'
++    defaultFgColor:
++      - '#decdcc'
++  authorColors:
++    '*': '#ae8012'

@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Ryu",
+  "base": "dark",
+  "overrides": {
+    "claude": "#da6a6a",
+    "error": "#c86e6c",
+    "success": "#5e9465",
+    "warning": "#9e8625",
+    "text": "#cad2df",
+    "permission": "#c2753c",
+    "bashBorder": "#2b333f",
+    "diffAdded": "#5e9465",
+    "diffRemoved": "#c86e6c",
+    "suggestion": "#5b8ac6"
+  }
+}

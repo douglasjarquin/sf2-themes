@@ -1,0 +1,17 @@
+[ui]
+sidebar = true
+
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-ryu
+[theme]
+name = "catppuccin"
+auto_switch = true
+light_name = "catppuccin-latte"
+dark_name = "catppuccin"
+
+[theme.custom.dark]
+accent = "#da6a6a"
+
+[theme.custom.light]
+accent = "#af3c40"
+# <<< sf2-themes managed theme

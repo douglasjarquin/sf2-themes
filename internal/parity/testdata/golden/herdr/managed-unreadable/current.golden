@@ -1,0 +1,10 @@
+step current herdr --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: could not read the sf2 theme Herdr selects
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 c462164a2aa06e3e config/herdr/config.toml
+dir 0755 home

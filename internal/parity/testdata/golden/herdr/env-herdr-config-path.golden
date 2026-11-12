@@ -1,0 +1,10 @@
+step apply herdr
+exit 0
+stdout
+| apply herdr: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 1 created
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+tree
+file 0644 432f801e9640008b herdr.toml
+dir 0755 home

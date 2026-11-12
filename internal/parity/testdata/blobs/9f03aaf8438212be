@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Blanka",
+  "base": "dark",
+  "overrides": {
+    "claude": "#3b9f58",
+    "error": "#c86f61",
+    "success": "#4e975b",
+    "warning": "#ad8028",
+    "text": "#c6d5cc",
+    "permission": "#c2753c",
+    "bashBorder": "#27362e",
+    "diffAdded": "#4e975b",
+    "diffRemoved": "#c86f61",
+    "suggestion": "#c4752e"
+  }
+}

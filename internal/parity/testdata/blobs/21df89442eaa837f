@@ -1,0 +1,7 @@
+model = "o3"
+
+[tui]
+animations = false
+
+[other]
+x = 1

@@ -1,0 +1,10 @@
+step apply starship --theme ken --verbose --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: Starship config cannot be changed safely: {SANDBOX}/config/starship/starship.toml is not valid TOML: <masked>
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 e1b85afef5db9c1d config/starship/starship.toml
+dir 0755 home

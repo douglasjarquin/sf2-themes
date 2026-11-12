@@ -1,0 +1,13 @@
+step setup herdr --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| setup herdr: selection unreadable, reset to sf2-main + sf2-main-light (follows host appearance)
+|   changes: 1 updated
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+backup 0644 c462164a2aa06e3e config/herdr/config.toml.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 432f801e9640008b config/herdr/config.toml
+dir 0755 home

@@ -1,0 +1,48 @@
+step apply claude
+exit 0
+stdout
+| apply claude: sf2-main
+|   changes: 37 created
+|   note: reselect with /theme in a running Claude Code session
+stderr
+tree
+dir 0755 claude
+file 0644 42b875c20d67b8b3 claude/settings.json
+dir 0755 claude/themes
+file 0644 a9987e5a05d04bda claude/themes/sf2-akuma-light.json
+file 0644 8f44799cc0d672b9 claude/themes/sf2-akuma.json
+file 0644 1be5b5fd2acec1db claude/themes/sf2-balrog-light.json
+file 0644 e36af5207bb9287e claude/themes/sf2-balrog.json
+file 0644 cdfec851a2480694 claude/themes/sf2-blanka-light.json
+file 0644 9f03aaf8438212be claude/themes/sf2-blanka.json
+file 0644 45d6b42295e0edba claude/themes/sf2-cammy-light.json
+file 0644 a2bf85678705e0dd claude/themes/sf2-cammy.json
+file 0644 ab54273291133b4b claude/themes/sf2-chun-li-light.json
+file 0644 82426979ebc48107 claude/themes/sf2-chun-li.json
+file 0644 9210d8762e4c8791 claude/themes/sf2-dee-jay-light.json
+file 0644 3192459a6e71cee9 claude/themes/sf2-dee-jay.json
+file 0644 0e3f6b30de2dbf13 claude/themes/sf2-dhalsim-light.json
+file 0644 0b2d964034d59ebd claude/themes/sf2-dhalsim.json
+file 0644 ca69e7e13aea1b96 claude/themes/sf2-e-honda-light.json
+file 0644 f1ef4edae7a7eb5f claude/themes/sf2-e-honda.json
+file 0644 16fb6f84e4dbfdc4 claude/themes/sf2-fei-long-light.json
+file 0644 14ef062b2ac23be0 claude/themes/sf2-fei-long.json
+file 0644 b6278d38f3764938 claude/themes/sf2-guile-light.json
+file 0644 da34c7bf834b0fdd claude/themes/sf2-guile.json
+file 0644 90e7d8278790e825 claude/themes/sf2-ken-light.json
+file 0644 3a2b8c98c4ddc099 claude/themes/sf2-ken.json
+file 0644 d0f8a3716ec800d1 claude/themes/sf2-m-bison-light.json
+file 0644 73dee86da8cf41f2 claude/themes/sf2-m-bison.json
+file 0644 5c98acc435b95868 claude/themes/sf2-main-light.json
+file 0644 efafab2d929c4b0e claude/themes/sf2-main.json
+file 0644 ebf19ec3263d4867 claude/themes/sf2-ryu-light.json
+file 0644 517192cce6f9f0e2 claude/themes/sf2-ryu.json
+file 0644 0609736dd0bddce8 claude/themes/sf2-sagat-light.json
+file 0644 bb6521333c8a143b claude/themes/sf2-sagat.json
+file 0644 18041987c7e8208e claude/themes/sf2-t-hawk-light.json
+file 0644 c195fa6cef1c3dec claude/themes/sf2-t-hawk.json
+file 0644 3333c10e8d246fac claude/themes/sf2-vega-light.json
+file 0644 26e036c6b17dfcbe claude/themes/sf2-vega.json
+file 0644 20e1a7ab81072dcc claude/themes/sf2-zangief-light.json
+file 0644 e672e4b9e1d8cccf claude/themes/sf2-zangief.json
+dir 0755 home

@@ -1,0 +1,13 @@
+step apply claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: refusing to replace symlink {SANDBOX}/config/claude/settings.json; pass --follow-symlinks to write through
+tree
+dir 0755 config
+dir 0755 config/claude
+link config/claude/settings.json -> {SANDBOX}/elsewhere/claude/settings.json
+dir 0755 elsewhere
+dir 0755 elsewhere/claude
+file 0644 ca3d163bab055381 elsewhere/claude/settings.json
+dir 0755 home

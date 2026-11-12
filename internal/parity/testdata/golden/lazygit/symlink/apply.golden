@@ -1,0 +1,13 @@
+step apply lazygit --config-dir {SANDBOX}/config/lazygit
+exit 1
+stdout
+stderr
+| error: refusing to replace symlink {SANDBOX}/config/lazygit/config.yml; pass --follow-symlinks to write through
+tree
+dir 0755 config
+dir 0755 config/lazygit
+link config/lazygit/config.yml -> {SANDBOX}/elsewhere/lazygit/config.yml
+dir 0755 elsewhere
+dir 0755 elsewhere/lazygit
+file 0644 3bd5032c1145d3d8 elsewhere/lazygit/config.yml
+dir 0755 home

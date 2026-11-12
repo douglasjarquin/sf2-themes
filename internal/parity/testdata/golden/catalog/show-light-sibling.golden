@@ -1,0 +1,63 @@
+step show ryu-light
+exit 0
+stdout
+| schema_version = 1
+| 
+| [meta]
+| id = "ryu-light"
+| display_name = "Street Fighter II - Ryu Light"
+| kind = "character"
+| introduced_in = "world-warrior"
+| character = "Ryu"
+| aliases = []
+| name = "Ryu"
+| variant = "light"
+| family = "sf2"
+| stage = "Japan · Suzaku Castle rooftop"
+| 
+| [ui]
+| background = "#ecf1fa"
+| surface = "#e1e7f2"
+| overlay = "#d3dae8"
+| border = "#d3dae8"
+| foreground = "#2b313d"
+| muted = "#5e6b83"
+| subtle = "#424f68"
+| accent = "#ab4043"
+| accent_secondary = "#3c69a3"
+| cursor = "#ab4043"
+| cursor_text = "#ecf1fa"
+| selection_background = "#f4c9c6"
+| selection_foreground = "#2b313d"
+| 
+| [semantic]
+| red = "#a94a4b"
+| green = "#3e7347"
+| yellow = "#7b6600"
+| blue = "#3169af"
+| magenta = "#815893"
+| cyan = "#0f7285"
+| orange = "#9e5517"
+| 
+| [ansi.normal]
+| black = "#363e4b"
+| red = "#a94a4b"
+| green = "#3e7347"
+| yellow = "#7b6600"
+| blue = "#3169af"
+| magenta = "#815893"
+| cyan = "#0f7285"
+| white = "#d9dee8"
+| 
+| [ansi.bright]
+| black = "#4d5667"
+| red = "#9c3237"
+| green = "#236431"
+| yellow = "#685603"
+| blue = "#1257a4"
+| magenta = "#734587"
+| cyan = "#036071"
+| white = "#f1f5fa"
+stderr
+tree
+dir 0755 home

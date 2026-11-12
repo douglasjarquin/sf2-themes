@@ -1,0 +1,7 @@
+local wezterm = require("wezterm")
+local sf2_current = "{SANDBOX}/xdg/sf2-theme/wezterm-current.lua"
+wezterm.add_to_config_reload_watch_list(sf2_current)
+local sf2_scheme = dofile(sf2_current)
+local sf2_env = {}
+sf2_env.TERM_THEME = "dark"
+return { color_scheme = sf2_scheme }

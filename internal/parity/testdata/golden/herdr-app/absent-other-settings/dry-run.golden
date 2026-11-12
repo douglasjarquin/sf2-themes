@@ -1,0 +1,95 @@
+step apply herdr-app --theme ken --dry-run --config-dir {SANDBOX}/config/herdr-app
+exit 0
+stdout
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-main.json
+= 204ef732f6630ed4
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-main-light.json
+= 68f0560584100435
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-akuma-light.json
+= ffcc8b3d28f78725
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-akuma.json
+= 5738c14488ba9ce2
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-balrog-light.json
+= 36fbcee96dfe3921
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-balrog.json
+= 7dc54ad426a96594
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-blanka-light.json
+= f470eb14cf96d95d
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-blanka.json
+= 71c845c8e4b02155
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-cammy-light.json
+= 66c2c39a586adc36
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-cammy.json
+= b1e24b4b660cb9a1
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-chun-li-light.json
+= 1b2f7bc4a3a4511c
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-chun-li.json
+= a7b04e5de91b61a1
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-dee-jay-light.json
+= 372822a150f3b029
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-dee-jay.json
+= 716aaed7dd39902e
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-dhalsim-light.json
+= d432eb06a137ef4f
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-dhalsim.json
+= 38e7775b239c0771
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-e-honda-light.json
+= 3ebd3f7d4f0b5b5c
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-e-honda.json
+= 5e20111617bc4c73
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-fei-long-light.json
+= dfc44f8212d1bc40
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-fei-long.json
+= 2fa13cf54babbd8a
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-guile-light.json
+= ecf7611e00ef72ef
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-guile.json
+= b924170b3ab945de
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-ken-light.json
+= d9228cba1338c007
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-ken.json
+= 9418fff15f327796
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-m-bison-light.json
+= 31551e46379e7423
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-m-bison.json
+= 574c32c9a0d01a8d
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-ryu-light.json
+= 17b4554fe53af14f
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-ryu.json
+= d479b3811280be38
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-sagat-light.json
+= 7c63b569507f5afd
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-sagat.json
+= b7472de1b25cd2b5
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-t-hawk-light.json
+= b663e8b547443f62
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-t-hawk.json
+= 9b36ed798c5c5ddd
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-vega-light.json
+= 53b5089e412fed61
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-vega.json
+= b8d4b6674c25f789
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-zangief-light.json
+= 2bb358fa82516b6d
+| would create: {SANDBOX}/config/herdr-app/themes/sf2-zangief.json
+= 41c876b89baff5a7
+| would update: {SANDBOX}/config/herdr-app/settings.json
+| --- {SANDBOX}/config/herdr-app/settings.json
+| +++ {SANDBOX}/config/herdr-app/settings.json
+| @@ -1 +1,7 @@
+| -{"fontSize": 14}+{
+| +  "fontSize": 14,
+| +  "theme": {
+| +    "dark": "sf2-ken",
+| +    "light": "sf2-ken-light"
+| +  }
+| +}
+| apply herdr-app: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 36 would create, 1 would update
+|   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
+stderr
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+file 0644 0dd6cd493102c1d9 config/herdr-app/settings.json
+dir 0755 home

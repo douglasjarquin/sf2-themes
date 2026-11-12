@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-cammy
+palette = "sf2"
+
+[palettes.sf2]
+black = "#121a22"
+red = "#c86e67"
+green = "#549657"
+yellow = "#a38424"
+blue = "#509c54"
+purple = "#ca6d66"
+cyan = "#1396a1"
+white = "#c7d2dd"
+bright-black = "#778696"
+bright-red = "#c86e67"
+bright-green = "#549657"
+bright-yellow = "#a38424"
+bright-blue = "#509c54"
+bright-purple = "#ca6d66"
+bright-cyan = "#1396a1"
+bright-white = "#c7d2dd"
+# <<< sf2-themes managed theme

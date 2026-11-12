@@ -1,0 +1,7 @@
+step current codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: no Codex theme applied yet
+tree
+dir 0755 home

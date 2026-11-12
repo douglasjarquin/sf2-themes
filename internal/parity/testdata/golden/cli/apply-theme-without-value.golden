@@ -1,0 +1,7 @@
+step apply codex --theme
+exit 2
+stdout
+stderr
+| sf2-themes apply: error: argument --theme: expected one argument
+tree
+dir 0755 home

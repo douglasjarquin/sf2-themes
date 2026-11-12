@@ -1,0 +1,49 @@
+step apply lazygit --theme ryu --config-dir {SANDBOX}/config/lazygit
+exit 0
+stdout
+| apply lazygit: sf2-ryu
+|   changes: no changes
+|   note: restart lazygit to render the new theme
+stderr
+tree
+dir 0755 config
+dir 0755 config/lazygit
+file 0644 edd2b9ae9ea76be0 config/lazygit/config.yml
+dir 0755 config/lazygit/themes
+file 0644 c780bf968e888b41 config/lazygit/themes/sf2-akuma-light.yml
+file 0644 2f858f52dae55a2e config/lazygit/themes/sf2-akuma.yml
+file 0644 a0076952c7266ca3 config/lazygit/themes/sf2-balrog-light.yml
+file 0644 37809f02a3ce4d6b config/lazygit/themes/sf2-balrog.yml
+file 0644 328da312033ada4b config/lazygit/themes/sf2-blanka-light.yml
+file 0644 7e0d23fa8e09c8be config/lazygit/themes/sf2-blanka.yml
+file 0644 4f77ffdfc5cac31b config/lazygit/themes/sf2-cammy-light.yml
+file 0644 80676889eb0c6896 config/lazygit/themes/sf2-cammy.yml
+file 0644 db4d54e0abf169cb config/lazygit/themes/sf2-chun-li-light.yml
+file 0644 7dbdf137012c5ba9 config/lazygit/themes/sf2-chun-li.yml
+file 0644 1012eac3ab59fe9c config/lazygit/themes/sf2-dee-jay-light.yml
+file 0644 6e22a8ac409a0e4c config/lazygit/themes/sf2-dee-jay.yml
+file 0644 11bf5c2e8a8b8308 config/lazygit/themes/sf2-dhalsim-light.yml
+file 0644 cede55fe41931836 config/lazygit/themes/sf2-dhalsim.yml
+file 0644 cb10f228627a8568 config/lazygit/themes/sf2-e-honda-light.yml
+file 0644 c10afad8851de84d config/lazygit/themes/sf2-e-honda.yml
+file 0644 8679783477d1c4db config/lazygit/themes/sf2-fei-long-light.yml
+file 0644 db50c5614693ef7c config/lazygit/themes/sf2-fei-long.yml
+file 0644 964be85c54ba2dd4 config/lazygit/themes/sf2-guile-light.yml
+file 0644 18cbb07eed3c4f94 config/lazygit/themes/sf2-guile.yml
+file 0644 40825f4bccbb7198 config/lazygit/themes/sf2-ken-light.yml
+file 0644 ade3d4680ed44806 config/lazygit/themes/sf2-ken.yml
+file 0644 f91865864c9d2838 config/lazygit/themes/sf2-m-bison-light.yml
+file 0644 2a3eb3f62d5fc8d1 config/lazygit/themes/sf2-m-bison.yml
+file 0644 801f5b895fe89021 config/lazygit/themes/sf2-main-light.yml
+file 0644 f09286bd43658cb8 config/lazygit/themes/sf2-main.yml
+file 0644 351f79614a41b962 config/lazygit/themes/sf2-ryu-light.yml
+file 0644 80dec4974014d1c2 config/lazygit/themes/sf2-ryu.yml
+file 0644 d0be9ff234c7a11a config/lazygit/themes/sf2-sagat-light.yml
+file 0644 40f8362a67c65308 config/lazygit/themes/sf2-sagat.yml
+file 0644 96dee4fd1a525ac0 config/lazygit/themes/sf2-t-hawk-light.yml
+file 0644 b89ef34e5dfee2bd config/lazygit/themes/sf2-t-hawk.yml
+file 0644 cb51b038ac93fc71 config/lazygit/themes/sf2-vega-light.yml
+file 0644 b6c9a816205b6398 config/lazygit/themes/sf2-vega.yml
+file 0644 878895d608cdce96 config/lazygit/themes/sf2-zangief-light.yml
+file 0644 71d83ebcbe9e061d config/lazygit/themes/sf2-zangief.yml
+dir 0755 home

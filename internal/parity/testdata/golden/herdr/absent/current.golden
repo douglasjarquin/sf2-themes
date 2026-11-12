@@ -1,0 +1,7 @@
+step current herdr --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: no Herdr theme applied yet
+tree
+dir 0755 home

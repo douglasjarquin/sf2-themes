@@ -9,6 +9,8 @@ aube = "2.2.4"
 ruff = "0.16.5"
 shellcheck = "0.11.0"
 "npm:portless" = "0.15.6"
+go = "1.27"
+golangci-lint = "2.15"
 
 [tasks.deps]
 description = "Install Python, aube, and Playwright Chromium dependencies"
@@ -27,8 +29,8 @@ description = "Run ruff over the Python source tree"
 run = "ruff check src tests mise-tasks"
 
 [tasks.shellcheck]
-description = "Run shellcheck over the shell file tasks and container orchestration scripts"
-run = "shellcheck mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
+description = "Run shellcheck over the installer, shell file tasks, and CI scripts"
+run = "shellcheck install.sh mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
 
 [tasks."validate-catalog"]
 description = "Validate every theme in the catalog"
@@ -48,6 +50,28 @@ run = "uv run --project . sf2-themes apply"
 description = "Set up an adapter with the project CLI"
 raw_args = true
 run = "uv run --project . sf2-themes setup"
+
+[tasks."go:test"]
+description = "Run the Go unit and parity tests uncached"
+run = "go test -count=1 ./..."
+
+[tasks."go:lint"]
+description = "Check Go formatting, vet, and golangci-lint"
+run = "test -z \"$(gofmt -l cmd internal)\" || { gofmt -l cmd internal; exit 1; }; go vet ./... && golangci-lint run ./..."
+
+[tasks."parity:record"]
+description = "Record the parity goldens and parser verdicts from the Python reference on Python 3.11"
+env = { SF2_PARITY_REFERENCE = "{{config_root}}/sf2-themes", SF2_PARITY_RECORD = "1" }
+run = "go test -count=1 ./internal/parity"
+
+[tasks."parity:check"]
+description = "Check the Python reference on Python 3.11 against the parity goldens and parser verdicts"
+env = { SF2_PARITY_REFERENCE = "{{config_root}}/sf2-themes" }
+run = "go test -count=1 ./internal/parity"
+
+[tasks."go:build"]
+description = "Compile every Go package and command"
+run = "go build ./..."
 
 [tasks."web:dev"]
 description = "Start the Astro development server"
@@ -74,8 +98,8 @@ description = "Run Astro unit and end-to-end tests"
 run = "aube -C web run test"
 
 [tasks.verify]
-description = "Run every documented pre-PR check: Python, catalog, shell, and web"
-run = "mise run web:install && mise run test && mise run lint && mise run validate-catalog && mise run shellcheck && mise run standalone-freshness && mise run web:check && mise run web:build && mise run web:test"
+description = "Run every documented pre-PR check: Python, Go, catalog, shell, and web"
+run = "mise run web:install && mise run test && mise run lint && mise run go:build && mise run go:test && mise run go:lint && mise run validate-catalog && mise run shellcheck && mise run standalone-freshness && mise run web:check && mise run web:build && mise run web:test"
 
 [tasks."web:dev:local"]
 description = "Start the Astro dev server behind portless at https://sf2-themes.test (run web:install first)"

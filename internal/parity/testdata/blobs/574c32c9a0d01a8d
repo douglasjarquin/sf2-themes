@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-m-bison.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#1c1721",
++  "foreground": "#d3cedb",
++  "selection": "#45304c",
++  "cursor": "#b771cc",
++  "ansi": [
++    "#342e3c",
++    "#c86d6b",
++    "#4e975b",
++    "#a48324",
++    "#6187cd",
++    "#a874b8",
++    "#1396a1",
++    "#b8b2bf",
++    "#898194",
++    "#ee8482",
++    "#60b46e",
++    "#c59d30",
++    "#76a2f4",
++    "#c98cdb",
++    "#1db3c0",
++    "#ddd9e3"
++  ],
++  "colors": {
++    "canvas": "#1c1721",
++    "chrome": "#27222d",
++    "surface": "#352f3d",
++    "border": "#352f3d",
++    "accent": "#b771cc"
++  }
++}

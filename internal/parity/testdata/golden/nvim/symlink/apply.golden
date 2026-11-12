@@ -1,0 +1,15 @@
+step apply nvim --config-dir {SANDBOX}/config/nvim
+exit 1
+stdout
+stderr
+| error: refusing to replace symlink {SANDBOX}/config/nvim/sf2-theme/current.lua; pass --follow-symlinks to write through
+tree
+dir 0755 config
+dir 0755 config/nvim
+dir 0755 config/nvim/sf2-theme
+link config/nvim/sf2-theme/current.lua -> {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua
+dir 0755 elsewhere
+dir 0755 elsewhere/nvim
+dir 0755 elsewhere/nvim/sf2-theme
+file 0644 2c791d5bf75a4b58 elsewhere/nvim/sf2-theme/current.lua
+dir 0755 home

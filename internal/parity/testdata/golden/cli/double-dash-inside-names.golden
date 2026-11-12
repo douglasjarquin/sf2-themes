@@ -1,0 +1,29 @@
+step validate ryu -- ken
+exit 0
+stdout
+| warning: ryu: #141a23 reused by ui.background, ui.cursor_text
+| warning: ryu: #2b333f reused by ui.overlay, ui.border
+| warning: ryu: #cad2df reused by ui.foreground, ui.selection_foreground
+| warning: ryu: #7b8598 reused by ui.muted, ansi.bright.black
+| warning: ryu: #da6a6a reused by ui.accent, ui.cursor
+| warning: ryu: #c86e6c reused by semantic.red, ansi.normal.red
+| warning: ryu: #5e9465 reused by semantic.green, ansi.normal.green
+| warning: ryu: #9e8625 reused by semantic.yellow, ansi.normal.yellow
+| warning: ryu: #558acc reused by semantic.blue, ansi.normal.blue
+| warning: ryu: #a278b5 reused by semantic.magenta, ansi.normal.magenta
+| warning: ryu: #1195ad reused by semantic.cyan, ansi.normal.cyan
+| warning: ken: #221616 reused by ui.background, ui.cursor_text
+| warning: ken: #3e2d2d reused by ui.overlay, ui.border
+| warning: ken: #decdcc reused by ui.foreground, ui.selection_foreground
+| warning: ken: #977f7e reused by ui.muted, ansi.bright.black
+| warning: ken: #de6767 reused by ui.accent, ui.cursor
+| warning: ken: #c76e67 reused by semantic.red, ansi.normal.red
+| warning: ken: #549657 reused by semantic.green, ansi.normal.green
+| warning: ken: #a88225 reused by semantic.yellow, ansi.normal.yellow
+| warning: ken: #438dc7 reused by semantic.blue, ansi.normal.blue
+| warning: ken: #c26d8f reused by semantic.magenta, ansi.normal.magenta
+| warning: ken: #1396a1 reused by semantic.cyan, ansi.normal.cyan
+| valid: ryu, ken
+stderr
+tree
+dir 0755 home

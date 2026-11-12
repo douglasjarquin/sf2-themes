@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-dee-jay-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#e8f4f4"
+red = "#a94c42"
+green = "#2e7734"
+yellow = "#886205"
+blue = "#975404"
+purple = "#37753b"
+cyan = "#057573"
+white = "#243535"
+bright-black = "#4e7271"
+bright-red = "#a94c42"
+bright-green = "#2e7734"
+bright-yellow = "#886205"
+bright-blue = "#975404"
+bright-purple = "#37753b"
+bright-cyan = "#057573"
+bright-white = "#243535"
+# <<< sf2-themes managed theme

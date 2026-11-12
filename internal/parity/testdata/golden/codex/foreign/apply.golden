@@ -1,0 +1,10 @@
+step apply codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: Codex already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup codex` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 b9ee1a8248144f26 config/codex/config.toml
+dir 0755 home

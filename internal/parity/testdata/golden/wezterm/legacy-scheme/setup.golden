@@ -1,0 +1,53 @@
+step setup wezterm --config-dir {SANDBOX}/config/wezterm
+exit 0
+stdout
+| setup wezterm: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
+|   changes: 37 created, 1 updated
+|   note: restart WezTerm, or let a config reload pick up the managed pointer
+stderr
+backup 0644 2ef93bb21b4d0f44 config/wezterm/wezterm.lua.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/wezterm
+dir 0755 config/wezterm/colors
+file 0644 3e2aa6b84092660c config/wezterm/colors/sf2-akuma-light.toml
+file 0644 09785a96892c85f1 config/wezterm/colors/sf2-akuma.toml
+file 0644 e7e1e6a72ef994eb config/wezterm/colors/sf2-balrog-light.toml
+file 0644 4a8969bbef03d1d8 config/wezterm/colors/sf2-balrog.toml
+file 0644 d35d364e2a11f5ed config/wezterm/colors/sf2-blanka-light.toml
+file 0644 4e8e77cff634032a config/wezterm/colors/sf2-blanka.toml
+file 0644 d10c805a8d44a75c config/wezterm/colors/sf2-cammy-light.toml
+file 0644 83bccde9f690b51c config/wezterm/colors/sf2-cammy.toml
+file 0644 71a42805e85c86ed config/wezterm/colors/sf2-chun-li-light.toml
+file 0644 a1c383e53470fb21 config/wezterm/colors/sf2-chun-li.toml
+file 0644 07db311716f56147 config/wezterm/colors/sf2-dee-jay-light.toml
+file 0644 b6f65063067b7935 config/wezterm/colors/sf2-dee-jay.toml
+file 0644 379233cc7960f2ae config/wezterm/colors/sf2-dhalsim-light.toml
+file 0644 f8284e128f4f5360 config/wezterm/colors/sf2-dhalsim.toml
+file 0644 7de446b44e7206c6 config/wezterm/colors/sf2-e-honda-light.toml
+file 0644 925f8365469ea3e3 config/wezterm/colors/sf2-e-honda.toml
+file 0644 b63dde9e81ebe2df config/wezterm/colors/sf2-fei-long-light.toml
+file 0644 df7d0ba3cff2aeb4 config/wezterm/colors/sf2-fei-long.toml
+file 0644 2904fd31f0e0d5b4 config/wezterm/colors/sf2-guile-light.toml
+file 0644 a8fb4c5992588a44 config/wezterm/colors/sf2-guile.toml
+file 0644 a32e5667e21fe95e config/wezterm/colors/sf2-ken-light.toml
+file 0644 cc280837a1b597de config/wezterm/colors/sf2-ken.toml
+file 0644 032b8b8d9f393789 config/wezterm/colors/sf2-m-bison-light.toml
+file 0644 9206a4e8378b5aa2 config/wezterm/colors/sf2-m-bison.toml
+file 0644 cc0b2333bf6efdcb config/wezterm/colors/sf2-main-light.toml
+file 0644 a5684fafe2af4e7e config/wezterm/colors/sf2-main.toml
+file 0644 e77b8cf566dd503d config/wezterm/colors/sf2-ryu-light.toml
+file 0644 5fdc113f0ec7b4f1 config/wezterm/colors/sf2-ryu.toml
+file 0644 3adccbc8b2c06941 config/wezterm/colors/sf2-sagat-light.toml
+file 0644 919aa94141322280 config/wezterm/colors/sf2-sagat.toml
+file 0644 176328a2dc6991c2 config/wezterm/colors/sf2-t-hawk-light.toml
+file 0644 e7f1447e897b2ac2 config/wezterm/colors/sf2-t-hawk.toml
+file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
+file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
+file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
+file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
+file 0644 7d8f6d344297802e config/wezterm/wezterm.lua
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua

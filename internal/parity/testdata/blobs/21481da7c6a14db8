@@ -1,0 +1,7 @@
+-- sf2-themes: sf2-chun-li
+local wezterm = require("wezterm")
+local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"
+if appearance:find("Dark") then
+  return "sf2-chun-li"
+end
+return "sf2-chun-li-light"

@@ -1,0 +1,12 @@
+step apply herdr --theme sagat --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| apply herdr: sf2-sagat + sf2-sagat-light (follows host appearance)
+|   changes: 1 created
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 cd46c20ab529a781 config/herdr/config.toml
+dir 0755 home

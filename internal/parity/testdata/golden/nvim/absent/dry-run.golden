@@ -1,0 +1,94 @@
+step apply nvim --theme ken --dry-run --config-dir {SANDBOX}/config/nvim
+exit 0
+stdout
+| would create: {SANDBOX}/config/nvim/colors/sf2-main.lua
+= 832b5617fb70ae76
+| would create: {SANDBOX}/config/nvim/colors/sf2-main-light.lua
+= 4973448293049496
+| would create: {SANDBOX}/config/nvim/colors/sf2-akuma-light.lua
+= 71899ac842078299
+| would create: {SANDBOX}/config/nvim/colors/sf2-akuma.lua
+= 104561bc0c917667
+| would create: {SANDBOX}/config/nvim/colors/sf2-balrog-light.lua
+= f35a2723cc90e45d
+| would create: {SANDBOX}/config/nvim/colors/sf2-balrog.lua
+= c3be609a3ccc44f8
+| would create: {SANDBOX}/config/nvim/colors/sf2-blanka-light.lua
+= da0971267ab8dc99
+| would create: {SANDBOX}/config/nvim/colors/sf2-blanka.lua
+= 18d309eb6d56a459
+| would create: {SANDBOX}/config/nvim/colors/sf2-cammy-light.lua
+= f6c9976b1c7cf0c6
+| would create: {SANDBOX}/config/nvim/colors/sf2-cammy.lua
+= 53933fca9a9ab3f2
+| would create: {SANDBOX}/config/nvim/colors/sf2-chun-li-light.lua
+= c7da3d5222b1f319
+| would create: {SANDBOX}/config/nvim/colors/sf2-chun-li.lua
+= 2be1c0487c066436
+| would create: {SANDBOX}/config/nvim/colors/sf2-dee-jay-light.lua
+= 712e805a6693d82a
+| would create: {SANDBOX}/config/nvim/colors/sf2-dee-jay.lua
+= b9622fb8f4afcb3e
+| would create: {SANDBOX}/config/nvim/colors/sf2-dhalsim-light.lua
+= cdff0e5a5c50ec37
+| would create: {SANDBOX}/config/nvim/colors/sf2-dhalsim.lua
+= 10e8b1fa640d2391
+| would create: {SANDBOX}/config/nvim/colors/sf2-e-honda-light.lua
+= f29f0815ccf8d7d6
+| would create: {SANDBOX}/config/nvim/colors/sf2-e-honda.lua
+= 0f688c063160a354
+| would create: {SANDBOX}/config/nvim/colors/sf2-fei-long-light.lua
+= 585786fac2d9f79d
+| would create: {SANDBOX}/config/nvim/colors/sf2-fei-long.lua
+= 9a087effd199c9f0
+| would create: {SANDBOX}/config/nvim/colors/sf2-guile-light.lua
+= afe1a06eadc62a71
+| would create: {SANDBOX}/config/nvim/colors/sf2-guile.lua
+= 0bc593fd00f55090
+| would create: {SANDBOX}/config/nvim/colors/sf2-ken-light.lua
+= 6607f1579bff5a10
+| would create: {SANDBOX}/config/nvim/colors/sf2-ken.lua
+= 6634ed834341dba2
+| would create: {SANDBOX}/config/nvim/colors/sf2-m-bison-light.lua
+= f80d887d991086f9
+| would create: {SANDBOX}/config/nvim/colors/sf2-m-bison.lua
+= 06ed5b9cc654cb73
+| would create: {SANDBOX}/config/nvim/colors/sf2-ryu-light.lua
+= f62b078835feb79a
+| would create: {SANDBOX}/config/nvim/colors/sf2-ryu.lua
+= 5dd9121a1694027c
+| would create: {SANDBOX}/config/nvim/colors/sf2-sagat-light.lua
+= fc3a3fe1dec79ce8
+| would create: {SANDBOX}/config/nvim/colors/sf2-sagat.lua
+= 24a87b92eeef1807
+| would create: {SANDBOX}/config/nvim/colors/sf2-t-hawk-light.lua
+= 50a43a0c1ef08dff
+| would create: {SANDBOX}/config/nvim/colors/sf2-t-hawk.lua
+= 41567f4cd6cdbd38
+| would create: {SANDBOX}/config/nvim/colors/sf2-vega-light.lua
+= 06731620da456e76
+| would create: {SANDBOX}/config/nvim/colors/sf2-vega.lua
+= 6d3ea86347fd9055
+| would create: {SANDBOX}/config/nvim/colors/sf2-zangief-light.lua
+= 70b9285e42bb9a11
+| would create: {SANDBOX}/config/nvim/colors/sf2-zangief.lua
+= dd85ffe2d6aa366a
+| would create: {SANDBOX}/config/nvim/sf2-theme/current.lua
+| --- /dev/null
+| +++ {SANDBOX}/config/nvim/sf2-theme/current.lua
+| @@ -0,0 +1,7 @@
+| +-- sf2-themes: sf2-ken
+| +local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")
+| +if light_mode then
+| +  vim.cmd("colorscheme sf2-ken-light")
+| +else
+| +  vim.cmd("colorscheme sf2-ken")
+| +end
+| would create: {SANDBOX}/config/nvim/plugin/sf2-theme.lua
+= faa519854ea998a3
+| apply nvim: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 38 would create
+|   note: restart Neovim to load the new colorscheme
+stderr
+tree
+dir 0755 home

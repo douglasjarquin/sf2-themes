@@ -1,0 +1,7 @@
+step current claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: no Claude Code theme applied yet
+tree
+dir 0755 home

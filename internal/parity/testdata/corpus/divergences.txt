@@ -1,0 +1,5 @@
+# Inputs whose Go reader verdict may differ from Python 3.11, as "<input>: <config shape it affects>".
+# The corpus test fails on an unlisted disagreement and on a listed input the Go reader agrees on,
+# so this list holds exactly the divergences that remain.
+# None remain: catalog.DecodeTOML (BurntSushi/toml v1.5 held to TOML 1.0, plus tomllib's table-definition
+# and UTC-offset rules) and pycompat.Loads agree with tomllib and json on every input.

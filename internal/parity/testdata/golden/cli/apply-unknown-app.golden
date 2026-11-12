@@ -1,0 +1,7 @@
+step apply vim
+exit 2
+stdout
+stderr
+| sf2-themes apply: error: argument app: invalid choice: 'vim' (choose from 'wezterm', 'herdr', 'herdr-app', 'nvim', 'codex', 'starship', 'lazygit', 'claude', 'slack')
+tree
+dir 0755 home

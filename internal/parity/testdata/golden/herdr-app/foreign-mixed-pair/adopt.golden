@@ -1,0 +1,50 @@
+step apply herdr-app --adopt --config-dir {SANDBOX}/config/herdr-app
+exit 0
+stdout
+| apply herdr-app: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 36 created, 1 updated
+|   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
+stderr
+backup 0644 090857f39cb76dec config/herdr-app/settings.json.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+file 0644 f6fef0a1c1e8af46 config/herdr-app/settings.json
+dir 0755 config/herdr-app/themes
+file 0644 46ab07dbe794b8be config/herdr-app/themes/sf2-akuma-light.json
+file 0644 53ccc4e045cb37a3 config/herdr-app/themes/sf2-akuma.json
+file 0644 dd9138866c3c9cad config/herdr-app/themes/sf2-balrog-light.json
+file 0644 f4e57372e280db4e config/herdr-app/themes/sf2-balrog.json
+file 0644 b9ea02ecbe851886 config/herdr-app/themes/sf2-blanka-light.json
+file 0644 2e3feab90edd6bad config/herdr-app/themes/sf2-blanka.json
+file 0644 3982e0deec16a34d config/herdr-app/themes/sf2-cammy-light.json
+file 0644 ab5dd091d15c4a3a config/herdr-app/themes/sf2-cammy.json
+file 0644 acf81f4ce409630e config/herdr-app/themes/sf2-chun-li-light.json
+file 0644 e310467581c06152 config/herdr-app/themes/sf2-chun-li.json
+file 0644 41f75f115afee67a config/herdr-app/themes/sf2-dee-jay-light.json
+file 0644 dcd7ad2d5be87eea config/herdr-app/themes/sf2-dee-jay.json
+file 0644 b9653710ce26be4e config/herdr-app/themes/sf2-dhalsim-light.json
+file 0644 af2c9626d89b33f4 config/herdr-app/themes/sf2-dhalsim.json
+file 0644 9b9b2dfcea2253e9 config/herdr-app/themes/sf2-e-honda-light.json
+file 0644 729ec707c8597b2b config/herdr-app/themes/sf2-e-honda.json
+file 0644 1031d64806d5b0d7 config/herdr-app/themes/sf2-fei-long-light.json
+file 0644 8fd1cc8eaadefd05 config/herdr-app/themes/sf2-fei-long.json
+file 0644 b052b8fc37d15023 config/herdr-app/themes/sf2-guile-light.json
+file 0644 a0d5a00340546bba config/herdr-app/themes/sf2-guile.json
+file 0644 7b565d9260071990 config/herdr-app/themes/sf2-ken-light.json
+file 0644 c7561828b7b03f52 config/herdr-app/themes/sf2-ken.json
+file 0644 08c7e2e8b03a627d config/herdr-app/themes/sf2-m-bison-light.json
+file 0644 db8896ab43708b95 config/herdr-app/themes/sf2-m-bison.json
+file 0644 fe87a638317e85d3 config/herdr-app/themes/sf2-main-light.json
+file 0644 eed81df28fd33243 config/herdr-app/themes/sf2-main.json
+file 0644 f0737482328a4c41 config/herdr-app/themes/sf2-ryu-light.json
+file 0644 d5319c96fc172936 config/herdr-app/themes/sf2-ryu.json
+file 0644 97b7b96be0c40283 config/herdr-app/themes/sf2-sagat-light.json
+file 0644 e0b106ba735b27ea config/herdr-app/themes/sf2-sagat.json
+file 0644 dfe4c27e4160da37 config/herdr-app/themes/sf2-t-hawk-light.json
+file 0644 bbf77a6dd6f2b0ea config/herdr-app/themes/sf2-t-hawk.json
+file 0644 f5640361be141a73 config/herdr-app/themes/sf2-vega-light.json
+file 0644 f255d9356b447a0b config/herdr-app/themes/sf2-vega.json
+file 0644 5f60805cc4b8a91e config/herdr-app/themes/sf2-zangief-light.json
+file 0644 d1639f5d9bb5527e config/herdr-app/themes/sf2-zangief.json
+dir 0755 home

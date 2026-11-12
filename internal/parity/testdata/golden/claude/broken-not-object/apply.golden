@@ -1,0 +1,10 @@
+step apply claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: Claude Code config cannot be changed safely: {SANDBOX}/config/claude/settings.json must contain a JSON object
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 acc07b62f23f4589 config/claude/settings.json
+dir 0755 home

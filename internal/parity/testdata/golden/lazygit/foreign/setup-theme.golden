@@ -1,0 +1,10 @@
+step setup lazygit --theme ken --config-dir {SANDBOX}/config/lazygit
+exit 1
+stdout
+stderr
+| error: Lazygit already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup lazygit` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/lazygit
+file 0644 079bbb57306f8271 config/lazygit/config.yml
+dir 0755 home

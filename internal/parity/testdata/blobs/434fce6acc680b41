@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-sagat.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#ad8709'
++      - bold
++    inactiveBorderColor:
++      - '#3b2d36'
++    searchingActiveBorderColor:
++      - '#a48324'
++    optionsTextColor:
++      - '#ad8709'
++    selectedLineBgColor:
++      - '#453714'
++    inactiveViewSelectedLineBgColor:
++      - '#2c2028'
++    cherryPickedCommitFgColor:
++      - '#5b9467'
++    cherryPickedCommitBgColor:
++      - '#3b2d36'
++    markedBaseCommitFgColor:
++      - '#c1753c'
++    markedBaseCommitBgColor:
++      - '#3b2d36'
++    unstagedChangesColor:
++      - '#c76e67'
++    defaultFgColor:
++      - '#dbccd5'
++  authorColors:
++    '*': '#9f76c3'

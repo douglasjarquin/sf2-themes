@@ -1,0 +1,42 @@
+step themes
+exit 0
+stdout
+| main	Street Fighter II - Main
+| main-light	Street Fighter II - Main Light
+| akuma-light	Street Fighter II - Akuma Light
+| akuma	Street Fighter II - Akuma
+| balrog-light	Street Fighter II - Balrog Light
+| balrog	Street Fighter II - Balrog
+| blanka-light	Street Fighter II - Blanka Light
+| blanka	Street Fighter II - Blanka
+| cammy-light	Street Fighter II - Cammy Light
+| cammy	Street Fighter II - Cammy
+| chun-li-light	Street Fighter II - Chun-Li Light
+| chun-li	Street Fighter II - Chun-Li
+| dee-jay-light	Street Fighter II - Dee Jay Light
+| dee-jay	Street Fighter II - Dee Jay
+| dhalsim-light	Street Fighter II - Dhalsim Light
+| dhalsim	Street Fighter II - Dhalsim
+| e-honda-light	Street Fighter II - E. Honda Light
+| e-honda	Street Fighter II - E. Honda
+| fei-long-light	Street Fighter II - Fei Long Light
+| fei-long	Street Fighter II - Fei Long
+| guile-light	Street Fighter II - Guile Light
+| guile	Street Fighter II - Guile
+| ken-light	Street Fighter II - Ken Light
+| ken	Street Fighter II - Ken
+| m-bison-light	Street Fighter II - M. Bison Light
+| m-bison	Street Fighter II - M. Bison
+| ryu-light	Street Fighter II - Ryu Light
+| ryu	Street Fighter II - Ryu
+| sagat-light	Street Fighter II - Sagat Light
+| sagat	Street Fighter II - Sagat
+| t-hawk-light	Street Fighter II - T. Hawk Light
+| t-hawk	Street Fighter II - T. Hawk
+| vega-light	Street Fighter II - Vega Light
+| vega	Street Fighter II - Vega
+| zangief-light	Street Fighter II - Zangief Light
+| zangief	Street Fighter II - Zangief
+stderr
+tree
+dir 0755 home

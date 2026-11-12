@@ -1,0 +1,7 @@
+step current
+exit 2
+stdout
+stderr
+| sf2-themes current: error: the following arguments are required: app
+tree
+dir 0755 home

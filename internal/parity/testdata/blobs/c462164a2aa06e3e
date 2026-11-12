@@ -1,0 +1,5 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-nope
+[theme]
+name = "catppuccin"
+# <<< sf2-themes managed theme

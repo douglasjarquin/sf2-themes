@@ -1,0 +1,258 @@
+step apply wezterm
+exit 0
+stdout
+| apply wezterm: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 38 created
+|   note: restart WezTerm, or let a config reload pick up the managed pointer
+stderr
+step apply herdr
+exit 0
+stdout
+| apply herdr: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 1 created
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+step apply herdr-app
+exit 0
+stdout
+| apply herdr-app: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 37 created
+|   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
+stderr
+step apply nvim
+exit 0
+stdout
+| apply nvim: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 38 created
+|   note: restart Neovim to load the new colorscheme
+stderr
+step apply codex
+exit 0
+stdout
+| apply codex: sf2-main
+|   changes: 37 created
+|   note: restart Codex, or reselect with /theme
+stderr
+step apply starship
+exit 0
+stdout
+| apply starship: sf2-main
+|   changes: 2 created
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+step apply claude
+exit 0
+stdout
+| apply claude: sf2-main
+|   changes: 37 created
+|   note: reselect with /theme in a running Claude Code session
+stderr
+tree
+dir 0755 home
+dir 0755 home/.claude
+file 0644 42b875c20d67b8b3 home/.claude/settings.json
+dir 0755 home/.claude/themes
+file 0644 a9987e5a05d04bda home/.claude/themes/sf2-akuma-light.json
+file 0644 8f44799cc0d672b9 home/.claude/themes/sf2-akuma.json
+file 0644 1be5b5fd2acec1db home/.claude/themes/sf2-balrog-light.json
+file 0644 e36af5207bb9287e home/.claude/themes/sf2-balrog.json
+file 0644 cdfec851a2480694 home/.claude/themes/sf2-blanka-light.json
+file 0644 9f03aaf8438212be home/.claude/themes/sf2-blanka.json
+file 0644 45d6b42295e0edba home/.claude/themes/sf2-cammy-light.json
+file 0644 a2bf85678705e0dd home/.claude/themes/sf2-cammy.json
+file 0644 ab54273291133b4b home/.claude/themes/sf2-chun-li-light.json
+file 0644 82426979ebc48107 home/.claude/themes/sf2-chun-li.json
+file 0644 9210d8762e4c8791 home/.claude/themes/sf2-dee-jay-light.json
+file 0644 3192459a6e71cee9 home/.claude/themes/sf2-dee-jay.json
+file 0644 0e3f6b30de2dbf13 home/.claude/themes/sf2-dhalsim-light.json
+file 0644 0b2d964034d59ebd home/.claude/themes/sf2-dhalsim.json
+file 0644 ca69e7e13aea1b96 home/.claude/themes/sf2-e-honda-light.json
+file 0644 f1ef4edae7a7eb5f home/.claude/themes/sf2-e-honda.json
+file 0644 16fb6f84e4dbfdc4 home/.claude/themes/sf2-fei-long-light.json
+file 0644 14ef062b2ac23be0 home/.claude/themes/sf2-fei-long.json
+file 0644 b6278d38f3764938 home/.claude/themes/sf2-guile-light.json
+file 0644 da34c7bf834b0fdd home/.claude/themes/sf2-guile.json
+file 0644 90e7d8278790e825 home/.claude/themes/sf2-ken-light.json
+file 0644 3a2b8c98c4ddc099 home/.claude/themes/sf2-ken.json
+file 0644 d0f8a3716ec800d1 home/.claude/themes/sf2-m-bison-light.json
+file 0644 73dee86da8cf41f2 home/.claude/themes/sf2-m-bison.json
+file 0644 5c98acc435b95868 home/.claude/themes/sf2-main-light.json
+file 0644 efafab2d929c4b0e home/.claude/themes/sf2-main.json
+file 0644 ebf19ec3263d4867 home/.claude/themes/sf2-ryu-light.json
+file 0644 517192cce6f9f0e2 home/.claude/themes/sf2-ryu.json
+file 0644 0609736dd0bddce8 home/.claude/themes/sf2-sagat-light.json
+file 0644 bb6521333c8a143b home/.claude/themes/sf2-sagat.json
+file 0644 18041987c7e8208e home/.claude/themes/sf2-t-hawk-light.json
+file 0644 c195fa6cef1c3dec home/.claude/themes/sf2-t-hawk.json
+file 0644 3333c10e8d246fac home/.claude/themes/sf2-vega-light.json
+file 0644 26e036c6b17dfcbe home/.claude/themes/sf2-vega.json
+file 0644 20e1a7ab81072dcc home/.claude/themes/sf2-zangief-light.json
+file 0644 e672e4b9e1d8cccf home/.claude/themes/sf2-zangief.json
+dir 0755 home/.codex
+file 0644 9c3e7c385c0410f1 home/.codex/config.toml
+dir 0755 home/.codex/themes
+file 0644 125cb1d614cfd14e home/.codex/themes/sf2-akuma-light.tmTheme
+file 0644 b110d62e2dc9d24c home/.codex/themes/sf2-akuma.tmTheme
+file 0644 7f02948cdec4c67e home/.codex/themes/sf2-balrog-light.tmTheme
+file 0644 ad6a7ce4addd223f home/.codex/themes/sf2-balrog.tmTheme
+file 0644 6546bfd1184865d6 home/.codex/themes/sf2-blanka-light.tmTheme
+file 0644 520e442ac6dda658 home/.codex/themes/sf2-blanka.tmTheme
+file 0644 027a450e90ea9381 home/.codex/themes/sf2-cammy-light.tmTheme
+file 0644 48c36c4ae526b7d4 home/.codex/themes/sf2-cammy.tmTheme
+file 0644 4c9160134309a789 home/.codex/themes/sf2-chun-li-light.tmTheme
+file 0644 06949233d7d1f706 home/.codex/themes/sf2-chun-li.tmTheme
+file 0644 f1b9a34933213653 home/.codex/themes/sf2-dee-jay-light.tmTheme
+file 0644 8a1ad7191a6b04f4 home/.codex/themes/sf2-dee-jay.tmTheme
+file 0644 f72561fa6619dbc7 home/.codex/themes/sf2-dhalsim-light.tmTheme
+file 0644 7dce8e3731b1c9a9 home/.codex/themes/sf2-dhalsim.tmTheme
+file 0644 4ade910150c9d0f0 home/.codex/themes/sf2-e-honda-light.tmTheme
+file 0644 fad30b96aed88ab4 home/.codex/themes/sf2-e-honda.tmTheme
+file 0644 3c21308adfe13d9c home/.codex/themes/sf2-fei-long-light.tmTheme
+file 0644 e044fa90e61c2654 home/.codex/themes/sf2-fei-long.tmTheme
+file 0644 65cab4e0d431be0c home/.codex/themes/sf2-guile-light.tmTheme
+file 0644 3c563cc4a39eb5ce home/.codex/themes/sf2-guile.tmTheme
+file 0644 8b73184b0dc35e92 home/.codex/themes/sf2-ken-light.tmTheme
+file 0644 af8ed9c7d02daa71 home/.codex/themes/sf2-ken.tmTheme
+file 0644 68dc937d58216886 home/.codex/themes/sf2-m-bison-light.tmTheme
+file 0644 9c88a46e2a383a0b home/.codex/themes/sf2-m-bison.tmTheme
+file 0644 ee90ed06ab0dc3be home/.codex/themes/sf2-main-light.tmTheme
+file 0644 d12435f942ec0373 home/.codex/themes/sf2-main.tmTheme
+file 0644 d69b2abb232d0ce5 home/.codex/themes/sf2-ryu-light.tmTheme
+file 0644 d3bf5fe7f31be590 home/.codex/themes/sf2-ryu.tmTheme
+file 0644 a565b71db3337c3b home/.codex/themes/sf2-sagat-light.tmTheme
+file 0644 6c005b489bb36db2 home/.codex/themes/sf2-sagat.tmTheme
+file 0644 a8c85fba09bdd5eb home/.codex/themes/sf2-t-hawk-light.tmTheme
+file 0644 afc540aad401e25c home/.codex/themes/sf2-t-hawk.tmTheme
+file 0644 6cd27a86fa2328e8 home/.codex/themes/sf2-vega-light.tmTheme
+file 0644 41a797b37eacaab6 home/.codex/themes/sf2-vega.tmTheme
+file 0644 1f68f5acbb2103b2 home/.codex/themes/sf2-zangief-light.tmTheme
+file 0644 8f5655ffc6020565 home/.codex/themes/sf2-zangief.tmTheme
+dir 0755 home/.config
+dir 0755 home/.config/herdr
+dir 0755 home/.config/herdr-app
+file 0644 f6fef0a1c1e8af46 home/.config/herdr-app/settings.json
+dir 0755 home/.config/herdr-app/themes
+file 0644 46ab07dbe794b8be home/.config/herdr-app/themes/sf2-akuma-light.json
+file 0644 53ccc4e045cb37a3 home/.config/herdr-app/themes/sf2-akuma.json
+file 0644 dd9138866c3c9cad home/.config/herdr-app/themes/sf2-balrog-light.json
+file 0644 f4e57372e280db4e home/.config/herdr-app/themes/sf2-balrog.json
+file 0644 b9ea02ecbe851886 home/.config/herdr-app/themes/sf2-blanka-light.json
+file 0644 2e3feab90edd6bad home/.config/herdr-app/themes/sf2-blanka.json
+file 0644 3982e0deec16a34d home/.config/herdr-app/themes/sf2-cammy-light.json
+file 0644 ab5dd091d15c4a3a home/.config/herdr-app/themes/sf2-cammy.json
+file 0644 acf81f4ce409630e home/.config/herdr-app/themes/sf2-chun-li-light.json
+file 0644 e310467581c06152 home/.config/herdr-app/themes/sf2-chun-li.json
+file 0644 41f75f115afee67a home/.config/herdr-app/themes/sf2-dee-jay-light.json
+file 0644 dcd7ad2d5be87eea home/.config/herdr-app/themes/sf2-dee-jay.json
+file 0644 b9653710ce26be4e home/.config/herdr-app/themes/sf2-dhalsim-light.json
+file 0644 af2c9626d89b33f4 home/.config/herdr-app/themes/sf2-dhalsim.json
+file 0644 9b9b2dfcea2253e9 home/.config/herdr-app/themes/sf2-e-honda-light.json
+file 0644 729ec707c8597b2b home/.config/herdr-app/themes/sf2-e-honda.json
+file 0644 1031d64806d5b0d7 home/.config/herdr-app/themes/sf2-fei-long-light.json
+file 0644 8fd1cc8eaadefd05 home/.config/herdr-app/themes/sf2-fei-long.json
+file 0644 b052b8fc37d15023 home/.config/herdr-app/themes/sf2-guile-light.json
+file 0644 a0d5a00340546bba home/.config/herdr-app/themes/sf2-guile.json
+file 0644 7b565d9260071990 home/.config/herdr-app/themes/sf2-ken-light.json
+file 0644 c7561828b7b03f52 home/.config/herdr-app/themes/sf2-ken.json
+file 0644 08c7e2e8b03a627d home/.config/herdr-app/themes/sf2-m-bison-light.json
+file 0644 db8896ab43708b95 home/.config/herdr-app/themes/sf2-m-bison.json
+file 0644 fe87a638317e85d3 home/.config/herdr-app/themes/sf2-main-light.json
+file 0644 eed81df28fd33243 home/.config/herdr-app/themes/sf2-main.json
+file 0644 f0737482328a4c41 home/.config/herdr-app/themes/sf2-ryu-light.json
+file 0644 d5319c96fc172936 home/.config/herdr-app/themes/sf2-ryu.json
+file 0644 97b7b96be0c40283 home/.config/herdr-app/themes/sf2-sagat-light.json
+file 0644 e0b106ba735b27ea home/.config/herdr-app/themes/sf2-sagat.json
+file 0644 dfe4c27e4160da37 home/.config/herdr-app/themes/sf2-t-hawk-light.json
+file 0644 bbf77a6dd6f2b0ea home/.config/herdr-app/themes/sf2-t-hawk.json
+file 0644 f5640361be141a73 home/.config/herdr-app/themes/sf2-vega-light.json
+file 0644 f255d9356b447a0b home/.config/herdr-app/themes/sf2-vega.json
+file 0644 5f60805cc4b8a91e home/.config/herdr-app/themes/sf2-zangief-light.json
+file 0644 d1639f5d9bb5527e home/.config/herdr-app/themes/sf2-zangief.json
+file 0644 432f801e9640008b home/.config/herdr/config.toml
+dir 0755 home/.config/nvim
+dir 0755 home/.config/nvim/colors
+file 0644 f03355ec60d1473f home/.config/nvim/colors/sf2-akuma-light.lua
+file 0644 861927a03ee81bf8 home/.config/nvim/colors/sf2-akuma.lua
+file 0644 ed7285ea5ffd6f31 home/.config/nvim/colors/sf2-balrog-light.lua
+file 0644 5377b966e6e491be home/.config/nvim/colors/sf2-balrog.lua
+file 0644 9a79da58c3f09f0b home/.config/nvim/colors/sf2-blanka-light.lua
+file 0644 73f116ba4cedaf10 home/.config/nvim/colors/sf2-blanka.lua
+file 0644 3ea4a1e656e80d31 home/.config/nvim/colors/sf2-cammy-light.lua
+file 0644 a6413bd73aee0fe6 home/.config/nvim/colors/sf2-cammy.lua
+file 0644 b961e22a3e107769 home/.config/nvim/colors/sf2-chun-li-light.lua
+file 0644 de847a42b0a286f6 home/.config/nvim/colors/sf2-chun-li.lua
+file 0644 a3781558b7928def home/.config/nvim/colors/sf2-dee-jay-light.lua
+file 0644 0a97af9a1d4704ee home/.config/nvim/colors/sf2-dee-jay.lua
+file 0644 a0418f093ceaad32 home/.config/nvim/colors/sf2-dhalsim-light.lua
+file 0644 95d057e5c9e39001 home/.config/nvim/colors/sf2-dhalsim.lua
+file 0644 ce30bceaaa720236 home/.config/nvim/colors/sf2-e-honda-light.lua
+file 0644 e2aa28eb96b8ac0b home/.config/nvim/colors/sf2-e-honda.lua
+file 0644 57268924868b284d home/.config/nvim/colors/sf2-fei-long-light.lua
+file 0644 fe7fb79d1202e1fd home/.config/nvim/colors/sf2-fei-long.lua
+file 0644 1cfc564108a27d73 home/.config/nvim/colors/sf2-guile-light.lua
+file 0644 567d5e1bedef4564 home/.config/nvim/colors/sf2-guile.lua
+file 0644 1a7dc1c885a75360 home/.config/nvim/colors/sf2-ken-light.lua
+file 0644 3506db643626be5a home/.config/nvim/colors/sf2-ken.lua
+file 0644 33569db9db5ae2d4 home/.config/nvim/colors/sf2-m-bison-light.lua
+file 0644 32f7bcf18ae6c507 home/.config/nvim/colors/sf2-m-bison.lua
+file 0644 b8735fd9c841360c home/.config/nvim/colors/sf2-main-light.lua
+file 0644 fbdf0683a223055d home/.config/nvim/colors/sf2-main.lua
+file 0644 2dad54947c39aaaf home/.config/nvim/colors/sf2-ryu-light.lua
+file 0644 831cb93e3b87cd1c home/.config/nvim/colors/sf2-ryu.lua
+file 0644 028128044d296ece home/.config/nvim/colors/sf2-sagat-light.lua
+file 0644 e91dc31068290512 home/.config/nvim/colors/sf2-sagat.lua
+file 0644 e14cbcb41dd12690 home/.config/nvim/colors/sf2-t-hawk-light.lua
+file 0644 0ccc36f0e9f99bd4 home/.config/nvim/colors/sf2-t-hawk.lua
+file 0644 221ed82002447a48 home/.config/nvim/colors/sf2-vega-light.lua
+file 0644 910eb72defbafc59 home/.config/nvim/colors/sf2-vega.lua
+file 0644 f542293d3af5b2c8 home/.config/nvim/colors/sf2-zangief-light.lua
+file 0644 3b6ef14483eb2afa home/.config/nvim/colors/sf2-zangief.lua
+dir 0755 home/.config/nvim/plugin
+file 0644 beb70a25f49a87b2 home/.config/nvim/plugin/sf2-theme.lua
+dir 0755 home/.config/nvim/sf2-theme
+file 0644 c034d480f8fddf2a home/.config/nvim/sf2-theme/current.lua
+dir 0755 home/.config/sf2-theme
+file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
+file 0644 ebbd35eb058a87b1 home/.config/sf2-theme/zsh-syntax-highlighting.zsh
+file 0644 35916798c1909940 home/.config/starship.toml
+dir 0755 home/.config/wezterm
+dir 0755 home/.config/wezterm/colors
+file 0644 3e2aa6b84092660c home/.config/wezterm/colors/sf2-akuma-light.toml
+file 0644 09785a96892c85f1 home/.config/wezterm/colors/sf2-akuma.toml
+file 0644 e7e1e6a72ef994eb home/.config/wezterm/colors/sf2-balrog-light.toml
+file 0644 4a8969bbef03d1d8 home/.config/wezterm/colors/sf2-balrog.toml
+file 0644 d35d364e2a11f5ed home/.config/wezterm/colors/sf2-blanka-light.toml
+file 0644 4e8e77cff634032a home/.config/wezterm/colors/sf2-blanka.toml
+file 0644 d10c805a8d44a75c home/.config/wezterm/colors/sf2-cammy-light.toml
+file 0644 83bccde9f690b51c home/.config/wezterm/colors/sf2-cammy.toml
+file 0644 71a42805e85c86ed home/.config/wezterm/colors/sf2-chun-li-light.toml
+file 0644 a1c383e53470fb21 home/.config/wezterm/colors/sf2-chun-li.toml
+file 0644 07db311716f56147 home/.config/wezterm/colors/sf2-dee-jay-light.toml
+file 0644 b6f65063067b7935 home/.config/wezterm/colors/sf2-dee-jay.toml
+file 0644 379233cc7960f2ae home/.config/wezterm/colors/sf2-dhalsim-light.toml
+file 0644 f8284e128f4f5360 home/.config/wezterm/colors/sf2-dhalsim.toml
+file 0644 7de446b44e7206c6 home/.config/wezterm/colors/sf2-e-honda-light.toml
+file 0644 925f8365469ea3e3 home/.config/wezterm/colors/sf2-e-honda.toml
+file 0644 b63dde9e81ebe2df home/.config/wezterm/colors/sf2-fei-long-light.toml
+file 0644 df7d0ba3cff2aeb4 home/.config/wezterm/colors/sf2-fei-long.toml
+file 0644 2904fd31f0e0d5b4 home/.config/wezterm/colors/sf2-guile-light.toml
+file 0644 a8fb4c5992588a44 home/.config/wezterm/colors/sf2-guile.toml
+file 0644 a32e5667e21fe95e home/.config/wezterm/colors/sf2-ken-light.toml
+file 0644 cc280837a1b597de home/.config/wezterm/colors/sf2-ken.toml
+file 0644 032b8b8d9f393789 home/.config/wezterm/colors/sf2-m-bison-light.toml
+file 0644 9206a4e8378b5aa2 home/.config/wezterm/colors/sf2-m-bison.toml
+file 0644 cc0b2333bf6efdcb home/.config/wezterm/colors/sf2-main-light.toml
+file 0644 a5684fafe2af4e7e home/.config/wezterm/colors/sf2-main.toml
+file 0644 e77b8cf566dd503d home/.config/wezterm/colors/sf2-ryu-light.toml
+file 0644 5fdc113f0ec7b4f1 home/.config/wezterm/colors/sf2-ryu.toml
+file 0644 3adccbc8b2c06941 home/.config/wezterm/colors/sf2-sagat-light.toml
+file 0644 919aa94141322280 home/.config/wezterm/colors/sf2-sagat.toml
+file 0644 176328a2dc6991c2 home/.config/wezterm/colors/sf2-t-hawk-light.toml
+file 0644 e7f1447e897b2ac2 home/.config/wezterm/colors/sf2-t-hawk.toml
+file 0644 2614769d73b1ef95 home/.config/wezterm/colors/sf2-vega-light.toml
+file 0644 81dd5942f42e5fc8 home/.config/wezterm/colors/sf2-vega.toml
+file 0644 88f3ddc7e6a71e22 home/.config/wezterm/colors/sf2-zangief-light.toml
+file 0644 ff97499dde20665b home/.config/wezterm/colors/sf2-zangief.toml
+file 0644 7d8f6d344297802e home/.config/wezterm/wezterm.lua

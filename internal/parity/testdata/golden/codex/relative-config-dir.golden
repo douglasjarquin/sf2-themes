@@ -1,0 +1,87 @@
+step apply codex --config-dir relative/codex --dry-run
+exit 0
+stdout
+| would create: relative/codex/themes/sf2-main.tmTheme
+= c829747805c95309
+| would create: relative/codex/themes/sf2-main-light.tmTheme
+= db14284969fa64aa
+| would create: relative/codex/themes/sf2-akuma-light.tmTheme
+= 96b10fb1896a7f22
+| would create: relative/codex/themes/sf2-akuma.tmTheme
+= 7d78ba958d18d387
+| would create: relative/codex/themes/sf2-balrog-light.tmTheme
+= 21841033c31085fc
+| would create: relative/codex/themes/sf2-balrog.tmTheme
+= b59d6abf49273cdf
+| would create: relative/codex/themes/sf2-blanka-light.tmTheme
+= b7a7d0b84c2f834f
+| would create: relative/codex/themes/sf2-blanka.tmTheme
+= 0ce4efc66c1a6c9f
+| would create: relative/codex/themes/sf2-cammy-light.tmTheme
+= 9a6a9f5d0236eba4
+| would create: relative/codex/themes/sf2-cammy.tmTheme
+= ff116ff417387a7b
+| would create: relative/codex/themes/sf2-chun-li-light.tmTheme
+= f9e4c0211b33a877
+| would create: relative/codex/themes/sf2-chun-li.tmTheme
+= 3da486133a47efda
+| would create: relative/codex/themes/sf2-dee-jay-light.tmTheme
+= 28ffb585caa92ffa
+| would create: relative/codex/themes/sf2-dee-jay.tmTheme
+= 9d72303f88810f18
+| would create: relative/codex/themes/sf2-dhalsim-light.tmTheme
+= 0d7830f932cd153a
+| would create: relative/codex/themes/sf2-dhalsim.tmTheme
+= b746f313b86de122
+| would create: relative/codex/themes/sf2-e-honda-light.tmTheme
+= 466f8fd46a8d1733
+| would create: relative/codex/themes/sf2-e-honda.tmTheme
+= a521e43c55e81119
+| would create: relative/codex/themes/sf2-fei-long-light.tmTheme
+= 143bb9b1824285f9
+| would create: relative/codex/themes/sf2-fei-long.tmTheme
+= e494021393af9f95
+| would create: relative/codex/themes/sf2-guile-light.tmTheme
+= e55c4ee11ebdb090
+| would create: relative/codex/themes/sf2-guile.tmTheme
+= bec52c217dd0be67
+| would create: relative/codex/themes/sf2-ken-light.tmTheme
+= b19bc4f9a1d03be2
+| would create: relative/codex/themes/sf2-ken.tmTheme
+= fbae7788272d3dc2
+| would create: relative/codex/themes/sf2-m-bison-light.tmTheme
+= 3c5a032fe82d1b3b
+| would create: relative/codex/themes/sf2-m-bison.tmTheme
+= 0fcde322819d41b8
+| would create: relative/codex/themes/sf2-ryu-light.tmTheme
+= 05c65ad3b63429d1
+| would create: relative/codex/themes/sf2-ryu.tmTheme
+= cee0238ea12b81f8
+| would create: relative/codex/themes/sf2-sagat-light.tmTheme
+= ad6f734a308523bf
+| would create: relative/codex/themes/sf2-sagat.tmTheme
+= e5d757fdd269a0f7
+| would create: relative/codex/themes/sf2-t-hawk-light.tmTheme
+= 26afce83f882105a
+| would create: relative/codex/themes/sf2-t-hawk.tmTheme
+= d3632446f6ec0615
+| would create: relative/codex/themes/sf2-vega-light.tmTheme
+= 45a694baa83450b4
+| would create: relative/codex/themes/sf2-vega.tmTheme
+= ad6cd24e90ea2d60
+| would create: relative/codex/themes/sf2-zangief-light.tmTheme
+= 0588a585d8bee7bd
+| would create: relative/codex/themes/sf2-zangief.tmTheme
+= 7490c52758268594
+| would create: relative/codex/config.toml
+| --- /dev/null
+| +++ relative/codex/config.toml
+| @@ -0,0 +1,2 @@
+| +[tui]
+| +theme = "sf2-main"
+| apply codex: sf2-main
+|   changes: 37 would create
+|   note: restart Codex, or reselect with /theme
+stderr
+tree
+dir 0755 home

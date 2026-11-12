@@ -1,0 +1,16 @@
+step apply herdr --follow-symlinks --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| apply herdr: sf2-main + sf2-main-light (follows host appearance)
+|   changes: 1 updated
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+backup 0644 b49f1c77ffcc6474 elsewhere/herdr/config.toml.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/herdr
+link config/herdr/config.toml -> {SANDBOX}/elsewhere/herdr/config.toml
+dir 0755 elsewhere
+dir 0755 elsewhere/herdr
+file 0644 7ee639992db2d71a elsewhere/herdr/config.toml
+dir 0755 home

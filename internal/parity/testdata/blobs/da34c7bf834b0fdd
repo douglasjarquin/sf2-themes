@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Guile",
+  "base": "dark",
+  "overrides": {
+    "claude": "#769746",
+    "error": "#c96e68",
+    "success": "#66954b",
+    "warning": "#9e8726",
+    "text": "#cbd4c7",
+    "permission": "#c2763d",
+    "bashBorder": "#2d3529",
+    "diffAdded": "#66954b",
+    "diffRemoved": "#c96e68",
+    "suggestion": "#438fbf"
+  }
+}

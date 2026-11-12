@@ -1,0 +1,13 @@
+step setup herdr --theme ken --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| setup herdr: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 1 updated
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+backup 0644 bdd4e8859d705030 config/herdr/config.toml.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 147344a35cfbd2b9 config/herdr/config.toml
+dir 0755 home

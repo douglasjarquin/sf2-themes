@@ -1,0 +1,36 @@
+
+gui:
+  # >>> sf2-themes managed theme
+  # sf2-themes: sf2-chun-li-light
+  theme:
+    activeBorderColor:
+      - '#1e64b5'
+      - bold
+    inactiveBorderColor:
+      - '#d1dbe7'
+    searchingActiveBorderColor:
+      - '#816501'
+    optionsTextColor:
+      - '#1e64b5'
+    selectedLineBgColor:
+      - '#bfd7f6'
+    inactiveViewSelectedLineBgColor:
+      - '#e0e7f1'
+    cherryPickedCommitFgColor:
+      - '#247738'
+    cherryPickedCommitBgColor:
+      - '#d1dbe7'
+    markedBaseCommitFgColor:
+      - '#9f5517'
+    markedBaseCommitBgColor:
+      - '#d1dbe7'
+    unstagedChangesColor:
+      - '#a94b47'
+    defaultFgColor:
+      - '#2a323d'
+  # <<< sf2-themes managed theme
+  # >>> sf2-themes managed author colors
+  # sf2-themes: sf2-chun-li-light
+  authorColors:
+    '*': '#816501'
+  # <<< sf2-themes managed author colors

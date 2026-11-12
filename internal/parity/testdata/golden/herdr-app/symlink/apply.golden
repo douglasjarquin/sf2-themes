@@ -1,0 +1,13 @@
+step apply herdr-app --config-dir {SANDBOX}/config/herdr-app
+exit 1
+stdout
+stderr
+| error: refusing to replace symlink {SANDBOX}/config/herdr-app/settings.json; pass --follow-symlinks to write through
+tree
+dir 0755 config
+dir 0755 config/herdr-app
+link config/herdr-app/settings.json -> {SANDBOX}/elsewhere/herdr-app/settings.json
+dir 0755 elsewhere
+dir 0755 elsewhere/herdr-app
+file 0644 ca3d163bab055381 elsewhere/herdr-app/settings.json
+dir 0755 home

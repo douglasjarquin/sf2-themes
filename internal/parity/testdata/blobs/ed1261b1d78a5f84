@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-dhalsim
+palette = "sf2"
+
+[palettes.sf2]
+black = "#201710"
+red = "#c76e63"
+green = "#6a9346"
+yellow = "#a48324"
+blue = "#c77a14"
+purple = "#10988c"
+cyan = "#02988f"
+white = "#dbcec4"
+bright-black = "#928173"
+bright-red = "#c76e63"
+bright-green = "#6a9346"
+bright-yellow = "#a48324"
+bright-blue = "#c77a14"
+bright-purple = "#10988c"
+bright-cyan = "#02988f"
+bright-white = "#dbcec4"
+# <<< sf2-themes managed theme

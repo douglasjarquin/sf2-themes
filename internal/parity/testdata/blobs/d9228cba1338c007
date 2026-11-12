@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-ken-light.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#faeeed",
++  "foreground": "#3c2e2d",
++  "selection": "#f4c9c6",
++  "cursor": "#af3c40",
++  "ansi": [
++    "#4b3939",
++    "#a94a46",
++    "#2d7633",
++    "#846301",
++    "#0d6caa",
++    "#a34a71",
++    "#01737d",
++    "#e8dada",
++    "#675050",
++    "#9c3332",
++    "#006618",
++    "#705304",
++    "#025b92",
++    "#953361",
++    "#04616a",
++    "#faf2f2"
++  ],
++  "colors": {
++    "canvas": "#faeeed",
++    "chrome": "#f1e3e2",
++    "surface": "#e7d5d5",
++    "border": "#e7d5d5",
++    "accent": "#af3c40"
++  }
++}

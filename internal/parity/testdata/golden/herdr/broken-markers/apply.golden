@@ -1,0 +1,10 @@
+step apply herdr --config-dir {SANDBOX}/config/herdr
+exit 1
+stdout
+stderr
+| error: Herdr config cannot be changed safely: {SANDBOX}/config/herdr/config.toml has incomplete sf2-themes markers
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 562d682a16feb42b config/herdr/config.toml
+dir 0755 home

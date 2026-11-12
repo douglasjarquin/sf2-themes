@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-fei-long-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#f0f0fa"
+red = "#a94b42"
+green = "#247738"
+yellow = "#856302"
+blue = "#af3e35"
+purple = "#06737d"
+cyan = "#01737d"
+white = "#30303d"
+bright-black = "#696982"
+bright-red = "#a94b42"
+bright-green = "#247738"
+bright-yellow = "#856302"
+bright-blue = "#af3e35"
+bright-purple = "#06737d"
+bright-cyan = "#01737d"
+bright-white = "#30303d"
+# <<< sf2-themes managed theme

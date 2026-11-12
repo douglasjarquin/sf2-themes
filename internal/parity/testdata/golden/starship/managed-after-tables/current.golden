@@ -1,0 +1,10 @@
+step current starship --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| sf2-ken
+stderr
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 658452aede594534 config/starship/starship.toml
+dir 0755 home

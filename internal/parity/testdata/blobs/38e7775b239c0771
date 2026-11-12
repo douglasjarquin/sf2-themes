@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-dhalsim.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#201710",
++  "foreground": "#dbcec4",
++  "selection": "#4d3318",
++  "cursor": "#c77a14",
++  "ansi": [
++    "#3b2f25",
++    "#c76e63",
++    "#6a9346",
++    "#a48324",
++    "#508bca",
++    "#bc6e9b",
++    "#02988f",
++    "#bfb2a8",
++    "#928173",
++    "#ed8578",
++    "#80b056",
++    "#c59d30",
++    "#62a6f0",
++    "#e185ba",
++    "#0db5ac",
++    "#e2d9d1"
++  ],
++  "colors": {
++    "canvas": "#201710",
++    "chrome": "#2d221a",
++    "surface": "#3c2f26",
++    "border": "#3c2f26",
++    "accent": "#c77a14"
++  }
++}

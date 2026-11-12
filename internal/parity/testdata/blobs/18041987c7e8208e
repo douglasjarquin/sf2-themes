@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - T. Hawk Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#0a706c",
+    "error": "#a94b47",
+    "success": "#39752b",
+    "warning": "#856302",
+    "text": "#3c2e29",
+    "permission": "#9f5517",
+    "bashBorder": "#e6d6cf",
+    "diffAdded": "#39752b",
+    "diffRemoved": "#a94b47",
+    "suggestion": "#a35129"
+  }
+}

@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-t-hawk.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#0f9c97'
++      - bold
++    inactiveBorderColor:
++      - '#3d2e28'
++    searchingActiveBorderColor:
++      - '#a88225'
++    optionsTextColor:
++      - '#0f9c97'
++    selectedLineBgColor:
++      - '#0a4240'
++    inactiveViewSelectedLineBgColor:
++      - '#2e211c'
++    cherryPickedCommitFgColor:
++      - '#5d9550'
++    cherryPickedCommitBgColor:
++      - '#3d2e28'
++    markedBaseCommitFgColor:
++      - '#c1753c'
++    markedBaseCommitBgColor:
++      - '#3d2e28'
++    unstagedChangesColor:
++      - '#c86e67'
++    defaultFgColor:
++      - '#ddcec7'
++  authorColors:
++    '*': '#c6714a'

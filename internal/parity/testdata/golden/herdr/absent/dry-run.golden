@@ -1,0 +1,11 @@
+step apply herdr --theme ken --dry-run --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| would create: {SANDBOX}/config/herdr/config.toml
+= 859fa0d96084e792
+| apply herdr: sf2-ken + sf2-ken-light (follows host appearance)
+|   changes: 1 would create
+|   note: run `herdr server reload-config` to apply the selection
+stderr
+tree
+dir 0755 home

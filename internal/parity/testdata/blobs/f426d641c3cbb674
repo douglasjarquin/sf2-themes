@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-blanka-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#eaf4ee"
+red = "#a94c3f"
+green = "#247738"
+yellow = "#896106"
+blue = "#027433"
+purple = "#9f5605"
+cyan = "#0e756c"
+white = "#28352d"
+bright-black = "#567162"
+bright-red = "#a94c3f"
+bright-green = "#247738"
+bright-yellow = "#896106"
+bright-blue = "#027433"
+bright-purple = "#9f5605"
+bright-cyan = "#0e756c"
+bright-white = "#28352d"
+# <<< sf2-themes managed theme

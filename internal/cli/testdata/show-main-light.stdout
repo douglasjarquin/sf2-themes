@@ -1,0 +1,56 @@
+schema_version = 1
+
+[meta]
+id = "main-light"
+display_name = "Street Fighter II - Main Light"
+kind = "main"
+introduced_in = "main"
+aliases = []
+name = "Main"
+variant = "light"
+family = "sf2"
+stage = "Arcade · Family baseline"
+
+[ui]
+background = "#edf1fa"
+surface = "#e1e7f2"
+overlay = "#d4dae8"
+border = "#d4dae8"
+foreground = "#2c313d"
+muted = "#606b83"
+subtle = "#444f69"
+accent = "#7d6005"
+accent_secondary = "#ab4945"
+cursor = "#7d6005"
+cursor_text = "#edf1fa"
+selection_background = "#e3d4b0"
+selection_foreground = "#2c313d"
+
+[semantic]
+red = "#a94b47"
+green = "#247738"
+yellow = "#836401"
+blue = "#3868b0"
+magenta = "#944f8f"
+cyan = "#01737d"
+orange = "#9f5517"
+
+[ansi.normal]
+black = "#373e4b"
+red = "#a94b47"
+green = "#247738"
+yellow = "#836401"
+blue = "#3868b0"
+magenta = "#944f8f"
+cyan = "#01737d"
+white = "#d9dee8"
+
+[ansi.bright]
+black = "#4e5668"
+red = "#9c3332"
+green = "#016626"
+yellow = "#6e5403"
+blue = "#1f56a5"
+magenta = "#863a82"
+cyan = "#04616a"
+white = "#f2f4fa"

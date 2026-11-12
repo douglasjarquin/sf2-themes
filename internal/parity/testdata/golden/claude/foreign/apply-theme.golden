@@ -1,0 +1,10 @@
+step apply claude --theme ken --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: Claude Code already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup claude` without --theme to keep it and install the theme files
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 ceb7d0245faec668 config/claude/settings.json
+dir 0755 home

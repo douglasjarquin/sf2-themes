@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Main",
+  "base": "dark",
+  "overrides": {
+    "claude": "#ad8705",
+    "error": "#c86e67",
+    "success": "#4e975b",
+    "warning": "#a58324",
+    "text": "#cad1de",
+    "permission": "#c1753c",
+    "bashBorder": "#2a3243",
+    "diffAdded": "#4e975b",
+    "diffRemoved": "#c86e67",
+    "suggestion": "#cf6a63"
+  }
+}

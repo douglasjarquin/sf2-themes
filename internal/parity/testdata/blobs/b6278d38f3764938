@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Guile Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#4f6e1b",
+    "error": "#a94b47",
+    "success": "#447422",
+    "warning": "#7c6702",
+    "text": "#2c3429",
+    "permission": "#9f5517",
+    "bashBorder": "#d5ddd0",
+    "diffAdded": "#447422",
+    "diffRemoved": "#a94b47",
+    "suggestion": "#1f6e9e"
+  }
+}

@@ -1,0 +1,84 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MISE_ENABLE_TOOLS: go,golangci-lint
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require a release tag on main
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-rc\.[0-9]+)?$ ]] || { echo "tag $TAG is not vX.Y.Z or vX.Y.Z-rc.N" >&2; exit 1; }
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || { echo "tag $TAG is not on main" >&2; exit 1; }
+
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: go golangci-lint
+
+      - name: Lint and test
+        run: mise run go:lint && mise run go:test
+
+      - name: Build binaries and checksums
+        env:
+          TAG: ${{ github.ref_name }}
+        run: scripts/ci/build-release.sh "${TAG#v}" dist
+
+      - name: Render release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: sed "s/{{VERSION}}/${TAG#v}/g" .github/release-notes.md > notes.md
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: |
+            dist/
+            notes.md
+          if-no-files-found: error
+
+  # Publishing and attestation get their own job so the permissions that can mint
+  # an OIDC token and write a release never reach the toolchain, lint, test, or build steps.
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: release
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-path: |
+            dist/sf2-themes_*
+            dist/install.sh
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          prerelease=()
+          [[ "$TAG" == *-rc.* ]] && prerelease=(--prerelease)
+          gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes-file notes.md "${prerelease[@]}"

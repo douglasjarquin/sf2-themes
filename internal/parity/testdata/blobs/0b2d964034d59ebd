@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Dhalsim",
+  "base": "dark",
+  "overrides": {
+    "claude": "#c77a14",
+    "error": "#c76e63",
+    "success": "#6a9346",
+    "warning": "#a48324",
+    "text": "#dbcec4",
+    "permission": "#c1753c",
+    "bashBorder": "#3c2f26",
+    "diffAdded": "#6a9346",
+    "diffRemoved": "#c76e63",
+    "suggestion": "#10988c"
+  }
+}

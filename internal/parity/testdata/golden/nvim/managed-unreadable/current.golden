@@ -1,0 +1,11 @@
+step current nvim --config-dir {SANDBOX}/config/nvim
+exit 1
+stdout
+stderr
+| error: could not read the sf2 theme Neovim selects
+tree
+dir 0755 config
+dir 0755 config/nvim
+dir 0755 config/nvim/sf2-theme
+file 0644 1970a3ceb41d8ba2 config/nvim/sf2-theme/current.lua
+dir 0755 home

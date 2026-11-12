@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Vega Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#a83b77",
+    "error": "#a84a55",
+    "success": "#3b7449",
+    "warning": "#826401",
+    "text": "#362f3a",
+    "permission": "#9e5517",
+    "bashBorder": "#dfd6e3",
+    "diffAdded": "#3b7449",
+    "diffRemoved": "#a84a55",
+    "suggestion": "#7758a9"
+  }
+}

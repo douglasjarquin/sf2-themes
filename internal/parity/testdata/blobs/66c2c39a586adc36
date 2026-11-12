@@ -1,0 +1,34 @@
+--- /dev/null
++++ {SANDBOX}/config/herdr-app/themes/sf2-cammy-light.json
+@@ -0,0 +1,31 @@
++{
++  "background": "#ebf2fa",
++  "foreground": "#29323c",
++  "selection": "#c1dec1",
++  "cursor": "#25732d",
++  "ansi": [
++    "#343f4b",
++    "#a94b47",
++    "#2d7733",
++    "#816501",
++    "#236bad",
++    "#984e8a",
++    "#02747d",
++    "#d7dfe8",
++    "#4a5766",
++    "#9c3432",
++    "#006718",
++    "#6d5503",
++    "#035a9d",
++    "#8b387c",
++    "#04616a",
++    "#f0f5fa"
++  ],
++  "colors": {
++    "canvas": "#ebf2fa",
++    "chrome": "#dfe8f1",
++    "surface": "#d1dbe7",
++    "border": "#d1dbe7",
++    "accent": "#25732d"
++  }
++}

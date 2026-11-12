@@ -1,0 +1,93 @@
+step apply codex --theme ken --verbose --config-dir {SANDBOX}/config/codex
+exit 0
+stdout
+| unchanged: {SANDBOX}/config/codex/themes/sf2-main.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-main-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-akuma-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-akuma.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-balrog-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-balrog.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-blanka-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-blanka.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-cammy-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-cammy.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-chun-li-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-chun-li.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-dee-jay-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-dee-jay.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-dhalsim-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-dhalsim.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-e-honda-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-e-honda.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-fei-long-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-fei-long.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-guile-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-guile.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-ken-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-ken.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-m-bison-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-m-bison.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-ryu-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-ryu.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-sagat-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-sagat.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-t-hawk-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-t-hawk.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-vega-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-vega.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-zangief-light.tmTheme
+| unchanged: {SANDBOX}/config/codex/themes/sf2-zangief.tmTheme
+| updated: {SANDBOX}/config/codex/config.toml
+| --- {SANDBOX}/config/codex/config.toml
+| +++ {SANDBOX}/config/codex/config.toml
+| @@ -1,2 +1,2 @@
+|  [tui]
+| -theme = "sf2-ryu"
+| +theme = "sf2-ken"
+| apply codex: sf2-ken
+|   changes: 1 updated, 36 unchanged
+|   note: restart Codex, or reselect with /theme
+stderr
+backup 0644 710d192abf95abca config/codex/config.toml.bak.<STAMP>
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 6c29cbf9541bb7d7 config/codex/config.toml
+dir 0755 config/codex/themes
+file 0644 125cb1d614cfd14e config/codex/themes/sf2-akuma-light.tmTheme
+file 0644 b110d62e2dc9d24c config/codex/themes/sf2-akuma.tmTheme
+file 0644 7f02948cdec4c67e config/codex/themes/sf2-balrog-light.tmTheme
+file 0644 ad6a7ce4addd223f config/codex/themes/sf2-balrog.tmTheme
+file 0644 6546bfd1184865d6 config/codex/themes/sf2-blanka-light.tmTheme
+file 0644 520e442ac6dda658 config/codex/themes/sf2-blanka.tmTheme
+file 0644 027a450e90ea9381 config/codex/themes/sf2-cammy-light.tmTheme
+file 0644 48c36c4ae526b7d4 config/codex/themes/sf2-cammy.tmTheme
+file 0644 4c9160134309a789 config/codex/themes/sf2-chun-li-light.tmTheme
+file 0644 06949233d7d1f706 config/codex/themes/sf2-chun-li.tmTheme
+file 0644 f1b9a34933213653 config/codex/themes/sf2-dee-jay-light.tmTheme
+file 0644 8a1ad7191a6b04f4 config/codex/themes/sf2-dee-jay.tmTheme
+file 0644 f72561fa6619dbc7 config/codex/themes/sf2-dhalsim-light.tmTheme
+file 0644 7dce8e3731b1c9a9 config/codex/themes/sf2-dhalsim.tmTheme
+file 0644 4ade910150c9d0f0 config/codex/themes/sf2-e-honda-light.tmTheme
+file 0644 fad30b96aed88ab4 config/codex/themes/sf2-e-honda.tmTheme
+file 0644 3c21308adfe13d9c config/codex/themes/sf2-fei-long-light.tmTheme
+file 0644 e044fa90e61c2654 config/codex/themes/sf2-fei-long.tmTheme
+file 0644 65cab4e0d431be0c config/codex/themes/sf2-guile-light.tmTheme
+file 0644 3c563cc4a39eb5ce config/codex/themes/sf2-guile.tmTheme
+file 0644 8b73184b0dc35e92 config/codex/themes/sf2-ken-light.tmTheme
+file 0644 af8ed9c7d02daa71 config/codex/themes/sf2-ken.tmTheme
+file 0644 68dc937d58216886 config/codex/themes/sf2-m-bison-light.tmTheme
+file 0644 9c88a46e2a383a0b config/codex/themes/sf2-m-bison.tmTheme
+file 0644 ee90ed06ab0dc3be config/codex/themes/sf2-main-light.tmTheme
+file 0644 d12435f942ec0373 config/codex/themes/sf2-main.tmTheme
+file 0644 d69b2abb232d0ce5 config/codex/themes/sf2-ryu-light.tmTheme
+file 0644 d3bf5fe7f31be590 config/codex/themes/sf2-ryu.tmTheme
+file 0644 a565b71db3337c3b config/codex/themes/sf2-sagat-light.tmTheme
+file 0644 6c005b489bb36db2 config/codex/themes/sf2-sagat.tmTheme
+file 0644 a8c85fba09bdd5eb config/codex/themes/sf2-t-hawk-light.tmTheme
+file 0644 afc540aad401e25c config/codex/themes/sf2-t-hawk.tmTheme
+file 0644 6cd27a86fa2328e8 config/codex/themes/sf2-vega-light.tmTheme
+file 0644 41a797b37eacaab6 config/codex/themes/sf2-vega.tmTheme
+file 0644 1f68f5acbb2103b2 config/codex/themes/sf2-zangief-light.tmTheme
+file 0644 8f5655ffc6020565 config/codex/themes/sf2-zangief.tmTheme
+dir 0755 home

@@ -1,0 +1,7 @@
+format = """
+[a]
+$all"""
+
+# directory
+[directory]
+style = "blue"

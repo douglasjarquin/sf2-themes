@@ -1,0 +1,7 @@
+step current starship --config-dir {SANDBOX}/config/starship
+exit 1
+stdout
+stderr
+| error: no Starship theme applied yet
+tree
+dir 0755 home

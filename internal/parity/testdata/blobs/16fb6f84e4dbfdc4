@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Fei Long Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#af3e35",
+    "error": "#a94b42",
+    "success": "#247738",
+    "warning": "#856302",
+    "text": "#30303d",
+    "permission": "#9e5517",
+    "bashBorder": "#d8d9e7",
+    "diffAdded": "#247738",
+    "diffRemoved": "#a94b42",
+    "suggestion": "#06737d"
+  }
+}

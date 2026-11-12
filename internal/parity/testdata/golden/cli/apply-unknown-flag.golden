@@ -1,0 +1,7 @@
+step apply codex --bogus
+exit 2
+stdout
+stderr
+| sf2-themes: error: unrecognized arguments: --bogus
+tree
+dir 0755 home

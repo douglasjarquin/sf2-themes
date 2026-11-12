@@ -1,0 +1,526 @@
+[
+ {
+  "name": "absent-apply",
+  "args": [
+   "apply",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "absent"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "apply codex: sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-main\n",
+    "themes/sf2-main.txt": "palette sf2-main\n"
+   }
+  }
+ },
+ {
+  "name": "absent-setup",
+  "args": [
+   "setup",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "absent"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "setup codex: no selection found, selected sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-main\n",
+    "themes/sf2-main.txt": "palette sf2-main\n"
+   }
+  }
+ },
+ {
+  "name": "managed-setup-keeps",
+  "args": [
+   "setup",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "current": "ryu"
+  },
+  "seed": {
+   "config.txt": "keep = 1\ntheme = sf2-ryu\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "setup codex: kept sf2-ryu\n  changes: 1 created, 1 unchanged\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-ryu\n",
+    "themes/sf2-ryu.txt": "palette sf2-ryu\n"
+   }
+  }
+ },
+ {
+  "name": "all-unchanged",
+  "args": [
+   "apply",
+   "codex",
+   "--theme",
+   "ken",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "current": "ken"
+  },
+  "seed": {
+   "config.txt": "keep = 1\ntheme = sf2-ken\n",
+   "themes/sf2-ken.txt": "palette sf2-ken\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "apply codex: sf2-ken\n  changes: no changes\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-ken\n",
+    "themes/sf2-ken.txt": "palette sf2-ken\n"
+   }
+  }
+ },
+ {
+  "name": "verbose-every-outcome",
+  "args": [
+   "apply",
+   "codex",
+   "--theme",
+   "ken",
+   "--verbose",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "legacy",
+   "current": "ryu"
+  },
+  "seed": {
+   "config.txt": "keep = 1\ntheme = ryu\n",
+   "themes/sf2-ken.txt": "palette sf2-ken\n",
+   "legacy.txt": "old\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "unchanged: {DIR}/themes/sf2-ken.txt\nupdated: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = ryu\n+theme = sf2-ken\nremoved: {DIR}/legacy.txt\napply codex: sf2-ken\n  changes: 1 updated, 1 removed, 1 unchanged\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-ken\n",
+    "config.txt.bak": "keep = 1\ntheme = ryu\n",
+    "themes/sf2-ken.txt": "palette sf2-ken\n"
+   }
+  }
+ },
+ {
+  "name": "dry-run",
+  "args": [
+   "apply",
+   "codex",
+   "--theme",
+   "ken",
+   "--dry-run",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "current": "ryu"
+  },
+  "seed": {
+   "config.txt": "keep = 1\ntheme = sf2-ryu\n",
+   "legacy.txt": "old\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "would create: {DIR}/themes/sf2-ken.txt\n--- /dev/null\n+++ {DIR}/themes/sf2-ken.txt\n@@ -0,0 +1 @@\n+palette sf2-ken\nwould update: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = sf2-ryu\n+theme = sf2-ken\nwould remove: {DIR}/legacy.txt\napply codex: sf2-ken\n  changes: 1 would create, 1 would update, 1 would remove\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-ryu\n",
+    "legacy.txt": "old\n"
+   }
+  }
+ },
+ {
+  "name": "foreign-apply-refuses",
+  "args": [
+   "apply",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "seed": {
+   "config.txt": "theme = dracula\n"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Stub already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup codex` without --theme to keep it and install the theme files\n",
+   "files": {
+    "config.txt": "theme = dracula\n"
+   }
+  }
+ },
+ {
+  "name": "foreign-setup-theme-refuses",
+  "args": [
+   "setup",
+   "codex",
+   "--theme",
+   "ken",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "seed": {
+   "config.txt": "theme = dracula\n"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Stub already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup codex` without --theme to keep it and install the theme files\n",
+   "files": {
+    "config.txt": "theme = dracula\n"
+   }
+  }
+ },
+ {
+  "name": "foreign-setup-keeps",
+  "args": [
+   "setup",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "seed": {
+   "config.txt": "theme = dracula\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "setup codex: kept your own theme (config left unchanged)\n  changes: 1 created\n",
+   "stderr": "",
+   "files": {
+    "config.txt": "theme = dracula\n",
+    "themes/sf2-main.txt": "palette sf2-main\n"
+   }
+  }
+ },
+ {
+  "name": "foreign-adopt",
+  "args": [
+   "apply",
+   "codex",
+   "--adopt",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "seed": {
+   "config.txt": "theme = dracula\n"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "apply codex: sf2-main\n  changes: 1 created, 1 updated\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-main\n",
+    "config.txt.bak": "theme = dracula\n",
+    "themes/sf2-main.txt": "palette sf2-main\n"
+   }
+  }
+ },
+ {
+  "name": "broken-refuses",
+  "args": [
+   "setup",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "broken",
+   "detail": "incomplete sf2-themes markers in config.txt"
+  },
+  "seed": {
+   "config.txt": "# >>>\n"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Stub config cannot be changed safely: incomplete sf2-themes markers in config.txt\n",
+   "files": {
+    "config.txt": "# >>>\n"
+   }
+  }
+ },
+ {
+  "name": "unknown-refuses",
+  "args": [
+   "apply",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "unknown shape",
+   "detail": "Move the theme into a table:\n  [x]\n  theme = 1\n\n"
+  },
+  "seed": {
+   "config.txt": "x = { theme = 1 }\n"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Stub config has a shape sf2-themes cannot edit safely.\nMove the theme into a table:\n  [x]\n  theme = 1\n\nThen run the command again.\n",
+   "files": {
+    "config.txt": "x = { theme = 1 }\n"
+   }
+  }
+ },
+ {
+  "name": "unreadable-setup-resets",
+  "args": [
+   "setup",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "unreadable": true
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "setup codex: selection unreadable, reset to sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stderr": "hint line\n\n",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-main\n",
+    "themes/sf2-main.txt": "palette sf2-main\n"
+   }
+  }
+ },
+ {
+  "name": "pair-apply-light",
+  "args": [
+   "apply",
+   "wezterm",
+   "--theme",
+   "chun-li-light",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "absent"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "apply wezterm: sf2-chun-li + sf2-chun-li-light (follows host appearance)\n  changes: 2 created\n  note: reload the pair\n",
+   "stderr": "",
+   "files": {
+    "config.txt": "keep = 1\ntheme = sf2-chun-li-light\n",
+    "themes/sf2-chun-li-light.txt": "palette sf2-chun-li-light\n"
+   }
+  }
+ },
+ {
+  "name": "pair-unknown-incomplete",
+  "args": [
+   "apply",
+   "wezterm",
+   "--theme",
+   "ryu",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "unknown shape",
+   "detail": "Add this:\n  dofile(x)\n"
+  },
+  "seed": {
+   "config.txt": "return {}\n"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "apply wezterm: incomplete (config left unchanged)\n  pointer: sf2-ryu + sf2-ryu-light (follows host appearance)\n  changes: 1 created\n",
+   "stderr": "error: Pair Stub config has a shape sf2-themes cannot edit safely.\nAdd this:\n  dofile(x)\n\nThen run the command again.\n",
+   "files": {
+    "config.txt": "return {}\n",
+    "themes/sf2-ryu.txt": "palette sf2-ryu\n"
+   }
+  }
+ },
+ {
+  "name": "pair-foreign-setup-pointer",
+  "args": [
+   "setup",
+   "wezterm",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign",
+   "current": "ken"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "setup wezterm: kept your own theme (config left unchanged)\n  pointer: kept sf2-ken + sf2-ken-light (follows host appearance)\n  changes: 1 created\n",
+   "stderr": "",
+   "files": {
+    "themes/sf2-ken.txt": "palette sf2-ken\n"
+   }
+  }
+ },
+ {
+  "name": "pair-broken-refuses",
+  "args": [
+   "apply",
+   "wezterm",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "broken",
+   "detail": "bad"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Pair Stub config cannot be changed safely: bad\n",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-managed",
+  "args": [
+   "current",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "current": "ken-light"
+  },
+  "want": {
+   "exit": 0,
+   "stdout": "sf2-ken-light\n",
+   "stderr": "",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-broken",
+  "args": [
+   "current",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "broken",
+   "detail": "invalid TOML"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: invalid TOML\n",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-foreign",
+  "args": [
+   "current",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: Stub uses a theme sf2-themes does not manage\n",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-foreign-owns-files",
+  "args": [
+   "current",
+   "wezterm",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "foreign"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: no Pair Stub theme applied yet\n",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-unreadable",
+  "args": [
+   "current",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "managed",
+   "unreadable": true
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: could not read the sf2 theme Stub selects\n",
+   "files": {}
+  }
+ },
+ {
+  "name": "current-absent",
+  "args": [
+   "current",
+   "codex",
+   "--config-dir",
+   "{DIR}"
+  ],
+  "inspection": {
+   "ownership": "absent"
+  },
+  "want": {
+   "exit": 1,
+   "stdout": "",
+   "stderr": "error: no Stub theme applied yet\n",
+   "files": {}
+  }
+ }
+]

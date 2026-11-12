@@ -1,0 +1,69 @@
+--- /dev/null
++++ {SANDBOX}/config/wezterm/colors/sf2-blanka.toml
+@@ -0,0 +1,66 @@
++[colors]
++foreground = "#c6d5cc"
++background = "#111c16"
++cursor_bg = "#3b9f58"
++cursor_fg = "#111c16"
++cursor_border = "#3b9f58"
++selection_bg = "#23412a"
++selection_fg = "#c6d5cc"
++split = "#27362e"
++scrollbar_thumb = "#758a7d"
++compose_cursor = "#c4752e"
++visual_bell = "#27362e"
++ansi = ["#27362d", "#c86f61", "#4e975b", "#ad8028", "#3590c3", "#b770a8", "#0e988c", "#aab9b0"]
++brights = ["#758a7d", "#ee8676", "#61b56f", "#ce9a34", "#42ace8", "#da88c9", "#17b6a8", "#d2ded7"]
++
++[colors.indexed]
++16 = "#c2753c"
++17 = "#3b9f58"
++
++[colors.tab_bar]
++background = "#111c16"
++inactive_tab_edge = "#27362e"
++
++[colors.tab_bar.active_tab]
++bg_color = "#3b9f58"
++fg_color = "#111c16"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab]
++bg_color = "#1b2821"
++fg_color = "#758a7d"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.inactive_tab_hover]
++bg_color = "#27362e"
++fg_color = "#c6d5cc"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab]
++bg_color = "#1b2821"
++fg_color = "#758a7d"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[colors.tab_bar.new_tab_hover]
++bg_color = "#27362e"
++fg_color = "#c6d5cc"
++intensity = "Normal"
++italic = false
++strikethrough = false
++underline = "None"
++
++[metadata]
++name = "sf2-blanka"
++aliases = []

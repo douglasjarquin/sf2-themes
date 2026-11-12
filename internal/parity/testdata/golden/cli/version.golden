@@ -1,0 +1,7 @@
+step --version
+exit 0
+stdout
+| <masked>
+stderr
+tree
+dir 0755 home

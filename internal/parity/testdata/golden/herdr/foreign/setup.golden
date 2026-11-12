@@ -1,0 +1,11 @@
+step setup herdr --config-dir {SANDBOX}/config/herdr
+exit 0
+stdout
+| setup herdr: kept your own theme (config left unchanged)
+|   changes: no changes
+stderr
+tree
+dir 0755 config
+dir 0755 config/herdr
+file 0644 2483d50cf4abfce2 config/herdr/config.toml
+dir 0755 home

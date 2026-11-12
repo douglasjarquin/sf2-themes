@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - M. Bison Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#8c48a1",
+    "error": "#a94a4b",
+    "success": "#247738",
+    "warning": "#826401",
+    "text": "#352f3b",
+    "permission": "#9e5517",
+    "bashBorder": "#ddd7e5",
+    "diffAdded": "#247738",
+    "diffRemoved": "#a94a4b",
+    "suggestion": "#a64c4c"
+  }
+}

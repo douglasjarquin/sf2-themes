@@ -1,0 +1,16 @@
+{
+  "name": "SF2 Street Fighter II - Blanka Light",
+  "base": "light",
+  "overrides": {
+    "claude": "#027433",
+    "error": "#a94c3f",
+    "success": "#247738",
+    "warning": "#896106",
+    "text": "#28352d",
+    "permission": "#9f5517",
+    "bashBorder": "#cfded6",
+    "diffAdded": "#247738",
+    "diffRemoved": "#a94c3f",
+    "suggestion": "#9f5605"
+  }
+}

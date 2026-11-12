@@ -1,0 +1,6 @@
+# mine
+model = "o3"
+
+[tui]
+theme = "dracula"
+animations = false

@@ -1,0 +1,50 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-e-honda
+[theme]
+name = "catppuccin"
+auto_switch = true
+light_name = "catppuccin-latte"
+dark_name = "catppuccin"
+
+[theme.custom.dark]
+sidebar_bg = "#221614"
+panel_bg = "#2e211e"
+active_row_bg = "#2e211e"
+selection_bg = "#3e2e2b"
+surface0 = "#2e211e"
+surface1 = "#3e2e2b"
+surface_dim = "#221614"
+overlay0 = "#967f7a"
+overlay1 = "#bca09a"
+text = "#decdc9"
+subtext0 = "#bca09a"
+accent = "#db6962"
+mauve = "#6688c4"
+green = "#549657"
+yellow = "#a88225"
+red = "#c76e67"
+blue = "#5e88cd"
+teal = "#1396a1"
+peach = "#c1753c"
+
+[theme.custom.light]
+sidebar_bg = "#faeeec"
+panel_bg = "#f1e3e0"
+active_row_bg = "#f1e3e0"
+selection_bg = "#e7d6d2"
+surface0 = "#f1e3e0"
+surface1 = "#e7d6d2"
+surface_dim = "#faeeec"
+overlay0 = "#82645f"
+overlay1 = "#674742"
+text = "#3c2e2b"
+subtext0 = "#674742"
+accent = "#ad3f3c"
+mauve = "#4867a2"
+green = "#2d7633"
+yellow = "#846301"
+red = "#a94a46"
+blue = "#3c67b0"
+teal = "#01737d"
+peach = "#9e5517"
+# <<< sf2-themes managed theme

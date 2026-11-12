@@ -1,0 +1,32 @@
+--- /dev/null
++++ {SANDBOX}/config/lazygit/themes/sf2-dee-jay.yml
+@@ -0,0 +1,29 @@
++gui:
++  theme:
++    activeBorderColor:
++      - '#cc7822'
++      - bold
++    inactiveBorderColor:
++      - '#233636'
++    searchingActiveBorderColor:
++      - '#ab8127'
++    optionsTextColor:
++      - '#cc7822'
++    selectedLineBgColor:
++      - '#4e321a'
++    inactiveViewSelectedLineBgColor:
++      - '#172828'
++    cherryPickedCommitFgColor:
++      - '#559658'
++    cherryPickedCommitBgColor:
++      - '#233636'
++    markedBaseCommitFgColor:
++      - '#c2753c'
++    markedBaseCommitBgColor:
++      - '#233636'
++    unstagedChangesColor:
++      - '#c86f64'
++    defaultFgColor:
++      - '#c2d5d4'
++  authorColors:
++    '*': '#57965a'

@@ -1,0 +1,7 @@
+step apply codex -v-
+exit 2
+stdout
+stderr
+| sf2-themes apply: error: argument --verbose/-v: ignored explicit argument '-'
+tree
+dir 0755 home

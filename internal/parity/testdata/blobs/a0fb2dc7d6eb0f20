@@ -1,0 +1,8 @@
+model = "o3"
+
+[tui]
+animations = false
+
+theme = "sf2-main"
+[other]
+x = 1
