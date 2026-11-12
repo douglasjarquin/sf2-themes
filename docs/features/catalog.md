@@ -1,19 +1,19 @@
 # Theme catalog and generated data
 
 The 36-entry TOML catalog under `themes/` is the single source of truth for every palette.
-`mise-tasks/generate-web-theme-data` compiles it to `web/src/data/generated-theme-data.json`, and `web/src/data/theme-data.mjs` plus `web/src/data/site-theme-data.mjs` adapt it for the site payload the layout embeds.
+`go run ./cmd/sf2-dev web-data` (`mise run generate-web-theme-data`) compiles it to `web/src/data/generated-theme-data.json`, and `web/src/data/theme-data.mjs` plus `web/src/data/site-theme-data.mjs` adapt it for the site payload the layout embeds.
 
 ## Entry points
 
 - `themes/*.toml` files, authored per `docs/theme-guidelines.md`.
 - `sf2-themes validate --all` and the `mise run validate-catalog` task.
-- `aube -C web run themes:generate` and the `--check` freshness gate baked into `web:build`, `web:check`, and `web:test`.
+- `aube -C web run themes:generate`, and the `sf2-dev web-data --check` freshness gate baked into `web:build`, `web:check`, and `web:test`.
 
 ## Scenarios
 
 | ID | Scenario | Driver | Evidence |
 | --- | --- | --- | --- |
-| `catalog.validate` | Every catalog entry validates against the schema and semantic rules | automated: `mise run validate-catalog` inside `mise run verify`, exercised by `tests/test_catalog.py` | aggregate run record |
+| `catalog.validate` | Every catalog entry validates against the schema and semantic rules | automated: `mise run validate-catalog` inside `mise run verify`, exercised by the `internal/catalog` tests | aggregate run record |
 | `catalog.freshness` | The committed `web/src/data/generated-theme-data.json` byte-matches a fresh generation from `themes/` | automated: `mise run web:test` runs `web/test/theme-data.test.mjs`, which regenerates and compares | aggregate run record |
 | `catalog.shape` | The site payload exposes 18 families with dark and light variants, aliases, and the flattened token set the boot script consumes | automated: `web/test/theme-data.test.mjs` plus the e2e suite in `web/tests/e2e/` inside `mise run web:test` | aggregate run record |
 | `catalog.rejects` | Malformed TOML, missing fields, and unknown keys fail generation before they can reach the site | automated: `web/test/theme-data.test.mjs` rejection cases inside `mise run web:test` | aggregate run record |

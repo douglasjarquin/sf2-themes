@@ -56,7 +56,7 @@ func TestHome(t *testing.T) {
 	}
 }
 
-// resolveLayout builds the tree record.py resolves; "@" in a case is the resolved temporary root.
+// resolveLayout builds the tree the recorded cases were resolved in; "@" in a case is the resolved temporary root.
 func resolveLayout(t *testing.T) string {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())

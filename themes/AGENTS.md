@@ -2,7 +2,7 @@
 
 Apply the repository-wide rules in `../AGENTS.md`, and use this file for every change below `themes/`.
 Read `../docs/theme-guidelines.md` and `../docs/roster.md` before changing identities, colors, aliases, or variants.
-Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_theme/validation.py` as the executable catalog contract.
+Use `../internal/catalog/parse.go`, `../internal/catalog/catalog.go`, and `../internal/catalog/validate.go` as the executable catalog contract.
 
 ## Preserve catalog identity and order.
 
@@ -45,18 +45,18 @@ Use `../src/sf2_theme/parse.py`, `../src/sf2_theme/catalog.py`, and `../src/sf2_
 
 ## Regenerate every dependent representation.
 
-- Rebuild the committed root `sf2-themes` executable because `mise-tasks/build-standalone` embeds the catalog's exact TOML sources.
+- Expect `embed.go` to carry the catalog into the binary at build time; there is no committed executable to rebuild.
 - Regenerate `docs/previews/` because `mise run generate-previews` writes one SVG for every catalog ID.
-- Expect `web/src/data/theme-data.mjs` to parse the same files in catalog order and expose all 36 entries through `paletteVariants`.
-- Review adapter snapshots and `docs/roster.md` when an intentional token, identity, alias, era, or visual direction changes.
+- Regenerate `web/src/data/generated-theme-data.json` with `mise run generate-web-theme-data`, and expect `web/src/data/theme-data.mjs` to expose all 36 entries in catalog order through `paletteVariants`.
+- Review adapter testdata, parity goldens, and `docs/roster.md` when an intentional token, identity, alias, era, or visual direction changes.
 
 ## Verify the focused contract before stopping.
 
-- Run `mise run build-standalone` and `mise run generate-previews` from the repository root after catalog edits.
-- Run `uv run pytest -q tests/test_catalog.py tests/test_validation.py tests/test_snapshots.py` for catalog, contrast, and adapter-render coverage.
-- Run both `uv run sf2-themes validate --all` and `./sf2-themes validate --all` to prove source and embedded catalogs accept the same themes.
-- Run `mise run test-cli` to exercise the copied standalone CLI and prefixed installed identities.
-- Run `uv run pytest -q tests/test_lazygit.py tests/test_cli.py tests/test_snapshots.py` to verify complete Lazygit key coverage and all 36 generated identities.
+- Run `mise run generate-previews` and `mise run generate-web-theme-data` from the repository root after catalog edits.
+- Run `go test -count=1 ./internal/catalog/... ./cmd/sf2-themes/` for catalog, contrast, and embedded-catalog coverage.
+- Run `mise run validate-catalog` to prove the embedded catalog accepts every theme.
+- Run `go test -count=1 ./internal/adapters/... ./internal/parity/` for adapter renders, Lazygit key coverage, and all 36 generated identities.
+- A theme value change moves parity goldens that render that theme; re-record them with `mise run parity:record` and review the diff as the intended palette change.
 - Run `aube -C web run test:unit`, `mise run web:check`, and `mise run web:build` for browser parsing, palette mapping, and static rendering.
 - Run `git diff --check` and inspect the scoped diff for the intended TOML and regenerated dependents.
-- Finish only when the source loader, standalone loader, browser catalog, and previews all agree on the same ordered 36-theme catalog.
+- Finish only when the Go loader, browser catalog, and previews all agree on the same ordered 36-theme catalog.

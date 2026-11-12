@@ -2,7 +2,7 @@
 import SampleBlock from "../components/SampleBlock.astro";
 import { siteThemeFamilies } from "../data/site-theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
-import { PRODUCT_DESCRIPTION, REPOSITORY_URL } from "../lib/seo.mjs";
+import { INSTALL_COMMAND, PRODUCT_DESCRIPTION, REPOSITORY_URL } from "../lib/seo.mjs";
 
 const ryu = siteThemeFamilies.find(({ id }) => id === "ryu") ?? siteThemeFamilies[0];
 
@@ -55,7 +55,7 @@ const defaultSteps = [
   {
     round: "Round 1",
     label: "Install the CLI, once",
-    display: "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git",
+    display: INSTALL_COMMAND,
   },
   { round: "Round 2", label: `Apply ${ryu.name} to WezTerm. K.O.`, display: `sf2 apply wezterm --theme ${ryu.id}` },
 ];
@@ -68,7 +68,7 @@ const defaultSteps = [
   <div class="page">
     <h1 class="h1"><span class="hp" aria-hidden="true"># </span>Fight for your terminal.</h1>
     <p class="lede">36 Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code. Pick a fighter and this whole site wears the palette.</p>
-    <p class="meta">36 themes · 8 apps plus Slack · needs Python 3.11+ and uv</p>
+    <p class="meta">36 themes · 8 apps plus Slack · one binary for macOS and Linux</p>
 
     <section id="preview" aria-labelledby="preview-heading">
       <h2 class="h2" id="preview-heading">
@@ -111,7 +111,11 @@ const defaultSteps = [
                 <span data-step-label>{step.label}</span>
               </div>
               <div class="step__cmd">
-                <code><span class="dim">$ </span><span data-step-cmd>{step.display}</span></code>
+                <code><span class="dim">$ </span><span data-step-cmd>{step.display.split(/(?<!\|) /).map((word, i) => (
+                  <Fragment>{i > 0 ? " " : ""}<span class="step__word">{word.split(/(?<=\/)(?!\/)/).map((part, j) => (
+                    <Fragment>{j > 0 && <wbr />}{part}</Fragment>
+                  ))}</span></Fragment>
+                ))}</span></code>
                 <button type="button" data-step-copy>copy</button>
               </div>
             </div>
@@ -269,10 +273,16 @@ const defaultSteps = [
   .step__cmd code {
     flex: 1;
     min-width: 0;
-    overflow-x: auto;
     font: inherit;
     font-size: 13px;
-    white-space: nowrap;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  /* Each word wraps as a unit, so a long URL moves to its own line instead of breaking at a hyphen; it breaks inside, after a slash, only when it is wider than the row. */
+  .step__word {
+    display: inline-block;
+    max-width: 100%;
   }
 
   .step__cmd button {

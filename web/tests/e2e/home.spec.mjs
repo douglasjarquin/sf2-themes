@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
 
+const INSTALL_COMMAND =
+  "curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh";
+
 const noOverflow = () =>
   document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1;
 
@@ -11,12 +14,16 @@ test("home renders the hero, live preview, install steps, and ports", async ({ p
     page.getByRole("heading", { level: 1, name: "Fight for your terminal." }),
   ).toBeVisible();
   await expect(page.locator(".meta")).toContainText("36 themes · 8 apps plus Slack");
+  await expect(page.locator(".meta")).toContainText("one binary for macOS and Linux");
+  await expect(page.locator(".meta")).not.toContainText(/python|\buv\b/i);
 
   await expect(page.locator("#preview [data-t='fileId']").first()).toHaveText("sf2-ryu");
   await expect(page.locator("[data-pane]")).toHaveCount(7);
   await expect(page.locator("[data-tab]")).toHaveCount(7);
 
   await expect(page.locator("[data-step]")).toHaveCount(2);
+  await expect(page.locator("[data-step-cmd]").first()).toHaveText(INSTALL_COMMAND);
+  await expect(page.locator("#install")).not.toContainText(/python|\buv\b|uvx/i);
   await expect(page.locator("[data-port-id]")).toHaveCount(7);
   await expect(page.locator(".port-row")).toHaveCount(7);
 });
@@ -78,15 +85,19 @@ test("step copy buttons send the install and apply payloads", async ({
   await expect(firstCopy).toHaveText("copied");
   await expect
     .poll(() => page.evaluate(() => window.__copied))
-    .toBe(
-      "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git",
-    );
+    .toBe(INSTALL_COMMAND);
 
   const applyCopy = page.locator("[data-step]").nth(1).locator("[data-step-copy]");
   await applyCopy.click();
   await expect
     .poll(() => page.evaluate(() => window.__copied))
-    .toContain("sf2 apply wezterm --theme ryu");
+    .toBe("sf2 apply wezterm --theme ryu");
+
+  await page.locator('[data-port-id="nvim"]').click();
+  await applyCopy.click();
+  await expect
+    .poll(() => page.evaluate(() => window.__copied))
+    .toBe("sf2 apply nvim --theme ryu");
 });
 
 test("copy buttons are hidden when the clipboard API is unavailable", async ({ page }) => {
@@ -107,9 +118,7 @@ test("the home page remains useful without client JavaScript", async ({ browser 
   await expect(
     page.getByRole("heading", { level: 1, name: "Fight for your terminal." }),
   ).toBeVisible();
-  await expect(page.locator("[data-step-cmd]").first()).toHaveText(
-    "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git",
-  );
+  await expect(page.locator("[data-step-cmd]").first()).toHaveText(INSTALL_COMMAND);
   await expect(page.locator(".port-row")).toHaveCount(7);
   await expect(page.locator('[data-pane="shell"]')).toBeVisible();
   await context.close();

@@ -9,7 +9,6 @@ seed_if_empty() {
 }
 
 seed_if_empty /workspace/sf2-themes/web/node_modules /opt/sf2-themes/manifests/web/node_modules
-seed_if_empty /workspace/sf2-themes/.venv /opt/sf2-themes/manifests/.venv
 
 cd /workspace/sf2-themes
 exec "$@"

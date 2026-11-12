@@ -1,0 +1,7 @@
+step install codex --config-dir {SANDBOX}/config/codex
+exit 2
+stdout
+stderr
+| sf2-themes: error: argument COMMAND: invalid choice: 'install' (choose from 'apps', 'themes', 'show', 'validate', 'setup', 'apply', 'current')
+tree
+dir 0755 home

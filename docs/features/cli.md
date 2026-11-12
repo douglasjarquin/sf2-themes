@@ -1,24 +1,25 @@
 # sf2-themes CLI and app adapters
 
-`src/sf2_theme/` implements the `sf2` Python CLI (also installed as `sf2-themes`; commands: `apps`, `themes`, `show`, `validate`, `current`, `setup`, `apply`, `install`) and the seven app adapters: WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, and Lazygit.
-The committed root `sf2-themes` executable is a generated standalone build of the same package, with freshness enforced by `mise run standalone-freshness` over `mise-tasks/build-standalone`.
+`cmd/sf2-themes` builds the `sf2-themes` binary (linked as `sf2` by the installer; commands: `apps`, `themes`, `show`, `validate`, `current`, `setup`, `apply`) over `internal/cli` and the app adapters under `internal/adapters/`: WezTerm, Herdr, Herdr app, Neovim, Codex, Claude Code, Starship, Lazygit, and Slack.
+`themes/embed.go` embeds the catalog, so one static binary per platform is the whole product; releases publish it for macOS and Linux on arm64 and amd64.
 
 ## Entry points
 
-- `sf2 <command>` or `sf2-themes <command>` from a uv tool install; from a checkout via `uv run sf2-themes`, the `scripts/sf2` alias, or the committed standalone.
-- `mise run test` for pytest under `tests/` plus the copied-standalone harness in `mise-tasks/test-cli`.
+- `sf2 <command>` or `sf2-themes <command>` from the binary `install.sh` puts in `~/.local/bin`; from a checkout via `mise run apply -- …`, `mise run setup -- …`, or `go run ./cmd/sf2-themes …`.
+- `mise run test` for the Go unit tests, the parity goldens and parser corpus in `internal/parity`, and the repository contract tests in `internal/repometa`.
 
 ## Scenarios
 
 | ID | Scenario | Driver | Evidence |
 | --- | --- | --- | --- |
-| `cli.entry-points` | `pyproject.toml` installs both `sf2` and `sf2-themes` console scripts onto `sf2_theme.cli:main`, and `install` remains a working deprecated alias for `apply` | automated: `mise run test` runs `tests/test_cli.py` (`test_sf2_entry_point_declared`, `test_install_warns_and_applies`, per-command `--help` coverage) | aggregate run record |
-| `cli.commands` | `apps`, `themes`, `show`, `validate`, `current`, and boss aliases behave per `docs/sf2-themes/commands.md`; per-command `--help` documents real flags | automated: `mise run test` runs `tests/test_catalog.py` and the command coverage in `tests/` | aggregate run record |
-| `cli.adapters` | `apply` is one complete idempotent step (assets + integration + selection) for all seven apps; ownership of each app's theme setting decides one outcome per class (a foreign theme refuses `apply` unless `--adopt`, plain `setup` keeps it), and a refusal writes nothing; `setup` repairs without reselecting and reports what it kept; all writes preserve unrelated config, refuse symlinks, and back up before overwriting | automated: `mise run test` runs the adapter suites in `tests/` (e.g. `tests/test_ownership.py`, `tests/test_plan.py`, `tests/test_wezterm.py`, `tests/test_cli.py`) | aggregate run record |
-| `cli.standalone` | The committed standalone embeds the current `src/` and `themes/` and passes the copied-CLI shell harness | automated: `mise run standalone-freshness` inside `mise run verify` plus `mise-tasks/test-cli` inside `mise run test` | aggregate run record |
+| `cli.entry-points` | One binary answers as both `sf2-themes` and `sf2`, `--version` prints the bare stamped release version, and the removed `install` command is a usage error | automated: `mise run test` runs `cmd/sf2-themes/main_test.go` (`TestVersionPrintsStampedVersionOnly`) and `internal/parity/install_test.go` (`TestInstallerInstallsAndLinksSf2`), plus the parity cases for `install` | aggregate run record |
+| `cli.commands` | `apps`, `themes`, `show`, `validate`, `current`, and boss aliases behave per `docs/sf2-themes/commands.md`; per-command `--help` documents real flags and never depends on terminal width | automated: `mise run test` runs `internal/cli/cli_test.go`, `internal/cli/args_test.go`, `internal/catalog`, and the parity goldens | aggregate run record |
+| `cli.adapters` | `apply` is one complete idempotent step (assets + integration + selection) for every app; ownership of each app's theme setting decides one outcome per class (a foreign theme refuses `apply` unless `--adopt`, plain `setup` keeps it), and a refusal writes nothing; `setup` repairs without reselecting and reports what it kept; all writes preserve unrelated config, refuse symlinks, and back up before overwriting | automated: `mise run test` runs the adapter suites under `internal/adapters/`, `internal/plan`, `internal/fsys`, `internal/cli/mutate_test.go`, and the parity goldens in `internal/parity` | aggregate run record |
+| `cli.standalone` | A copied binary with no sibling files lists and applies all 36 themes, and the release build installs through `install.sh` into a clean machine, verifies its checksum, and applies a theme | automated: `TestBinaryCarriesTheCatalog` and the `TestInstaller*` cases inside `mise run test`, plus the release rehearsal job in `.github/workflows/verify.yml` (`scripts/ci/build-release.sh` and `scripts/ci/rehearse-install.sh` in `debian:bookworm-slim` and on macOS) | aggregate run record and CI job |
 | `cli.apply-real` | `apply` against a real WezTerm/Neovim/etc. config produces working theme activation | manual: `mise run apply -- <app> --theme <id>` against a throwaway HOME, then open the app | operator confirmation |
 
 ## Gotchas and manual gaps
 
 - Unit tests use synthetic config trees; real app quirks (WezTerm reload timing, Herdr server reload, Starship sourcing order) are only proven manually.
-- The standalone freshness check fails the aggregate whenever `src/` or `themes/` changed without a regenerated binary.
+- The parity goldens pin CLI output and written files; re-record them with `mise run parity:record` only for an intended behavior change, and treat a golden diff in review as one.
+- A published release is proven only by installing it; the rehearsal job proves the build, not the GitHub Release upload.

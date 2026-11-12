@@ -23,11 +23,12 @@ That file is the source of truth for local and CI verification. Path-selected Gi
 
 ## Repo conventions
 
-- Python 3.11 CLI package under `src/sf2_theme/`. Public command is `sf2-themes`.
-- Tool versions and developer commands live in `mise.toml` (Python 3.11, Node 24, uv, aube). Prefer `mise run …` over ad-hoc tool invocations.
+- Go CLI: the `sf2-themes` binary is built from `cmd/sf2-themes` over the packages in `internal/`, and the installer links `sf2` to it. Maintainer generators live in `cmd/sf2-dev`.
+- Tool versions and developer commands live in `mise.toml` (Go 1.27, golangci-lint 2.15, Node 24, aube, shellcheck). Prefer `mise run …` over ad-hoc tool invocations.
 - Theme catalog lives in `themes/` (36 TOML entries). Catalog ids stay short (`ryu`, `ken-light`); installed adapter identities use `sf2-<catalog-id>`.
-- Adapters live in `src/sf2_theme/adapters/` (WezTerm, Herdr, Neovim, Codex, Claude Code, Starship, Lazygit, and related helpers). Preserve unrelated user config when mutating files.
-- Do not hand-edit the generated root `sf2-themes` executable; regenerate it with the mise standalone build task when needed.
+- Adapters live in `internal/adapters/<app>/` (WezTerm, Herdr, Herdr app, Neovim, Codex, Claude Code, Starship, Lazygit, and Slack). Preserve unrelated user config when mutating files.
+- The parity goldens in `internal/parity/testdata/` pin CLI output and written files. Re-record them with `mise run parity:record` only for an intended behavior change, and call that change out in the PR.
+- Releases are cut by the owner pushing a `v<semver>` tag on `main`; contributors do not push tags.
 - The Astro site lives in `web/` with static output and the `/sf2-themes` Pages base. Use `mise run web:install`, `web:check`, `web:build`, and `web:test` for site work.
 - Broader project guidance for agents and maintainers lives in [AGENTS.md](AGENTS.md).
 

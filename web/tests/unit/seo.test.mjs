@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   INDEXABLE_PATHS,
+  DOWNLOAD_URL,
+  INSTALL_COMMAND,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
   PRODUCT_OPERATING_SYSTEM,
@@ -57,11 +59,13 @@ test("sitemap.xml lists every indexable trailing-slash URL", () => {
   );
 });
 
-test("llms.txt names the CLI, catalog size, live site, and repository", () => {
+test("llms.txt names the CLI, install command, catalog size, live site, and repository", () => {
   const committed = readFileSync(path.join(publicDirectory, "llms.txt"), "utf8");
   assert.equal(committed, llmsTxt());
   assert.match(committed, /^# sf2-themes\n/);
-  assert.match(committed, /Python 3\.11 CLI named `sf2-themes`/);
+  assert.match(committed, /single-binary CLI named `sf2-themes`, also linked as `sf2`/);
+  assert.ok(committed.includes(`\`\`\`\n${INSTALL_COMMAND}\n\`\`\``));
+  assert.doesNotMatch(committed, /uvx|uv tool install|Python/);
   assert.match(committed, /36-theme TOML catalog/);
   assert.match(committed, /Live site: https:\/\/douglasjarquin\.github\.io\/sf2-themes\//);
   assert.match(committed, /Repository: https:\/\/github\.com\/douglasjarquin\/sf2-themes/);
@@ -88,7 +92,16 @@ test("JSON-LD describes the visible site and software without ratings or offers"
   assert.equal("downloadUrl" in website, false);
   assert.equal("codeRepository" in website, false);
   assert.equal(software.operatingSystem, PRODUCT_OPERATING_SYSTEM);
-  assert.equal(software.downloadUrl, REPOSITORY_URL);
+  assert.equal(software.downloadUrl, DOWNLOAD_URL);
   assert.equal(software.codeRepository, REPOSITORY_URL);
   assert.doesNotMatch(serialized, /aggregateRating|offers|"ratingValue"/);
+});
+
+test("the install command pipes the latest release's installer into sh", () => {
+  assert.equal(
+    INSTALL_COMMAND,
+    "curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh",
+  );
+  assert.equal(DOWNLOAD_URL, "https://github.com/douglasjarquin/sf2-themes/releases/latest");
+  assert.equal(PRODUCT_OPERATING_SYSTEM, "Linux, macOS");
 });

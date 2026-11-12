@@ -2,16 +2,18 @@
 
 > Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
 
-sf2-themes is a Python 3.11 CLI named `sf2-themes`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
+sf2-themes is a single-binary CLI named `sf2-themes`, also linked as `sf2`, for macOS and Linux on arm64 and amd64. It has no runtime dependencies. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
 
 Live site: https://douglasjarquin.github.io/sf2-themes/
 Repository: https://github.com/douglasjarquin/sf2-themes
 
-Run the CLI from GitHub with uv:
+Install the latest release into ~/.local/bin:
 
 ```
-uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version
+curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh
 ```
+
+Pin a release by piping into `SF2_THEMES_VERSION=2.0.0 sh` instead. If a 1.x copy installed with uv is present, run `uv tool uninstall sf2-themes` first.
 
 Catalog ids stay short (`ryu`, `ken-light`). Installed identities use `sf2-<catalog-id>`.
 

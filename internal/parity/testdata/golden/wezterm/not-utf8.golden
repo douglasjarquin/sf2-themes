@@ -1,0 +1,10 @@
+step apply wezterm --config-dir {SANDBOX}/config/wezterm
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/wezterm/wezterm.lua: not valid UTF-8
+tree
+dir 0755 config
+dir 0755 config/wezterm
+file 0644 b8deeed7ba984955 config/wezterm/wezterm.lua
+dir 0755 home

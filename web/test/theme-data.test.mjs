@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, cp, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import test from "node:test";
+import test, { after, before } from "node:test";
 
 import {
   characterVariants,
@@ -16,7 +16,6 @@ import {
 
 const execFileAsync = promisify(execFile);
 const projectRoot = path.resolve("..");
-const generatorPath = path.join(projectRoot, "mise-tasks", "generate-web-theme-data");
 const sourceRoot = path.join(projectRoot, "themes");
 const committedArtifactPath = path.join(
   projectRoot,
@@ -41,6 +40,22 @@ const CANONICAL_UI_FIELDS = [
   "selection_foreground",
 ];
 
+// The Go maintainer CLI is built once, so each case runs the generator without recompiling.
+let generatorPath;
+let generatorRoot;
+
+before(async () => {
+  generatorRoot = await mkdtemp(path.join(tmpdir(), "sf2-dev-"));
+  generatorPath = path.join(generatorRoot, "sf2-dev");
+  await execFileAsync("go", ["build", "-o", generatorPath, "./cmd/sf2-dev"], { cwd: projectRoot });
+});
+
+after(() => rm(generatorRoot, { recursive: true, force: true }));
+
+function runGenerator(source, output) {
+  return execFileAsync(generatorPath, ["web-data", "--source", source, "--output", output]);
+}
+
 async function catalogFixture(t) {
   const root = await mkdtemp(path.join(tmpdir(), "sf2-canonical-theme-data-"));
   await cp(sourceRoot, root, { recursive: true });
@@ -52,7 +67,7 @@ async function generatedArtifact(t, source = sourceRoot) {
   const root = await mkdtemp(path.join(tmpdir(), "sf2-generated-theme-data-"));
   const output = path.join(root, "theme-data.json");
   t.after(() => rm(root, { recursive: true, force: true }));
-  await execFileAsync("python3", [generatorPath, "--source", source, "--output", output]);
+  await runGenerator(source, output);
   return output;
 }
 
@@ -62,19 +77,14 @@ async function assertGeneratorRejects(t, mutate, expected) {
   const source = await readFile(mainPath, "utf8");
   await writeFile(mainPath, mutate(source));
 
-  await assert.rejects(
-    execFileAsync("python3", [
-      generatorPath,
-      "--source",
-      fixtureRoot,
-      "--output",
-      path.join(fixtureRoot, "generated.json"),
-    ]),
-    (error) => {
-      assert.match(error.stderr, expected);
-      return true;
-    },
-  );
+  const output = path.join(fixtureRoot, "generated.json");
+
+  await assert.rejects(runGenerator(fixtureRoot, output), (error) => {
+    assert.equal(error.code, 1);
+    assert.match(error.stderr, expected);
+    return true;
+  });
+  await assert.rejects(access(output), { code: "ENOENT" });
 }
 
 test("exports current cards, featured characters, and all designer fields", () => {
@@ -163,11 +173,12 @@ test("rejects an unknown top-level key before browser generation", async (t) => 
 });
 
 test("rejects malformed TOML before browser generation", async (t) => {
-  // Given/When/Then: malformed source cannot produce browser data.
+  // Given/When/Then: malformed source cannot produce browser data. The decoder's message
+  // wording is not part of the contract, only that it fails with one error line.
   await assertGeneratorRejects(
     t,
     () => "[ui\nbackground = '#101a3a'",
-    /Expected '\]' at the end of a table declaration/,
+    /^.+\n$/,
   );
 });
 

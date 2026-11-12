@@ -1,8 +1,9 @@
-// Package parity holds the case table, normalizer, and golden store that prove the Go
-// sf2-themes binary prints and writes exactly what the Python reference does.
+// Package parity holds the case table, normalizer, and golden store that pin what the
+// sf2-themes binary prints and writes.
 //
-// The harness itself lives in the package tests. Goldens are recorded from the
-// committed Python standalone and replayed against whichever binary is under test.
+// The harness itself lives in the package tests. The goldens were first recorded from the
+// 1.x CLI, so they hold the binary to the files and output that release produced; they are
+// re-recorded from the binary built from the checkout only for an intended behavior change.
 package parity
 
 import (
@@ -42,7 +43,7 @@ const (
 	Stderr Stream = "stderr"
 )
 
-// Mask exempts output the Go binary is allowed to print differently.
+// Mask exempts output a golden does not pin.
 //
 // A tail mask replaces the text after the first occurrence of After on each line of
 // Stream that contains it; the text up to and including After is still compared, so
@@ -60,24 +61,24 @@ type Mask struct {
 // depend on terminal width. The exit code and stderr are still compared.
 func HelpText() Mask { return Mask{Stream: Stdout, Whole: true} }
 
-// UsageError drops the usage text from stderr of a usage error, because it is rewritten in
-// Go, and still compares the `<prog>: error: <message>` line, the exit code, which must stay
-// 2, and stdout.
+// UsageError drops the usage text from stderr of a usage error, which goldens do not pin, and
+// still compares the `<prog>: error: <message>` line, the exit code, which must stay 2, and
+// stdout.
 func UsageError() Mask { return Mask{Stream: Stderr, ErrorLine: true} }
 
-// VersionLine masks the version line: the Go binary prints its own release version.
+// VersionLine masks the version line, which changes with every release.
 func VersionLine() Mask { return Mask{Stream: Stdout} }
 
 // Tail masks stderr text after a decode or operating-system error's fixed prefix,
 // which ends with after.
 func Tail(after string) Mask { return Mask{Stream: Stderr, After: after} }
 
-// Markers that end the fixed prefix of a reference error whose tail may differ.
+// Markers that end the fixed prefix of an error whose tail a golden does not pin.
 const (
 	tomlTail = " is not valid TOML: "
 	jsonTail = " is not valid JSON: "
 	// errorTail ends the prefix of an operating-system error, or of a TOML decode
-	// error the reference reports with no prefix of its own.
+	// error reported with no prefix of its own.
 	errorTail = "error: "
 )
 
@@ -96,16 +97,6 @@ type File struct {
 	Link    string
 }
 
-// GoExpectation is what the Go binary must do where the reference behaves differently
-// on purpose. Such a case has no golden: it never runs against the reference.
-// Its stderr must never hold a Go panic.
-type GoExpectation struct {
-	Exit         int
-	StderrPrefix string
-	// UsageError requires a `sf2-themes[ <command>]: error: <message>` line in stderr.
-	UsageError bool
-}
-
 // Case is one sandboxed scenario.
 type Case struct {
 	Name   string
@@ -122,8 +113,6 @@ type Case struct {
 	NoChanges bool
 	// GuardRealHome checks that the real home directory of the test process is untouched.
 	GuardRealHome bool
-	// GoOnly holds the Go binary's expectation where the reference has none to record.
-	GoOnly *GoExpectation
 }
 
 func step(args ...string) Step { return Step{Args: args} }
@@ -156,7 +145,7 @@ func Cases() []Case {
 	cases = append(cases, gateCases()...)
 	cases = append(cases, scenarioCases()...)
 	cases = append(cases, locationCases()...)
-	cases = append(cases, goOnlyCases()...)
+	cases = append(cases, departureCases()...)
 	cases = append(cases, everyThemeCases()...)
 	return cases
 }
@@ -417,7 +406,7 @@ func gateApps() []gateApp {
 }
 
 // gateCases crosses each file-writing app with its ownership states and the gate's commands,
-// and adds the managed-state source, the no-changes check over a reference-written tree,
+// and adds the managed-state source, the no-changes check over a tree the CLI wrote,
 // and the symlink policy per app.
 func gateCases() []Case {
 	commands := map[string]gateCommand{}
@@ -430,7 +419,7 @@ func gateCases() []Case {
 		source := app.name + "/managed-source"
 		cases = append(cases,
 			Case{Name: source, Groups: groups, Steps: []Step{cmd("apply", app.name, "--theme", "ryu")}},
-			// A tree the reference wrote, applied again with the same arguments.
+			// A tree the CLI wrote, applied again with the same arguments.
 			Case{Name: app.name + "/managed/apply-same", Groups: groups, SeedFrom: source, NoChanges: true,
 				Steps: []Step{cmd("apply", app.name, "--theme", "ryu")}},
 		)
@@ -490,7 +479,7 @@ var fileApps = []struct {
 	{"codex", GroupCodex}, {"starship", GroupStarship}, {"lazygit", GroupLazygit}, {"claude", GroupClaude},
 }
 
-// scenarioCases carries over the multi-step black-box scenarios from the Python tests and the
+// scenarioCases carries over the multi-step black-box scenarios from the 1.x CLI tests and the
 // copied-CLI shell test.
 func scenarioCases() []Case {
 	var cases []Case
@@ -619,16 +608,15 @@ func locationCases() []Case {
 	}
 }
 
-// goOnlyCases hold where the Go binary departs from the reference on purpose: removed
-// commands and flags, exact flag names, and an error line instead of a traceback for a
-// config file that is not valid UTF-8.
-func goOnlyCases() []Case {
-	usage := &GoExpectation{Exit: 2, UsageError: true}
-	notUTF8 := &GoExpectation{Exit: 1, StderrPrefix: "error: "}
+// departureCases hold where 2.0 departs from the 1.x CLI on purpose: removed commands and
+// flags, exact flag names, and an error line instead of a traceback for a config file that
+// is not valid UTF-8.
+func departureCases() []Case {
+	cli := []Group{GroupCLI}
 	cases := []Case{
-		{Name: "cli/install-is-gone", Groups: []Group{GroupCLI}, GoOnly: usage, Steps: []Step{cmd("install", "codex")}},
-		{Name: "cli/current-theme-is-gone", Groups: []Group{GroupCLI}, GoOnly: usage, Steps: []Step{cmd("current", "codex", "--theme", "ryu")}},
-		{Name: "cli/flag-abbreviation-is-rejected", Groups: []Group{GroupCLI}, GoOnly: usage, Steps: []Step{cmd("apply", "codex", "--dry")}},
+		{Name: "cli/install-is-gone", Groups: cli, Steps: []Step{cmd("install", "codex").masked(UsageError())}},
+		{Name: "cli/current-theme-is-gone", Groups: cli, Steps: []Step{cmd("current", "codex", "--theme", "ryu").masked(UsageError())}},
+		{Name: "cli/flag-abbreviation-is-rejected", Groups: cli, Steps: []Step{cmd("apply", "codex", "--dry").masked(UsageError())}},
 	}
 	for _, app := range gateApps() {
 		if app.file == "" {
@@ -637,7 +625,6 @@ func goOnlyCases() []Case {
 		cases = append(cases, Case{
 			Name:   app.name + "/not-utf8",
 			Groups: []Group{app.group},
-			GoOnly: notUTF8,
 			Seed:   []File{seed(app.name, app.file, "\xff\xfe theme\n")},
 			Steps:  []Step{cmd("apply", app.name)},
 		})

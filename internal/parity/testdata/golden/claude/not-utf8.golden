@@ -1,0 +1,10 @@
+step apply claude --config-dir {SANDBOX}/config/claude
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/claude/settings.json: not valid UTF-8
+tree
+dir 0755 config
+dir 0755 config/claude
+file 0644 b8deeed7ba984955 config/claude/settings.json
+dir 0755 home

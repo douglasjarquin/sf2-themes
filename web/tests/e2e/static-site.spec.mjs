@@ -56,8 +56,8 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
   ]);
   expect(JSON.stringify(jsonLd)).not.toMatch(/aggregateRating|"offers"|ratingValue/);
   const software = jsonLd["@graph"].find((node) => node["@type"] === "SoftwareApplication");
-  expect(software.operatingSystem).toBe("Linux, macOS, Windows");
-  expect(software.downloadUrl).toBe("https://github.com/douglasjarquin/sf2-themes");
+  expect(software.operatingSystem).toBe("Linux, macOS");
+  expect(software.downloadUrl).toBe("https://github.com/douglasjarquin/sf2-themes/releases/latest");
   expect(software.codeRepository).toBe("https://github.com/douglasjarquin/sf2-themes");
 });
 
@@ -78,7 +78,11 @@ test("llms.txt summarizes the CLI, catalog, live site, and repository", async ({
   const body = await response.text();
 
   expect(response.ok()).toBe(true);
-  expect(body).toContain("sf2-themes is a Python 3.11 CLI named `sf2-themes`");
+  expect(body).toContain("sf2-themes is a single-binary CLI named `sf2-themes`");
+  expect(body).toContain(
+    "curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh",
+  );
+  expect(body).not.toContain("uvx");
   expect(body).toContain("36-theme TOML catalog");
   expect(body).toContain("Live site: https://douglasjarquin.github.io/sf2-themes/");
   expect(body).toContain("Repository: https://github.com/douglasjarquin/sf2-themes");

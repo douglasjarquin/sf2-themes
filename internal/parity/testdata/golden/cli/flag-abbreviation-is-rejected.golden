@@ -1,0 +1,7 @@
+step apply codex --dry --config-dir {SANDBOX}/config/codex
+exit 2
+stdout
+stderr
+| sf2-themes: error: unrecognized arguments: --dry
+tree
+dir 0755 home

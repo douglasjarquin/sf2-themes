@@ -59,7 +59,7 @@ RUN if ! id -u dev >/dev/null 2>&1; then useradd -m -s /bin/bash dev; fi && \
 RUN mkdir -p /opt/sf2-themes/manifests/web && \
     chown -R dev:dev /opt/sf2-themes
 WORKDIR /opt/sf2-themes/manifests
-COPY --chown=dev:dev pyproject.toml uv.lock ./
+COPY --chown=dev:dev go.mod go.sum ./
 COPY --chown=dev:dev web/package.json web/aube-lock.yaml web/.npmrc ./web/
 
 # aube (xx::fslock) writes /tmp/fslock/<hash>. Root `mise install` in this
@@ -68,7 +68,7 @@ COPY --chown=dev:dev web/package.json web/aube-lock.yaml web/.npmrc ./web/
 RUN mkdir -p /tmp/fslock && chmod 1777 /tmp/fslock
 
 USER dev
-RUN mise exec -- uv sync --all-extras --no-install-project && \
+RUN mise exec -- go mod download && \
     cd web && mise exec -- aube ci
 
 USER root

@@ -1,0 +1,7 @@
+step current codex --theme ryu --config-dir {SANDBOX}/config/codex
+exit 2
+stdout
+stderr
+| sf2-themes: error: unrecognized arguments: --theme ryu
+tree
+dir 0755 home

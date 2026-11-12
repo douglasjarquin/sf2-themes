@@ -1,6 +1,6 @@
 # Street Fighter II Theme Pack
 
-A standard-library Python CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/) TUI and desktop app, Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit), and prints a Slack custom-theme paste string.
+A single-binary CLI that installs Street Fighter II color themes into [WezTerm](https://wezterm.org/), [Herdr](https://herdr.dev/) TUI and desktop app, Neovim, [Codex](https://github.com/openai/codex), [Claude Code](https://claude.com/claude-code), [Starship](https://starship.rs/), and [Lazygit](https://github.com/jesseduffield/lazygit), and prints a Slack custom-theme paste string.
 
 ## What it is
 
@@ -8,7 +8,7 @@ The pack contains **36 fully resolved themes**: a dark and light variant for the
 
 Unofficial fan project. Street Fighter and related names are trademarks of Capcom. This project is not affiliated with or endorsed by Capcom.
 
-Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
+Catalog ids, light variants, and the embedded catalog are in [docs/sf2-themes/design.md](docs/sf2-themes/design.md).
 
 ## Features
 
@@ -22,25 +22,26 @@ Catalog ids, light variants, and the generated embed are in [docs/sf2-themes/des
 
 * **File writes.** Managed paths, marked blocks, symlink refusal, and timestamped backups. Paths and overrides are in [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md).
 
-* **GitHub or a checkout.** uv installs the CLI, runs it one-shot, or launches it from a checkout. All three are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
+* **One binary, no runtime.** A one-line installer downloads the release binary for macOS or Linux, checks it against the published checksums, and links `sf2` to it. Version pins, verification, and upgrading from 1.x are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
 
 ## Quick Start
 
 ### Requirements
 
-The command requires uv and Python 3.11 or newer.
-
-`./sf2-themes` needs Python 3.11 on `PATH`. You do not need a checkout or a globally installed binary.
+macOS or Linux on arm64 or amd64, with `curl` or `wget`.
+The binary needs no Python, uv, or other runtime.
 
 The mise toolchain and the Astro site are in [docs/sf2-themes/development.md](docs/sf2-themes/development.md).
 
 ### Install
 
 ```sh
-uv tool install git+https://github.com/douglasjarquin/sf2-themes.git
+curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh
 ```
 
-That installs the `sf2` command (also available as `sf2-themes`) once, from GitHub. One-shot and checkout launchers are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
+That installs `sf2-themes` into `~/.local/bin` and links `sf2` to it.
+If you installed 1.x with uv, run `uv tool uninstall sf2-themes` first.
+Version pins, another install directory, and checking where the binary was built are in [docs/sf2-themes/install.md](docs/sf2-themes/install.md).
 
 ### First run
 
@@ -50,7 +51,7 @@ sf2 apply wezterm --theme ryu
 
 `apply` prepares the theme assets, installs or repairs the app's integration, and selects the theme (default: `main`) in one idempotent step. Repeating it reports `no changes`.
 
-From a checkout, use `mise run apply -- …` or `scripts/sf2 …` in place of `sf2 …`. The other apps are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
+From a checkout, use `mise run apply -- …` in place of `sf2 apply …`. The other apps are in [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md).
 
 ## How it works
 
@@ -80,31 +81,29 @@ Paths, overrides, and removal are in [docs/sf2-themes/file-writes.md](docs/sf2-t
 
 ## Documentation
 
-* [docs/sf2-themes/install.md](docs/sf2-themes/install.md) — uv, a uv tool install, and a checkout.
+* [docs/sf2-themes/install.md](docs/sf2-themes/install.md) - the installer, version pins, verification, and upgrading from 1.x.
 
-* [docs/sf2-themes/development.md](docs/sf2-themes/development.md) — mise pins and the Astro site.
+* [docs/sf2-themes/development.md](docs/sf2-themes/development.md) - mise pins and the Astro site.
 
-* [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md) — setup, apply, and each app.
+* [docs/sf2-themes/setup-and-apply.md](docs/sf2-themes/setup-and-apply.md) - setup, apply, and each app.
 
-* [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md) — `apps`, `themes`, `show`, `validate`, `current`, and boss aliases.
+* [docs/sf2-themes/commands.md](docs/sf2-themes/commands.md) - `apps`, `themes`, `show`, `validate`, `current`, and boss aliases.
 
-* [docs/sf2-themes/development.md](docs/sf2-themes/development.md) — the Astro site and its tooling.
+* [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md) - paths, overrides, symlinks, and backups.
 
-* [docs/sf2-themes/file-writes.md](docs/sf2-themes/file-writes.md) — paths, overrides, symlinks, and backups.
+* [docs/sf2-themes/uninstall.md](docs/sf2-themes/uninstall.md) - files and settings to remove.
 
-* [docs/sf2-themes/uninstall.md](docs/sf2-themes/uninstall.md) — files and settings to remove.
+* [docs/sf2-themes/design.md](docs/sf2-themes/design.md) - catalog ids and the embedded catalog.
 
-* [docs/sf2-themes/design.md](docs/sf2-themes/design.md) — catalog ids and the generated embed.
+* [docs/theme-guidelines.md](docs/theme-guidelines.md) - theme guidelines.
 
-* [docs/theme-guidelines.md](docs/theme-guidelines.md) — theme guidelines.
+* [docs/roster.md](docs/roster.md) - arcade roster.
 
-* [docs/roster.md](docs/roster.md) — arcade roster.
+* [docs/previews/](docs/previews/) - theme previews.
 
-* [docs/previews/](docs/previews/) — theme previews.
+* [themes/](themes/) - theme data.
 
-* [themes/](themes/) — theme data.
-
-* [web/AGENTS.md](web/AGENTS.md) — portless setup for the local site.
+* [web/AGENTS.md](web/AGENTS.md) - portless setup for the local site.
 
 ## Contributing
 
