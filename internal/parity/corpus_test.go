@@ -113,7 +113,7 @@ func corpusMismatches(format string, verdicts map[string]bool, divergences map[s
 		_, listed := divergences[input]
 		switch got := reader(data); {
 		case got != accepted && !listed:
-			mismatches = append(mismatches, fmt.Sprintf("%s: reference accepts=%v, Go accepts=%v", input, accepted, got))
+			mismatches = append(mismatches, fmt.Sprintf("%s: recorded verdict accepts=%v, Go accepts=%v", input, accepted, got))
 		case got == accepted && listed:
 			mismatches = append(mismatches, fmt.Sprintf("%s: listed as a divergence, but the Go reader agrees; remove it from the list", input))
 		}
@@ -195,7 +195,7 @@ func TestCorpusFlagsAFlippedVerdict(t *testing.T) {
 	}
 	got, err := corpusMismatches("toml", verdicts, nil, flipped, read)
 	must(t, err)
-	if want := []string{"toml/b.toml: reference accepts=false, Go accepts=true"}; strings.Join(got, "\n") != strings.Join(want, "\n") {
+	if want := []string{"toml/b.toml: recorded verdict accepts=false, Go accepts=true"}; strings.Join(got, "\n") != strings.Join(want, "\n") {
 		t.Errorf("flipped verdict reported %v, want %v", got, want)
 	}
 	listed := map[string]string{"toml/b.toml": "a config that reads only under TOML 1.1"}

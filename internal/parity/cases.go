@@ -61,12 +61,12 @@ type Mask struct {
 // depend on terminal width. The exit code and stderr are still compared.
 func HelpText() Mask { return Mask{Stream: Stdout, Whole: true} }
 
-// UsageError drops the usage text from stderr of a usage error, because it is rewritten in
-// Go, and still compares the `<prog>: error: <message>` line, the exit code, which must stay
-// 2, and stdout.
+// UsageError drops the usage text from stderr of a usage error, which goldens do not pin, and
+// still compares the `<prog>: error: <message>` line, the exit code, which must stay 2, and
+// stdout.
 func UsageError() Mask { return Mask{Stream: Stderr, ErrorLine: true} }
 
-// VersionLine masks the version line: the Go binary prints its own release version.
+// VersionLine masks the version line, which changes with every release.
 func VersionLine() Mask { return Mask{Stream: Stdout} }
 
 // Tail masks stderr text after a decode or operating-system error's fixed prefix,
