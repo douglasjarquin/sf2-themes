@@ -44,8 +44,8 @@ Slack prints a paste string and does not install an `sf2-` identity.
 
 Every mutation command takes `--dry-run` to print the full plan without writing, `--verbose` to list every file operation, `--config-dir` to write under a different directory, `--follow-symlinks` to write through destination symlinks, and `--adopt` to replace a theme setting sf2-themes does not manage.
 
-Examples below assume a uv tool install; `sf2-themes` works in place of `sf2`.
-From a checkout, use `mise run apply -- …` or `scripts/sf2 …` in place of `sf2 …`.
+Examples below assume the installed binary; `sf2-themes` works in place of `sf2`.
+From a checkout, use `mise run apply -- …` or `mise run setup -- …` in place of `sf2 apply …` or `sf2 setup …`.
 
 ```sh
 sf2 apply wezterm

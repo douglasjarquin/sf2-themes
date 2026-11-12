@@ -7,7 +7,8 @@
 The runtime path is `catalog.DecodeTOML -> catalog.ParseTheme -> Theme -> catalog.Load -> cli/adapters`.
 A mutation command runs `inspect -> decide -> plan -> commit`: adapters inspect and plan, the CLI decides, and the commit step alone writes.
 `catalog.Parse`/`ParseFS` is the intentionally unvalidated discovery path used by validation and reporting; `catalog.Load`/`LoadFS` adds catalog uniqueness and all error-severity theme checks.
-The Python CLI at the parity reference is the behavior contract: the Go binary prints the same stdout, stderr, and exit codes and writes the same bytes, except where the plan lists an exception.
+The parity goldens in `parity/testdata/` are the behavior contract: they hold the stdout, stderr, exit codes, and written bytes for every command and app.
+They were first recorded from the 1.x Python CLI at commit `607a602`, and the Go binary matched them byte for byte apart from the documented 2.0.0 changes (rewritten help, the new version string, and the removed `install` command and `current --theme` flag).
 
 ## WHERE TO LOOK
 
@@ -24,7 +25,7 @@ The Python CLI at the parity reference is the behavior contract: the Go binary p
 | Mutating commands | `cli/mutate.go` | `setup`, `apply`, and `current`: the ownership gate, selection, refusal text, and summaries. |
 | App registry | `cli/apps.go`, `cli/app_<name>.go` | One registration file per adapter; `internal/adapters/AGENTS.md` holds the adapter contract. |
 | Python behaviors | `pycompat/` | Text reads, line splitting, whitespace, regex classes, paths, `repr`, JSON, and unified diffs as Python produces them. |
-| Parity proof | `parity/` | Goldens recorded from the Python reference and the TOML/JSON parser corpus. |
+| Parity proof | `parity/` | Goldens for every command and app, the TOML/JSON parser corpus, and the installer cases. |
 
 ## CONVENTIONS
 
@@ -55,8 +56,8 @@ The Python CLI at the parity reference is the behavior contract: the Go binary p
 
 ## VERIFICATION
 
-- Pair catalog, model, parser, or validator changes with `internal/catalog` tests whose expected values are recorded from the Python reference.
-- Pair argument or help changes with `internal/cli` tests; usage errors keep the reference's error line and exit status 2.
+- Pair catalog, model, parser, or validator changes with `internal/catalog` tests whose expected values come from the spec or the existing goldens, never from the code under test.
+- Pair argument or help changes with `internal/cli` tests; usage errors keep the argparse-style `error:` line in the goldens and exit status 2.
 - Pair TOML or JSON reader changes with the parser corpus in `internal/parity`.
-- Pair output or written-file changes with the parity goldens, and re-record them only from the Python reference.
+- Pair output or written-file changes with the parity goldens: re-record them from the Go binary with `mise run parity:record` only for an intended behavior change, and treat a golden diff in review as that behavior change.
 - Finish with `go test`, `go vet`, `gofmt`, and `golangci-lint` on the changed packages.

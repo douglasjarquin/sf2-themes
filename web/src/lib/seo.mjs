@@ -6,7 +6,10 @@ export const PRODUCT_NAME = "sf2-themes";
 export const PRODUCT_DESCRIPTION =
   "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.";
 export const REPOSITORY_URL = "https://github.com/douglasjarquin/sf2-themes";
-export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS, Windows";
+export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS";
+export const DOWNLOAD_URL = `${REPOSITORY_URL}/releases/latest`;
+export const INSTALL_COMMAND =
+  "curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh";
 
 export const INDEXABLE_PATHS = Object.freeze([
   SITE_BASE,
@@ -46,16 +49,18 @@ export function llmsTxt() {
 
 > ${PRODUCT_DESCRIPTION}
 
-sf2-themes is a Python 3.11 CLI named \`sf2-themes\`. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
+sf2-themes is a single-binary CLI named \`sf2-themes\`, also linked as \`sf2\`, for macOS and Linux on arm64 and amd64. It has no runtime dependencies. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
 
 Live site: ${liveUrl}
 Repository: ${REPOSITORY_URL}
 
-Run the CLI from GitHub with uv:
+Install the latest release into ~/.local/bin:
 
 \`\`\`
-uvx --from git+https://github.com/douglasjarquin/sf2-themes.git sf2-themes --version
+${INSTALL_COMMAND}
 \`\`\`
+
+Pin a release by piping into \`SF2_THEMES_VERSION=2.0.0 sh\` instead. If a 1.x copy installed with uv is present, run \`uv tool uninstall sf2-themes\` first.
 
 Catalog ids stay short (\`ryu\`, \`ken-light\`). Installed identities use \`sf2-<catalog-id>\`.
 
@@ -83,7 +88,7 @@ export function productJsonLd() {
         description: PRODUCT_DESCRIPTION,
         applicationCategory: "DeveloperApplication",
         operatingSystem: PRODUCT_OPERATING_SYSTEM,
-        downloadUrl: REPOSITORY_URL,
+        downloadUrl: DOWNLOAD_URL,
         codeRepository: REPOSITORY_URL,
       },
     ],

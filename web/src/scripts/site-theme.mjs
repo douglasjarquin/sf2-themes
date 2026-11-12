@@ -1,5 +1,4 @@
 const STORAGE_KEY = "sf2-site-theme";
-const INSTALL = "uv tool install git+https://github.com/douglasjarquin/sf2-themes.git";
 const root = document.documentElement;
 
 function readFamilies() {
@@ -160,32 +159,17 @@ if (families.length > 0) {
     return ramp ? v[ramp[1]][Number(ramp[2])] : null;
   }
 
-  function stepCommands() {
-    const p = port;
-    const name = portButtons.find((b) => b.dataset.portId === p)?.dataset.portName ?? p;
-    return [
-      { label: "Install the CLI, once", display: INSTALL, cmd: INSTALL },
-      {
-        label: `Apply ${displayName()} to ${name}. K.O.`,
-        display: `sf2 apply ${p} --theme ${catalogId()}`,
-        cmd: `sf2 apply ${p} --theme ${catalogId()}`,
-      },
-    ];
-  }
-
+  // The install step is static markup; only the apply step follows the theme and port.
   function updateSteps() {
     if (!steps.length) return;
-    const cmds = stepCommands();
-    steps.forEach((el, i) => {
-      const cmd = cmds[i];
-      if (!cmd) return;
-      const label = el.querySelector("[data-step-label]");
-      const display = el.querySelector("[data-step-cmd]");
-      const copy = el.querySelector("[data-step-copy]");
-      if (label) label.textContent = cmd.label;
-      if (display) display.textContent = cmd.display;
-      if (copy) copy.dataset.copyText = cmd.cmd;
-    });
+    const apply = steps[1];
+    if (apply) {
+      const name = portButtons.find((b) => b.dataset.portId === port)?.dataset.portName ?? port;
+      const label = apply.querySelector("[data-step-label]");
+      const display = apply.querySelector("[data-step-cmd]");
+      if (label) label.textContent = `Apply ${displayName()} to ${name}. K.O.`;
+      if (display) display.textContent = `sf2 apply ${port} --theme ${catalogId()}`;
+    }
     if (portNote) {
       const note = portButtons.find((b) => b.dataset.portId === port)?.dataset.portNote;
       if (note) portNote.textContent = `${note} sf2 and sf2-themes are the same command.`;
@@ -308,7 +292,8 @@ if (families.length > 0) {
     }
     btn.addEventListener("click", async () => {
       try {
-        await navigator.clipboard.writeText(btn.dataset.copyText ?? "");
+        const cmd = btn.closest("[data-step]")?.querySelector("[data-step-cmd]");
+        await navigator.clipboard.writeText(cmd?.textContent ?? "");
       } catch {
         return;
       }

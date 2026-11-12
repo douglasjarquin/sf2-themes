@@ -6,7 +6,7 @@ This guidance applies to `internal/adapters/` and adapter-facing changes in `int
 Adapters translate validated `catalog.Theme` values into consumer files and conservative configuration edits.
 Keep path discovery, rendering, ownership classification, and current-theme reads inside the owning adapter.
 Treat `theme.Metadata.SelectableID()` as the generated filename and configured identity while CLI catalog IDs remain short.
-The Python adapter of the same name at the parity reference is the behavior contract, byte for byte.
+The parity goldens for the app are the behavior contract, byte for byte; they were first recorded from the 1.x Python adapter of the same name.
 
 ## Adapter contract
 
@@ -15,7 +15,7 @@ The Python adapter of the same name at the parity reference is the behavior cont
 - `App.Plan(theme, themes, configDir, slot)` returns `plan.Write` and `plan.Remove` steps and never writes.
 - `configDir` is the expanded `--config-dir`, or `""` when the flag is absent and the adapter resolves its default location.
 - An `error` from either function is an I/O or decode failure the CLI prints as one `error:` line with exit 1; an ownership problem is never an error.
-- `Label`, `Pair`, `OwnsFilesOnUnknownShape`, `Reload`, and `StderrHint` carry the Python `App(...)` entry from `src/sf2_theme/cli.py` unchanged.
+- `Label`, `Pair`, `OwnsFilesOnUnknownShape`, `Reload`, and `StderrHint` carry the app's labels, pairing, reload hint, and stderr hint; change them only with the goldens that print them.
 - Register the app with one line in its own file, `internal/cli/app_<name>.go`: `func init() { register("<name>", <name>.App) }`.
 - Only `fsys.Commit` touches disk, and it owns dry-run and the symlink policy.
 - The inspection holds the ownership class (absent, managed, legacy, foreign, unknown shape, broken) and the current sf2 theme when it resolves through `catalog.InstalledTheme`.
@@ -135,8 +135,8 @@ The Python adapter of the same name at the parity reference is the behavior cont
 
 ## Focused verification
 
-- Port each adapter's Python tests beside the package, with expected values recorded from the Python reference, never from the Go code.
+- Keep each adapter's tests beside the package, with expected values from committed testdata or goldens, never from the Go code under test.
 - Run `go test -count=1 ./internal/adapters/<app>/ ./internal/cli/` for an adapter change.
-- Delete the app's line from `PendingInGo` in `internal/parity/cases.go` once it passes, then run `go test -count=1 ./internal/parity/`.
+- Run `go test -count=1 ./internal/parity/` for any change that reaches output or written files, and re-record with `mise run parity:record` only for an intended behavior change.
 - Run `go test -count=1 ./internal/plan/ ./internal/fsys/ ./internal/cli/` plus every touched adapter for shared write or gate changes.
 - Finish with `gofmt`, `go vet`, and `golangci-lint run` on the changed packages.
