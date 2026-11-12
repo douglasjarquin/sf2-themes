@@ -192,6 +192,25 @@ test "$(cat "$test_dir/wezterm-unknown/wezterm.lua")" = 'return { font_size = 13
 test -f "$test_dir/wezterm-unknown/colors/sf2-main.toml"
 printf '%s\n' 'Unknown WezTerm shape reports incomplete: PASS'
 
+mkdir -p "$test_dir/foreign-lazygit"
+printf '%s\n' 'gui:' '  theme:' '    activeBorderColor:' '      - red' >"$test_dir/foreign-lazygit/config.yml"
+if (cd "$test_dir" && "$test_dir/bin/sf2-themes" apply lazygit --config-dir "$test_dir/foreign-lazygit" 2>"$test_dir/lazygit-err.txt"); then
+  printf '%s\n' 'copied CLI: apply lazygit over a foreign gui.theme must exit nonzero' >&2
+  exit 1
+fi
+grep -q -- '--adopt' "$test_dir/lazygit-err.txt"
+test ! -e "$test_dir/foreign-lazygit/themes"
+printf '%s\n' 'Copied CLI refusal writes nothing: PASS'
+
+mkdir -p "$test_dir/foreign-codex"
+printf '%s\n' '[tui]' 'theme = "dracula"' >"$test_dir/foreign-codex/config.toml"
+cp "$test_dir/foreign-codex/config.toml" "$test_dir/foreign-codex-before.toml"
+(cd "$test_dir" && "$test_dir/bin/sf2-themes" setup codex --config-dir "$test_dir/foreign-codex" >"$test_dir/codex-out.txt")
+grep -q 'kept your own theme' "$test_dir/codex-out.txt"
+cmp -s "$test_dir/foreign-codex/config.toml" "$test_dir/foreign-codex-before.toml"
+test -f "$test_dir/foreign-codex/themes/sf2-main.tmTheme"
+printf '%s\n' 'Copied CLI plain setup keeps a foreign theme: PASS'
+
 "$repo_dir/sf2-themes" apply --help | grep -q -- '--adopt'
 "$repo_dir/sf2-themes" apply --help | grep -q -- '--theme'
 printf '%s\n' 'Command-specific help: PASS'

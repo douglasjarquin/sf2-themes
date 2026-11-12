@@ -4,6 +4,7 @@
 
 `themes/` is the canonical data source; this package turns its TOML into typed, validated `Theme` values and adapter output.
 The runtime path is `tomllib -> parse_theme() -> Theme -> load_catalog() -> CLI/adapters`.
+A mutation command runs `inspect -> decide -> plan -> commit`: adapters inspect and plan, the CLI decides, and `filesystem.commit` alone writes.
 `parse_catalog()` is the intentionally unvalidated discovery path used by validation and reporting; `load_catalog()` adds catalog uniqueness and all error-severity theme checks.
 The committed root executable mirrors this package by embedding the standalone generator's explicit module roster and theme payload.
 
@@ -15,9 +16,10 @@ The committed root executable mirrors this package by embedding the standalone g
 | TOML shape | `parse.py` | Schema, required fields, enum values, unknown keys, and typed construction. |
 | Semantic validity | `validation.py` | Contrast, ANSI distinctions, lookup-key uniqueness, and error versus warning severity. |
 | Catalog lifecycle | `catalog.py` | Embedded or filesystem discovery, deterministic order, validated loading, lookup, pairing, and defaults. |
-| Public dispatch | `cli.py`, `__main__.py` | Argument handling, command behavior, error presentation, and adapter orchestration. |
+| Public dispatch | `cli.py`, `__main__.py` | Argument handling, the one app table, the ownership gate, selection, refusal text, and summaries. |
+| Plans and ownership | `plan.py` | `Write`/`Remove` steps, ownership classes, inspections, and the typed refusal. |
 | Application formats | `adapters/` | Rendering, recognized configuration merges, managed markers, and app-specific paths. |
-| Mutation primitive | `filesystem.py` | No-op detection, dry-run diffs, backups, mode preservation, symlink policy, and atomic replacement. |
+| Mutation primitive | `filesystem.py` | `commit` preflight, no-op detection, dry-run diffs, removals, backups, mode preservation, symlink policy, and atomic replacement. |
 | Standalone mirror | `mise-tasks/build-standalone` | Runtime module allowlist and embedded theme files for the generated `sf2-themes`. |
 
 ## CONVENTIONS
@@ -31,7 +33,7 @@ The committed root executable mirrors this package by embedding the standalone g
 - Derive installed names through `ThemeMetadata.selectable_id` or `selectable_id()` so adapter-facing identities are consistently `sf2-<catalog-id>`.
 - Preserve the intentional spelling split: public distribution and commands `sf2`/`sf2-themes`, Python import package `sf2_theme`, and managed state directory `sf2-theme`.
 - In source mode, catalog discovery honors `SF2_THEME_DIR` before the repository catalog; the standalone uses `_embedded.THEME_FILES` instead of filesystem discovery.
-- Let adapters own syntax-aware reads and merges, then send final content through `write_file()`.
+- Let adapters own syntax-aware reads and merges, then return final content as plan steps for `commit()`.
 - Keep runtime imports standard-library or package-local because the copied standalone runs without an installed project environment.
 
 ## ANTI-PATTERNS
@@ -39,7 +41,8 @@ The committed root executable mirrors this package by embedding the standalone g
 - Do not use `parse_catalog()` as a shortcut for runtime behavior that promises a valid catalog.
 - Do not duplicate TOML parsing, contrast rules, catalog ordering, or lookup semantics inside adapters or commands.
 - Do not hand-build `sf2-` names from aliases, display names, or storage paths.
-- Do not write live adapter configuration with `Path.write_text()`; preserve merge semantics and the `write_file()` safety contract.
+- Do not write live adapter configuration from an adapter; return plan steps so `commit()` keeps its safety contract.
+- Do not refuse inside an adapter; report the ownership class and let the CLI gate decide.
 - Do not move application parsing into `filesystem.py`; it is format-agnostic and receives final content.
 - Do not add a runtime module without adding it to the standalone generator's `MODULES` roster.
 - Do not create a source `_embedded.py`; the standalone installs that module virtually at runtime.
