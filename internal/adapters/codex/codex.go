@@ -19,6 +19,7 @@ var App = adapters.App{
 	Label:   "Codex",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  target,
 	Reload:  "restart Codex, or reselect with /theme",
 }
 
@@ -81,6 +82,11 @@ func home(configDir string) (string, error) {
 		return "", err
 	}
 	return pycompat.Path(userHome, ".codex"), nil
+}
+
+func target(configDir string) (string, error) {
+	dir, err := home(configDir)
+	return pycompat.Path(dir, configFileName), err
 }
 
 // xmlEscape is xml.sax.saxutils.escape: `&`, `<`, and `>` are escaped, and quotes are not.

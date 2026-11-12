@@ -53,6 +53,7 @@ stdout
 | +return "sf2-ken-light"
 | unchanged: {SANDBOX}/config/wezterm/wezterm.lua
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: 1 updated, 37 unchanged
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

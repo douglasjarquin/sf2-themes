@@ -20,6 +20,7 @@ var App = adapters.App{
 	Label:                   "WezTerm",
 	Inspect:                 Inspect,
 	Plan:                    Plan,
+	Target:                  luaPath,
 	Pair:                    true,
 	OwnsFilesOnUnknownShape: true,
 	Reload:                  "restart WezTerm, or let a config reload pick up the managed pointer",

@@ -2,6 +2,7 @@ step setup wezterm --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | setup wezterm: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: 37 created, 1 updated
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
@@ -10,6 +11,7 @@ step apply wezterm --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | apply wezterm: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: no changes
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

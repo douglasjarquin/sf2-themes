@@ -12,7 +12,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "apply codex: sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stdout": "apply codex: sf2-main (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 2 created\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-main\n",
@@ -33,7 +33,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "setup codex: no selection found, selected sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stdout": "setup codex: no selection found, selected sf2-main (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 2 created\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-main\n",
@@ -58,7 +58,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "setup codex: kept sf2-ryu\n  changes: 1 created, 1 unchanged\n  note: restart the stub\n",
+   "stdout": "setup codex: kept sf2-ryu (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 1 created, 1 unchanged\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-ryu\n",
@@ -86,7 +86,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "apply codex: sf2-ken\n  changes: no changes\n  note: restart the stub\n",
+   "stdout": "apply codex: sf2-ken (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: no changes\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-ken\n",
@@ -116,7 +116,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "unchanged: {DIR}/themes/sf2-ken.txt\nupdated: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = ryu\n+theme = sf2-ken\nremoved: {DIR}/legacy.txt\napply codex: sf2-ken\n  changes: 1 updated, 1 removed, 1 unchanged\n  note: restart the stub\n",
+   "stdout": "unchanged: {DIR}/themes/sf2-ken.txt\nupdated: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = ryu\n+theme = sf2-ken\nremoved: {DIR}/legacy.txt\napply codex: sf2-ken (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 1 updated, 1 removed, 1 unchanged\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-ken\n",
@@ -146,7 +146,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "would create: {DIR}/themes/sf2-ken.txt\n--- /dev/null\n+++ {DIR}/themes/sf2-ken.txt\n@@ -0,0 +1 @@\n+palette sf2-ken\nwould update: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = sf2-ryu\n+theme = sf2-ken\nwould remove: {DIR}/legacy.txt\napply codex: sf2-ken\n  changes: 1 would create, 1 would update, 1 would remove\n  note: restart the stub\n",
+   "stdout": "would create: {DIR}/themes/sf2-ken.txt\n--- /dev/null\n+++ {DIR}/themes/sf2-ken.txt\n@@ -0,0 +1 @@\n+palette sf2-ken\nwould update: {DIR}/config.txt\n--- {DIR}/config.txt\n+++ {DIR}/config.txt\n@@ -1,2 +1,2 @@\n keep = 1\n-theme = sf2-ryu\n+theme = sf2-ken\nwould remove: {DIR}/legacy.txt\napply codex: sf2-ken (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 1 would create, 1 would update, 1 would remove\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-ryu\n",
@@ -218,7 +218,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "setup codex: kept your own theme (config left unchanged)\n  changes: 1 created\n",
+   "stdout": "setup codex: kept your own theme (config left unchanged)\n  target: {DIR}/config.txt\n  changes: 1 created\n",
    "stderr": "",
    "files": {
     "config.txt": "theme = dracula\n",
@@ -243,7 +243,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "apply codex: sf2-main\n  changes: 1 created, 1 updated\n  note: restart the stub\n",
+   "stdout": "apply codex: sf2-main (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 1 created, 1 updated\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-main\n",
@@ -314,7 +314,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "setup codex: selection unreadable, reset to sf2-main\n  changes: 2 created\n  note: restart the stub\n",
+   "stdout": "setup codex: selection unreadable, reset to sf2-main (fixed; does not follow host appearance)\n  target: {DIR}/config.txt\n  changes: 2 created\n  note: restart the stub\n",
    "stderr": "hint line\n\n",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-main\n",
@@ -337,7 +337,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "apply wezterm: sf2-chun-li + sf2-chun-li-light (follows host appearance)\n  changes: 2 created\n  note: reload the pair\n",
+   "stdout": "apply wezterm: sf2-chun-li + sf2-chun-li-light (follows host appearance)\n  target: {DIR}/config.txt\n  changes: 2 created\n  note: reload the pair\n",
    "stderr": "",
    "files": {
     "config.txt": "keep = 1\ntheme = sf2-chun-li-light\n",
@@ -364,7 +364,7 @@
   },
   "want": {
    "exit": 1,
-   "stdout": "apply wezterm: incomplete (config left unchanged)\n  pointer: sf2-ryu + sf2-ryu-light (follows host appearance)\n  changes: 1 created\n",
+   "stdout": "apply wezterm: incomplete (config left unchanged)\n  target: {DIR}/config.txt\n  pointer: sf2-ryu + sf2-ryu-light (follows host appearance)\n  changes: 1 created\n",
    "stderr": "error: Pair Stub config has a shape sf2-themes cannot edit safely.\nAdd this:\n  dofile(x)\n\nThen run the command again.\n",
    "files": {
     "config.txt": "return {}\n",
@@ -386,7 +386,7 @@
   },
   "want": {
    "exit": 0,
-   "stdout": "setup wezterm: kept your own theme (config left unchanged)\n  pointer: kept sf2-ken + sf2-ken-light (follows host appearance)\n  changes: 1 created\n",
+   "stdout": "setup wezterm: kept your own theme (config left unchanged)\n  target: {DIR}/config.txt\n  pointer: kept sf2-ken + sf2-ken-light (follows host appearance)\n  changes: 1 created\n",
    "stderr": "",
    "files": {
     "themes/sf2-ken.txt": "palette sf2-ken\n"

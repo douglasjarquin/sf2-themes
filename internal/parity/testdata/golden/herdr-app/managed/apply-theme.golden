@@ -2,6 +2,7 @@ step apply herdr-app --theme ken --config-dir {SANDBOX}/config/herdr-app
 exit 0
 stdout
 | apply herdr-app: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr-app/settings.json
 |   changes: 1 updated, 36 unchanged
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr

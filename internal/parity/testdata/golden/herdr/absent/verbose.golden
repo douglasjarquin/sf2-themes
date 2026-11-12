@@ -4,6 +4,7 @@ stdout
 | created: {SANDBOX}/config/herdr/config.toml
 = 859fa0d96084e792
 | apply herdr: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: 1 created
 |   note: run `herdr server reload-config` to apply the selection
 stderr

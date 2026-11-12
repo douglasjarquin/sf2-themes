@@ -1,7 +1,8 @@
 step apply claude --adopt --config-dir {SANDBOX}/config/claude
 exit 0
 stdout
-| apply claude: sf2-main
+| apply claude: sf2-main (fixed; does not follow host appearance)
+|   target: {SANDBOX}/config/claude/settings.json
 |   changes: 1 updated, 36 unchanged
 |   note: reselect with /theme in a running Claude Code session
 stderr

@@ -145,10 +145,11 @@ options:
 
 positional arguments:
   {wezterm,herdr,herdr-app,nvim,codex,starship,lazygit,claude,slack}
+                        application to read
 
 options:
   -h, --help            show this help message and exit
-  --config-dir PATH
+  --config-dir PATH     read under PATH instead of the app's config location
 `
 	if stdout, _, _ := run("current", "-h"); stdout != want {
 		t.Errorf("current -h = %q", stdout)

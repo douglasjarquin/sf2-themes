@@ -128,8 +128,8 @@ var commandSpecs = []commandSpec{
 	{
 		name:        "current",
 		help:        "print the selected theme id, or none",
-		positionals: []positionalSpec{appPositional("")},
-		flags:       []flagSpec{helpFlag, configDirFlag("")},
+		positionals: []positionalSpec{appPositional("application to read")},
+		flags:       []flagSpec{helpFlag, configDirFlag("read under PATH instead of the app's config location")},
 	},
 }
 

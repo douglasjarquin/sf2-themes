@@ -2,6 +2,7 @@ step apply herdr --theme balrog-light --config-dir {SANDBOX}/config/herdr
 exit 0
 stdout
 | apply herdr: sf2-balrog + sf2-balrog-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: 1 created
 |   note: run `herdr server reload-config` to apply the selection
 stderr

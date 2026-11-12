@@ -100,6 +100,7 @@ stdout
 | +config.set_environment_variables = sf2_env
 |  return config
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: 37 would create, 1 would update
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

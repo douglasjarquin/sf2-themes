@@ -2,6 +2,7 @@ step apply wezterm --config-dir {SANDBOX}/config/wezterm
 exit 1
 stdout
 | apply wezterm: incomplete (config left unchanged)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   pointer: sf2-main + sf2-main-light (follows host appearance)
 |   changes: 37 created
 stderr

@@ -4,6 +4,7 @@ stdout
 | would update: {SANDBOX}/elsewhere/herdr/config.toml
 = b673286882a85b92
 | apply herdr: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: 1 would update
 |   note: run `herdr server reload-config` to apply the selection
 stderr

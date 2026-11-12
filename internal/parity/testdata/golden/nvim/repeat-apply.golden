@@ -2,6 +2,7 @@ step apply nvim --theme ryu --config-dir {SANDBOX}/config/nvim
 exit 0
 stdout
 | apply nvim: sf2-ryu + sf2-ryu-light (follows host appearance)
+|   target: {SANDBOX}/config/nvim
 |   changes: 38 created
 |   note: restart Neovim to load the new colorscheme
 stderr
@@ -9,6 +10,7 @@ step apply nvim --theme ryu --config-dir {SANDBOX}/config/nvim
 exit 0
 stdout
 | apply nvim: sf2-ryu + sf2-ryu-light (follows host appearance)
+|   target: {SANDBOX}/config/nvim
 |   changes: no changes
 |   note: restart Neovim to load the new colorscheme
 stderr

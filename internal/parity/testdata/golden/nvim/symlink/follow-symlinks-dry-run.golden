@@ -88,6 +88,7 @@ stdout
 | would create: {SANDBOX}/config/nvim/plugin/sf2-theme.lua
 = faa519854ea998a3
 | apply nvim: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/nvim
 |   changes: 37 would create, 1 would update
 |   note: restart Neovim to load the new colorscheme
 stderr

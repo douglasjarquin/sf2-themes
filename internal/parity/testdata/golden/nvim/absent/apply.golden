@@ -2,6 +2,7 @@ step apply nvim --config-dir {SANDBOX}/config/nvim
 exit 0
 stdout
 | apply nvim: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/nvim
 |   changes: 38 created
 |   note: restart Neovim to load the new colorscheme
 stderr

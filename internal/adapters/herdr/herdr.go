@@ -18,6 +18,7 @@ var App = adapters.App{
 	Label:   "Herdr",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  configPath,
 	Pair:    true,
 	Reload:  "run `herdr server reload-config` to apply the selection",
 }

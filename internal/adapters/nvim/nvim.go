@@ -19,6 +19,7 @@ var App = adapters.App{
 	Label:   "Neovim",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  nvimDir,
 	Pair:    true,
 	Reload:  "restart Neovim to load the new colorscheme",
 }

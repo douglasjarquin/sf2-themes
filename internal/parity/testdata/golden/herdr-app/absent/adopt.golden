@@ -2,6 +2,7 @@ step apply herdr-app --adopt --config-dir {SANDBOX}/config/herdr-app
 exit 0
 stdout
 | apply herdr-app: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr-app/settings.json
 |   changes: 37 created
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr

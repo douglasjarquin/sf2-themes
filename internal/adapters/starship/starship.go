@@ -19,6 +19,7 @@ var App = adapters.App{
 	Label:      "Starship",
 	Inspect:    Inspect,
 	Plan:       Plan,
+	Target:     configPath,
 	StderrHint: "Source the zsh highlight snippet after zsh-syntax-highlighting:\n  " + sourceHint + "\n",
 }
 

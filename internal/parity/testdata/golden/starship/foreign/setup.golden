@@ -2,6 +2,7 @@ step setup starship --config-dir {SANDBOX}/config/starship
 exit 0
 stdout
 | setup starship: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/starship/starship.toml
 |   changes: no changes
 stderr
 tree

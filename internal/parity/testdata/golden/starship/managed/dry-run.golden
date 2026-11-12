@@ -29,7 +29,8 @@ stdout
 | +ZSH_HIGHLIGHT_STYLES[single-hyphen-option]='fg=#977f7e'
 | +ZSH_HIGHLIGHT_STYLES[double-hyphen-option]='fg=#977f7e'
 | +ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=#c76e67,bold'
-| apply starship: sf2-ken
+| apply starship: sf2-ken (fixed; does not follow host appearance)
+|   target: {SANDBOX}/config/starship/starship.toml
 |   changes: 2 would update
 stderr
 | Source the zsh highlight snippet after zsh-syntax-highlighting:

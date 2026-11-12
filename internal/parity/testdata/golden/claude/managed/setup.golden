@@ -1,7 +1,8 @@
 step setup claude --config-dir {SANDBOX}/config/claude
 exit 0
 stdout
-| setup claude: kept sf2-ryu
+| setup claude: kept sf2-ryu (fixed; does not follow host appearance)
+|   target: {SANDBOX}/config/claude/settings.json
 |   changes: no changes
 |   note: reselect with /theme in a running Claude Code session
 stderr

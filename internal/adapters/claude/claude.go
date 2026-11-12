@@ -18,6 +18,7 @@ var App = adapters.App{
 	Label:   "Claude Code",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  target,
 	Reload:  "reselect with /theme in a running Claude Code session",
 }
 
@@ -61,6 +62,11 @@ func home(configDir string) (string, error) {
 		return "", err
 	}
 	return pycompat.Path(userHome, ".claude"), nil
+}
+
+func target(configDir string) (string, error) {
+	dir, err := home(configDir)
+	return pycompat.Path(dir, settingsFileName), err
 }
 
 // ThemeKey is the settings.json `theme` value that selects theme.
