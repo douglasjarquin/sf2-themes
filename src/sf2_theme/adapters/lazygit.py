@@ -7,8 +7,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.yml"
@@ -98,14 +98,25 @@ def render_theme(theme: Theme) -> str:
     return "\n".join(_theme_lines(theme)) + "\n"
 
 
-def _replace_marked(lines: list[str], start_marker: str, end_marker: str, replacement: list[str]) -> list[str]:
+def _marked(lines: list[str], start_marker: str, end_marker: str) -> tuple[int, int] | None:
+    """Return the start and end line of a managed block, or None when absent.
+
+    Raises ThemeError when the markers are incomplete or out of order.
+    """
     starts = [index for index, line in enumerate(lines) if line.strip() == start_marker]
     ends = [index for index, line in enumerate(lines) if line.strip() == end_marker]
     if not starts and not ends:
-        return lines
+        return None
     if len(starts) != 1 or len(ends) != 1 or ends[0] < starts[0]:
-        raise ThemeError("Lazygit config has incomplete sf2-themes markers")
-    return lines[: starts[0]] + replacement + lines[ends[0] + 1 :]
+        raise ThemeError("incomplete sf2-themes markers")
+    return starts[0], ends[0]
+
+
+def _replace_marked(lines: list[str], start_marker: str, end_marker: str, replacement: list[str]) -> list[str]:
+    bounds = _marked(lines, start_marker, end_marker)
+    if bounds is None:
+        return lines
+    return lines[: bounds[0]] + replacement + lines[bounds[1] + 1 :]
 
 
 def _is_wildcard_author_line(line: str) -> bool:
@@ -179,8 +190,8 @@ def _managed_author_entry_lines(theme: Theme) -> list[str]:
     ]
 
 
-def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
-    """Merge the selected theme into config.yml while preserving user settings."""
+def merge_config(existing: str, theme: Theme) -> str:
+    """Merge the selected theme into config.yml, replacing any unmarked gui.theme."""
     lines = existing.splitlines()
     lines = _replace_marked(lines, MANAGED_THEME_START, MANAGED_THEME_END, _managed_theme_lines(theme))
     author_marker = next((line for line in lines if line.strip() == MANAGED_AUTHOR_START), None)
@@ -197,11 +208,7 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
         has_managed_theme = gui is not None and any(
             line.strip() == MANAGED_THEME_START for line in lines[gui[0] : gui[1]]
         )
-        if has_managed_theme:
-            pass
-        elif not adopt:
-            raise ThemeError("Lazygit config already has a gui.theme section; pass --adopt to replace it")
-        else:
+        if not has_managed_theme:
             lines[start:end] = _managed_theme_lines(theme)
     else:
         gui = _top_level_section(lines, "gui")
@@ -230,80 +237,27 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _write_themes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    return [
-        write_file(
-            theme_path(theme, config_dir),
-            render_theme(theme),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for theme in themes
-    ]
-
-
-def apply_lazygit(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    adopt: bool,
-) -> list[WriteResult]:
-    """Install every catalog fragment and select one in config.yml."""
-    results = _write_themes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
+def inspect_lazygit(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = config_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    results.append(
-        write_file(
-            path,
-            merge_config(existing, theme, adopt=adopt),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-    )
-    return results
+    lines = read_existing(path).splitlines()
+    try:
+        theme_block = _marked(lines, MANAGED_THEME_START, MANAGED_THEME_END)
+        _marked(lines, MANAGED_AUTHOR_START, MANAGED_AUTHOR_END)
+    except ThemeError as error:
+        return Inspection(Ownership.BROKEN, detail=f"{path} has {error.message}")
+    if theme_block is not None:
+        start, end = theme_block
+        return recorded(Ownership.MANAGED, recorded_id("\n".join(lines[start:end]), ID_COMMENT), themes)
+    if _gui_subsection_bounds(lines, "theme") is not None:
+        return Inspection(Ownership.FOREIGN)
+    return Inspection(Ownership.ABSENT)
 
 
-def setup_lazygit(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    adopt: bool,
-) -> list[WriteResult]:
-    """Set up Lazygit theme fragments and select the requested theme."""
-    return apply_lazygit(
-        theme,
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-        adopt=adopt,
-    )
-
-
-def read_current_id(config_dir: Path | None) -> str:
-    """Read the selected SF2 theme id from managed Lazygit configuration."""
-    path = config_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Lazygit theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = ID_COMMENT.match(line.strip())
-        if match:
-            return match.group(1)
-    raise ThemeError(f"could not read theme id from {path}")
+def plan_lazygit(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan every catalog fragment and, when `slot` allows it, the selection in config.yml."""
+    steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
+    if slot:
+        path = config_path(config_dir)
+        existing = read_existing(path)
+        steps.append(Write(path, merge_config(existing, theme)))
+    return steps

@@ -138,12 +138,12 @@ config.font_size = 16
 return config
 LUA
 
-"$repo_dir/sf2-themes" setup wezterm --config-dir "$test_dir/wezterm-existing" >"$test_dir/setup-out.txt" 2>"$test_dir/setup-err.txt"
+"$repo_dir/sf2-themes" setup wezterm --config-dir "$test_dir/wezterm-existing" >"$test_dir/setup-out.txt"
 grep -q 'scheme_for_appearance' "$test_dir/wezterm-existing/wezterm.lua"
 grep -q 'config.font_size = 16' "$test_dir/wezterm-existing/wezterm.lua"
-grep -q 'WezTerm config was left unchanged' "$test_dir/setup-err.txt"
+grep -q 'kept your own theme' "$test_dir/setup-out.txt"
 test -f "$test_dir/wezterm-existing/colors/sf2-main.toml"
-printf '%s\n' 'WezTerm unknown lua left unchanged: PASS'
+printf '%s\n' 'WezTerm plain setup keeps a foreign color scheme: PASS'
 
 mkdir -p "$test_dir/wezterm-safe"
 cat >"$test_dir/wezterm-safe/wezterm.lua" <<'LUA'
@@ -171,14 +171,45 @@ config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())
 return config
 LUA
 
-if "$repo_dir/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm-blocked" >"$test_dir/blocked-out.txt" 2>"$test_dir/blocked-err.txt"; then
-  printf '%s\n' 'apply wezterm on an unknown config must exit nonzero' >&2
+if "$repo_dir/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm-blocked" 2>"$test_dir/blocked-err.txt"; then
+  printf '%s\n' 'apply wezterm over a foreign color scheme must exit nonzero' >&2
   exit 1
 fi
-grep -q 'apply incomplete' "$test_dir/blocked-err.txt"
-grep -q 'dofile' "$test_dir/blocked-err.txt"
+grep -q -- '--adopt' "$test_dir/blocked-err.txt"
 grep -q 'scheme_for_appearance' "$test_dir/wezterm-blocked/wezterm.lua"
-printf '%s\n' 'Blocked apply reports incomplete: PASS'
+test ! -e "$test_dir/wezterm-blocked/colors"
+printf '%s\n' 'Apply over a foreign color scheme writes nothing: PASS'
+
+mkdir -p "$test_dir/wezterm-unknown"
+printf '%s\n' 'return { font_size = 13 }' >"$test_dir/wezterm-unknown/wezterm.lua"
+if "$repo_dir/sf2-themes" apply wezterm --config-dir "$test_dir/wezterm-unknown" >"$test_dir/unknown-out.txt" 2>"$test_dir/unknown-err.txt"; then
+  printf '%s\n' 'apply wezterm on an unknown config shape must exit nonzero' >&2
+  exit 1
+fi
+grep -q 'incomplete' "$test_dir/unknown-out.txt"
+grep -q 'dofile' "$test_dir/unknown-err.txt"
+test "$(cat "$test_dir/wezterm-unknown/wezterm.lua")" = 'return { font_size = 13 }'
+test -f "$test_dir/wezterm-unknown/colors/sf2-main.toml"
+printf '%s\n' 'Unknown WezTerm shape reports incomplete: PASS'
+
+mkdir -p "$test_dir/foreign-lazygit"
+printf '%s\n' 'gui:' '  theme:' '    activeBorderColor:' '      - red' >"$test_dir/foreign-lazygit/config.yml"
+if (cd "$test_dir" && "$test_dir/bin/sf2-themes" apply lazygit --config-dir "$test_dir/foreign-lazygit" 2>"$test_dir/lazygit-err.txt"); then
+  printf '%s\n' 'copied CLI: apply lazygit over a foreign gui.theme must exit nonzero' >&2
+  exit 1
+fi
+grep -q -- '--adopt' "$test_dir/lazygit-err.txt"
+test ! -e "$test_dir/foreign-lazygit/themes"
+printf '%s\n' 'Copied CLI refusal writes nothing: PASS'
+
+mkdir -p "$test_dir/foreign-codex"
+printf '%s\n' '[tui]' 'theme = "dracula"' >"$test_dir/foreign-codex/config.toml"
+cp "$test_dir/foreign-codex/config.toml" "$test_dir/foreign-codex-before.toml"
+(cd "$test_dir" && "$test_dir/bin/sf2-themes" setup codex --config-dir "$test_dir/foreign-codex" >"$test_dir/codex-out.txt")
+grep -q 'kept your own theme' "$test_dir/codex-out.txt"
+cmp -s "$test_dir/foreign-codex/config.toml" "$test_dir/foreign-codex-before.toml"
+test -f "$test_dir/foreign-codex/themes/sf2-main.tmTheme"
+printf '%s\n' 'Copied CLI plain setup keeps a foreign theme: PASS'
 
 "$repo_dir/sf2-themes" apply --help | grep -q -- '--adopt'
 "$repo_dir/sf2-themes" apply --help | grep -q -- '--theme'

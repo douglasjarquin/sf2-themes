@@ -36,7 +36,7 @@ def test_dev_dockerfile_defaults_to_the_same_ubuntu_pin_as_the_toolchain() -> No
 
     assert f"ARG TOOLCHAIN_IMAGE={ubuntu}" in dev
     assert "ARG TOOLCHAIN_IMAGE=sf2-themes-toolchain" not in dev
-    assert 'COPY docker/toolchain/apt-packages.txt' in dev
+    assert "COPY docker/toolchain/apt-packages.txt" in dev
 
 
 def test_dev_dockerfile_makes_fslock_writable_before_nonroot_aube() -> None:

@@ -11,8 +11,9 @@ Paths, overrides, symlinks, and backups. Moved out of the README.
 - Neovim also manages the startup loader at `~/.config/nvim/plugin/sf2-theme.lua`.
 - Codex custom themes go in `~/.codex/themes/`, with the active theme in `~/.codex/config.toml` under `[tui]`.
 - Claude Code custom themes go in `~/.claude/themes/`, with the active theme in `~/.claude/settings.json` under `theme`.
-- Starship updates the marked palette in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
+- Starship updates the marked palette before the first table in `~/.config/starship.toml` and refreshes `~/.config/sf2-theme/zsh-syntax-highlighting.zsh`.
 - Lazygit themes go in its `themes/` directory, and the selected `gui.theme` plus wildcard author color are managed in `config.yml`.
+- Every write and legacy-file removal is planned before the first one happens, so a refusal or a symlink anywhere in the plan leaves every file untouched.
 - Symlinks are refused unless you pass `--follow-symlinks`.
 - Existing files keep their mode and get a timestamped `.bak.*` copy before the first real change.
 

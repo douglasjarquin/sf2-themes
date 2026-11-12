@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from sf2_theme.cli import dispatch
 
 
@@ -38,45 +40,6 @@ def test_apply_wezterm_defaults_to_main(tmp_path: Path, monkeypatch, capsys) -> 
     captured = capsys.readouterr().out
     assert "apply wezterm: sf2-main + sf2-main-light (follows host appearance)" in captured
     assert "created" in captured
-
-
-def test_apply_wezterm_leaves_unknown_lua_incomplete(tmp_path: Path, monkeypatch, capsys) -> None:
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
-    lua_dir = tmp_path / "wezterm"
-    lua_dir.mkdir()
-    original = 'return {\n  color_scheme = "Builtin Dark",\n  font_size = 13,\n}\n'
-    (lua_dir / "wezterm.lua").write_text(original, encoding="utf-8")
-    assert dispatch(["apply", "wezterm", "--config-dir", str(lua_dir)]) == 1
-    assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
-    assert (tmp_path / "xdg" / "sf2-theme" / "wezterm-current.lua").is_file()
-    captured = capsys.readouterr()
-    assert "apply wezterm: incomplete" in captured.out
-    assert "sf2-" not in captured.out
-    assert "restart WezTerm" not in captured.out
-    assert "apply incomplete" in captured.err
-    assert "dofile" in captured.err
-    assert "--adopt" not in captured.err
-
-
-def test_apply_wezterm_foreign_scheme_hints_adopt(tmp_path: Path, monkeypatch, capsys) -> None:
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
-    lua_dir = tmp_path / "wezterm"
-    lua_dir.mkdir()
-    original = "\n".join(
-        (
-            'local wezterm = require("wezterm")',
-            "local config = wezterm.config_builder()",
-            'config.color_scheme = "Builtin Dark"',
-            "return config",
-            "",
-        )
-    )
-    (lua_dir / "wezterm.lua").write_text(original, encoding="utf-8")
-    assert dispatch(["apply", "wezterm", "--config-dir", str(lua_dir)]) == 1
-    assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
-    captured = capsys.readouterr()
-    assert "apply wezterm: incomplete" in captured.out
-    assert "--adopt" in captured.err
 
 
 def test_apply_wezterm_adopt_replaces_foreign_scheme(tmp_path: Path, monkeypatch, capsys) -> None:
@@ -128,11 +91,6 @@ def test_apply_dry_run_prints_plan_and_writes_nothing(tmp_path: Path, capsys) ->
     assert not config_dir.exists()
     captured = capsys.readouterr().out
     assert "would create" in captured
-
-
-def test_adopt_rejected_for_apps_without_it(tmp_path: Path, capsys) -> None:
-    assert dispatch(["apply", "nvim", "--adopt", "--config-dir", str(tmp_path)]) != 0
-    assert "--adopt" in capsys.readouterr().err
 
 
 def test_apply_help_lists_command_options(capsys) -> None:
@@ -195,26 +153,6 @@ def test_apply_wezterm_light_selection_writes_appearance_pair(tmp_path: Path, mo
     assert capsys.readouterr().out.strip().endswith("sf2-ryu")
 
 
-def test_setup_leaves_unknown_lua(tmp_path: Path, monkeypatch, capsys) -> None:
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
-    lua_dir = tmp_path / "wezterm"
-    lua_dir.mkdir()
-    original = "\n".join(
-        (
-            'local wezterm = require("wezterm")',
-            "local config = wezterm.config_builder()",
-            "config.color_scheme = scheme_for_appearance(wezterm.gui.get_appearance())",
-            "return config",
-            "",
-        )
-    )
-    (lua_dir / "wezterm.lua").write_text(original, encoding="utf-8")
-    assert dispatch(["setup", "wezterm", "--config-dir", str(lua_dir)]) == 0
-    assert (lua_dir / "wezterm.lua").read_text(encoding="utf-8") == original
-    captured = capsys.readouterr()
-    assert "WezTerm config was left unchanged" in captured.err
-
-
 def test_apply_lazygit_writes_all_catalog_themes_and_preserves_config(tmp_path: Path, capsys) -> None:
     config_dir = tmp_path / "lazygit"
     config_dir.mkdir()
@@ -266,7 +204,7 @@ def test_setup_keeps_existing_selection_for_block_adapters(tmp_path: Path, monke
         assert dispatch(["apply", app, "--theme", "chun-li", "--config-dir", str(config_dir)]) == 0
         capsys.readouterr()
         assert dispatch(["setup", app, "--config-dir", str(config_dir)]) == 0
-        assert "existing selection kept" in capsys.readouterr().out
+        assert f"setup {app}: kept sf2-chun-li" in capsys.readouterr().out
         assert dispatch(["current", app, "--config-dir", str(config_dir)]) == 0
         assert capsys.readouterr().out.strip().endswith("sf2-chun-li")
 
@@ -275,5 +213,77 @@ def test_setup_without_selection_installs_default(tmp_path: Path, monkeypatch, c
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     assert dispatch(["setup", "starship", "--config-dir", str(tmp_path / "starship")]) == 0
     out = capsys.readouterr().out
-    assert "setup starship: sf2-main" in out
-    assert "existing selection kept" not in out
+    assert "setup starship: no selection found, selected sf2-main" in out
+
+
+def test_refused_lazygit_apply_writes_no_theme_files(tmp_path: Path) -> None:
+    config_dir = tmp_path / "lazygit"
+    config_dir.mkdir()
+    (config_dir / "config.yml").write_text("gui:\n  theme:\n    activeBorderColor:\n      - red\n", encoding="utf-8")
+    assert dispatch(["apply", "lazygit", "--config-dir", str(config_dir)]) != 0
+    assert not (config_dir / "themes").exists()
+
+
+def test_refused_codex_apply_writes_no_theme_files(tmp_path: Path) -> None:
+    config_dir = tmp_path / "codex"
+    config_dir.mkdir()
+    (config_dir / "config.toml").write_text('tui = { theme = "dracula" }\n', encoding="utf-8")
+    assert dispatch(["apply", "codex", "--config-dir", str(config_dir)]) != 0
+    assert not (config_dir / "themes").exists()
+
+
+def test_symlinked_claude_settings_refuse_before_any_theme_file(tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / "claude"
+    config_dir.mkdir()
+    real = tmp_path / "real-settings.json"
+    real.write_text("{}\n", encoding="utf-8")
+    (config_dir / "settings.json").symlink_to(real)
+    assert dispatch(["apply", "claude", "--config-dir", str(config_dir)]) != 0
+    assert "symlink" in capsys.readouterr().err
+    assert not (config_dir / "themes").exists()
+    assert real.read_text(encoding="utf-8") == "{}\n"
+
+
+def test_dry_run_lists_legacy_removal_and_keeps_the_file(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    config_dir = tmp_path / "wezterm"
+    legacy = config_dir / "colors" / "street-fighter-ii-ryu.toml"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("old managed scheme\n", encoding="utf-8")
+    assert dispatch(["apply", "wezterm", "--config-dir", str(config_dir), "--dry-run"]) == 0
+    assert f"would remove: {legacy}" in capsys.readouterr().out
+    assert legacy.read_text(encoding="utf-8") == "old managed scheme\n"
+
+
+@pytest.mark.parametrize("app", ["wezterm", "herdr", "herdr-app", "nvim", "codex", "starship", "lazygit", "claude"])
+def test_repeat_apply_reports_no_changes(app: str, tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    arguments = ["apply", app, "--theme", "ryu", "--config-dir", str(tmp_path / app)]
+    assert dispatch(arguments) == 0
+    capsys.readouterr()
+    assert dispatch(arguments) == 0
+    assert "changes: no changes" in capsys.readouterr().out
+    assert not list(tmp_path.rglob("*.bak.*"))
+
+
+@pytest.mark.parametrize(
+    ("app", "name", "content"),
+    [
+        ("claude", "settings.json", "{"),
+        ("herdr-app", "settings.json", "{"),
+        ("codex", "config.toml", "[tui\n"),
+        ("herdr", "config.toml", "[theme\n"),
+        ("starship", "starship.toml", "palette = \n"),
+        ("lazygit", "config.yml", "gui:\n  # >>> sf2-themes managed theme\n"),
+    ],
+)
+def test_broken_config_refuses_and_writes_nothing(app: str, name: str, content: str, tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / app
+    config_dir.mkdir()
+    (config_dir / name).write_text(content, encoding="utf-8")
+    assert dispatch(["apply", app, "--config-dir", str(config_dir)]) == 1
+    assert capsys.readouterr().err.startswith("error: ")
+    assert [path.name for path in config_dir.iterdir()] == [name]
+    assert (config_dir / name).read_text(encoding="utf-8") == content
+    assert dispatch(["current", app, "--config-dir", str(config_dir)]) == 1
+    assert str(config_dir / name) in capsys.readouterr().err

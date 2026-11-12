@@ -27,3 +27,4 @@ Boss aliases: `boxer` (Balrog), `claw` (Vega), `dictator` (M. Bison).
 `herdr` targets the TUI; `herdr-app` targets the desktop app.
 `current herdr-app` reads the configured matching SF2 pair and reports its dark installed ID.
 It fails for foreign or independently mixed pairs and cannot observe layout or picker overrides.
+Every `current` command reads the same selection `setup` reports as kept, and fails when there is none it can read.

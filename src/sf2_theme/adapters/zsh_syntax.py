@@ -3,8 +3,8 @@
 import os
 from pathlib import Path
 
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
+from sf2_theme.plan import Write
 
 
 def highlight_path() -> Path:
@@ -40,19 +40,9 @@ def render_highlight(theme: Theme) -> str:
     return "\n".join(lines)
 
 
-def apply_zsh_syntax(
-    theme: Theme,
-    *,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    """Write the managed zsh-syntax-highlighting snippet."""
-    return write_file(
-        highlight_path(),
-        render_highlight(theme),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
+def plan_zsh_syntax(theme: Theme) -> Write:
+    """Plan the managed zsh-syntax-highlighting snippet."""
+    return Write(highlight_path(), render_highlight(theme))
 
 
 SOURCE_HINT = (

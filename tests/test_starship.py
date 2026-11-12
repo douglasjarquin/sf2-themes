@@ -1,11 +1,13 @@
 """Starship managed palette and zsh-syntax companion."""
 
+import tomllib
 from pathlib import Path
 
-from sf2_theme.adapters.starship import apply_starship, merge_theme, render_block
-from sf2_theme.adapters.zsh_syntax import apply_zsh_syntax, render_highlight
+from sf2_theme.adapters.starship import merge_theme, plan_starship, render_block
+from sf2_theme.adapters.zsh_syntax import render_highlight
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.cli import dispatch
+from sf2_theme.filesystem import commit
 
 
 def test_starship_palette_maps_blue_to_accent() -> None:
@@ -40,8 +42,7 @@ def test_apply_starship_writes_palette_and_zsh(tmp_path: Path, monkeypatch) -> N
     config_dir.mkdir()
     (config_dir / "starship.toml").write_text('[directory]\nstyle = "blue"\n', encoding="utf-8")
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
-    apply_starship(theme, config_dir=config_dir, dry_run=False, follow_symlinks=False)
-    apply_zsh_syntax(theme, dry_run=False, follow_symlinks=False)
+    commit(plan_starship(theme, parse_catalog(), config_dir, slot=True))
     starship = (config_dir / "starship.toml").read_text(encoding="utf-8")
     assert f'blue = "{theme.ui.accent}"' in starship
     highlight = (tmp_path / "xdg" / "sf2-theme" / "zsh-syntax-highlighting.zsh").read_text(encoding="utf-8")
@@ -51,3 +52,12 @@ def test_apply_starship_writes_palette_and_zsh(tmp_path: Path, monkeypatch) -> N
 def test_apps_lists_starship(capsys) -> None:
     assert dispatch(["apps"]) == 0
     assert "starship" in capsys.readouterr().out
+
+
+def test_palette_stays_top_level_after_a_multi_line_format_string(tmp_path: Path) -> None:
+    preset = 'format = """\n[](#9A348E)\\\n$os\\\n[ ](bg:#DA627D)\\\n$directory"""\n\n[character]\nsymbol = ">"\n'
+    merged = merge_theme(preset, get_theme("main", parse_catalog()))
+    config = tomllib.loads(merged)
+    assert config["palette"] == "sf2"
+    assert "sf2-themes" not in config["format"]
+    assert merge_theme(merged, get_theme("main", parse_catalog())) == merged

@@ -2,11 +2,10 @@
 
 from pathlib import Path
 
-import pytest
-
-from sf2_theme.adapters.herdr import HERDR_TOKENS, apply_herdr, merge_theme, render_block
+from sf2_theme.adapters.herdr import HERDR_TOKENS, inspect_herdr, merge_theme, plan_herdr, render_block
 from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
-from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import commit
+from sf2_theme.plan import Ownership
 
 
 def _assert_mode_custom_tables(block: str) -> None:
@@ -80,8 +79,8 @@ def test_herdr_managed_identity_is_family_dark_id() -> None:
 
 def test_selecting_light_or_dark_writes_the_same_pair() -> None:
     catalog = parse_catalog()
-    from_dark = merge_theme("", get_theme("chun-li", catalog), catalog, adopt=False)
-    from_light = merge_theme("", get_theme("chun-li-light", catalog), catalog, adopt=False)
+    from_dark = merge_theme("", get_theme("chun-li", catalog), catalog)
+    from_light = merge_theme("", get_theme("chun-li-light", catalog), catalog)
     assert from_dark == from_light
     _assert_mode_custom_tables(from_dark)
     assert "auto_switch = true" in from_dark
@@ -92,7 +91,7 @@ def test_preserves_unrelated_sections() -> None:
     catalog = parse_catalog()
     theme = get_theme("main", catalog)
     existing = '[ui]\ntheme = "follow-system"\n\n[keys]\nprefix = "ctrl+b"\n'
-    merged = merge_theme(existing, theme, catalog, adopt=False)
+    merged = merge_theme(existing, theme, catalog)
     assert 'theme = "follow-system"' in merged
     assert 'prefix = "ctrl+b"' in merged
     assert "# >>> sf2-themes managed theme" in merged
@@ -100,19 +99,18 @@ def test_preserves_unrelated_sections() -> None:
     _assert_mode_custom_tables(merged)
 
 
-def test_refuses_unmarked_theme_without_adopt() -> None:
-    catalog = parse_catalog()
-    theme = get_theme("main", catalog)
-    existing = '[theme]\nname = "catppuccin"\n'
-    with pytest.raises(ThemeError, match="--adopt"):
-        merge_theme(existing, theme, catalog, adopt=False)
+def test_unmarked_theme_is_foreign(tmp_path: Path) -> None:
+    config_dir = tmp_path / "herdr"
+    config_dir.mkdir()
+    (config_dir / "config.toml").write_text('[theme]\nname = "catppuccin"\n', encoding="utf-8")
+    assert inspect_herdr(parse_catalog(), config_dir).ownership is Ownership.FOREIGN
 
 
-def test_adopt_replaces_unmarked_theme() -> None:
+def test_merge_replaces_an_adopted_unmarked_theme() -> None:
     catalog = parse_catalog()
     theme = get_theme("main", catalog)
     existing = '[ui]\nconfirm_close = true\n\n[theme]\nname = "dracula"\n'
-    merged = merge_theme(existing, theme, catalog, adopt=True)
+    merged = merge_theme(existing, theme, catalog)
     assert "dracula" not in merged
     assert 'name = "catppuccin"' in merged
     assert "auto_switch = true" in merged
@@ -124,8 +122,8 @@ def test_adopt_replaces_unmarked_theme() -> None:
 def test_second_apply_replaces_marked_block() -> None:
     catalog = parse_catalog()
     main = get_theme("main", catalog)
-    first = merge_theme("", main, catalog, adopt=False)
-    second = merge_theme(first, main, catalog, adopt=False)
+    first = merge_theme("", main, catalog)
+    second = merge_theme(first, main, catalog)
     assert second.count("# >>> sf2-themes managed theme") == 1
     assert sum(line.strip() == "[theme.custom.dark]" for line in second.splitlines()) == 1
     _assert_mode_custom_tables(second)
@@ -137,8 +135,8 @@ def test_apply_herdr_round_trip(tmp_path: Path) -> None:
     config_dir = tmp_path / "herdr"
     config_dir.mkdir()
     (config_dir / "config.toml").write_text('[ui]\ntheme = "follow-system"\n', encoding="utf-8")
-    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
-    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
+    commit(plan_herdr(theme, catalog, config_dir=config_dir, slot=True))
+    commit(plan_herdr(theme, catalog, config_dir=config_dir, slot=True))
     text = (config_dir / "config.toml").read_text(encoding="utf-8")
     _assert_mode_custom_tables(text)
     assert sum(line.strip() == "[theme.custom.dark]" for line in text.splitlines()) == 1

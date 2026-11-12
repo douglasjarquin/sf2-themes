@@ -1,8 +1,9 @@
 """Conservative WezTerm Lua integration. Guessing is a failure."""
 
 import re
-from dataclasses import dataclass
 from pathlib import Path
+
+from sf2_theme.plan import Ownership
 
 BUILDER = re.compile(r"^local\s+(\w+)\s*=\s*wezterm\.config_builder\(\)\s*$", re.MULTILINE)
 RETURN_NAME = re.compile(r"^return\s+(\w+)\s*$", re.MULTILINE)
@@ -12,17 +13,6 @@ TERM_THEME_GUARD = "TERM_THEME"
 TERM_THEME_ASSIGN = (
     'sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"'
 )
-
-
-@dataclass(frozen=True, slots=True)
-class LuaSetup:
-    """Result of attempting to integrate the managed pointer into wezterm.lua."""
-
-    content: str
-    mutated: bool
-    snippet: str | None
-    # True when --adopt would turn this refused shape into a mutation.
-    adoptable: bool = False
 
 
 def lua_path_literal(path: Path) -> str:
@@ -64,18 +54,13 @@ def starter_config(pointer: Path) -> str:
     )
 
 
-def already_integrated(existing: str, pointer: Path) -> bool:
-    """True when the file already dofiles the managed pointer with TERM_THEME."""
-    marker = str(pointer)
-    has_pointer = "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
-    return has_pointer and TERM_THEME_GUARD in existing
+def _code(existing: str) -> str:
+    """Drop Lua comment lines so commented-out integration never counts."""
+    return "\n".join(line for line in existing.splitlines() if not line.lstrip().startswith("--"))
 
 
-def needs_term_theme_upgrade(existing: str, pointer: Path) -> bool:
-    """True when sf2 integration exists but the Cursor Agent TERM_THEME guard does not."""
-    marker = str(pointer)
-    has_pointer = "wezterm-current.lua" in existing and (marker in existing or "dofile" in existing)
-    return has_pointer and TERM_THEME_GUARD not in existing
+def _references_pointer(code: str, pointer: Path) -> bool:
+    return "wezterm-current.lua" in code and (str(pointer) in code or "dofile" in code)
 
 
 def _upgrade_term_theme_guard(existing: str, pointer: Path) -> str | None:
@@ -122,35 +107,57 @@ def _has_scheme_kind(existing: str, kind: str) -> bool:
     return any(_scheme_kind(line) == kind for line in existing.splitlines())
 
 
-def setup_lua(existing: str, pointer: Path, *, adopt: bool = False) -> LuaSetup:
-    """Mutate only empty files and known-safe config_builder configs."""
-    snippet = integration_snippet(pointer)
-    if not existing.strip():
-        return LuaSetup(content=starter_config(pointer), mutated=True, snippet=None)
-    if already_integrated(existing, pointer):
-        return LuaSetup(content=existing, mutated=False, snippet=None)
-    if needs_term_theme_upgrade(existing, pointer):
-        upgraded = _upgrade_term_theme_guard(existing, pointer)
-        if upgraded is not None:
-            return LuaSetup(content=upgraded, mutated=True, snippet=None)
-        return LuaSetup(content=existing, mutated=False, snippet=snippet)
-    builder = BUILDER.search(existing)
-    returned = RETURN_NAME.search(existing)
+def _builder_name(code: str) -> str | None:
+    builder = BUILDER.search(code)
+    returned = RETURN_NAME.search(code)
     if builder is None or returned is None or builder.group(1) != returned.group(1):
-        return LuaSetup(content=existing, mutated=False, snippet=snippet)
-    has_foreign = _has_scheme_kind(existing, "other")
-    has_sf2 = _has_scheme_kind(existing, "sf2")
-    if has_foreign and not adopt:
-        return LuaSetup(content=existing, mutated=False, snippet=snippet, adoptable=True)
-    strip_kinds = {"sf2"}
-    if adopt:
-        strip_kinds.add("other")
-    cleaned = _strip_scheme_lines(existing, kinds=frozenset(strip_kinds)) if (has_sf2 or adopt) else existing
+        return None
+    return builder.group(1)
+
+
+def classify(existing: str, pointer: Path) -> Ownership:
+    """Classify who owns the color scheme in wezterm.lua.
+
+    Pointer integration is recognised before the config shape, so a pasted
+    snippet in a config sf2-themes cannot edit still counts as managed.
+    """
+    if not existing.strip():
+        return Ownership.ABSENT
+    code = _code(existing)
+    if _references_pointer(code, pointer):
+        if TERM_THEME_GUARD in code:
+            return Ownership.MANAGED
+        if _upgrade_term_theme_guard(existing, pointer) is not None:
+            return Ownership.LEGACY
+        return Ownership.UNKNOWN_SHAPE
+    if _builder_name(code) is None:
+        return Ownership.UNKNOWN_SHAPE
+    if _has_scheme_kind(existing, "other"):
+        return Ownership.FOREIGN
+    if _has_scheme_kind(existing, "sf2"):
+        return Ownership.LEGACY
+    return Ownership.ABSENT
+
+
+def integrate(existing: str, pointer: Path) -> str:
+    """Return wezterm.lua with the managed pointer integration.
+
+    The caller has already classified the config and approved replacing any
+    color-scheme assignment; a shape `classify` rejects is returned unchanged.
+    """
+    if not existing.strip():
+        return starter_config(pointer)
+    code = _code(existing)
+    if _references_pointer(code, pointer):
+        if TERM_THEME_GUARD in code:
+            return existing
+        return _upgrade_term_theme_guard(existing, pointer) or existing
+    name = _builder_name(code)
+    cleaned = _strip_scheme_lines(existing, kinds=frozenset({"sf2", "other"}))
     returned = RETURN_NAME.search(cleaned)
-    if returned is None:
-        return LuaSetup(content=existing, mutated=False, snippet=snippet)
-    name = builder.group(1)
+    if name is None or returned is None:
+        return existing
     assignment = integration_snippet(pointer, name).rstrip()
     prefix = cleaned[: returned.start()].rstrip()
     suffix = cleaned[returned.start() :]
-    return LuaSetup(content=f"{prefix}\n{assignment}\n{suffix}", mutated=True, snippet=None)
+    return f"{prefix}\n{assignment}\n{suffix}"

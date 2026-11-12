@@ -2,11 +2,10 @@
 
 from pathlib import Path
 
-import pytest
-
-from sf2_theme.adapters.lazygit import apply_lazygit, merge_config, render_theme
+from sf2_theme.adapters.lazygit import inspect_lazygit, merge_config, plan_lazygit, render_theme
 from sf2_theme.catalog import get_theme, parse_catalog
-from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import commit
+from sf2_theme.plan import Ownership
 
 
 def test_render_theme_covers_current_lazygit_schema() -> None:
@@ -38,7 +37,7 @@ def test_merge_config_preserves_unrelated_gui_and_author_settings() -> None:
     theme = get_theme("main", parse_catalog())
     existing = "gui:\n  sidePanelWidth: 0.3\n  authorColors:\n    Alice: '#fff'\n"
 
-    merged = merge_config(existing, theme, adopt=False)
+    merged = merge_config(existing, theme)
 
     assert "sidePanelWidth: 0.3" in merged
     assert "Alice: '#fff'" in merged
@@ -46,70 +45,75 @@ def test_merge_config_preserves_unrelated_gui_and_author_settings() -> None:
     assert merged.count("sf2-themes: sf2-main") == 2
 
 
-def test_merge_config_recognizes_sections_with_comments_and_trailing_whitespace() -> None:
+def test_merge_config_recognizes_sections_with_comments_and_trailing_whitespace(tmp_path: Path) -> None:
     theme = get_theme("main", parse_catalog())
     existing = "gui: # ui settings\n  sidePanelWidth: 0.3\n"
 
-    merged = merge_config(existing, theme, adopt=False)
+    merged = merge_config(existing, theme)
 
     assert merged.count("gui:") == 1
     assert merged.count("theme:") == 1
     assert merged.count("authorColors:") == 1
 
     commented_theme = "gui:  \n  theme:   # custom\n    activeBorderColor: ['#ffffff']\n"
-    with pytest.raises(ThemeError, match="--adopt"):
-        merge_config(commented_theme, theme, adopt=False)
+    config_dir = tmp_path / "lazygit"
+    config_dir.mkdir()
+    (config_dir / "config.yml").write_text(commented_theme, encoding="utf-8")
+    assert inspect_lazygit(parse_catalog(), config_dir).ownership is Ownership.FOREIGN
 
 
 def test_merge_config_replaces_double_quoted_wildcard_author_entry() -> None:
     theme = get_theme("main", parse_catalog())
     existing = "gui:\n  authorColors:\n    Alice: '#fff'\n    \"*\": '#abc'\n"
 
-    merged = merge_config(existing, theme, adopt=False)
+    merged = merge_config(existing, theme)
 
     assert "Alice: '#fff'" in merged
     assert "\"*\": '#abc'" not in merged
     assert merged.count("'*':") == 1
 
 
-def test_merge_config_requires_adopt_for_an_existing_theme() -> None:
+def test_merge_config_replaces_an_adopted_theme() -> None:
     theme = get_theme("main", parse_catalog())
     existing = "gui:\n  theme:\n    activeBorderColor: ['#ffffff']\n"
 
-    with pytest.raises(ThemeError, match="--adopt"):
-        merge_config(existing, theme, adopt=False)
+    merged = merge_config(existing, theme)
+
+    assert "#ffffff" not in merged
+    assert "# sf2-themes: sf2-main" in merged
 
 
 def test_apply_lazygit_is_idempotent_and_dry_run_is_non_mutating(tmp_path: Path) -> None:
     theme = get_theme("main", parse_catalog())
     themes = parse_catalog()
 
-    first = apply_lazygit(
-        theme,
-        themes,
-        config_dir=tmp_path,
-        dry_run=False,
-        follow_symlinks=False,
-        adopt=False,
+    first = commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=tmp_path,
+            slot=True,
+        )
     )
-    second = apply_lazygit(
-        theme,
-        themes,
-        config_dir=tmp_path,
-        dry_run=False,
-        follow_symlinks=False,
-        adopt=False,
+    second = commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=tmp_path,
+            slot=True,
+        )
     )
     assert all(result.action.value in {"created", "unchanged"} for result in first + second)
     assert not list(tmp_path.glob("*.bak.*"))
 
     dry_run_dir = tmp_path / "dry-run"
-    apply_lazygit(
-        theme,
-        themes,
-        config_dir=dry_run_dir,
+    commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=dry_run_dir,
+            slot=True,
+        ),
         dry_run=True,
-        follow_symlinks=False,
-        adopt=False,
     )
     assert not dry_run_dir.exists()

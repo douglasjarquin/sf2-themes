@@ -1,7 +1,6 @@
 import json
 from pathlib import Path
 
-from sf2_theme.adapters.claude import setup_claude
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.cli import dispatch
 
@@ -42,16 +41,7 @@ def test_setup_claude_preserves_existing_selection(tmp_path: Path) -> None:
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     (config_dir / "settings.json").write_text(json.dumps({"theme": "custom:sf2-ken"}), encoding="utf-8")
-    catalog = parse_catalog()
-
-    setup_claude(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
-        replace_theme=False,
-    )
+    assert dispatch(["setup", "claude", "--config-dir", str(config_dir)]) == 0
 
     assert json.loads((config_dir / "settings.json").read_text(encoding="utf-8"))["theme"] == "custom:sf2-ken"
 
@@ -81,12 +71,7 @@ def test_apply_claude_dry_run_does_not_change_settings_or_create_backup(tmp_path
     settings_path = config_dir / "settings.json"
     original = settings_path.read_text(encoding="utf-8")
 
-    assert (
-        dispatch(
-            ["apply", "claude", "--theme", "ryu-light", "--config-dir", str(config_dir), "--dry-run"]
-        )
-        == 0
-    )
+    assert dispatch(["apply", "claude", "--theme", "ryu-light", "--config-dir", str(config_dir), "--dry-run"]) == 0
 
     assert settings_path.read_text(encoding="utf-8") == original
     assert not list(config_dir.glob("settings.json.bak.*"))
@@ -110,27 +95,24 @@ def test_apply_claude_refuses_settings_symlink_without_follow_flag(tmp_path: Pat
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     target = tmp_path / "real-settings.json"
-    target.write_text(json.dumps({"theme": "dark"}), encoding="utf-8")
+    target.write_text(json.dumps({"model": "sonnet"}), encoding="utf-8")
     (config_dir / "settings.json").symlink_to(target)
 
     assert dispatch(["apply", "claude", "--config-dir", str(config_dir)]) == 1
 
     assert "symlink" in capsys.readouterr().err
-    assert json.loads(target.read_text(encoding="utf-8")) == {"theme": "dark"}
+    assert json.loads(target.read_text(encoding="utf-8")) == {"model": "sonnet"}
 
 
 def test_apply_claude_follows_settings_symlink_when_requested(tmp_path: Path) -> None:
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     target = tmp_path / "real-settings.json"
-    target.write_text(json.dumps({"theme": "dark"}), encoding="utf-8")
+    target.write_text(json.dumps({"model": "sonnet"}), encoding="utf-8")
     (config_dir / "settings.json").symlink_to(target)
 
     assert (
-        dispatch(
-            ["apply", "claude", "--theme", "ryu-light", "--config-dir", str(config_dir), "--follow-symlinks"]
-        )
-        == 0
+        dispatch(["apply", "claude", "--theme", "ryu-light", "--config-dir", str(config_dir), "--follow-symlinks"]) == 0
     )
 
     assert json.loads(target.read_text(encoding="utf-8"))["theme"] == "custom:sf2-ryu-light"

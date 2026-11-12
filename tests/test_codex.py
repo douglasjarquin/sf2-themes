@@ -2,7 +2,6 @@ import tomllib
 from pathlib import Path
 from xml.etree import ElementTree
 
-from sf2_theme.adapters.codex import setup_codex
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.cli import dispatch
 
@@ -55,16 +54,7 @@ def test_setup_codex_migrates_existing_unprefixed_selection(tmp_path: Path) -> N
     config_dir = tmp_path / "codex"
     config_dir.mkdir()
     (config_dir / "config.toml").write_text('[tui]\ntheme = "ken"\n', encoding="utf-8")
-    catalog = parse_catalog()
-
-    setup_codex(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
-        replace_theme=False,
-    )
+    assert dispatch(["setup", "codex", "--config-dir", str(config_dir)]) == 0
 
     assert tomllib.loads((config_dir / "config.toml").read_text(encoding="utf-8"))["tui"]["theme"] == "sf2-ken"
 
@@ -163,7 +153,7 @@ def test_apply_codex_follows_config_symlink_when_requested(tmp_path: Path) -> No
     config_dir = tmp_path / "codex"
     config_dir.mkdir()
     target = tmp_path / "real-config.toml"
-    target.write_text('[tui]\ntheme = "catppuccin-mocha"\n', encoding="utf-8")
+    target.write_text('[tui]\ntheme = "sf2-main"\n', encoding="utf-8")
     (config_dir / "config.toml").symlink_to(target)
 
     assert (

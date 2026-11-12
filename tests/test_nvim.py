@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from sf2_theme.adapters.nvim import apply_nvim, render_pointer, render_scheme, setup_nvim
+from sf2_theme.adapters.nvim import plan_nvim, render_pointer, render_scheme
 from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.cli import dispatch
+from sf2_theme.filesystem import commit
 
 
 def test_render_scheme_uses_catalog_palette() -> None:
@@ -20,18 +21,24 @@ def test_render_scheme_uses_catalog_palette() -> None:
 
 def test_apply_writes_every_catalog_colorscheme_and_current_pointer(tmp_path: Path) -> None:
     catalog = parse_catalog()
-    results = apply_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=tmp_path / "nvim",
-        dry_run=False,
-        follow_symlinks=False,
+    results = commit(
+        plan_nvim(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=tmp_path / "nvim",
+            slot=True,
+        )
     )
 
     colors = tmp_path / "nvim" / "colors"
     assert {path.stem for path in colors.glob("*.lua")} == {f"sf2-{theme.metadata.id}" for theme in catalog}
-    assert "sf2-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert len(results) == len(catalog) + 1
+    pointer = (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
+    assert "colorscheme sf2-main" in pointer
+    assert "colorscheme sf2-main-light" in pointer
+    assert "TERM_THEME" in pointer
+    loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
+    assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
+    assert len(results) == len(catalog) + 2
 
 
 def test_nvim_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path: Path) -> None:
@@ -41,12 +48,13 @@ def test_nvim_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path: Pa
     colors.mkdir(parents=True)
     (colors / "street-fighter-ii-main.lua").write_text("old managed colorscheme", encoding="utf-8")
 
-    apply_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_nvim(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=config_dir,
+            slot=True,
+        )
     )
 
     written_ids = {path.stem for path in colors.glob("*.lua")}
@@ -57,40 +65,13 @@ def test_nvim_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path: Pa
     assert not (colors / "street-fighter-ii-main.lua").exists()
 
 
-def test_setup_writes_managed_loader_and_default_current(tmp_path: Path) -> None:
-    catalog = parse_catalog()
-
-    results = setup_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=tmp_path / "nvim",
-        dry_run=False,
-        follow_symlinks=False,
-    )
-
-    loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
-    assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
-    assert "colorscheme sf2-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert "colorscheme sf2-main-light" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert "TERM_THEME" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert len(results) == len(catalog) + 2
-
-
 def test_setup_nvim_migrates_existing_unprefixed_pointer(tmp_path: Path) -> None:
-    catalog = parse_catalog()
     config_dir = tmp_path / "nvim"
     pointer = config_dir / "sf2-theme" / "current.lua"
     pointer.parent.mkdir(parents=True)
     pointer.write_text('-- sf2-themes: ken\nvim.cmd("colorscheme street-fighter-ii-ken")\n', encoding="utf-8")
 
-    setup_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
-        replace_pointer=False,
-    )
+    assert dispatch(["setup", "nvim", "--config-dir", str(config_dir)]) == 0
 
     assert "-- sf2-themes: sf2-ken" in pointer.read_text(encoding="utf-8")
     assert "colorscheme sf2-ken" in pointer.read_text(encoding="utf-8")
@@ -101,12 +82,13 @@ def test_setup_nvim_migrates_existing_unprefixed_pointer(tmp_path: Path) -> None
 def test_apply_backs_up_current_pointer_and_current_reads_theme(tmp_path: Path, capsys) -> None:
     config_dir = tmp_path / "nvim"
     catalog = parse_catalog()
-    setup_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_nvim(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=config_dir,
+            slot=True,
+        )
     )
 
     assert dispatch(["apply", "nvim", "--theme", "ryu-light", "--config-dir", str(config_dir)]) == 0
@@ -121,12 +103,13 @@ def test_apply_backs_up_current_pointer_and_current_reads_theme(tmp_path: Path, 
 def test_apply_dry_run_leaves_existing_pointer_unchanged(tmp_path: Path) -> None:
     config_dir = tmp_path / "nvim"
     catalog = parse_catalog()
-    setup_nvim(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_nvim(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=config_dir,
+            slot=True,
+        )
     )
     pointer = config_dir / "sf2-theme" / "current.lua"
     original = pointer.read_text(encoding="utf-8")

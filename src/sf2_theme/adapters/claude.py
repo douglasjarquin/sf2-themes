@@ -3,9 +3,8 @@ import os
 from collections.abc import Sequence
 from pathlib import Path
 
-from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
-from sf2_theme.model import Theme
+from sf2_theme.model import SELECTABLE_PREFIX, Theme
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded
 
 THEME_DIR_NAME = "themes"
 SETTINGS_FILE_NAME = "settings.json"
@@ -63,99 +62,34 @@ def render_theme(theme: Theme) -> str:
 
 
 def merge_settings(existing: str, theme: Theme) -> str:
-    try:
-        data = json.loads(existing) if existing.strip() else {}
-    except json.JSONDecodeError as error:
-        raise ThemeError(f"Claude settings.json is not valid JSON: {error}") from error
+    data = json.loads(existing) if existing.strip() else {}
     data["theme"] = theme_key(theme)
     return json.dumps(data, indent=2) + "\n"
 
 
-def _write_themes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    return [
-        write_file(
-            theme_path(candidate, config_dir),
-            render_theme(candidate),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for candidate in themes
-    ]
-
-
-def _write_settings(
-    theme: Theme,
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
+def inspect_claude(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = settings_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    return write_file(
-        path,
-        merge_settings(existing, theme),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_claude(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    results = _write_themes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    results.append(_write_settings(theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results
-
-
-def setup_claude(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    replace_theme: bool = True,
-) -> list[WriteResult]:
-    results = _write_themes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    path = settings_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    if replace_theme or not _has_sf2_theme(existing):
-        results.append(_write_settings(theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    else:
-        configured = json.loads(existing).get("theme", "")
-        current_id = configured.removeprefix(CUSTOM_THEME_PREFIX)
-        legacy_theme = next((candidate for candidate in themes if candidate.metadata.selectable_id == current_id), None)
-        if legacy_theme is not None:
-            results.append(
-                _write_settings(legacy_theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-            )
-    return results
-
-
-def _has_sf2_theme(existing: str) -> bool:
+    existing = read_existing(path)
     if not existing.strip():
-        return False
-    configured = json.loads(existing).get("theme")
-    return isinstance(configured, str) and configured.startswith(CUSTOM_THEME_PREFIX)
+        return Inspection(Ownership.ABSENT)
+    try:
+        data = json.loads(existing)
+    except json.JSONDecodeError as error:
+        return Inspection(Ownership.BROKEN, detail=f"{path} is not valid JSON: {error}")
+    if not isinstance(data, dict):
+        return Inspection(Ownership.BROKEN, detail=f"{path} must contain a JSON object")
+    if "theme" not in data:
+        return Inspection(Ownership.ABSENT)
+    configured = data["theme"]
+    if isinstance(configured, str) and configured.startswith(f"{CUSTOM_THEME_PREFIX}{SELECTABLE_PREFIX}"):
+        return recorded(Ownership.MANAGED, configured.removeprefix(CUSTOM_THEME_PREFIX), themes)
+    return Inspection(Ownership.FOREIGN)
 
 
-def read_current_id(config_dir: Path | None) -> str:
-    path = settings_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Claude theme applied yet ({path} missing)")
-    configured = json.loads(path.read_text(encoding="utf-8")).get("theme")
-    if not isinstance(configured, str) or not configured.startswith(CUSTOM_THEME_PREFIX):
-        raise ThemeError(f"could not read theme id from {path}")
-    return configured.removeprefix(CUSTOM_THEME_PREFIX)
+def plan_claude(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
+    if slot:
+        path = settings_path(config_dir)
+        existing = read_existing(path)
+        steps.append(Write(path, merge_settings(existing, theme)))
+    return steps

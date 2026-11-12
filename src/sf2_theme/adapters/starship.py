@@ -2,15 +2,21 @@
 
 import os
 import re
+import tomllib
+from collections.abc import Sequence
 from pathlib import Path
 
+from sf2_theme.adapters.zsh_syntax import plan_zsh_syntax
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
 ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
+TABLE_HEADER = re.compile(r"^\s*\[")
+TOP_LEVEL_PALETTE = re.compile(r"^\s*palette\s*=")
+MULTI_LINE_QUOTES = ('"""', "'''")
 
 # Starship `style = "blue"` resolves through `palette`, not the terminal ANSI
 # table. Remap the named colors the stock prompt uses onto SF2 tokens so dirname
@@ -64,50 +70,93 @@ def render_block(theme: Theme) -> str:
     return "\n".join(lines)
 
 
+def _without_block(existing: str) -> str | None:
+    """Return the config with the managed block removed, or None when its markers are incomplete."""
+    if MANAGED_START not in existing and MANAGED_END not in existing:
+        return existing
+    start = existing.find(MANAGED_START)
+    end = existing.find(MANAGED_END)
+    if start == -1 or end == -1 or end < start:
+        return None
+    after = end + len(MANAGED_END)
+    if after < len(existing) and existing[after] == "\n":
+        after += 1
+    return existing[:start] + existing[after:]
+
+
+def _open_string(line: str, delimiter: str | None) -> str | None:
+    """Return the multi-line string delimiter still open after `line`, given the one open before it."""
+    position = 0
+    while True:
+        if delimiter is None:
+            found = [(index, quote) for quote in MULTI_LINE_QUOTES if (index := line.find(quote, position)) != -1]
+            if not found:
+                return None
+            position, delimiter = min(found)
+        else:
+            position = line.find(delimiter, position)
+            if position == -1:
+                return delimiter
+            delimiter = None
+        position += 3
+
+
+def _top_level_end(lines: list[str]) -> int:
+    """Return where the top-level key region ends, keeping a comment that heads the first table with it.
+
+    Lines inside a multi-line string, such as a preset's `format`, are never table headers.
+    """
+    end = len(lines)
+    delimiter: str | None = None
+    for index, line in enumerate(lines):
+        if delimiter is None and TABLE_HEADER.match(line):
+            end = index
+            break
+        delimiter = _open_string(line, delimiter)
+    while end > 0 and lines[end - 1].lstrip().startswith("#"):
+        end -= 1
+    return end
+
+
 def merge_theme(existing: str, theme: Theme) -> str:
-    """Insert or replace the managed Starship palette block."""
-    block = render_block(theme)
-    if MANAGED_START in existing or MANAGED_END in existing:
-        start = existing.find(MANAGED_START)
-        end = existing.find(MANAGED_END)
-        if start == -1 or end == -1 or end < start:
-            raise ThemeError("Starship config has incomplete sf2-themes markers")
-        after = end + len(MANAGED_END)
-        if after < len(existing) and existing[after] == "\n":
-            after += 1
-        # Drop a stale top-level palette assignment outside the managed block so
-        # we do not leave two competing palette = lines.
-        head = existing[:start]
-        tail = existing[after:]
-        merged = head + block + tail
-    elif existing.strip():
-        merged = existing.rstrip() + "\n\n" + block
-    else:
-        merged = block
-    return merged if merged.endswith("\n") else merged + "\n"
+    """Place the managed palette block in the top-level key region.
+
+    Starship reads `palette` only as a top-level key, so the block goes before
+    the first table. Any top-level `palette` outside the block is replaced.
+    """
+    remaining = _without_block(existing)
+    lines = (existing if remaining is None else remaining).splitlines()
+    split = _top_level_end(lines)
+    head = [line for line in lines[:split] if not TOP_LEVEL_PALETTE.match(line)]
+    parts = ["\n".join(head).rstrip("\n"), render_block(theme).rstrip("\n"), "\n".join(lines[split:]).strip("\n")]
+    merged = "\n\n".join(part for part in parts if part) + "\n"
+    if tomllib.loads(merged).get("palette") != "sf2":
+        raise ThemeError("Starship config would not load the managed palette as a top-level key")
+    return merged
 
 
-def apply_starship(
-    theme: Theme,
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    """Write the managed Starship palette block."""
+def inspect_starship(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = starship_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    merged = merge_theme(existing, theme)
-    return write_file(path, merged, dry_run=dry_run, follow_symlinks=follow_symlinks)
+    existing = read_existing(path)
+    outside = _without_block(existing)
+    if outside is None:
+        return Inspection(Ownership.BROKEN, detail=f"{path} has incomplete sf2-themes markers")
+    try:
+        tomllib.loads(existing)
+        user_palette = "palette" in tomllib.loads(outside)
+    except tomllib.TOMLDecodeError as error:
+        return Inspection(Ownership.BROKEN, detail=f"{path} is not valid TOML: {error}")
+    if user_palette:
+        return Inspection(Ownership.FOREIGN)
+    if outside != existing:
+        return recorded(Ownership.MANAGED, recorded_id(existing, ID_COMMENT), themes)
+    return Inspection(Ownership.ABSENT)
 
 
-def read_current_id(config_dir: Path | None) -> str:
-    """Read the theme id from the managed Starship block."""
+def plan_starship(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan the managed palette block and the matching zsh highlight snippet."""
+    if not slot:
+        return []
     path = starship_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Starship theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = ID_COMMENT.match(line.strip())
-        if match:
-            return match.group(1)
-    raise ThemeError(f"could not read theme id from {path}")
+    existing = read_existing(path)
+    return [Write(path, merge_theme(existing, theme)), plan_zsh_syntax(theme)]

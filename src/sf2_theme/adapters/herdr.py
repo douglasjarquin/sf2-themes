@@ -7,9 +7,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.catalog import theme_pair
-from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
@@ -131,22 +130,25 @@ def _strip_theme_sections(content: str) -> str:
     return "\n".join(kept).rstrip()
 
 
-def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme], *, adopt: bool) -> str:
-    """Insert or replace the managed Herdr block."""
+def _markers(content: str) -> tuple[int, int] | None:
+    """Return the managed block's start and end offsets, or None when absent."""
+    if MANAGED_START not in content and MANAGED_END not in content:
+        return None
+    return content.find(MANAGED_START), content.find(MANAGED_END)
+
+
+def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme]) -> str:
+    """Insert or replace the managed Herdr block, replacing any unmarked theme."""
     dark, light = theme_pair(theme, themes)
     block = render_block(dark, light)
-    if MANAGED_START in existing or MANAGED_END in existing:
-        start = existing.find(MANAGED_START)
-        end = existing.find(MANAGED_END)
-        if start == -1 or end == -1 or end < start:
-            raise ThemeError("Herdr config has incomplete sf2-themes markers")
+    markers = _markers(existing)
+    if markers is not None:
+        start, end = markers
         after = end + len(MANAGED_END)
         if after < len(existing) and existing[after] == "\n":
             after += 1
         merged = existing[:start] + block + existing[after:]
     elif _has_unmarked_theme(existing):
-        if not adopt:
-            raise ThemeError("Herdr config already has a [theme] section; pass --adopt to replace it")
         preserved = _strip_theme_sections(existing)
         merged = f"{preserved}\n\n{block}" if preserved else block
     elif existing.strip():
@@ -157,31 +159,28 @@ def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme], *, adopt: 
     return merged if merged.endswith("\n") else merged + "\n"
 
 
-def apply_herdr(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    adopt: bool,
-) -> WriteResult:
-    """Write the managed Herdr theme block for a dark/light pair."""
+def inspect_herdr(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = herdr_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    if existing:
+    existing = read_existing(path)
+    try:
         tomllib.loads(existing)
-    merged = merge_theme(existing, theme, themes, adopt=adopt)
-    return write_file(path, merged, dry_run=dry_run, follow_symlinks=follow_symlinks)
+    except tomllib.TOMLDecodeError as error:
+        return Inspection(Ownership.BROKEN, detail=f"{path} is not valid TOML: {error}")
+    markers = _markers(existing)
+    if markers is not None:
+        start, end = markers
+        if start == -1 or end == -1 or end < start:
+            return Inspection(Ownership.BROKEN, detail=f"{path} has incomplete sf2-themes markers")
+        return recorded(Ownership.MANAGED, recorded_id(existing, ID_COMMENT), themes)
+    if _has_unmarked_theme(existing):
+        return Inspection(Ownership.FOREIGN)
+    return Inspection(Ownership.ABSENT)
 
 
-def read_current_id(config_dir: Path | None) -> str:
-    """Read the theme id from the managed Herdr block."""
+def plan_herdr(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan the managed Herdr theme block for a dark/light pair."""
+    if not slot:
+        return []
     path = herdr_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Herdr theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = ID_COMMENT.match(line.strip())
-        if match:
-            return match.group(1)
-    raise ThemeError(f"could not read theme id from {path}")
+    existing = read_existing(path)
+    return [Write(path, merge_theme(existing, theme, themes))]

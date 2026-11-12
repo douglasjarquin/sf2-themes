@@ -5,55 +5,88 @@ import json
 import sys
 import tomllib
 from collections import Counter
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass
+from enum import StrEnum, unique
 from pathlib import Path
 
 from sf2_theme import __version__
-from sf2_theme.adapters.claude import read_current_id as claude_current
-from sf2_theme.adapters.claude import setup_claude
-from sf2_theme.adapters.codex import read_current_id as codex_current
-from sf2_theme.adapters.codex import setup_codex
-from sf2_theme.adapters.herdr import apply_herdr
-from sf2_theme.adapters.herdr import read_current_id as herdr_current
-from sf2_theme.adapters.herdr_app import read_current_id as herdr_app_current
-from sf2_theme.adapters.herdr_app import selection_exists as herdr_app_selection_exists
-from sf2_theme.adapters.herdr_app import setup_herdr_app
-from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
-from sf2_theme.adapters.lazygit import setup_lazygit
-from sf2_theme.adapters.nvim import current_pointer_path as nvim_pointer_path
-from sf2_theme.adapters.nvim import read_current_id as nvim_current
-from sf2_theme.adapters.nvim import setup_nvim
+from sf2_theme.adapters.claude import inspect_claude, plan_claude
+from sf2_theme.adapters.codex import inspect_codex, plan_codex
+from sf2_theme.adapters.herdr import inspect_herdr, plan_herdr
+from sf2_theme.adapters.herdr_app import inspect_herdr_app, plan_herdr_app
+from sf2_theme.adapters.lazygit import inspect_lazygit, plan_lazygit
+from sf2_theme.adapters.nvim import inspect_nvim, plan_nvim
 from sf2_theme.adapters.slack import render_theme as slack_import_line
-from sf2_theme.adapters.starship import apply_starship
-from sf2_theme.adapters.starship import read_current_id as starship_current
-from sf2_theme.adapters.wezterm import current_pointer_path as wezterm_pointer_path
-from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
-from sf2_theme.adapters.wezterm import setup_wezterm
-from sf2_theme.adapters.zsh_syntax import SOURCE_HINT, apply_zsh_syntax
+from sf2_theme.adapters.starship import inspect_starship, plan_starship
+from sf2_theme.adapters.wezterm import inspect_wezterm, plan_wezterm
+from sf2_theme.adapters.zsh_syntax import SOURCE_HINT
 from sf2_theme.catalog import (
     catalog_issues,
     default_theme,
     get_theme,
-    installed_theme,
     load_catalog,
     parse_catalog,
     show_theme,
     theme_pair,
 )
-from sf2_theme.errors import CliError, ThemeError
-from sf2_theme.filesystem import WriteAction, WriteResult
+from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import WriteAction, WriteResult, commit
 from sf2_theme.model import Theme, ThemeVariant
+from sf2_theme.plan import Inspection, Ownership, Refusal, Step
 from sf2_theme.validation import validate_theme
 
-APP_NAMES = ("wezterm", "herdr", "herdr-app", "nvim", "codex", "starship", "lazygit", "claude", "slack")
-ADOPT_APPS = ("wezterm", "herdr", "lazygit")
-# Apps whose selection is appearance-aware: both siblings are installed and the
-# managed identity follows the host's light/dark mode.
-PAIR_APPS = ("wezterm", "herdr", "herdr-app", "nvim")
-# Apps whose adapter always writes the theme it is given, so setup without
-# --theme preserves by re-resolving the managed selection before dispatch.
-# The other adapters preserve internally through their replace_* flags.
-RESOLVED_PRESERVE_APPS = ("herdr", "starship", "lazygit")
+
+@dataclass(frozen=True, slots=True)
+class App:
+    """How the CLI drives one configurable application."""
+
+    label: str
+    inspect: Callable[[Sequence[Theme], Path | None], Inspection]
+    plan: Callable[[Theme, Sequence[Theme], Path | None, bool], list[Step]]
+    pair: bool = False
+    owns_files_on_unknown_shape: bool = False
+    reload: str = ""
+    stderr_hint: str = ""
+
+
+APPS: dict[str, App] = {
+    "wezterm": App(
+        "WezTerm",
+        inspect_wezterm,
+        plan_wezterm,
+        pair=True,
+        owns_files_on_unknown_shape=True,
+        reload="restart WezTerm, or let a config reload pick up the managed pointer",
+    ),
+    "herdr": App(
+        "Herdr",
+        inspect_herdr,
+        plan_herdr,
+        pair=True,
+        reload="run `herdr server reload-config` to apply the selection",
+    ),
+    "herdr-app": App(
+        "Herdr app",
+        inspect_herdr_app,
+        plan_herdr_app,
+        pair=True,
+        reload="settings apply live; appearance, layout themes, and the theme picker can override the pair",
+    ),
+    "nvim": App("Neovim", inspect_nvim, plan_nvim, pair=True, reload="restart Neovim to load the new colorscheme"),
+    "codex": App("Codex", inspect_codex, plan_codex, reload="restart Codex, or reselect with /theme"),
+    "starship": App(
+        "Starship",
+        inspect_starship,
+        plan_starship,
+        stderr_hint=f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
+    ),
+    "lazygit": App("Lazygit", inspect_lazygit, plan_lazygit, reload="restart lazygit to render the new theme"),
+    "claude": App(
+        "Claude Code", inspect_claude, plan_claude, reload="reselect with /theme in a running Claude Code session"
+    ),
+}
+APP_NAMES = (*APPS, "slack")
 
 HELP_EPILOG = """\
 notes:
@@ -61,6 +94,9 @@ notes:
   selects a theme (default: main) in one idempotent step.
   setup performs the same integration but keeps an existing selection unless
   --theme is given. install is a deprecated alias for apply.
+  When an app already uses a theme sf2-themes does not manage, apply and
+  setup --theme refuse unless --adopt is given; plain setup installs the
+  theme files and keeps that theme.
   starship also refreshes ~/.config/sf2-theme/zsh-syntax-highlighting.zsh.
   Lazygit installs one YAML fragment per catalog theme under its themes directory.
   Herdr app installs JSON themes in ~/.config/herdr-app/themes/ and selects
@@ -79,21 +115,22 @@ _ACTION_TEXT = {
     WriteAction.UNCHANGED: "unchanged",
     WriteAction.WOULD_CREATE: "would create",
     WriteAction.WOULD_UPDATE: "would update",
-}
-
-# What the user still has to do by hand after a completed apply.
-_RELOAD_NOTES = {
-    "wezterm": "restart WezTerm, or let a config reload pick up the managed pointer",
-    "herdr-app": "settings apply live; appearance, layout themes, and the theme picker can override the pair",
-    "herdr": "run `herdr server reload-config` to apply the selection",
-    "nvim": "restart Neovim to load the new colorscheme",
-    "codex": "restart Codex, or reselect with /theme",
-    "claude": "reselect with /theme in a running Claude Code session",
-    "lazygit": "restart lazygit to render the new theme",
+    WriteAction.REMOVED: "removed",
+    WriteAction.WOULD_REMOVE: "would remove",
 }
 
 
-def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.ArgumentParser]]:
+@unique
+class Selection(StrEnum):
+    """How a run arrived at the theme it writes."""
+
+    SELECTED = "selected"
+    KEPT = "kept"
+    NONE_FOUND = "none found"
+    RESET = "reset"
+
+
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sf2-themes",
         description=(
@@ -112,19 +149,20 @@ def _build_parser() -> tuple[argparse.ArgumentParser, dict[str, argparse.Argumen
     validate = commands.add_parser("validate", help="validate theme definitions")
     validate.add_argument("themes", nargs="*", metavar="THEME", help="catalog ids (default: the whole catalog)")
     validate.add_argument("--all", dest="all_themes", action="store_true", help="validate every catalog theme")
-    mutation: dict[str, argparse.ArgumentParser] = {}
-    mutation["setup"] = commands.add_parser(
-        "setup", help="install or repair app integration (keeps an existing selection unless --theme is given)"
+    mutation = (
+        commands.add_parser(
+            "setup", help="install or repair app integration (keeps an existing selection unless --theme is given)"
+        ),
+        commands.add_parser("apply", help="integrate the app and select a theme in one step"),
+        commands.add_parser("install", help="deprecated alias for apply"),
     )
-    mutation["apply"] = commands.add_parser("apply", help="integrate the app and select a theme in one step")
-    mutation["install"] = commands.add_parser("install", help="deprecated alias for apply")
-    for sub in mutation.values():
+    for sub in mutation:
         _mutation_args(sub)
     current = commands.add_parser("current", help="print the selected theme id, or none")
     current.add_argument("app", choices=APP_NAMES)
     current.add_argument("--config-dir", type=Path, metavar="PATH")
     current.add_argument("--theme", help=argparse.SUPPRESS)
-    return parser, mutation
+    return parser
 
 
 def _mutation_args(parser: argparse.ArgumentParser) -> None:
@@ -135,9 +173,7 @@ def _mutation_args(parser: argparse.ArgumentParser) -> None:
     )
     parser.add_argument("--dry-run", action="store_true", help="print the full plan without writing anything")
     parser.add_argument("--follow-symlinks", action="store_true", help="write through destination symlinks")
-    parser.add_argument(
-        "--adopt", action="store_true", help=f"replace an unmanaged theme setting ({', '.join(ADOPT_APPS)} only)"
-    )
+    parser.add_argument("--adopt", action="store_true", help="replace a theme setting sf2-themes does not manage")
     parser.add_argument("--verbose", "-v", action="store_true", help="print every file operation, not just the summary")
 
 
@@ -165,17 +201,38 @@ def _validate(ns: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
-def _starship_results(theme: Theme, ns: argparse.Namespace, config_dir: Path | None) -> list[WriteResult]:
-    return [
-        apply_starship(theme, config_dir=config_dir, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
-        apply_zsh_syntax(theme, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
-    ]
+def _refusal(name: str, app: App, inspection: Inspection) -> Refusal:
+    """Build the one refusal message for an ownership class."""
+    match inspection.ownership:
+        case Ownership.FOREIGN:
+            message = (
+                f"{app.label} already uses a theme sf2-themes does not manage; pass --adopt to replace it, "
+                f"or run `setup {name}` without --theme to keep it and install the theme files"
+            )
+        case Ownership.UNKNOWN_SHAPE:
+            message = (
+                f"{app.label} config has a shape sf2-themes cannot edit safely.\n"
+                f"{inspection.detail.rstrip()}\n\nThen run the command again."
+            )
+        case _:
+            message = f"{app.label} config cannot be changed safely: {inspection.detail}"
+    return Refusal(message, inspection.ownership)
+
+
+def _select(
+    requested: Theme | None, selects_theme: bool, inspection: Inspection, catalog: Sequence[Theme]
+) -> tuple[Theme, Selection]:
+    if selects_theme:
+        return requested or default_theme(tuple(catalog)), Selection.SELECTED
+    if inspection.current is not None:
+        return inspection.current, Selection.KEPT
+    return default_theme(tuple(catalog)), Selection.RESET if inspection.unreadable else Selection.NONE_FOUND
 
 
 def _report(results: Sequence[WriteResult], *, verbose: bool) -> None:
     """Print the plan. Dry-run always lists planned writes; otherwise --verbose."""
     for result in results:
-        planned = result.action in (WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
+        planned = result.action in (WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE, WriteAction.WOULD_REMOVE)
         if not (verbose or planned):
             continue
         print(f"{_ACTION_TEXT[result.action]}: {result.path}")
@@ -183,52 +240,59 @@ def _report(results: Sequence[WriteResult], *, verbose: bool) -> None:
             print(result.diff, end="")
 
 
-def _summarize(
-    command: str,
-    app: str,
-    select: bool,
-    theme: Theme,
-    catalog: Sequence[Theme],
-    results: Sequence[WriteResult],
-    *,
-    kept: bool,
-    blocked: bool,
-) -> None:
+def _changes(results: Sequence[WriteResult]) -> str:
     counts = Counter(result.action for result in results)
-    changed = sum(
-        counts[action]
-        for action in (WriteAction.CREATED, WriteAction.UPDATED, WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
+    if all(action is WriteAction.UNCHANGED for action in counts):
+        return "no changes"
+    order = (
+        WriteAction.CREATED,
+        WriteAction.UPDATED,
+        WriteAction.REMOVED,
+        WriteAction.WOULD_CREATE,
+        WriteAction.WOULD_UPDATE,
+        WriteAction.WOULD_REMOVE,
+        WriteAction.UNCHANGED,
     )
-    if changed:
-        order = (
-            WriteAction.CREATED,
-            WriteAction.UPDATED,
-            WriteAction.WOULD_CREATE,
-            WriteAction.WOULD_UPDATE,
-            WriteAction.UNCHANGED,
-        )
-        changes = ", ".join(f"{counts[action]} {_ACTION_TEXT[action]}" for action in order if counts[action])
+    return ", ".join(f"{counts[action]} {_ACTION_TEXT[action]}" for action in order if counts[action])
+
+
+def _selection_text(app: App, theme: Theme, selection: Selection, catalog: Sequence[Theme]) -> str:
+    if app.pair:
+        dark, light = theme_pair(theme, catalog)
+        label = f"{dark.metadata.selectable_id} + {light.metadata.selectable_id} (follows host appearance)"
     else:
-        changes = "no changes"
-    verb = "apply" if command == "install" else command
-    if blocked:
-        print(f"{verb} {app}: incomplete (config left unchanged)")
-        print(f"  changes: {changes}")
-        print("  note: see stderr for the pasteable integration snippet")
-        return
-    if select or not kept:
-        if app in PAIR_APPS:
-            dark, light = theme_pair(theme, catalog)
-            selection = f"{dark.metadata.selectable_id} + {light.metadata.selectable_id} (follows host appearance)"
-        else:
-            selection = theme.metadata.selectable_id
-        print(f"{verb} {app}: {selection}")
+        label = theme.metadata.selectable_id
+    match selection:
+        case Selection.SELECTED:
+            return label
+        case Selection.KEPT:
+            return f"kept {label}"
+        case Selection.NONE_FOUND:
+            return f"no selection found, selected {label}"
+        case Selection.RESET:
+            return f"selection unreadable, reset to {label}"
+
+
+def _summarize(
+    verb: str,
+    name: str,
+    app: App,
+    ownership: Ownership,
+    slot: bool,
+    selection: str,
+    results: Sequence[WriteResult],
+) -> None:
+    if ownership is Ownership.UNKNOWN_SHAPE:
+        print(f"{verb} {name}: incomplete (config left unchanged)")
+    elif not slot:
+        print(f"{verb} {name}: kept your own theme (config left unchanged)")
     else:
-        print(f"{verb} {app}: existing selection kept")
-    print(f"  changes: {changes}")
-    note = _RELOAD_NOTES.get(app)
-    if note:
-        print(f"  note: {note}")
+        print(f"{verb} {name}: {selection}")
+    if not slot and app.owns_files_on_unknown_shape:
+        print(f"  pointer: {selection}")
+    print(f"  changes: {_changes(results)}")
+    if slot and app.reload:
+        print(f"  note: {app.reload}")
 
 
 def _print_slack(theme: Theme) -> None:
@@ -247,181 +311,59 @@ def _print_slack(theme: Theme) -> None:
     )
 
 
-def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+def _mutate(command: str, ns: argparse.Namespace) -> int:
     if command == "install":
         print("warning: install is deprecated; use apply", file=sys.stderr)
-    if ns.app == "slack":
-        catalog = load_catalog()
-        theme = default_theme(catalog) if ns.theme is None else get_theme(ns.theme, catalog)
-        _print_slack(theme)
-        return 0
-    if ns.adopt and ns.app not in ADOPT_APPS:
-        parser.error(f"{ns.app} does not support --adopt")
     catalog = load_catalog()
-    theme = default_theme(catalog) if ns.theme is None else get_theme(ns.theme, catalog)
+    requested = None if ns.theme is None else get_theme(ns.theme, catalog)
+    if ns.app == "slack":
+        _print_slack(requested or default_theme(catalog))
+        return 0
+    app = APPS[ns.app]
     config_dir = ns.config_dir.expanduser() if ns.config_dir is not None else None
-    # Every mutation command runs one complete plan: assets plus integration.
-    # apply (and install) always (re)select the resolved theme; setup keeps a
-    # managed selection unless --theme names one.
-    select = command != "setup" or ns.theme is not None
-    kept = False
-    if not select:
-        kept = _selection_exists(ns.app, config_dir)
-        if kept and ns.app in RESOLVED_PRESERVE_APPS:
-            try:
-                theme = installed_theme(_current_id(ns.app, config_dir), catalog)
-            except ThemeError:
-                kept = False
-    manual: str | None = None
-    adoptable = False
-    match ns.app:
-        case "wezterm":
-            results, lua = setup_wezterm(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                adopt=ns.adopt,
-                replace_pointer=select,
-            )
-            manual = lua.snippet
-            adoptable = lua.adoptable
-        case "nvim":
-            results = setup_nvim(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_pointer=select,
-            )
-        case "codex":
-            results = setup_codex(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
-        case "lazygit":
-            results = setup_lazygit(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                adopt=ns.adopt,
-            )
-        case "starship":
-            results = _starship_results(theme, ns, config_dir)
-        case "herdr-app":
-            results = setup_herdr_app(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
-        case "claude":
-            results = setup_claude(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
-        case "herdr":
-            results = [
-                apply_herdr(
-                    theme,
-                    catalog,
-                    config_dir=config_dir,
-                    dry_run=ns.dry_run,
-                    follow_symlinks=ns.follow_symlinks,
-                    adopt=ns.adopt,
-                )
-            ]
-        case unreachable:
-            raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
+    selects_theme = command != "setup" or requested is not None
+    inspection = app.inspect(catalog, config_dir)
+    ownership = inspection.ownership
+    keeps_foreign = ownership is Ownership.FOREIGN and not ns.adopt
+    if (
+        ownership is Ownership.BROKEN
+        or (ownership is Ownership.UNKNOWN_SHAPE and not app.owns_files_on_unknown_shape)
+        or (keeps_foreign and selects_theme)
+    ):
+        raise _refusal(ns.app, app, inspection)
+    slot = ownership is not Ownership.UNKNOWN_SHAPE and not keeps_foreign
+    theme, selection = _select(requested, selects_theme, inspection, catalog)
+    results = commit(app.plan(theme, catalog, config_dir, slot), dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks)
     _report(results, verbose=ns.verbose)
-    _summarize(command, ns.app, select, theme, catalog, results, kept=kept, blocked=manual is not None)
-    if ns.app == "starship":
-        print(
-            f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
-            file=sys.stderr,
-        )
-    if manual is not None:
-        if command == "setup":
-            reason = (
-                "it already selects a color scheme"
-                if adoptable
-                else "its Lua shape is not one sf2-themes can safely edit"
-            )
-            hint = "Pass --adopt to replace it, or add" if adoptable else "Add"
-            print(
-                f"WezTerm config was left unchanged because {reason}.\n{hint} this integration to wezterm.lua:\n",
-                file=sys.stderr,
-            )
-        else:
-            hint = "Pass --adopt to replace its color scheme, or add" if adoptable else "Add"
-            print(
-                "apply incomplete: WezTerm config was left unchanged, so nothing loads the theme yet.\n"
-                f"{hint} this integration to wezterm.lua:\n",
-                file=sys.stderr,
-            )
-        print(manual, end="", file=sys.stderr)
-        return 0 if command == "setup" else 1
+    verb = "apply" if command == "install" else command
+    _summarize(verb, ns.app, app, ownership, slot, _selection_text(app, theme, selection, catalog), results)
+    if ownership is Ownership.UNKNOWN_SHAPE:
+        raise _refusal(ns.app, app, inspection)
+    if app.stderr_hint and slot:
+        print(app.stderr_hint, file=sys.stderr)
     return 0
 
 
-def _current_id(app: str, config_dir: Path | None) -> str:
-    match app:
-        case "wezterm":
-            return wezterm_current()
-        case "herdr-app":
-            return herdr_app_current(config_dir)
-        case "herdr":
-            return herdr_current(config_dir)
-        case "nvim":
-            return nvim_current(config_dir)
-        case "codex":
-            return codex_current(config_dir)
-        case "lazygit":
-            return lazygit_current(config_dir)
-        case "starship":
-            return starship_current(config_dir)
-        case "claude":
-            return claude_current(config_dir)
-        case "slack":
-            raise ThemeError("no Slack theme to read")
-        case unreachable:
-            raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
-
-
-def _selection_exists(app: str, config_dir: Path | None) -> bool:
-    """True when the app already holds a selection that setup will keep."""
-    match app:
-        case "herdr-app":
-            return herdr_app_selection_exists(config_dir)
-        case "wezterm":
-            return wezterm_pointer_path().is_file()
-        case "nvim":
-            return nvim_pointer_path(config_dir).is_file()
-        case _:
-            try:
-                _current_id(app, config_dir)
-            except ThemeError:
-                return False
-            return True
+def _current(name: str, config_dir: Path | None) -> str:
+    if name == "slack":
+        raise ThemeError("no Slack theme to read")
+    app = APPS[name]
+    inspection = app.inspect(load_catalog(), config_dir)
+    if inspection.current is not None:
+        return inspection.current.metadata.selectable_id
+    match inspection.ownership:
+        case Ownership.BROKEN:
+            raise ThemeError(inspection.detail)
+        case Ownership.FOREIGN if not app.owns_files_on_unknown_shape:
+            raise ThemeError(f"{app.label} uses a theme sf2-themes does not manage")
+    if inspection.unreadable:
+        raise ThemeError(f"could not read the sf2 theme {app.label} selects")
+    raise ThemeError(f"no {app.label} theme applied yet")
 
 
 def dispatch(arguments: list[str]) -> int:
     """Run one CLI command. Returns a process exit code."""
-    parser, mutation = _build_parser()
+    parser = _build_parser()
     try:
         ns = parser.parse_args(arguments)
         if ns.command is None:
@@ -438,9 +380,9 @@ def dispatch(arguments: list[str]) -> int:
             case "validate":
                 return _validate(ns)
             case "current":
-                print(_current_id(ns.app, ns.config_dir.expanduser() if ns.config_dir else None))
+                print(_current(ns.app, ns.config_dir.expanduser() if ns.config_dir else None))
             case "setup" | "apply" | "install":
-                return _mutate(ns.command, ns, mutation[ns.command])
+                return _mutate(ns.command, ns)
     except SystemExit as exit_:
         return int(exit_.code) if isinstance(exit_.code, int) else 0
     except (ThemeError, OSError, tomllib.TOMLDecodeError, json.JSONDecodeError) as error:

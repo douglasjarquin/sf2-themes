@@ -1,16 +1,18 @@
-"""WezTerm color-scheme files, path discovery, and apply/setup."""
+"""WezTerm color-scheme files, path discovery, and the planned integration."""
 
 import os
+import re
 from collections.abc import Sequence
+from dataclasses import replace
 from pathlib import Path
 
-from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
-from sf2_theme.catalog import installed_theme, theme_pair
-from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
+from sf2_theme.adapters.wezterm_lua import classify, integrate, integration_snippet
+from sf2_theme.catalog import theme_pair
 from sf2_theme.model import Theme, project_adapter_colors, selectable_id
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, read_existing, recorded, recorded_id
 
 LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
+ID_COMMENT = re.compile(r"^-- sf2-themes:\s*(\S+)\s*$")
 
 
 def config_root() -> Path:
@@ -171,104 +173,29 @@ def render_pointer(dark: Theme, light: Theme) -> str:
     )
 
 
-def write_schemes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    """Write every scheme file into WezTerm's colors directory."""
-    target = colors_dir(config_dir)
-    if not dry_run:
-        for theme in themes:
-            (target / f"{LEGACY_SCHEME_FILE_PREFIX}-{theme.metadata.id}.toml").unlink(missing_ok=True)
-    results: list[WriteResult] = []
-    for theme in themes:
-        results.append(
-            write_file(
-                target / scheme_filename(theme),
-                render_scheme(theme),
-                dry_run=dry_run,
-                follow_symlinks=follow_symlinks,
-            )
-        )
-    return results
-
-
-def write_pointer(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    """Write the managed current-scheme pointer for a dark/light pair."""
-    dark, light = theme_pair(theme, themes)
-    return write_file(
-        current_pointer_path(),
-        render_pointer(dark, light),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_wezterm(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    """Write schemes and the current pointer. Does not edit user Lua."""
-    results = write_schemes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results
-
-
-def setup_wezterm(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    adopt: bool = False,
-    replace_pointer: bool = True,
-) -> tuple[list[WriteResult], LuaSetup]:
-    """Install schemes, pointer, and optionally a known-safe Lua integration."""
-    results = write_schemes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
+def inspect_wezterm(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
+    """Ownership comes from wezterm.lua; the selection from the sf2-owned pointer."""
     pointer = current_pointer_path()
-    if replace_pointer or not pointer.is_file():
-        results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    else:
-        try:
-            current = installed_theme(read_current_id(), themes)
-        except ThemeError:
-            current = None
-        if current is not None:
-            results.append(write_pointer(current, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
     lua_path = wezterm_lua_path(config_dir)
-    existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
-    lua = setup_lua(existing, current_pointer_path(), adopt=adopt)
-    if lua.mutated:
-        results.append(write_file(lua_path, lua.content, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results, lua
+    ownership = classify(read_existing(lua_path), pointer)
+    if pointer.is_file():
+        selection = recorded(ownership, recorded_id(pointer.read_text(encoding="utf-8"), ID_COMMENT), themes)
+    else:
+        selection = Inspection(ownership)
+    if ownership is Ownership.UNKNOWN_SHAPE:
+        return replace(selection, detail=f"Add this integration to {lua_path}:\n\n{integration_snippet(pointer)}")
+    return selection
 
 
-def read_current_id() -> str:
-    """Read the theme id stored in the managed pointer."""
-    path = current_pointer_path()
-    if not path.is_file():
-        raise ThemeError(f"no WezTerm theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("-- sf2-themes:"):
-            return stripped.split(":", 1)[1].strip()
-    raise ThemeError(f"could not read theme id from {path}")
+def plan_wezterm(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan schemes and the pointer, and the wezterm.lua integration when `slot` allows it."""
+    target = colors_dir(config_dir)
+    steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.toml") for entry in themes]
+    steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)
+    dark, light = theme_pair(theme, themes)
+    steps.append(Write(current_pointer_path(), render_pointer(dark, light)))
+    if slot:
+        lua_path = wezterm_lua_path(config_dir)
+        existing = read_existing(lua_path)
+        steps.append(Write(lua_path, integrate(existing, current_pointer_path())))
+    return steps
