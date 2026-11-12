@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Golden text format, one golden per case:
@@ -22,6 +23,7 @@ import (
 //	= 3f9a1c2b4d5e6f70
 //	|   changes: 37 created
 //	stderr
+//	backup 0644 b9ee1a8248144f26 config/codex/config.toml.bak.<STAMP>
 //	tree
 //	dir 0755 config/codex
 //	file 0644 8e0d55a1b2c3d4e5 config/codex/config.toml
@@ -29,7 +31,11 @@ import (
 //
 // A stream line "| text" is one output line, "\ text" a last line with no newline, and
 // "= <hash>" a unified diff longer than the inline limit, kept in the blob store. A stream
-// header "<stream> exempt" marks help and usage text. File contents always live in the
+// header "<stream> exempt" marks help and usage text. A "backup" line is a backup the step
+// wrote, new or over an earlier one, with its timestamp masked; the tree holds no backups.
+// Recording each step's backups keeps a golden independent of how the run's seconds fell,
+// although a backup written in the same second as an earlier one replaces it, and still shows
+// an extra, missing, or wrong backup. File contents always live in the
 // blob store, named by the first 16 hex digits of their SHA-256. Because file contents and
 // long diffs are stored once per distinct content, a theme edit changes one blob per
 // written file and diff, not one per case.
@@ -53,6 +59,8 @@ type StepResult struct {
 	Stderr       string
 	StdoutExempt bool
 	StderrExempt bool
+	// Backups are the backups the step wrote, from Backups.
+	Backups []Entry
 }
 
 // Entry is one normalized path under the sandbox.
@@ -63,6 +71,8 @@ type Entry struct {
 	Hash    string // file
 	Content []byte // file, normalized
 	Target  string // link, normalized
+	// ModTime tells a file written again from one left alone; it is not rendered.
+	ModTime time.Time
 }
 
 // Result is one normalized run of a case.
@@ -128,12 +138,10 @@ func ApplyMasks(text string, stream Stream, masks []Mask) (masked string, exempt
 	return strings.Join(out, "\n"), false, unmatched
 }
 
-// Snapshot records every path under root. File contents and link targets are normalized,
-// backup timestamps are masked, and when one file has several backups only the newest is
-// kept, so backups compare as a set however the run's seconds fell.
+// Snapshot records every path under root, backups included under their own names.
+// File contents and link targets are normalized.
 func Snapshot(root string) ([]Entry, error) {
 	var entries []Entry
-	newest := map[string]string{}
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -150,7 +158,7 @@ func Snapshot(root string) ([]Entry, error) {
 		if err != nil {
 			return err
 		}
-		entry := Entry{Path: rel, Mode: info.Mode().Perm()}
+		entry := Entry{Path: rel, Mode: info.Mode().Perm(), ModTime: info.ModTime()}
 		switch {
 		case info.Mode()&fs.ModeSymlink != 0:
 			target, err := os.Readlink(path)
@@ -167,15 +175,6 @@ func Snapshot(root string) ([]Entry, error) {
 			}
 			entry.Kind, entry.Content = "file", Normalize(content, root)
 			entry.Hash = Hash(entry.Content)
-			if match := backupName.FindStringSubmatchIndex(rel); match != nil {
-				stamp := rel[match[2]:match[3]]
-				entry.Path = rel[:match[2]] + backupStamp
-				if previous, seen := newest[entry.Path]; seen && previous > stamp {
-					return nil
-				}
-				newest[entry.Path] = stamp
-				entries = dropPath(entries, entry.Path)
-			}
 		default:
 			return fmt.Errorf("unexpected file type at %s: %v", rel, info.Mode())
 		}
@@ -186,14 +185,45 @@ func Snapshot(root string) ([]Entry, error) {
 	return entries, err
 }
 
-func dropPath(entries []Entry, path string) []Entry {
-	kept := entries[:0]
-	for _, entry := range entries {
-		if entry.Path != path {
-			kept = append(kept, entry)
+func isBackup(e Entry) bool { return e.Kind == "file" && backupName.MatchString(e.Path) }
+
+// WithoutBackups returns the snapshot entries that are not backups.
+func WithoutBackups(entries []Entry) []Entry {
+	var kept []Entry
+	for _, e := range entries {
+		if !isBackup(e) {
+			kept = append(kept, e)
 		}
 	}
 	return kept
+}
+
+// Backups returns the backups in after that before lacks or that were written again since,
+// each with the timestamp in its name masked, sorted by name and then content.
+func Backups(before, after []Entry) []Entry {
+	previous := map[string]Entry{}
+	for _, e := range before {
+		previous[e.Path] = e
+	}
+	var written []Entry
+	for _, e := range after {
+		if !isBackup(e) {
+			continue
+		}
+		if was, ok := previous[e.Path]; ok && isBackup(was) && was.Hash == e.Hash && was.Mode == e.Mode && was.ModTime.Equal(e.ModTime) {
+			continue
+		}
+		match := backupName.FindStringSubmatchIndex(e.Path)
+		e.Path = e.Path[:match[2]] + backupStamp
+		written = append(written, e)
+	}
+	sort.Slice(written, func(i, j int) bool {
+		if written[i].Path != written[j].Path {
+			return written[i].Path < written[j].Path
+		}
+		return written[i].Hash < written[j].Hash
+	})
+	return written
 }
 
 // Render writes a result in the golden format. store puts a blob and returns its hash.
@@ -203,6 +233,9 @@ func Render(r Result, store func([]byte) string) string {
 		fmt.Fprintf(&b, "step %s\nexit %d\n", formatArgs(s.Args), s.Exit)
 		renderStream(&b, Stdout, s.Stdout, s.StdoutExempt, store)
 		renderStream(&b, Stderr, s.Stderr, s.StderrExempt, store)
+		for _, e := range s.Backups {
+			fmt.Fprintf(&b, "backup %04o %s %s\n", e.Mode, store(e.Content), e.Path)
+		}
 	}
 	b.WriteString("tree\n")
 	for _, e := range r.Tree {
@@ -309,7 +342,7 @@ func formatArgs(args []string) string {
 	return strings.Join(quoted, " ")
 }
 
-// ParseGolden reads a golden's tree section and every blob hash the golden refers to.
+// ParseGolden reads a golden's tree section and every blob hash the golden refers to, backups included.
 // File entries carry their hash; the caller loads contents from the blob store.
 func ParseGolden(golden string) (tree []Entry, blobs []string, err error) {
 	inTree := false
@@ -332,6 +365,12 @@ func ParseGolden(golden string) (tree []Entry, blobs []string, err error) {
 		case "step", "exit", string(Stdout), string(Stderr), "|", "\\":
 		case "=":
 			blobs = append(blobs, rest)
+		case "backup":
+			entry, err := parseEntry("file " + rest)
+			if err != nil {
+				return nil, nil, err
+			}
+			blobs = append(blobs, entry.Hash)
 		default:
 			return nil, nil, fmt.Errorf("unexpected golden line %q", line)
 		}

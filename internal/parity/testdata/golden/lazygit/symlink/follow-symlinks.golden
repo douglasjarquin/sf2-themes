@@ -5,6 +5,7 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: restart lazygit to render the new theme
 stderr
+backup 0644 3bd5032c1145d3d8 elsewhere/lazygit/config.yml.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/lazygit
@@ -49,5 +50,4 @@ file 0644 71d83ebcbe9e061d config/lazygit/themes/sf2-zangief.yml
 dir 0755 elsewhere
 dir 0755 elsewhere/lazygit
 file 0644 493e44276b68647d elsewhere/lazygit/config.yml
-file 0644 3bd5032c1145d3d8 elsewhere/lazygit/config.yml.bak.<STAMP>
 dir 0755 home

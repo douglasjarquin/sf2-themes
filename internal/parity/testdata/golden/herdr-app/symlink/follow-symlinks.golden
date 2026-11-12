@@ -5,6 +5,7 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr
+backup 0644 ca3d163bab055381 elsewhere/herdr-app/settings.json.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/herdr-app
@@ -49,5 +50,4 @@ file 0644 d1639f5d9bb5527e config/herdr-app/themes/sf2-zangief.json
 dir 0755 elsewhere
 dir 0755 elsewhere/herdr-app
 file 0644 f6fef0a1c1e8af46 elsewhere/herdr-app/settings.json
-file 0644 ca3d163bab055381 elsewhere/herdr-app/settings.json.bak.<STAMP>
 dir 0755 home

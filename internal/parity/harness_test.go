@@ -10,11 +10,13 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
 	"syscall"
 	"testing"
+	"time"
 )
 
 // The binary under test is chosen by environment, not by a go test flag, because
@@ -227,9 +229,6 @@ func seedSandbox(t *testing.T, c Case, root string) {
 			t.Fatalf("seed from %s: %v", c.SeedFrom, err)
 		}
 		for _, entry := range tree {
-			if strings.Contains(entry.Path, backupStamp) {
-				continue
-			}
 			path := filepath.Join(root, filepath.FromSlash(entry.Path))
 			switch entry.Kind {
 			case "dir":
@@ -328,18 +327,18 @@ func runSteps(t *testing.T, bin subject, c Case, root string, todo []Step) []raw
 }
 
 // runCase runs a case in a fresh sandbox under dir and returns its normalized result,
-// the tail masks that matched nothing, and the tree as it stood before the last step.
+// the tail masks that matched nothing, and the tree, without backups, as it stood before the last step.
 func runCase(t *testing.T, bin subject, c Case, dir string) (result Result, unmatched []Mask, beforeLast []Entry) {
 	t.Helper()
 	root := newSandbox(t, dir)
 	seedSandbox(t, c, root)
-	last := len(c.Steps) - 1
-	raws := runSteps(t, bin, c, root, c.Steps[:last])
-	beforeLast, err := Snapshot(root)
+	before, err := Snapshot(root)
 	must(t, err)
-	raws = append(raws, runSteps(t, bin, c, root, c.Steps[last:])...)
-	for i, raw := range raws {
-		s := c.Steps[i]
+	for i, s := range c.Steps {
+		beforeLast = before
+		raw := runSteps(t, bin, c, root, c.Steps[i:i+1])[0]
+		after, err := Snapshot(root)
+		must(t, err)
 		stdout, stdoutExempt, missOut := ApplyMasks(string(Normalize(raw.stdout, root)), Stdout, s.Masks)
 		stderr, stderrExempt, missErr := ApplyMasks(string(Normalize(raw.stderr, root)), Stderr, s.Masks)
 		unmatched = append(append(unmatched, missOut...), missErr...)
@@ -347,11 +346,11 @@ func runCase(t *testing.T, bin subject, c Case, dir string) (result Result, unma
 			Args: s.Args, Exit: raw.exit,
 			Stdout: stdout, Stderr: stderr,
 			StdoutExempt: stdoutExempt, StderrExempt: stderrExempt,
+			Backups: Backups(before, after),
 		})
+		before = after
 	}
-	result.Tree, err = Snapshot(root)
-	must(t, err)
-	return result, unmatched, beforeLast
+	return Result{Steps: result.Steps, Tree: WithoutBackups(before)}, unmatched, WithoutBackups(beforeLast)
 }
 
 func TestParity(t *testing.T) {
@@ -419,15 +418,18 @@ func checkCase(t *testing.T, bin subject, c Case) {
 	}
 }
 
-// checkNoChanges requires the last step to report no changes and to leave the tree as it was.
+// checkNoChanges requires the last step to report no changes, write no backup, and leave the tree as it was.
 func checkNoChanges(t *testing.T, result Result, before []Entry) {
 	t.Helper()
 	last := result.Steps[len(result.Steps)-1]
 	if !strings.Contains(last.Stdout, "  changes: no changes\n") {
 		t.Errorf("last step did not report no changes:\n%s", last.Stdout)
 	}
+	if len(last.Backups) > 0 {
+		t.Errorf("last step wrote backups: %s", Render(Result{Steps: []StepResult{{Backups: last.Backups}}}, Hash))
+	}
 	if was, now := Render(Result{Tree: before}, Hash), Render(Result{Tree: result.Tree}, Hash); was != now {
-		t.Errorf("last step changed the tree, backups included:\n%s", describeDifference(was, now))
+		t.Errorf("last step changed the tree:\n%s", describeDifference(was, now))
 	}
 }
 
@@ -438,17 +440,32 @@ func checkGoOnly(t *testing.T, bin subject, c Case) {
 	must(t, err)
 	steps := runSteps(t, bin, c, root, c.Steps)
 	last := steps[len(steps)-1]
-	if last.exit != c.GoOnly.Exit {
-		t.Errorf("exit %d, want %d (stderr %q)", last.exit, c.GoOnly.Exit, last.stderr)
-	}
-	if !strings.HasPrefix(string(last.stderr), c.GoOnly.StderrPrefix) {
-		t.Errorf("stderr %q does not start with %q", last.stderr, c.GoOnly.StderrPrefix)
+	for _, failure := range goOnlyFailures(*c.GoOnly, last.exit, string(last.stderr)) {
+		t.Error(failure)
 	}
 	after, err := Snapshot(root)
 	must(t, err)
 	if Render(Result{Tree: before}, Hash) != Render(Result{Tree: after}, Hash) {
 		t.Errorf("the sandbox changed:\nbefore\n%s\nafter\n%s", Render(Result{Tree: before}, Hash), Render(Result{Tree: after}, Hash))
 	}
+}
+
+// goOnlyFailures lists how a step's exit code and stderr miss a Go-only expectation.
+func goOnlyFailures(want GoExpectation, exit int, stderr string) []string {
+	var failures []string
+	if exit != want.Exit {
+		failures = append(failures, fmt.Sprintf("exit %d, want %d (stderr %q)", exit, want.Exit, stderr))
+	}
+	if !strings.HasPrefix(stderr, want.StderrPrefix) {
+		failures = append(failures, fmt.Sprintf("stderr %q does not start with %q", stderr, want.StderrPrefix))
+	}
+	if want.UsageError && !slices.ContainsFunc(strings.Split(stderr, "\n"), usageErrorLine.MatchString) {
+		failures = append(failures, fmt.Sprintf("stderr %q has no sf2-themes usage error line", stderr))
+	}
+	if strings.Contains(stderr, "panic:") {
+		failures = append(failures, fmt.Sprintf("stderr %q holds a panic", stderr))
+	}
+	return failures
 }
 
 // realHomeSnapshot hashes the real home directory's config files the CLI could write by default.
@@ -735,31 +752,90 @@ func TestTailMaskStillComparesItsPrefix(t *testing.T) {
 	}
 }
 
-// Backups of one file compare as one entry holding the newest backup, with the stamp
-// masked, whether two runs fell in one second or straddled a second boundary.
-func TestBackupsCompareAsASet(t *testing.T) {
-	render := func(files map[string]string) string {
-		root := t.TempDir()
-		for name, content := range files {
-			must(t, os.WriteFile(filepath.Join(root, name), []byte(content), 0o644))
-		}
-		tree, err := Snapshot(root)
-		must(t, err)
-		return Render(Result{Tree: tree}, Hash)
+// Each step records the backups it wrote, new or over an earlier one, with the stamp masked:
+// a second backup records the same whether it fell in the first one's second, replacing it,
+// or in a later second, beside it; an extra backup in a step is recorded.
+func TestBackupsAreRecordedPerStep(t *testing.T) {
+	root := t.TempDir()
+	write := func(name, content string, at time.Time) {
+		path := filepath.Join(root, name)
+		must(t, os.WriteFile(path, []byte(content), 0o644))
+		must(t, os.Chtimes(path, at, at))
 	}
-	oneSecond := render(map[string]string{
-		"config.toml":                      "third\n",
-		"config.toml.bak.20261112T101500Z": "second\n",
-	})
-	twoSeconds := render(map[string]string{
-		"config.toml":                      "third\n",
-		"config.toml.bak.20261112T101459Z": "first\n",
-		"config.toml.bak.20261112T101500Z": "second\n",
-	})
-	want := "tree\n" +
-		"file 0644 " + Hash([]byte("third\n")) + " config.toml\n" +
-		"file 0644 " + Hash([]byte("second\n")) + " config.toml.bak.<STAMP>\n"
-	if oneSecond != want || twoSeconds != want {
-		t.Errorf("backups did not collapse to the newest:\none second:\n%s\ntwo seconds:\n%s\nwant:\n%s", oneSecond, twoSeconds, want)
+	snapshot := func() []Entry {
+		entries, err := Snapshot(root)
+		must(t, err)
+		return entries
+	}
+	render := func(backups []Entry) string {
+		return Render(Result{Steps: []StepResult{{Args: []string{"apply"}, Backups: backups}}}, Hash)
+	}
+	first, second := time.Unix(1_800_000_000, 0), time.Unix(1_800_000_000, 500)
+	backupLine := func(content string) string {
+		return "backup 0644 " + Hash([]byte(content)) + " config.toml.bak.<STAMP>\n"
+	}
+	stepLines := "step apply\nexit 0\nstdout\nstderr\n"
+
+	write("config.toml", "original\n", first)
+	start := snapshot()
+	write("config.toml", "second\n", first)
+	write("config.toml.bak.20261112T101500Z", "original\n", first)
+	afterOne := snapshot()
+	if got, want := render(Backups(start, afterOne)), stepLines+backupLine("original\n")+"tree\n"; got != want {
+		t.Errorf("first step recorded\n%s\nwant\n%s", got, want)
+	}
+	if tree := Render(Result{Tree: WithoutBackups(afterOne)}, Hash); strings.Contains(tree, ".bak.") {
+		t.Errorf("the tree holds a backup:\n%s", tree)
+	}
+
+	// The second step backs up "second", replacing the first backup in the same second.
+	write("config.toml.bak.20261112T101500Z", "second\n", second)
+	sameSecond := render(Backups(afterOne, snapshot()))
+	// The same step in a later second leaves the first backup beside its own.
+	write("config.toml.bak.20261112T101500Z", "original\n", first)
+	write("config.toml.bak.20261112T101501Z", "second\n", second)
+	laterSecond := render(Backups(afterOne, snapshot()))
+	if want := stepLines + backupLine("second\n") + "tree\n"; sameSecond != want || laterSecond != want {
+		t.Errorf("the second step recorded\nsame second:\n%s\nlater second:\n%s\nwant:\n%s", sameSecond, laterSecond, want)
+	}
+
+	// The same backup content written again in the same second still counts as written.
+	afterTwo := snapshot()
+	write("config.toml.bak.20261112T101501Z", "second\n", second.Add(time.Millisecond))
+	if got, want := render(Backups(afterTwo, snapshot())), stepLines+backupLine("second\n")+"tree\n"; got != want {
+		t.Errorf("a rewritten backup recorded\n%s\nwant\n%s", got, want)
+	}
+
+	// A step that also writes an extra, older backup records it.
+	afterTwo = snapshot()
+	write("config.toml.bak.20000101T000000Z", "extra\n", second)
+	if got, want := render(Backups(afterTwo, snapshot())), stepLines+backupLine("extra\n")+"tree\n"; got != want {
+		t.Errorf("an extra backup recorded\n%s\nwant\n%s", got, want)
+	}
+}
+
+// A Go-only expectation holds the error line, so a panic, which also exits 2, fails it.
+func TestGoOnlyExpectationsRejectAPanic(t *testing.T) {
+	cases := goOnlyCases()
+	usage, notUTF8 := *cases[0].GoOnly, *cases[len(cases)-1].GoOnly
+	panicked := "panic: runtime error: index out of range [1] with length 1\n\ngoroutine 1 [running]:\nmain.main()\n"
+	for _, tc := range []struct {
+		name   string
+		want   GoExpectation
+		exit   int
+		stderr string
+		passes bool
+	}{
+		{"usage error", usage, 2, "usage: sf2-themes [-h] [-V] <command> ...\nsf2-themes: error: argument command: invalid choice: 'install'\n", true},
+		{"subcommand usage error", usage, 2, "usage: sf2-themes apply ...\nsf2-themes apply: error: unrecognized arguments: --dry\n", true},
+		{"usage panic", usage, 2, panicked, false},
+		{"usage without an error line", usage, 2, "usage: sf2-themes [-h] [-V] <command> ...\n", false},
+		{"usage error then panic", usage, 2, "sf2-themes: error: x\npanic: boom\n", false},
+		{"not UTF-8", notUTF8, 1, "error: {SANDBOX}/config/codex/config.toml is not valid UTF-8\n", true},
+		{"not UTF-8 panic", notUTF8, 1, "error: x\npanic: boom\n", false},
+	} {
+		if got := goOnlyFailures(tc.want, tc.exit, tc.stderr); (len(got) == 0) != tc.passes {
+			t.Errorf("%s: failures %q, want passes=%v", tc.name, got, tc.passes)
+		}
 	}
 }

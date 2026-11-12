@@ -5,11 +5,11 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: reselect with /theme in a running Claude Code session
 stderr
+backup 0644 d732e70e00a66bf8 config/claude/settings.json.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/claude
 file 0644 b63eadeb7eca355a config/claude/settings.json
-file 0644 d732e70e00a66bf8 config/claude/settings.json.bak.<STAMP>
 dir 0755 config/claude/themes
 file 0644 a9987e5a05d04bda config/claude/themes/sf2-akuma-light.json
 file 0644 8f44799cc0d672b9 config/claude/themes/sf2-akuma.json

@@ -5,9 +5,9 @@ stdout
 |   changes: 1 updated
 |   note: run `herdr server reload-config` to apply the selection
 stderr
+backup 0644 9e205c8dabdc1c9e config/herdr/config.toml.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/herdr
 file 0644 d9fe75f8b87f3c04 config/herdr/config.toml
-file 0644 9e205c8dabdc1c9e config/herdr/config.toml.bak.<STAMP>
 dir 0755 home

@@ -5,6 +5,7 @@ stdout
 |   changes: 1 updated, 37 unchanged
 |   note: restart Neovim to load the new colorscheme
 stderr
+backup 0644 65a17e8448b9ca84 config/nvim/sf2-theme/current.lua.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/nvim
@@ -49,5 +50,4 @@ dir 0755 config/nvim/plugin
 file 0644 beb70a25f49a87b2 config/nvim/plugin/sf2-theme.lua
 dir 0755 config/nvim/sf2-theme
 file 0644 7e40daab59e81eed config/nvim/sf2-theme/current.lua
-file 0644 65a17e8448b9ca84 config/nvim/sf2-theme/current.lua.bak.<STAMP>
 dir 0755 home

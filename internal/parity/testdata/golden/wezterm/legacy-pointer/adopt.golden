@@ -5,6 +5,8 @@ stdout
 |   changes: 36 created, 2 updated
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
+backup 0644 d47dee599a379f39 config/wezterm/wezterm.lua.bak.<STAMP>
+backup 0644 a2c3b6f7e5f9d6ec home/.config/sf2-theme/wezterm-current.lua.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/wezterm
@@ -46,9 +48,7 @@ file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
 file 0644 7d8f6d344297802e config/wezterm/wezterm.lua
-file 0644 d47dee599a379f39 config/wezterm/wezterm.lua.bak.<STAMP>
 dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme
 file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
-file 0644 a2c3b6f7e5f9d6ec home/.config/sf2-theme/wezterm-current.lua.bak.<STAMP>

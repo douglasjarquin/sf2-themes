@@ -7,11 +7,11 @@ stderr
 | Source the zsh highlight snippet after zsh-syntax-highlighting:
 |   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
 | 
+backup 0644 7ca9d6dc4561eba6 config/starship/starship.toml.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/starship
 file 0644 0ce5cd945e5ca268 config/starship/starship.toml
-file 0644 7ca9d6dc4561eba6 config/starship/starship.toml.bak.<STAMP>
 dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme

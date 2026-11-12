@@ -44,6 +44,7 @@ func TestParseThemeRejectsMalformedThemesWithTheReferenceMessage(t *testing.T) {
 		{"bad kind", strings.Replace(ryu, `kind = "character"`, `kind = "boss"`, 1), "malformed.toml: kind must be main or character"},
 		{"main with character", strings.Replace(ryu, `kind = "character"`, `kind = "main"`, 1), "malformed.toml: character is required for character themes and forbidden for main"},
 		{"schema 2", strings.Replace(ryu, "schema_version = 1", "schema_version = 2", 1), "malformed.toml: unsupported schema_version 2"},
+		{"schema above int64", strings.Replace(ryu, "schema_version = 1", "schema_version = 9223372036854775808", 1), "malformed.toml: unsupported schema_version 9223372036854775808"},
 		{"schema float", strings.Replace(ryu, "schema_version = 1", "schema_version = 1.0", 1), "malformed.toml.schema_version must be an integer"},
 		{"schema bool", strings.Replace(ryu, "schema_version = 1", "schema_version = true", 1), "malformed.toml.schema_version must be an integer"},
 		{"aliases not a list", strings.Replace(ryu, "aliases = []", `aliases = "x"`, 1), "malformed.toml.meta.aliases must be an array of strings"},

@@ -5,11 +5,11 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: restart lazygit to render the new theme
 stderr
+backup 0644 106165d72aa0628a config/lazygit/config.yml.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/lazygit
 file 0644 61062d1ff773bce0 config/lazygit/config.yml
-file 0644 106165d72aa0628a config/lazygit/config.yml.bak.<STAMP>
 dir 0755 config/lazygit/themes
 file 0644 c780bf968e888b41 config/lazygit/themes/sf2-akuma-light.yml
 file 0644 2f858f52dae55a2e config/lazygit/themes/sf2-akuma.yml

@@ -2,6 +2,8 @@ package catalog
 
 import (
 	"errors"
+	"fmt"
+	"math/big"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,42 +14,130 @@ import (
 // DecodeTOML is tomllib.loads on Python 3.11: it decodes a TOML 1.0 document into a generic value, or returns
 // an error for every document tomllib rejects.
 // Tables decode to map[string]any and arrays, including arrays of tables, to []any;
-// integers are int64, floats float64, and date-times the library's time values.
+// integers are int64, or *big.Int outside int64 as Python ints have no bound;
+// floats are float64, with ±Inf where a literal overflows it as in Python; date-times are the library's time values.
 // It is the one TOML reader for the catalog and for the user configs adapters inspect.
 //
 // BurntSushi/toml v1.5 reads TOML 1.0 (TOML 1.1 forms only with BURNTSUSHI_TOML_110 set) but accepts some
 // documents TOML 1.0 forbids: a table or key defined twice through headers, dotted keys, or inline tables,
 // and a UTC offset minute above 59. checkTOMLStructure applies tomllib's own rules for those.
 func DecodeTOML(text string) (map[string]any, error) {
-	var doc map[string]any
-	if _, err := toml.Decode(text, &doc); err != nil {
+	// The TOML library skips a leading byte order mark; tomllib reads it as a statement and rejects the document.
+	if strings.HasPrefix(text, "\ufeff") {
+		return nil, errors.New("Invalid statement (at line 1, column 1)") //nolint:staticcheck // tomllib's message
+	}
+	doc, replaced, err := decodeInRange(text)
+	if err != nil {
 		return nil, err
 	}
 	if err := checkTOMLStructure(strings.ReplaceAll(text, "\r\n", "\n")); err != nil {
 		return nil, err
 	}
-	normalized, _ := normalizeTOML(doc).(map[string]any)
+	normalized, _ := normalizeTOML(doc, replaced).(map[string]any)
 	return normalized, nil
 }
 
+// bigInts holds the integers outside int64 that decodeInRange replaced with stand-in strings: values[i] is the
+// integer whose stand-in reads marker followed by i.
+type bigInts struct {
+	marker string
+	values []*big.Int
+}
+
+// decodeInRange decodes text with BurntSushi/toml, which rejects an integer outside int64 or a float that
+// overflows float64. Each such literal is replaced, at the same length so later positions hold, by a string
+// standing in for the integer or by the float's infinity, and the document is decoded again.
+func decodeInRange(text string) (map[string]any, bigInts, error) {
+	var replaced bigInts
+	for {
+		var doc map[string]any
+		_, err := toml.Decode(text, &doc)
+		var parseErr toml.ParseError
+		if err == nil || !errors.As(err, &parseErr) {
+			return doc, replaced, err
+		}
+		literal, isInt := strings.CutSuffix(parseErr.Message, " is out of range for int64")
+		if !isInt {
+			var isFloat bool
+			if literal, isFloat = strings.CutSuffix(parseErr.Message, " is out of range for float64"); !isFloat {
+				return nil, bigInts{}, err
+			}
+		}
+		// The library reports offsets after it drops a leading byte order mark.
+		start := parseErr.Position.Start + len(text) - len(strings.TrimPrefix(text, "\ufeff"))
+		if start > len(text) || !strings.HasPrefix(text[start:], literal) {
+			return nil, bigInts{}, err
+		}
+		var stand string
+		switch {
+		case isInt:
+			value, ok := new(big.Int).SetString(literal, 0)
+			if !ok {
+				return nil, bigInts{}, err
+			}
+			if replaced.marker == "" {
+				control, found := unescapedControl(text)
+				if !found {
+					return nil, bigInts{}, err
+				}
+				replaced.marker = string(control) + "#"
+			}
+			// At least 9 bytes for the 19 or more an integer outside int64 takes.
+			stand = fmt.Sprintf(`"\u%04x#%d"`, replaced.marker[0], len(replaced.values))
+			replaced.values = append(replaced.values, value)
+		case literal[0] == '-':
+			stand = "-inf"
+		default:
+			stand = "inf"
+		}
+		if len(stand) > len(literal) {
+			return nil, bigInts{}, err
+		}
+		text = text[:start] + stand + strings.Repeat(" ", len(literal)-len(stand)) + text[start+len(literal):]
+	}
+}
+
+// unescapedControl returns a control character that no \u or \U escape in text names. TOML allows no other
+// control character in a string than tab, newline, and the \b, \f, \n, \r, and \t escapes, so no string of the
+// document can equal a stand-in that starts with it.
+func unescapedControl(text string) (rune, bool) {
+	lower := strings.ToLower(text)
+	for control := rune(0); control < 0x20; control++ {
+		if strings.ContainsRune("\b\t\n\f\r", control) {
+			continue
+		}
+		if !strings.Contains(lower, fmt.Sprintf(`\u%04x`, control)) && !strings.Contains(lower, fmt.Sprintf(`\u%08x`, control)) {
+			return control, true
+		}
+	}
+	return 0, false
+}
+
 // normalizeTOML turns the library's []map[string]any arrays of tables into []any so every array has one shape,
-// as every array is a list in Python.
-func normalizeTOML(value any) any {
+// as every array is a list in Python, and puts each integer outside int64 back in place of its stand-in.
+func normalizeTOML(value any, replaced bigInts) any {
 	switch typed := value.(type) {
 	case map[string]any:
 		for key, item := range typed {
-			typed[key] = normalizeTOML(item)
+			typed[key] = normalizeTOML(item, replaced)
 		}
 		return typed
 	case []map[string]any:
 		items := make([]any, len(typed))
 		for i, item := range typed {
-			items[i] = normalizeTOML(item)
+			items[i] = normalizeTOML(item, replaced)
 		}
 		return items
 	case []any:
 		for i, item := range typed {
-			typed[i] = normalizeTOML(item)
+			typed[i] = normalizeTOML(item, replaced)
+		}
+		return typed
+	case string:
+		if index, ok := strings.CutPrefix(typed, replaced.marker); ok && replaced.marker != "" {
+			if i, err := strconv.Atoi(index); err == nil && i < len(replaced.values) {
+				return replaced.values[i]
+			}
 		}
 		return typed
 	default:

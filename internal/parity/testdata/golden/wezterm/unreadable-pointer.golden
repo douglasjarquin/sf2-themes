@@ -5,6 +5,7 @@ stdout
 |   changes: 37 created, 1 updated
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
+backup 0644 88d9c5999095f6fb xdg/sf2-theme/wezterm-current.lua.bak.<STAMP>
 step current wezterm --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
@@ -55,4 +56,3 @@ dir 0755 home
 dir 0755 xdg
 dir 0755 xdg/sf2-theme
 file 0644 f173abe553e31147 xdg/sf2-theme/wezterm-current.lua
-file 0644 88d9c5999095f6fb xdg/sf2-theme/wezterm-current.lua.bak.<STAMP>

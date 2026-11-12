@@ -5,13 +5,13 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: restart Codex, or reselect with /theme
 stderr
+backup 0644 710d192abf95abca elsewhere/codex/config.toml.bak.<STAMP>
 tree
 dir 0755 config
 link config/codex -> {SANDBOX}/elsewhere/codex
 dir 0755 elsewhere
 dir 0755 elsewhere/codex
 file 0644 9c3e7c385c0410f1 elsewhere/codex/config.toml
-file 0644 710d192abf95abca elsewhere/codex/config.toml.bak.<STAMP>
 dir 0755 elsewhere/codex/themes
 file 0644 125cb1d614cfd14e elsewhere/codex/themes/sf2-akuma-light.tmTheme
 file 0644 b110d62e2dc9d24c elsewhere/codex/themes/sf2-akuma.tmTheme

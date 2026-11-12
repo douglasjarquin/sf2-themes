@@ -5,11 +5,11 @@ stdout
 |   changes: 1 updated, 36 unchanged
 |   note: restart Codex, or reselect with /theme
 stderr
+backup 0644 710d192abf95abca config/codex/config.toml.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/codex
 file 0644 9c3e7c385c0410f1 config/codex/config.toml
-file 0644 710d192abf95abca config/codex/config.toml.bak.<STAMP>
 dir 0755 config/codex/themes
 file 0644 125cb1d614cfd14e config/codex/themes/sf2-akuma-light.tmTheme
 file 0644 b110d62e2dc9d24c config/codex/themes/sf2-akuma.tmTheme

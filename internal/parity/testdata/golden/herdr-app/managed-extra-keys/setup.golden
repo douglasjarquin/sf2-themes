@@ -5,11 +5,11 @@ stdout
 |   changes: 36 created, 1 updated
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr
+backup 0644 5398969b71e5a3eb config/herdr-app/settings.json.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/herdr-app
 file 0644 9ee3ce6a850b3efc config/herdr-app/settings.json
-file 0644 5398969b71e5a3eb config/herdr-app/settings.json.bak.<STAMP>
 dir 0755 config/herdr-app/themes
 file 0644 46ab07dbe794b8be config/herdr-app/themes/sf2-akuma-light.json
 file 0644 53ccc4e045cb37a3 config/herdr-app/themes/sf2-akuma.json

@@ -3,7 +3,9 @@ package catalog
 import (
 	"errors"
 	"fmt"
+	"math/big"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
@@ -37,11 +39,15 @@ func requireNonemptyStr(raw any, present bool, name string) (string, error) {
 	return text, nil
 }
 
-func requireInt(raw any, name string) (int64, error) {
-	if number, ok := raw.(int64); ok {
-		return number, nil
+// requireInt returns an integer's decimal digits: DecodeTOML gives an int64, or a *big.Int outside its range.
+func requireInt(raw any, name string) (string, error) {
+	switch number := raw.(type) {
+	case int64:
+		return strconv.FormatInt(number, 10), nil
+	case *big.Int:
+		return number.String(), nil
 	}
-	return 0, fmt.Errorf("%s must be an integer", name)
+	return "", fmt.Errorf("%s must be an integer", name)
 }
 
 func requireStrList(raw any, present bool, name string) ([]string, error) {
@@ -132,8 +138,8 @@ func ParseTheme(raw any, source string) (Theme, error) {
 	if err != nil {
 		return Theme{}, err
 	}
-	if version != 1 {
-		return Theme{}, fmt.Errorf("%s: unsupported schema_version %d", source, version)
+	if version != "1" {
+		return Theme{}, fmt.Errorf("%s: unsupported schema_version %s", source, version)
 	}
 	meta, err := requireTable(table["meta"], source+".meta")
 	if err != nil {

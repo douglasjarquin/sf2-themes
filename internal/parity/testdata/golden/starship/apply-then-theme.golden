@@ -7,6 +7,7 @@ stderr
 | Source the zsh highlight snippet after zsh-syntax-highlighting:
 |   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
 | 
+backup 0644 e9af69fbcf2da29f config/starship/starship.toml.bak.<STAMP>
 step apply starship --theme ken --config-dir {SANDBOX}/config/starship
 exit 0
 stdout
@@ -16,13 +17,13 @@ stderr
 | Source the zsh highlight snippet after zsh-syntax-highlighting:
 |   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
 | 
+backup 0644 b9f9141bf5ce78fb config/starship/starship.toml.bak.<STAMP>
+backup 0644 ebbd35eb058a87b1 home/.config/sf2-theme/zsh-syntax-highlighting.zsh.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/starship
 file 0644 5947142b2f42633a config/starship/starship.toml
-file 0644 b9f9141bf5ce78fb config/starship/starship.toml.bak.<STAMP>
 dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme
 file 0644 d47abfbe71ecd7d5 home/.config/sf2-theme/zsh-syntax-highlighting.zsh
-file 0644 ebbd35eb058a87b1 home/.config/sf2-theme/zsh-syntax-highlighting.zsh.bak.<STAMP>

@@ -94,9 +94,12 @@ type File struct {
 
 // GoExpectation is what the Go binary must do where the reference behaves differently
 // on purpose. Such a case has no golden: it never runs against the reference.
+// Its stderr must never hold a Go panic.
 type GoExpectation struct {
 	Exit         int
 	StderrPrefix string
+	// UsageError requires a `sf2-themes[ <command>]: error: <message>` line in stderr.
+	UsageError bool
 }
 
 // Case is one sandboxed scenario.
@@ -276,6 +279,9 @@ func builderLua(body string) string {
 
 const pointerPath = Sandbox + "/home/.config/sf2-theme/wezterm-current.lua"
 
+// aboveInt64 is a config tomllib reads although its integer does not fit in 64 bits.
+var aboveInt64 = lines("a = 9223372036854775808")
+
 func gateApps() []gateApp {
 	toml := func(app, file string) []Mask { return []Mask{Tail(cfg(app) + "/" + file + tomlTail)} }
 	json := func(app, file string) []Mask { return []Mask{Tail(cfg(app) + "/" + file + jsonTail)} }
@@ -314,6 +320,7 @@ func gateApps() []gateApp {
 			{name: "foreign", files: []File{seed("herdr", "config.toml", lines("[theme]", `name = "dracula"`))}, commands: allCommands},
 			{name: "foreign-top-level", files: []File{seed("herdr", "config.toml", lines(`theme = "dracula"`, "", "[ui]", "sidebar = true"))}, commands: []string{"setup", "apply", "adopt", "current"}},
 			{name: "broken", files: []File{seed("herdr", "config.toml", "[theme\n")}, commands: allCommands, masks: toml("herdr", "config.toml")},
+			{name: "int-above-int64", files: []File{seed("herdr", "config.toml", aboveInt64)}, commands: []string{"apply"}},
 			{name: "broken-markers", files: []File{seed("herdr", "config.toml", lines("# >>> sf2-themes managed theme", "[theme]", `name = "x"`))}, commands: refusalCommands},
 		}},
 		{name: "herdr-app", group: GroupHerdrApp, file: "settings.json", states: []gateState{
@@ -339,6 +346,7 @@ func gateApps() []gateApp {
 			))}, commands: []string{"setup", "apply", "current"}},
 			{name: "foreign", files: []File{seed("starship", "starship.toml", lines(`palette = "mine"`, "", "[palettes.mine]", `blue = "#0000ff"`))}, commands: allCommands},
 			{name: "broken", files: []File{seed("starship", "starship.toml", "palette = \n")}, commands: allCommands, masks: toml("starship", "starship.toml")},
+			{name: "int-above-int64", files: []File{seed("starship", "starship.toml", aboveInt64)}, commands: []string{"apply"}},
 			{name: "broken-markers", files: []File{seed("starship", "starship.toml", "# <<< sf2-themes managed theme\n")}, commands: refusalCommands},
 			// A config tomllib accepts whose merge declares the palette table twice.
 			{name: "merge-collision", files: []File{seed("starship", "starship.toml", "palettes.sf2.x = 1\n")}, commands: []string{"apply"}, masks: []Mask{Tail(errorTail)}},
@@ -364,6 +372,7 @@ func gateApps() []gateApp {
 			{name: "unknown-shape", files: []File{seed("codex", "config.toml", lines(`tui = { theme = "dracula" }`))}, commands: allCommands},
 			{name: "unknown-shape-dotted", files: []File{seed("codex", "config.toml", lines(`tui.theme = "dracula"`))}, commands: refusalCommands},
 			{name: "broken", files: []File{seed("codex", "config.toml", "[tui\n")}, commands: allCommands, masks: toml("codex", "config.toml")},
+			{name: "int-above-int64", files: []File{seed("codex", "config.toml", aboveInt64)}, commands: []string{"apply"}},
 			{name: "legacy-files", files: []File{seed("codex", "themes/ryu.tmTheme", "old managed theme\n")}, commands: []string{"apply", "dry-run"}},
 		}},
 		{name: "lazygit", group: GroupLazygit, file: "config.yml", states: []gateState{
@@ -585,7 +594,7 @@ func locationCases() []Case {
 // commands and flags, exact flag names, and an error line instead of a traceback for a
 // config file that is not valid UTF-8.
 func goOnlyCases() []Case {
-	usage := &GoExpectation{Exit: 2}
+	usage := &GoExpectation{Exit: 2, UsageError: true}
 	notUTF8 := &GoExpectation{Exit: 1, StderrPrefix: "error: "}
 	cases := []Case{
 		{Name: "cli/install-is-gone", Groups: []Group{GroupCLI}, GoOnly: usage, Steps: []Step{cmd("install", "codex")}},
