@@ -8,7 +8,7 @@ from pathlib import Path
 
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import Theme, project_adapter_colors
-from sf2_theme.plan import Inspection, Ownership, Step, Write, recorded, recorded_id
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.yml"
@@ -239,7 +239,7 @@ def merge_config(existing: str, theme: Theme) -> str:
 
 def inspect_lazygit(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = config_path(config_dir)
-    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    lines = read_existing(path).splitlines()
     try:
         theme_block = _marked(lines, MANAGED_THEME_START, MANAGED_THEME_END)
         _marked(lines, MANAGED_AUTHOR_START, MANAGED_AUTHOR_END)
@@ -258,6 +258,6 @@ def plan_lazygit(theme: Theme, themes: Sequence[Theme], config_dir: Path | None,
     steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
     if slot:
         path = config_path(config_dir)
-        existing = path.read_text(encoding="utf-8") if path.exists() else ""
+        existing = read_existing(path)
         steps.append(Write(path, merge_config(existing, theme)))
     return steps

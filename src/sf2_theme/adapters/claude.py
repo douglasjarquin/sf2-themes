@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.model import SELECTABLE_PREFIX, Theme
-from sf2_theme.plan import Inspection, Ownership, Step, Write, recorded
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded
 
 THEME_DIR_NAME = "themes"
 SETTINGS_FILE_NAME = "settings.json"
@@ -69,7 +69,7 @@ def merge_settings(existing: str, theme: Theme) -> str:
 
 def inspect_claude(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = settings_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     if not existing.strip():
         return Inspection(Ownership.ABSENT)
     try:
@@ -90,6 +90,6 @@ def plan_claude(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, 
     steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
     if slot:
         path = settings_path(config_dir)
-        existing = path.read_text(encoding="utf-8") if path.exists() else ""
+        existing = read_existing(path)
         steps.append(Write(path, merge_settings(existing, theme)))
     return steps

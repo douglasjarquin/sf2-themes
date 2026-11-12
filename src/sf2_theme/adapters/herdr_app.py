@@ -6,7 +6,7 @@ from pathlib import Path
 from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import Theme
-from sf2_theme.plan import Inspection, Ownership, Step, Write
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing
 
 
 def app_home(config_dir: Path | None) -> Path:
@@ -40,7 +40,7 @@ def render_theme(theme: Theme) -> str:
 
 
 def _read_settings(path: Path) -> dict:
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     try:
         data = json.loads(existing) if existing.strip() else {}
     except json.JSONDecodeError as error:

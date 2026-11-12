@@ -9,7 +9,7 @@ from pathlib import Path
 from sf2_theme.adapters.wezterm_lua import classify, integrate, integration_snippet
 from sf2_theme.catalog import theme_pair
 from sf2_theme.model import Theme, project_adapter_colors, selectable_id
-from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, recorded, recorded_id
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, read_existing, recorded, recorded_id
 
 LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
 ID_COMMENT = re.compile(r"^-- sf2-themes:\s*(\S+)\s*$")
@@ -177,7 +177,7 @@ def inspect_wezterm(themes: Sequence[Theme], config_dir: Path | None) -> Inspect
     """Ownership comes from wezterm.lua; the selection from the sf2-owned pointer."""
     pointer = current_pointer_path()
     lua_path = wezterm_lua_path(config_dir)
-    ownership = classify(lua_path.read_text(encoding="utf-8") if lua_path.exists() else "", pointer)
+    ownership = classify(read_existing(lua_path), pointer)
     if pointer.is_file():
         selection = recorded(ownership, recorded_id(pointer.read_text(encoding="utf-8"), ID_COMMENT), themes)
     else:
@@ -196,6 +196,6 @@ def plan_wezterm(theme: Theme, themes: Sequence[Theme], config_dir: Path | None,
     steps.append(Write(current_pointer_path(), render_pointer(dark, light)))
     if slot:
         lua_path = wezterm_lua_path(config_dir)
-        existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
+        existing = read_existing(lua_path)
         steps.append(Write(lua_path, integrate(existing, current_pointer_path())))
     return steps

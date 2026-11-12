@@ -8,7 +8,7 @@ from pathlib import Path
 
 from sf2_theme.adapters.zsh_syntax import plan_zsh_syntax
 from sf2_theme.model import Theme
-from sf2_theme.plan import Inspection, Ownership, Step, Write, recorded, recorded_id
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
@@ -108,7 +108,7 @@ def merge_theme(existing: str, theme: Theme) -> str:
 
 def inspect_starship(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = starship_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     outside = _without_block(existing)
     if outside is None:
         return Inspection(Ownership.BROKEN, detail=f"{path} has incomplete sf2-themes markers")
@@ -129,5 +129,5 @@ def plan_starship(theme: Theme, themes: Sequence[Theme], config_dir: Path | None
     if not slot:
         return []
     path = starship_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     return [Write(path, merge_theme(existing, theme)), plan_zsh_syntax(theme)]

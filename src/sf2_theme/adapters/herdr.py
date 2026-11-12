@@ -8,7 +8,7 @@ from pathlib import Path
 
 from sf2_theme.catalog import theme_pair
 from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
-from sf2_theme.plan import Inspection, Ownership, Step, Write, recorded, recorded_id
+from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
@@ -161,7 +161,7 @@ def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme]) -> str:
 
 def inspect_herdr(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = herdr_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     try:
         tomllib.loads(existing)
     except tomllib.TOMLDecodeError as error:
@@ -182,5 +182,5 @@ def plan_herdr(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, s
     if not slot:
         return []
     path = herdr_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     return [Write(path, merge_theme(existing, theme, themes))]

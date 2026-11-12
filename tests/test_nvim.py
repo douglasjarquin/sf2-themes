@@ -31,7 +31,12 @@ def test_apply_writes_every_catalog_colorscheme_and_current_pointer(tmp_path: Pa
 
     colors = tmp_path / "nvim" / "colors"
     assert {path.stem for path in colors.glob("*.lua")} == {f"sf2-{theme.metadata.id}" for theme in catalog}
-    assert "sf2-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
+    pointer = (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
+    assert "colorscheme sf2-main" in pointer
+    assert "colorscheme sf2-main-light" in pointer
+    assert "TERM_THEME" in pointer
+    loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
+    assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
     assert len(results) == len(catalog) + 2
 
 
@@ -56,25 +61,6 @@ def test_nvim_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path: Pa
     assert all(theme_id.startswith("sf2-") for theme_id in written_ids)
     assert "-- sf2-themes: sf2-main" in (config_dir / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
     assert not (colors / "street-fighter-ii-main.lua").exists()
-
-
-def test_setup_writes_managed_loader_and_default_current(tmp_path: Path) -> None:
-    catalog = parse_catalog()
-
-    results = commit(
-        plan_nvim(
-            get_theme("main", catalog),
-            catalog,
-            config_dir=tmp_path / "nvim",
-        )
-    )
-
-    loader = tmp_path / "nvim" / "plugin" / "sf2-theme.lua"
-    assert "sf2-theme/current.lua" in loader.read_text(encoding="utf-8")
-    assert "colorscheme sf2-main" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert "colorscheme sf2-main-light" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert "TERM_THEME" in (tmp_path / "nvim" / "sf2-theme" / "current.lua").read_text(encoding="utf-8")
-    assert len(results) == len(catalog) + 2
 
 
 def test_setup_nvim_migrates_existing_unprefixed_pointer(tmp_path: Path) -> None:

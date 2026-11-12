@@ -56,6 +56,14 @@ class Inspection:
     detail: str = ""
 
 
+def read_existing(path: Path) -> str:
+    """Return a config file's text, or an empty string when it does not exist yet."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        return ""
+
+
 def recorded_id(text: str, pattern: re.Pattern[str]) -> str | None:
     """Return the theme id the first managed id comment in `text` records."""
     for line in text.splitlines():

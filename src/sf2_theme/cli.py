@@ -44,14 +44,10 @@ class App:
     label: str
     inspect: Callable[[Sequence[Theme], Path | None], Inspection]
     plan: Callable[[Theme, Sequence[Theme], Path | None, bool], list[Step]]
-    # Both siblings are installed and the selection follows host appearance.
     pair: bool = False
-    # An unknown config shape still gets the files sf2-themes owns outright.
-    partial: bool = False
-    # What the user still has to do by hand after the theme was written.
+    owns_files_on_unknown_shape: bool = False
     reload: str = ""
-    # Printed to stderr after every successful run.
-    hint: str = ""
+    stderr_hint: str = ""
 
 
 def _plan_nvim(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, _slot: bool) -> list[Step]:
@@ -64,7 +60,7 @@ APPS: dict[str, App] = {
         inspect_wezterm,
         plan_wezterm,
         pair=True,
-        partial=True,
+        owns_files_on_unknown_shape=True,
         reload="restart WezTerm, or let a config reload pick up the managed pointer",
     ),
     "herdr": App(
@@ -87,7 +83,7 @@ APPS: dict[str, App] = {
         "Starship",
         inspect_starship,
         plan_starship,
-        hint=f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
+        stderr_hint=f"Source the zsh highlight snippet after zsh-syntax-highlighting:\n  {SOURCE_HINT}\n",
     ),
     "lazygit": App("Lazygit", inspect_lazygit, plan_lazygit, reload="restart lazygit to render the new theme"),
     "claude": App(
@@ -228,9 +224,9 @@ def _refusal(name: str, app: App, inspection: Inspection) -> Refusal:
 
 
 def _select(
-    requested: Theme | None, choose: bool, inspection: Inspection, catalog: Sequence[Theme]
+    requested: Theme | None, selects_theme: bool, inspection: Inspection, catalog: Sequence[Theme]
 ) -> tuple[Theme, Selection]:
-    if choose:
+    if selects_theme:
         return requested or default_theme(tuple(catalog)), Selection.SELECTED
     if inspection.current is not None:
         return inspection.current, Selection.KEPT
@@ -296,7 +292,7 @@ def _summarize(
         print(f"{verb} {name}: kept your own theme (config left unchanged)")
     else:
         print(f"{verb} {name}: {selection}")
-    if not slot and app.partial:
+    if not slot and app.owns_files_on_unknown_shape:
         print(f"  pointer: {selection}")
     print(f"  changes: {_changes(results)}")
     if slot and app.reload:
@@ -329,26 +325,26 @@ def _mutate(command: str, ns: argparse.Namespace) -> int:
         return 0
     app = APPS[ns.app]
     config_dir = ns.config_dir.expanduser() if ns.config_dir is not None else None
-    # apply (and install) always select; setup keeps the current selection unless --theme names one.
-    choose = command != "setup" or requested is not None
+    selects_theme = command != "setup" or requested is not None
     inspection = app.inspect(catalog, config_dir)
     ownership = inspection.ownership
+    keeps_foreign = ownership is Ownership.FOREIGN and not ns.adopt
     if (
         ownership is Ownership.BROKEN
-        or (ownership is Ownership.UNKNOWN_SHAPE and not app.partial)
-        or (ownership is Ownership.FOREIGN and choose and not ns.adopt)
+        or (ownership is Ownership.UNKNOWN_SHAPE and not app.owns_files_on_unknown_shape)
+        or (keeps_foreign and selects_theme)
     ):
         raise _refusal(ns.app, app, inspection)
-    slot = ownership is not Ownership.UNKNOWN_SHAPE and not (ownership is Ownership.FOREIGN and not ns.adopt)
-    theme, selection = _select(requested, choose, inspection, catalog)
+    slot = ownership is not Ownership.UNKNOWN_SHAPE and not keeps_foreign
+    theme, selection = _select(requested, selects_theme, inspection, catalog)
     results = commit(app.plan(theme, catalog, config_dir, slot), dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks)
     _report(results, verbose=ns.verbose)
     verb = "apply" if command == "install" else command
     _summarize(verb, ns.app, app, ownership, slot, _selection_text(app, theme, selection, catalog), results)
     if ownership is Ownership.UNKNOWN_SHAPE:
         raise _refusal(ns.app, app, inspection)
-    if app.hint and slot:
-        print(app.hint, file=sys.stderr)
+    if app.stderr_hint and slot:
+        print(app.stderr_hint, file=sys.stderr)
     return 0
 
 
@@ -362,7 +358,7 @@ def _current(name: str, config_dir: Path | None) -> str:
     match inspection.ownership:
         case Ownership.BROKEN:
             raise ThemeError(inspection.detail)
-        case Ownership.FOREIGN if not app.partial:
+        case Ownership.FOREIGN if not app.owns_files_on_unknown_shape:
             raise ThemeError(f"{app.label} uses a theme sf2-themes does not manage")
     if inspection.unreadable:
         raise ThemeError(f"could not read the sf2 theme {app.label} selects")

@@ -6,7 +6,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 from sf2_theme.model import SELECTABLE_PREFIX, AdapterColors, Theme, project_adapter_colors
-from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, recorded
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, read_existing, recorded
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.toml"
@@ -139,7 +139,7 @@ def merge_config(existing: str, theme: Theme) -> str:
 
 def inspect_codex(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = config_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
+    existing = read_existing(path)
     try:
         config = tomllib.loads(existing)
     except tomllib.TOMLDecodeError as error:
@@ -149,8 +149,7 @@ def inspect_codex(themes: Sequence[Theme], config_dir: Path | None) -> Inspectio
             return Inspection(
                 Ownership.UNKNOWN_SHAPE,
                 detail=(
-                    f"Convert the inline tui value in {path} into a [tui] table, for example:\n\n"
-                    '[tui]\ntheme = "..."'
+                    f'Convert the inline tui value in {path} into a [tui] table, for example:\n\n[tui]\ntheme = "..."'
                 ),
             )
         return Inspection(Ownership.ABSENT)
@@ -170,6 +169,6 @@ def plan_codex(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, s
     steps.extend(Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes)
     if slot:
         path = config_path(config_dir)
-        existing = path.read_text(encoding="utf-8") if path.exists() else ""
+        existing = read_existing(path)
         steps.append(Write(path, merge_config(existing, theme)))
     return steps
