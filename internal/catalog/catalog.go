@@ -37,7 +37,7 @@ func ParseFS(fsys fs.FS) ([]Theme, error) {
 	for _, name := range names {
 		data, err := fs.ReadFile(fsys, name)
 		if errors.Is(err, fs.ErrNotExist) {
-			return nil, fmt.Errorf("embedded catalog is missing %s", name)
+			return nil, fmt.Errorf("missing theme file: %s", name)
 		}
 		if err != nil {
 			return nil, err

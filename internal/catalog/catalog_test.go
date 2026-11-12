@@ -98,7 +98,7 @@ func TestLoadFSRejectsABrokenCatalogWithTheReferenceMessage(t *testing.T) {
 		{"bad hex color", editFile("characters/ken.toml", `foreground = "#`, `foreground = "#zz`),
 			"color must be #RRGGBB, got '#zzdecdcc'"},
 		{"missing main.toml", func(files fstest.MapFS) { delete(files, "main.toml") },
-			"embedded catalog is missing main.toml"},
+			"missing theme file: main.toml"},
 		{"missing main-light.toml", func(files fstest.MapFS) { delete(files, "main-light.toml") },
 			"missing expected theme main-light"},
 		{"low contrast", func(files fstest.MapFS) {
