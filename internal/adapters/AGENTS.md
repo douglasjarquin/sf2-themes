@@ -80,6 +80,7 @@ The Python adapter of the same name at the parity reference is the behavior cont
 - Current reports the dark installed ID only for a matching catalog pair; it reads settings, not effective layout/picker state.
 - Terminal fields use canonical UI/ANSI colors; per-file UI overrides map canvas/background, chrome/surface, surface/overlay, border/border, and accent/accent.
 - Invalid JSON, a non-object document, or a `theme` that is neither a name nor an object inspects as broken.
+- An `XDG_CONFIG_HOME` that is set but empty resolves to the relative `herdr-app`, reproducing the reference; fixing it is a separate behavior change.
 
 ## Neovim
 
@@ -97,6 +98,7 @@ The Python adapter of the same name at the parity reference is the behavior cont
 - An inline `tui` form is an unknown shape whose manual fix is converting it to a `[tui]` table; never restructure it.
 - A `[tui].theme` equal to a short catalog ID is legacy and is rewritten with the `sf2-` identity; any non-`sf2-` value is foreign.
 - Limit legacy cleanup to unprefixed `<catalog-id>.tmTheme` files represented by the current catalog.
+- A `[tui]` header followed by a comment is not recognized, so the config inspects as absent and a second `[tui]` table is appended; this reproduces the reference and is fixed only as a separate behavior change.
 
 ## Lazygit
 
@@ -104,13 +106,13 @@ The Python adapter of the same name at the parity reference is the behavior cont
 - Theme fragments must cover every current Lazygit `gui.theme` key plus wildcard `authorColors['*']`, with SF2 semantic roles rather than Catppuccin hues.
 - Preserve unrelated `gui` settings and named author colors, treat an unmarked existing `gui.theme` as foreign, and keep the managed blocks idempotent.
 - Incomplete or out-of-order markers inspect as broken.
-- Resolve the config directory from `--config-dir`, `LAZYGIT_CONFIG_DIR`, or the platform's Lazygit default.
+- Resolve the config directory from `--config-dir`, `LAZYGIT_CONFIG_DIR`, or the platform's Lazygit default: `~/Library/Application Support/lazygit` when `runtime.GOOS` is darwin, otherwise `$XDG_CONFIG_HOME/lazygit` or `~/.config/lazygit`, so its parity golden is recorded per OS.
 
 ## Claude Code
 
 - The adapter owns catalog files `<claude-home>/themes/sf2-*.json` and only the `theme` key in `<claude-home>/settings.json`, resolved from `--config-dir`, `CLAUDE_CONFIG_DIR`, or `~/.claude`.
 - Claude Code's custom-theme schema (`name`/`base`/`overrides`) is an experimental component with no publicly documented full token list.
-- `OVERRIDE_TOKENS` is a best-effort mapping onto SF2 roles, confirmed live in a running session for the `claude`/`error`/`success` tokens the docs do specify.
+- `overrideTokens` is a best-effort mapping onto SF2 roles, confirmed live in a running session for the `claude`/`error`/`success` tokens the docs do specify.
 - Claude Code has no host-appearance auto-switch for custom themes, so selecting a light or dark sibling pins that one theme in `settings.json` like Codex, not a following pair like WezTerm, Herdr, or Neovim.
 - Preserve every other `settings.json` key; only ever touch the top-level `theme` string, written as `custom:<selectable-id>`.
 - A `custom:sf2-*` theme is managed, and unreadable when it does not resolve; any other `theme` is foreign.
