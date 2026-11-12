@@ -157,7 +157,7 @@ func TestACRLFConfigIsMergedAsLF(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	results, err := fsys.Commit(steps, fsys.Options{})
+	results, err := fsys.Commit(steps, fsys.Options{Verbose: true})
 	if err != nil {
 		t.Fatal(err)
 	}

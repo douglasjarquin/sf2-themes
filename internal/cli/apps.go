@@ -22,12 +22,3 @@ func register(name string, app adapters.App) {
 	}
 	apps[name] = app
 }
-
-// lookupApp returns the adapter for name, or an error while that adapter is not ported yet.
-func lookupApp(name string) (adapters.App, error) {
-	app, ok := apps[name]
-	if !ok {
-		return adapters.App{}, fmt.Errorf("%s: adapter is not ported to this build yet", name)
-	}
-	return app, nil
-}

@@ -32,15 +32,15 @@ type Request struct {
 // flagSpec is one option. names[0] and the slash-joined names are what usage errors print.
 type flagSpec struct {
 	names   []string
-	metavar string // empty for a switch
+	metavar string
 	help    string
 	set     func(r *Request, value string)
 }
 
 type positionalSpec struct {
-	dest    string // the name usage errors print
+	dest    string
 	choices []string
-	many    bool // zero or more (validate's THEME ...)
+	many    bool
 	help    string
 	set     func(r *Request, value string)
 }
@@ -99,7 +99,6 @@ func mutationSpec(name, help string) commandSpec {
 	}
 }
 
-// commandSpecs is the command set in help order.
 var commandSpecs = []commandSpec{
 	{name: "apps", help: "list supported applications", flags: []flagSpec{helpFlag}},
 	{name: "themes", help: "list catalog themes", flags: []flagSpec{helpFlag}},
@@ -146,8 +145,7 @@ const (
 type parsed struct {
 	outcome outcome
 	request Request
-	// help is the text to print for showHelp.
-	help string
+	help    string
 }
 
 // usageError is an argparse-style usage error: the usage line, then `<prog>: error: <message>`, exit 2.

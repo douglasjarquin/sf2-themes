@@ -124,11 +124,11 @@ func ShowTheme(theme Theme) string {
 func CatalogIssues(catalog []Theme) []string {
 	var lines []string
 	for _, issue := range ValidateCatalog(catalog) {
-		lines = append(lines, string(issue.Severity)+": "+issue.Message)
+		lines = append(lines, issue.Line())
 	}
 	for _, theme := range catalog {
 		for _, issue := range ValidateTheme(theme) {
-			lines = append(lines, string(issue.Severity)+": "+issue.Message)
+			lines = append(lines, issue.Line())
 		}
 	}
 	return lines

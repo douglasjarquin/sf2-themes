@@ -269,21 +269,21 @@ func MergeConfig(existing string, theme catalog.Theme) string {
 			_, guiEnd, _ := topLevelSection(lines, "gui")
 			lines = slices.Insert(lines, guiEnd, managedAuthorLines(theme)...)
 		} else if !containsMarker(lines[start:end], managedAuthorStart) {
-			wildcard := -1
-			for i := start + 1; i < end; i++ {
-				if isWildcardAuthorLine(lines[i]) {
-					wildcard = i
-					break
-				}
-			}
-			if wildcard < 0 {
-				lines = slices.Insert(lines, end, managedAuthorEntryLines(theme)...)
-			} else {
-				lines = slices.Concat(lines[:wildcard], managedAuthorEntryLines(theme), lines[wildcard+1:])
-			}
+			lines = insertAuthorEntry(lines, start, end, theme)
 		}
 	}
 	return pycompat.RStrip(strings.Join(lines, "\n")) + "\n"
+}
+
+// insertAuthorEntry puts the managed author entry in place of the first wildcard author line in the authorColors
+// subsection spanning start to end, or at its end when it has none.
+func insertAuthorEntry(lines []string, start, end int, theme catalog.Theme) []string {
+	wildcard := slices.IndexFunc(lines[start+1:end], isWildcardAuthorLine)
+	if wildcard < 0 {
+		return slices.Insert(lines, end, managedAuthorEntryLines(theme)...)
+	}
+	wildcard += start + 1
+	return slices.Concat(lines[:wildcard], managedAuthorEntryLines(theme), lines[wildcard+1:])
 }
 
 // Inspect classifies gui.theme in config.yml: a complete managed block is managed, an unmarked gui.theme is

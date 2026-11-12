@@ -66,6 +66,12 @@ func TestSemanticSlotMustMatchItsAnsiMeaning(t *testing.T) {
 	}
 }
 
+func TestSemanticFieldsStartOneSlotAfterAnsiBlack(t *testing.T) {
+	if SemanticFields[0] != "red" || ANSIOrder[1] != "red" {
+		t.Errorf("SemanticFields[0] = %q, ANSIOrder[1] = %q, want both red", SemanticFields[0], ANSIOrder[1])
+	}
+}
+
 func TestAnsiChromaticSlotRequiresTextContrast(t *testing.T) {
 	theme := ryuTheme(t)
 	theme.AnsiNormal.Red = "#151b24"

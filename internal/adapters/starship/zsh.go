@@ -8,11 +8,9 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
-// sourceHint is the line that sources the managed zsh-syntax-highlighting snippet.
 const sourceHint = `[[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && ` +
 	`source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"`
 
-// highlightPath is the managed zsh-syntax-highlighting snippet path.
 func highlightPath() (string, error) {
 	root, err := configRoot()
 	return pycompat.Path(root, "sf2-theme", "zsh-syntax-highlighting.zsh"), err
@@ -44,7 +42,6 @@ func renderHighlight(theme catalog.Theme) string {
 	}, "\n")
 }
 
-// planZshSyntax plans the managed zsh-syntax-highlighting snippet.
 func planZshSyntax(theme catalog.Theme) (plan.Step, error) {
 	path, err := highlightPath()
 	if err != nil {

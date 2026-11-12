@@ -34,7 +34,8 @@ func (a Action) Planned() bool {
 }
 
 // Result is the outcome of one step. Path is the destination written, which is the resolved target of a followed
-// symlink. Diff is the unified diff of a write that changes content, and "" otherwise.
+// symlink. Diff is the unified diff of a write that changes content when the commit is a dry run or verbose, and ""
+// otherwise.
 type Result struct {
 	Path   string
 	Action Action
@@ -45,6 +46,7 @@ type Result struct {
 type Options struct {
 	DryRun         bool
 	FollowSymlinks bool
+	Verbose        bool
 }
 
 // now is the clock that stamps backup names.
@@ -69,7 +71,7 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 	for i, step := range steps {
 		destination := destinations[i]
 		if !step.Remove {
-			result, err := writeFile(destination, step.Content, opts.DryRun)
+			result, err := writeFile(destination, step.Content, opts)
 			if err != nil {
 				return results, err
 			}
@@ -99,12 +101,9 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 	return results, nil
 }
 
-// writeFile atomically replaces path, already resolved, with content, keeping its mode and backing up what it held.
-func writeFile(path, content string, dryRun bool) (Result, error) {
-	destination, err := resolveDestination(path, false)
-	if err != nil {
-		return Result{}, err
-	}
+// writeFile atomically replaces destination, already resolved, with content, keeping its mode and backing up what it
+// held.
+func writeFile(destination, content string, opts Options) (Result, error) {
 	isFile, err := statIs(os.Stat, destination, fs.FileMode.IsRegular)
 	if err != nil {
 		return Result{}, err
@@ -120,8 +119,11 @@ func writeFile(path, content string, dryRun bool) (Result, error) {
 	if existing != nil && *existing == content {
 		return Result{Path: destination, Action: Unchanged}, nil
 	}
-	diff := unifiedDiff(destination, existing, content)
-	if dryRun {
+	var diff string
+	if opts.DryRun || opts.Verbose {
+		diff = unifiedDiff(destination, existing, content)
+	}
+	if opts.DryRun {
 		action := WouldCreate
 		if existing != nil {
 			action = WouldUpdate

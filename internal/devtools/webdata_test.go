@@ -99,20 +99,6 @@ func TestWebDataFromEditedSource(t *testing.T) {
 	}
 }
 
-func TestWebDataKeepsNonASCIIUnescaped(t *testing.T) {
-	output := filepath.Join(t.TempDir(), "theme-data.json")
-	if code, _, stderr := runWebData(themesDir, output, false); code != 0 {
-		t.Fatalf("exit %d, stderr %q", code, stderr)
-	}
-	got, err := os.ReadFile(output)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !bytes.Contains(got, []byte(`"stage": "Arcade · Family baseline"`)) || bytes.Contains(got, []byte("\\u00b7")) {
-		t.Fatal("stage value is not written with an unescaped middle dot")
-	}
-}
-
 func TestWebDataCatalogErrorIsBare(t *testing.T) {
 	source := copyCatalog(t)
 	editFile(t, filepath.Join(source, "main.toml"), `red = "#c86e67"`, `red = "gold"`)

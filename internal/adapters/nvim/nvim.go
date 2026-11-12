@@ -28,6 +28,8 @@ const (
 	currentDirName         = "sf2-theme"
 	currentFileName        = "current.lua"
 	pluginFileName         = "sf2-theme.lua"
+	colorsDirName          = "colors"
+	pluginDirName          = "plugin"
 )
 
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `+(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
@@ -49,10 +51,6 @@ func nvimDir(configDir string) (string, error) {
 	}
 	root, err := configRoot()
 	return pycompat.Path(root, "nvim"), err
-}
-
-func schemeName(theme catalog.Theme) string {
-	return theme.Metadata.SelectableID()
 }
 
 func schemeFilename(theme catalog.Theme) string {
@@ -111,14 +109,14 @@ func renderScheme(theme catalog.Theme) string {
 		{"bright_white", bright.White},
 	}
 	background := "dark"
-	if strings.HasSuffix(theme.Metadata.ID, "-light") {
+	if theme.Metadata.Variant == catalog.VariantLight {
 		background = "light"
 	}
 	lines := []string{
 		`vim.cmd("highlight clear")`,
 		`if vim.fn.exists("syntax_on") == 1 then vim.cmd("syntax reset") end`,
 		`vim.o.background = "` + background + `"`,
-		`vim.g.colors_name = "` + schemeName(theme) + `"`,
+		`vim.g.colors_name = "` + theme.Metadata.SelectableID() + `"`,
 		"local colors = {",
 	}
 	for _, entry := range colors {
@@ -171,7 +169,6 @@ func renderScheme(theme catalog.Theme) string {
 	return strings.Join(lines, "\n")
 }
 
-// renderPointer renders the managed pointer that follows TERM_THEME or 'background'.
 func renderPointer(dark, light catalog.Theme) string {
 	darkID := dark.Metadata.SelectableID()
 	lightID := light.Metadata.SelectableID()
@@ -250,7 +247,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, _ bool)
 	if err != nil {
 		return nil, err
 	}
-	target := pycompat.Path(dir, "colors")
+	target := pycompat.Path(dir, colorsDirName)
 	steps := make([]plan.Step, 0, 2*len(themes)+2)
 	for _, entry := range themes {
 		steps = append(steps, plan.Remove(pycompat.Path(target, legacySchemeFilePrefix+"-"+entry.Metadata.ID+".lua")))
@@ -264,7 +261,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, _ bool)
 	}
 	steps = append(steps,
 		plan.Write(pycompat.Path(dir, currentDirName, currentFileName), renderPointer(dark, light)),
-		plan.Write(pycompat.Path(dir, "plugin", pluginFileName), renderLoader()),
+		plan.Write(pycompat.Path(dir, pluginDirName, pluginFileName), renderLoader()),
 	)
 	return steps, nil
 }

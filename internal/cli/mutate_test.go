@@ -165,21 +165,19 @@ func TestOwnershipGateSelectionAndSummariesMatchTheReference(t *testing.T) {
 	}
 }
 
-func TestBrokenOwnershipRefusesBeforePlanning(t *testing.T) {
-	planned := false
-	app := adapters.App{
-		Label: "Stub",
-		Inspect: func([]catalog.Theme, string) (plan.Inspection, error) {
-			return plan.Inspection{Ownership: plan.Broken, Detail: "bad"}, nil
-		},
-		Plan: func(catalog.Theme, []catalog.Theme, string, bool) ([]plan.Step, error) {
-			planned = true
-			return nil, nil
-		},
+func TestBrokenOwnershipRefusesAdoptWithoutWriting(t *testing.T) {
+	inspection := stubInspection{Ownership: "broken", Detail: "bad"}
+	useApp(t, "codex", stubApp(&inspection, adapters.App{Label: "Stub"}))
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "config.txt"), []byte("# >>>\n"), 0o644); err != nil {
+		t.Fatal(err)
 	}
-	useApp(t, "codex", app)
-	if _, _, status := run("apply", "codex", "--adopt", "--config-dir", t.TempDir()); status != 1 || planned {
-		t.Errorf("status %d, planned %v", status, planned)
+	stdout, stderr, status := run("apply", "codex", "--adopt", "--config-dir", dir)
+	if status != 1 || stdout != "" || stderr != "error: Stub config cannot be changed safely: bad\n" {
+		t.Errorf("status %d, stdout %q, stderr %q", status, stdout, stderr)
+	}
+	if got := tree(t, dir); len(got) != 1 || got["config.txt"] != "# >>>\n" {
+		t.Errorf("files %v", got)
 	}
 }
 

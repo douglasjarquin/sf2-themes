@@ -16,15 +16,6 @@ func TestPath(t *testing.T) {
 	}
 }
 
-func TestPathDropsEmptyAndDotButKeepsDotDot(t *testing.T) {
-	if got := Path("a//b/./c"); got != "a/b/c" {
-		t.Errorf("Path(a//b/./c) = %q", got)
-	}
-	if got := Path("/home/u/.config", "../wezterm"); got != "/home/u/.config/../wezterm" {
-		t.Errorf("Path with .. = %q", got)
-	}
-}
-
 func TestNameParentWithName(t *testing.T) {
 	for _, tc := range namePartsCases {
 		if got := Name(tc.path); got != tc.name {

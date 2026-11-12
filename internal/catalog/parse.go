@@ -63,16 +63,8 @@ func requireStrList(raw any, present bool, name string) ([]string, error) {
 	return values, nil
 }
 
-// unknownKeys returns the table's keys outside allowed, sorted.
 func unknownKeys(table map[string]any, allowed []string) []string {
-	var unknown []string
-	for key := range table {
-		if !slices.Contains(allowed, key) {
-			unknown = append(unknown, key)
-		}
-	}
-	slices.Sort(unknown)
-	return unknown
+	return sortedKeys(table, func(key string) bool { return !slices.Contains(allowed, key) })
 }
 
 func hexFields(table map[string]any, fields []string, prefix string) (map[string]HexColor, error) {

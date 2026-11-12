@@ -29,7 +29,6 @@ const legacySchemeFilePrefix = "street-fighter-ii"
 
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `*(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
 
-// configRoot is the XDG-style configuration root.
 func configRoot() (string, error) {
 	if configured := os.Getenv("XDG_CONFIG_HOME"); configured != "" {
 		return pycompat.ExpandUser(configured)
@@ -38,7 +37,6 @@ func configRoot() (string, error) {
 	return pycompat.Path(home, ".config"), err
 }
 
-// weztermDir is the WezTerm configuration directory.
 func weztermDir(configDir string) (string, error) {
 	if configDir != "" {
 		return configDir, nil
@@ -85,13 +83,11 @@ func luaPath(configDir string) (string, error) {
 	return homeLua, nil
 }
 
-// colorsDir is the directory for custom WezTerm scheme files.
 func colorsDir(configDir string) (string, error) {
 	dir, err := weztermDir(configDir)
 	return pycompat.Path(dir, "colors"), err
 }
 
-// pointerPath is the managed color-scheme pointer file.
 func pointerPath() (string, error) {
 	root, err := configRoot()
 	return pycompat.Path(root, "sf2-theme", "wezterm-current.lua"), err
@@ -109,7 +105,6 @@ func quotedColors(colors []catalog.HexColor) string {
 	return strings.Join(quoted, ", ")
 }
 
-// tabStyle renders one tab_bar tab table.
 func tabStyle(header string, bg, fg catalog.HexColor) []string {
 	return []string{
 		header,
@@ -142,7 +137,6 @@ func renderScheme(theme catalog.Theme) string {
 		q("selection_bg", adapter.SelectionBg),
 		q("selection_fg", adapter.SelectionFg),
 		q("split", adapter.Surface1),
-		// Muted reads as a real thumb; border is often identical to the track.
 		q("scrollbar_thumb", ui.Muted),
 		q("compose_cursor", ui.AccentSecondary),
 		q("visual_bell", ui.Overlay),
@@ -176,7 +170,6 @@ func renderScheme(theme catalog.Theme) string {
 	return strings.Join(lines, "\n")
 }
 
-// renderPointer renders the managed Lua pointer that follows host appearance.
 func renderPointer(dark, light catalog.Theme) string {
 	return strings.Join([]string{
 		"-- sf2-themes: " + dark.Metadata.SelectableID(),

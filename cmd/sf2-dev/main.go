@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/devtools"
@@ -126,7 +127,7 @@ func parseOptions(args, valued, booleans []string) (options, error) {
 		}
 		name, value, inline := strings.Cut(arg, "=")
 		switch {
-		case contains(valued, name):
+		case slices.Contains(valued, name):
 			if !inline {
 				if i+1 >= len(args) || (strings.HasPrefix(args[i+1], "-") && args[i+1] != "-") {
 					return opts, fmt.Errorf("argument %s: expected one argument", name)
@@ -135,9 +136,9 @@ func parseOptions(args, valued, booleans []string) (options, error) {
 				value = args[i]
 			}
 			opts.values[name] = value
-		case contains(booleans, arg):
+		case slices.Contains(booleans, arg):
 			opts.flags[arg] = true
-		case inline && contains(booleans, name):
+		case inline && slices.Contains(booleans, name):
 			return opts, fmt.Errorf("argument %s: ignored explicit argument %s", name, pycompat.Repr(value))
 		default:
 			unrecognized = append(unrecognized, arg)
@@ -147,15 +148,6 @@ func parseOptions(args, valued, booleans []string) (options, error) {
 		return opts, fmt.Errorf("unrecognized arguments: %s", strings.Join(unrecognized, " "))
 	}
 	return opts, nil
-}
-
-func contains(list []string, s string) bool {
-	for _, item := range list {
-		if item == s {
-			return true
-		}
-	}
-	return false
 }
 
 // moduleRoot returns the directory holding go.mod, found by walking up from the working directory,

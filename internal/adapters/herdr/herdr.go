@@ -33,15 +33,7 @@ var (
 )
 
 // herdrTokens maps each Herdr custom token to its SF2 color.
-//
-// Herdr paints the active tab chip and the focused split border with the same `accent` token. Prefer primary accent
-// for both; `name = "terminal"` left those as ANSI Blue (WezTerm's semantic blue), which is wrong for SF2 palettes.
-//
-// Do not map Herdr row fills to ui.selection_background: that token is a punchy terminal-selection tint and reads as
-// an off-palette purple slab in the sidebar. Use surface steps instead (active = surface, navigate cursor = overlay).
-//
-// Herdr's overlay0/overlay1 are muted *text* roles (catppuccin #6c7086/#7f849c), not chrome borders. The shared
-// adapter overlay0 is ui.border for WezTerm/nvim/codex; remap here only so dim sidebar labels stay readable.
+// Herdr's overlay0/overlay1 are muted text roles, not chrome borders.
 func herdrTokens(theme catalog.Theme) [][2]string {
 	adapter := catalog.ProjectAdapterColors(theme.UI)
 	ui := theme.UI
@@ -77,7 +69,6 @@ func herdrTokens(theme catalog.Theme) [][2]string {
 	return tokens
 }
 
-// baseThemeName returns a concrete Herdr base so ANSI Blue never leaks into chrome.
 func baseThemeName(theme catalog.Theme) string {
 	if theme.Metadata.Variant == catalog.VariantLight {
 		return "catppuccin-latte"
@@ -85,7 +76,6 @@ func baseThemeName(theme catalog.Theme) string {
 	return "catppuccin"
 }
 
-// configPath is the Herdr config.toml path.
 func configPath(configDir string) (string, error) {
 	if configDir != "" {
 		return pycompat.Path(configDir, "config.toml"), nil

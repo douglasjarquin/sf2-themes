@@ -29,7 +29,6 @@ var changesOrder = []fsys.Action{
 	fsys.Created, fsys.Updated, fsys.Removed, fsys.WouldCreate, fsys.WouldUpdate, fsys.WouldRemove, fsys.Unchanged,
 }
 
-// selection is how a run arrived at the theme it writes.
 type selection int
 
 const (
@@ -41,10 +40,8 @@ const (
 
 // decision is what the ownership gate allows for one run.
 type decision struct {
-	// refuse stops the run before anything is planned or written.
 	refuse bool
-	// slot lets the plan write the app's theme setting.
-	slot bool
+	slot   bool
 	// incomplete writes the theme files, leaves the setting alone, and then exits 1 with the manual fix.
 	incomplete bool
 }
@@ -79,7 +76,6 @@ func gate(ownership plan.Ownership, app adapters.App, adopt, selectsTheme bool) 
 	return decision{slot: true}
 }
 
-// refusal is the one message for an ownership class the gate refuses.
 func refusal(name string, app adapters.App, inspection plan.Inspection) error {
 	switch inspection.Ownership {
 	case plan.Foreign:
@@ -90,14 +86,6 @@ func refusal(name string, app adapters.App, inspection plan.Inspection) error {
 			pycompat.RStrip(inspection.Detail) + "\n\nThen run the command again.")
 	}
 	return fmt.Errorf("%s config cannot be changed safely: %s", app.Label, inspection.Detail)
-}
-
-func runSetup(ctx *Context, req Request) (int, error) {
-	return mutate(ctx, req)
-}
-
-func runApply(ctx *Context, req Request) (int, error) {
-	return mutate(ctx, req)
 }
 
 // mutate runs setup or apply: inspect, gate, select, plan, commit, report.
@@ -117,10 +105,7 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if req.App == "slack" {
 		return printSlack(ctx, requested, themes)
 	}
-	app, err := lookupApp(req.App)
-	if err != nil {
-		return 0, err
-	}
+	app := apps[req.App]
 	configDir, err := expandConfigDir(req)
 	if err != nil {
 		return 0, err
@@ -142,7 +127,7 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	results, err := fsys.Commit(steps, fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks})
+	results, err := fsys.Commit(steps, fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose})
 	if err != nil {
 		return 0, err
 	}
@@ -161,7 +146,6 @@ func mutate(ctx *Context, req Request) (int, error) {
 	return 0, nil
 }
 
-// expandConfigDir returns the expanded --config-dir, or "" when the flag is absent.
 func expandConfigDir(req Request) (string, error) {
 	if req.ConfigDir == nil {
 		return "", nil
@@ -169,7 +153,6 @@ func expandConfigDir(req Request) (string, error) {
 	return pycompat.ExpandUser(*req.ConfigDir)
 }
 
-// choose returns the theme a run writes and how it was chosen.
 func choose(requested *catalog.Theme, selectsTheme bool, inspection plan.Inspection, themes []catalog.Theme) (catalog.Theme, selection, error) {
 	switch {
 	case selectsTheme && requested != nil:
@@ -285,10 +268,7 @@ func runCurrent(ctx *Context, req Request) (int, error) {
 	if req.App == "slack" {
 		return 0, errNoSlackTheme
 	}
-	app, err := lookupApp(req.App)
-	if err != nil {
-		return 0, err
-	}
+	app := apps[req.App]
 	themes, err := catalog.Load()
 	if err != nil {
 		return 0, err

@@ -43,9 +43,7 @@ type paletteColor struct {
 	color func(catalog.Theme) catalog.HexColor
 }
 
-// paletteKeys remaps the named colors the stock prompt uses onto SF2 tokens. Starship `style = "blue"` resolves
-// through `palette`, not the terminal ANSI table, so dirname and related chrome follow accent and identity instead of
-// cool ANSI blue and green.
+// Starship resolves named styles like `blue` through `palette`, not the terminal ANSI table.
 var paletteKeys = []paletteColor{
 	{"black", func(t catalog.Theme) catalog.HexColor { return t.UI.Background }},
 	{"red", func(t catalog.Theme) catalog.HexColor { return t.Semantic.Red }},
@@ -65,7 +63,6 @@ var paletteKeys = []paletteColor{
 	{"bright-white", func(t catalog.Theme) catalog.HexColor { return t.UI.Foreground }},
 }
 
-// configRoot is the XDG-style configuration root.
 func configRoot() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 		return pycompat.ExpandUser(xdg)
@@ -74,7 +71,6 @@ func configRoot() (string, error) {
 	return pycompat.Path(home, ".config"), err
 }
 
-// configPath is the starship.toml path.
 func configPath(configDir string) (string, error) {
 	if configDir != "" {
 		return pycompat.Path(configDir, "starship.toml"), nil
@@ -86,7 +82,6 @@ func configPath(configDir string) (string, error) {
 	return pycompat.Path(root, "starship.toml"), err
 }
 
-// renderBlock renders the managed Starship palette block for the theme.
 func renderBlock(theme catalog.Theme) string {
 	lines := []string{
 		managedStart,

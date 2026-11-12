@@ -47,6 +47,11 @@ type Issue struct {
 	Message  string
 }
 
+// Line formats the issue as a printable `<severity>: <message>` line.
+func (i Issue) Line() string {
+	return string(i.Severity) + ": " + i.Message
+}
+
 func errorIssue(format string, args ...any) Issue {
 	return Issue{SeverityError, fmt.Sprintf(format, args...)}
 }
@@ -219,7 +224,6 @@ func semanticIssues(theme Theme) []Issue {
 	normal := theme.AnsiNormal.Colors()
 	var issues []Issue
 	for i := chromaticStart; i < chromaticEnd; i++ {
-		// SemanticFields starts at red, one slot after ANSIOrder's black.
 		if semantic[i-1] != normal[i] {
 			name := ANSIOrder[i]
 			issues = append(issues, errorIssue(

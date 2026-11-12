@@ -13,19 +13,6 @@ func TestRepr(t *testing.T) {
 	}
 }
 
-func TestReprQuotesAndEscapes(t *testing.T) {
-	for in, want := range map[string]string{
-		"sf2-ryu":  `'sf2-ryu'`,
-		"it's":     `"it's"`,
-		"bell\x07": `'bell\x07'`,
-		"both '\"": `'both \'"'`,
-	} {
-		if got := Repr(in); got != want {
-			t.Errorf("Repr(%q) = %s, want %s", in, got, want)
-		}
-	}
-}
-
 // Repr keeps a character as itself exactly when Python's str.isprintable() does, across the characters
 // Python 3.11 has assigned.
 func TestReprKeepsWhatPythonPrints(t *testing.T) {

@@ -410,7 +410,6 @@ func encodeString(b *strings.Builder, s string, ascii bool) {
 	for i := 0; i < len(s); {
 		r, size := utf8.DecodeRuneInString(s[i:])
 		if r == utf8.RuneError && size == 1 && i+2 < len(s) && s[i] == 0xed && s[i+1] >= 0xa0 && s[i+1] <= 0xbf {
-			// An unpaired surrogate, written by writeCodePoint.
 			r, size = rune(s[i]&0x0f)<<12|rune(s[i+1]&0x3f)<<6|rune(s[i+2]&0x3f), 3
 		}
 		switch {

@@ -155,18 +155,10 @@ options:
 	}
 }
 
-func TestAnAppWithoutAnAdapterFailsClearly(t *testing.T) {
+func TestEveryFileWritingAppHasAnAdapter(t *testing.T) {
 	for _, name := range appNames {
-		if _, ok := apps[name]; ok || name == "slack" {
-			continue
+		if _, ok := apps[name]; !ok && name != "slack" {
+			t.Errorf("%s has no registered adapter", name)
 		}
-		for _, command := range []string{"setup", "apply", "current"} {
-			_, stderr, status := run(command, name)
-			if status != 1 || stderr != "error: "+name+": adapter is not ported to this build yet\n" {
-				t.Errorf("%s %s: status %d, stderr %q", command, name, status, stderr)
-			}
-		}
-		return
 	}
-	t.Skip("every app has an adapter")
 }

@@ -28,8 +28,8 @@ var handlers = map[string]handler{
 	"themes":   runThemes,
 	"show":     runShow,
 	"validate": runValidate,
-	"setup":    runSetup,
-	"apply":    runApply,
+	"setup":    mutate,
+	"apply":    mutate,
 	"current":  runCurrent,
 }
 
@@ -112,7 +112,7 @@ func runValidate(ctx *Context, req Request) (int, error) {
 		}
 		for _, theme := range themes {
 			for _, issue := range catalog.ValidateTheme(theme) {
-				lines = append(lines, string(issue.Severity)+": "+issue.Message)
+				lines = append(lines, issue.Line())
 			}
 		}
 	}

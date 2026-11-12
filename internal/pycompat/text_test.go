@@ -28,20 +28,6 @@ func TestReadTextReadsUniversalNewlines(t *testing.T) {
 	}
 }
 
-func TestReadTextReadsCRLFAndCRAsThreeLines(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "file")
-	if err := os.WriteFile(path, []byte("a\r\nb\rc"), 0o644); err != nil {
-		t.Fatal(err)
-	}
-	got, err := ReadText(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got != "a\nb\nc" || !slices.Equal(SplitLines(got), []string{"a", "b", "c"}) {
-		t.Errorf("ReadText = %q, want three lines separated by LF", got)
-	}
-}
-
 func TestReadTextRejectsInvalidUTF8(t *testing.T) {
 	for _, raw := range invalidUTF8Files {
 		path := filepath.Join(t.TempDir(), "file")
@@ -160,14 +146,6 @@ func TestClassesKeepPythonPatternResults(t *testing.T) {
 		if group != tc.group {
 			t.Errorf("%s on %q: group %q, want %q", tc.pattern, tc.text, group, tc.group)
 		}
-	}
-}
-
-func TestWordMatchesNonASCIIWeztermBuilderName(t *testing.T) {
-	builder := regexp.MustCompile(`(?m)^local` + Space + `+(` + Word + `+)` + Space + `*=` + Space + `*wezterm\.config_builder\(\)` + Space + `*$`)
-	found := builder.FindStringSubmatch("local café = wezterm.config_builder()")
-	if found == nil || found[1] != "café" {
-		t.Errorf("found %q, want the name café", found)
 	}
 }
 

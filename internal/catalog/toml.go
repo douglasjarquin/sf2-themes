@@ -58,8 +58,8 @@ func normalizeTOML(value any) any {
 // tomlNode mirrors one value of tomllib's NestedDict: a table, a list (an array or an array of tables),
 // or a scalar.
 type tomlNode struct {
-	table map[string]*tomlNode // non-nil for a table
-	list  []*tomlNode          // the items of a list
+	table map[string]*tomlNode
+	list  []*tomlNode
 	isArr bool
 }
 
@@ -296,7 +296,6 @@ func (c *tomlChecker) skipWSNewlinesComments() {
 	}
 }
 
-// parseKey reads a dotted key of bare, basic-string, and literal-string parts.
 func (c *tomlChecker) parseKey() []string {
 	var key []string
 	for {

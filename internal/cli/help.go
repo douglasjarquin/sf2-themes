@@ -46,7 +46,6 @@ func buildTopHelp() string {
 	return b.String()
 }
 
-// positionalLabel is how usage and help name a positional: its choices in braces, or its name.
 func positionalLabel(p positionalSpec) string {
 	if p.choices != nil {
 		return "{" + strings.Join(p.choices, ",") + "}"
@@ -62,7 +61,6 @@ func optionLabel(f flagSpec) string {
 	return label
 }
 
-// commandUsage is the one-line usage of a command.
 func commandUsage(spec *commandSpec) string {
 	parts := []string{"usage:", prog, spec.name}
 	for _, f := range spec.flags {
@@ -102,7 +100,6 @@ func writeEntry(b *strings.Builder, label, help string, width int) {
 
 const maxLabelWidth = 20
 
-// commandHelp is the help a command prints for -h.
 func commandHelp(spec *commandSpec) string {
 	var b strings.Builder
 	b.WriteString(commandUsage(spec) + "\n")

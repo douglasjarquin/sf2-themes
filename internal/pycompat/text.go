@@ -16,8 +16,7 @@ import (
 // Use them where a Python pattern says `\s`, `\S`, or `\w`, for example `^local` + Space + `+(` + Word + `+)`.
 const (
 	// Space is `\s`: exactly the characters str.isspace() accepts.
-	Space = `[` + spaceSet + `]`
-	// NotSpace is `\S`.
+	Space    = `[` + spaceSet + `]`
 	NotSpace = `[^` + spaceSet + `]`
 	// Word is `\w`: letters, numbers, and the underscore.
 	Word = `[\p{L}\p{N}_]`
