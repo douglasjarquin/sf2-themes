@@ -1,0 +1,11 @@
+step apply slack --theme blanka
+exit 0
+stdout
+| #111c16,#3b9f58,#4e975b,#c86f61
+stderr
+| blanka
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

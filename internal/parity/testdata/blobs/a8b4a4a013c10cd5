@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-ryu-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#ecf1fa"
+red = "#a94a4b"
+green = "#3e7347"
+yellow = "#7b6600"
+blue = "#ab4043"
+purple = "#3c69a3"
+cyan = "#0f7285"
+white = "#2b313d"
+bright-black = "#5e6b83"
+bright-red = "#a94a4b"
+bright-green = "#3e7347"
+bright-yellow = "#7b6600"
+bright-blue = "#ab4043"
+bright-purple = "#3c69a3"
+bright-cyan = "#0f7285"
+bright-white = "#2b313d"
+# <<< sf2-themes managed theme

@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-ken-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#faeeed"
+red = "#a94a46"
+green = "#2d7633"
+yellow = "#846301"
+blue = "#af3c40"
+purple = "#876204"
+cyan = "#01737d"
+white = "#3c2e2d"
+bright-black = "#826363"
+bright-red = "#a94a46"
+bright-green = "#2d7633"
+bright-yellow = "#846301"
+bright-blue = "#af3c40"
+bright-purple = "#876204"
+bright-cyan = "#01737d"
+bright-white = "#3c2e2d"
+# <<< sf2-themes managed theme

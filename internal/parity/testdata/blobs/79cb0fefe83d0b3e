@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-guile-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#edf3eb"
+red = "#a94b47"
+green = "#447422"
+yellow = "#7c6702"
+blue = "#4f6e1b"
+purple = "#1f6e9e"
+cyan = "#097382"
+white = "#2c3429"
+bright-black = "#607059"
+bright-red = "#a94b47"
+bright-green = "#447422"
+bright-yellow = "#7c6702"
+bright-blue = "#4f6e1b"
+bright-purple = "#1f6e9e"
+bright-cyan = "#097382"
+bright-white = "#2c3429"
+# <<< sf2-themes managed theme

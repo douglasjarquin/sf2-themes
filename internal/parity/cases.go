@@ -5,7 +5,11 @@
 // committed Python standalone and replayed against whichever binary is under test.
 package parity
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
+)
 
 // Sandbox stands for the case's sandbox root, resolved through symlinks, in arguments,
 // environment values, seed files, and everything a golden records.
@@ -153,6 +157,31 @@ func Cases() []Case {
 	cases = append(cases, scenarioCases()...)
 	cases = append(cases, locationCases()...)
 	cases = append(cases, goOnlyCases()...)
+	cases = append(cases, everyThemeCases()...)
+	return cases
+}
+
+// everyThemeCases applies each catalog theme through the adapters that render only the selected
+// theme, so a theme-specific rendering difference fails a golden. The other adapters write every
+// theme's file on each apply, which their apply cases already compare.
+func everyThemeCases() []Case {
+	themes, err := catalog.Load()
+	if err != nil {
+		panic(err)
+	}
+	var cases []Case
+	for _, theme := range themes {
+		id := theme.Metadata.ID
+		for _, app := range []struct {
+			name  string
+			group Group
+		}{{"herdr", GroupHerdr}, {"starship", GroupStarship}} {
+			cases = append(cases, Case{Name: app.name + "/every-theme/" + id, Groups: []Group{app.group},
+				Steps: []Step{cmd("apply", app.name, "--theme", id)}})
+		}
+		cases = append(cases, Case{Name: "slack/every-theme/" + id, Groups: []Group{GroupSlack},
+			Steps: []Step{step("apply", "slack", "--theme", id)}})
+	}
 	return cases
 }
 

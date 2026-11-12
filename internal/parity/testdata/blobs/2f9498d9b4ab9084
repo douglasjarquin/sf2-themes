@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-chun-li
+palette = "sf2"
+
+[palettes.sf2]
+black = "#131a23"
+red = "#c86e67"
+green = "#4e975b"
+yellow = "#a38424"
+blue = "#498ee2"
+purple = "#a4841b"
+cyan = "#1396a1"
+white = "#c8d2de"
+bright-black = "#788696"
+bright-red = "#c86e67"
+bright-green = "#4e975b"
+bright-yellow = "#a38424"
+bright-blue = "#498ee2"
+bright-purple = "#a4841b"
+bright-cyan = "#1396a1"
+bright-white = "#c8d2de"
+# <<< sf2-themes managed theme

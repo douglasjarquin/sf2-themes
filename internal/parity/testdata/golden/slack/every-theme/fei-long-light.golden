@@ -1,0 +1,11 @@
+step apply slack --theme fei-long-light
+exit 0
+stdout
+| #f0f0fa,#af3e35,#247738,#a94b42
+stderr
+| fei-long-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

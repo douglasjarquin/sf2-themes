@@ -1,0 +1,17 @@
+step apply starship --theme main-light --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| apply starship: sf2-main-light
+|   changes: 2 created
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 d4ba71e1f2b93ba5 config/starship/starship.toml
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 772418f8d1e275ea home/.config/sf2-theme/zsh-syntax-highlighting.zsh

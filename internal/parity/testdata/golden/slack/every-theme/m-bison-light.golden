@@ -1,0 +1,11 @@
+step apply slack --theme m-bison-light
+exit 0
+stdout
+| #f3eff8,#8c48a1,#247738,#a94a4b
+stderr
+| m-bison-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

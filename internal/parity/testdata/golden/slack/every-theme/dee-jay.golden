@@ -1,0 +1,11 @@
+step apply slack --theme dee-jay
+exit 0
+stdout
+| #0e1c1c,#cc7822,#559658,#c86f64
+stderr
+| dee-jay
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

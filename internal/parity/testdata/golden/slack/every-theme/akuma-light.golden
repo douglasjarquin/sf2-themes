@@ -1,0 +1,11 @@
+step apply slack --theme akuma-light
+exit 0
+stdout
+| #faeeee,#af3d3b,#437345,#a94a46
+stderr
+| akuma-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

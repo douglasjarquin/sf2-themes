@@ -1,0 +1,11 @@
+step apply slack --theme cammy-light
+exit 0
+stdout
+| #ebf2fa,#25732d,#2d7733,#a94b47
+stderr
+| cammy-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

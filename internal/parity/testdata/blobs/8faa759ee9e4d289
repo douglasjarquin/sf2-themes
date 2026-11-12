@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-zangief-light
+palette = "sf2"
+
+[palettes.sf2]
+black = "#e8f3f7"
+red = "#a94b47"
+green = "#2d7633"
+yellow = "#806500"
+blue = "#af3d3b"
+purple = "#2e6e91"
+cyan = "#097382"
+white = "#253439"
+bright-black = "#51707b"
+bright-red = "#a94b47"
+bright-green = "#2d7633"
+bright-yellow = "#806500"
+bright-blue = "#af3d3b"
+bright-purple = "#2e6e91"
+bright-cyan = "#097382"
+bright-white = "#253439"
+# <<< sf2-themes managed theme

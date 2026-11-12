@@ -1,0 +1,11 @@
+step apply slack --theme vega
+exit 0
+stdout
+| #1d1720,#d6659f,#5b9467,#c76d75
+stderr
+| vega
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

@@ -1,0 +1,11 @@
+step apply slack --theme dhalsim-light
+exit 0
+stdout
+| #f8efe9,#925602,#49731c,#a94b42
+stderr
+| dhalsim-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-e-honda
+palette = "sf2"
+
+[palettes.sf2]
+black = "#221614"
+red = "#c76e67"
+green = "#549657"
+yellow = "#a88225"
+blue = "#db6962"
+purple = "#6688c4"
+cyan = "#1396a1"
+white = "#decdc9"
+bright-black = "#967f7a"
+bright-red = "#c76e67"
+bright-green = "#549657"
+bright-yellow = "#a88225"
+bright-blue = "#db6962"
+bright-purple = "#6688c4"
+bright-cyan = "#1396a1"
+bright-white = "#decdc9"
+# <<< sf2-themes managed theme

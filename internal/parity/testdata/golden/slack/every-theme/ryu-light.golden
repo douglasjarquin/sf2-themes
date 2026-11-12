@@ -1,0 +1,11 @@
+step apply slack --theme ryu-light
+exit 0
+stdout
+| #ecf1fa,#ab4043,#3e7347,#a94a4b
+stderr
+| ryu-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-t-hawk
+palette = "sf2"
+
+[palettes.sf2]
+black = "#211712"
+red = "#c86e67"
+green = "#5d9550"
+yellow = "#a88225"
+blue = "#0f9c97"
+purple = "#c6714a"
+cyan = "#159791"
+white = "#ddcec7"
+bright-black = "#958076"
+bright-red = "#c86e67"
+bright-green = "#5d9550"
+bright-yellow = "#a88225"
+bright-blue = "#0f9c97"
+bright-purple = "#c6714a"
+bright-cyan = "#159791"
+bright-white = "#ddcec7"
+# <<< sf2-themes managed theme

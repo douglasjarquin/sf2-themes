@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-m-bison
+palette = "sf2"
+
+[palettes.sf2]
+black = "#1c1721"
+red = "#c86d6b"
+green = "#4e975b"
+yellow = "#a48324"
+blue = "#b771cc"
+purple = "#ca6c6a"
+cyan = "#1396a1"
+white = "#d3cedb"
+bright-black = "#898194"
+bright-red = "#c86d6b"
+bright-green = "#4e975b"
+bright-yellow = "#a48324"
+bright-blue = "#b771cc"
+bright-purple = "#ca6c6a"
+bright-cyan = "#1396a1"
+bright-white = "#d3cedb"
+# <<< sf2-themes managed theme

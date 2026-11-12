@@ -1,0 +1,17 @@
+step apply starship --theme fei-long --config-dir {SANDBOX}/config/starship
+exit 0
+stdout
+| apply starship: sf2-fei-long
+|   changes: 2 created
+stderr
+| Source the zsh highlight snippet after zsh-syntax-highlighting:
+|   [[ -f "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh" ]] && source "$HOME/.config/sf2-theme/zsh-syntax-highlighting.zsh"
+| 
+tree
+dir 0755 config
+dir 0755 config/starship
+file 0644 7e5a6977b093d363 config/starship/starship.toml
+dir 0755 home
+dir 0755 home/.config
+dir 0755 home/.config/sf2-theme
+file 0644 a5bb7e2172773169 home/.config/sf2-theme/zsh-syntax-highlighting.zsh

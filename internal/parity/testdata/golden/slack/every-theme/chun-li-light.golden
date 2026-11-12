@@ -1,0 +1,11 @@
+step apply slack --theme chun-li-light
+exit 0
+stdout
+| #ebf2fa,#1e64b5,#247738,#a94b47
+stderr
+| chun-li-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

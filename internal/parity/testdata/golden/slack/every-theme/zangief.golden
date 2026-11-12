@@ -1,0 +1,11 @@
+step apply slack --theme zangief
+exit 0
+stdout
+| #0f1c20,#df6862,#559758,#c96f68
+stderr
+| zangief
+| Set Slack Color Mode to Dark.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

@@ -1,0 +1,11 @@
+step apply slack --theme t-hawk-light
+exit 0
+stdout
+| #f9efea,#0a706c,#39752b,#a94b47
+stderr
+| t-hawk-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

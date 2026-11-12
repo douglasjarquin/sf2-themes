@@ -1,0 +1,11 @@
+step apply slack --theme sagat-light
+exit 0
+stdout
+| #f8eef4,#7d6007,#3b7449,#a94a46
+stderr
+| sagat-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-vega
+palette = "sf2"
+
+[palettes.sf2]
+black = "#1d1720"
+red = "#c76d75"
+green = "#5b9467"
+yellow = "#a58324"
+blue = "#d6659f"
+purple = "#9778cb"
+cyan = "#1396a1"
+white = "#d6ceda"
+bright-black = "#8d8092"
+bright-red = "#c76d75"
+bright-green = "#5b9467"
+bright-yellow = "#a58324"
+bright-blue = "#d6659f"
+bright-purple = "#9778cb"
+bright-cyan = "#1396a1"
+bright-white = "#d6ceda"
+# <<< sf2-themes managed theme

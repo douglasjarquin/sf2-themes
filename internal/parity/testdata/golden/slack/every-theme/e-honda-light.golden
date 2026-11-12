@@ -1,0 +1,11 @@
+step apply slack --theme e-honda-light
+exit 0
+stdout
+| #faeeec,#ad3f3c,#2d7633,#a94a46
+stderr
+| e-honda-light
+| Set Slack Color Mode to Light.
+| Turn Darker sidebars off.
+| Paste the line into Preferences, Appearance, Custom theme, Import theme.
+tree
+dir 0755 home

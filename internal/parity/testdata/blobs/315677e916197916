@@ -1,0 +1,22 @@
+# >>> sf2-themes managed theme
+# sf2-themes: sf2-balrog
+palette = "sf2"
+
+[palettes.sf2]
+black = "#191822"
+red = "#c86d6e"
+green = "#469760"
+yellow = "#a28424"
+blue = "#d465a8"
+purple = "#a5840e"
+cyan = "#1194ad"
+white = "#d0cfdd"
+bright-black = "#848297"
+bright-red = "#c86d6e"
+bright-green = "#469760"
+bright-yellow = "#a28424"
+bright-blue = "#d465a8"
+bright-purple = "#a5840e"
+bright-cyan = "#1194ad"
+bright-white = "#d0cfdd"
+# <<< sf2-themes managed theme
