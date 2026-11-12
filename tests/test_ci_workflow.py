@@ -19,7 +19,7 @@ def test_gate_job_requires_every_selected_check() -> None:
     workflow = _load("verify.yml")
     gate = workflow["jobs"]["gate"]
 
-    assert set(gate["needs"]) == {"changes", "actionlint", "test", "toolchain-checks", "go", "web"}
+    assert set(gate["needs"]) == {"changes", "actionlint", "test", "toolchain-checks", "go", "release-rehearsal", "web"}
 
 
 def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
@@ -27,7 +27,9 @@ def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
     gate = workflow["jobs"]["gate"]
     script = gate["steps"][0]["run"]
 
-    def run_gate(changes: str, actionlint: str, python: str, toolchain_checks: str, go: str, web: str) -> int:
+    def run_gate(
+        changes: str, actionlint: str, python: str, toolchain_checks: str, go: str, release_rehearsal: str, web: str
+    ) -> int:
         result = subprocess.run(
             ["bash", "-c", script],
             env={
@@ -36,6 +38,7 @@ def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
                 "PYTHON": python,
                 "TOOLCHAIN_CHECKS": toolchain_checks,
                 "GO": go,
+                "RELEASE_REHEARSAL": release_rehearsal,
                 "WEB": web,
             },
             capture_output=True,
@@ -43,14 +46,15 @@ def test_gate_job_script_fails_when_any_selected_job_did_not_succeed() -> None:
         )
         return result.returncode
 
-    assert run_gate("success", "success", "success", "success", "success", "success") == 0
-    assert run_gate("success", "skipped", "success", "skipped", "skipped", "skipped") == 0
-    assert run_gate("failure", "success", "success", "success", "success", "success") == 1
-    assert run_gate("success", "failure", "success", "success", "success", "success") == 1
-    assert run_gate("success", "success", "failure", "success", "success", "success") == 1
-    assert run_gate("success", "success", "success", "failure", "success", "success") == 1
-    assert run_gate("success", "success", "success", "success", "failure", "success") == 1
-    assert run_gate("success", "success", "success", "success", "success", "cancelled") == 1
+    assert run_gate("success", "success", "success", "success", "success", "success", "success") == 0
+    assert run_gate("success", "skipped", "success", "skipped", "skipped", "skipped", "skipped") == 0
+    assert run_gate("failure", "success", "success", "success", "success", "success", "success") == 1
+    assert run_gate("success", "failure", "success", "success", "success", "success", "success") == 1
+    assert run_gate("success", "success", "failure", "success", "success", "success", "success") == 1
+    assert run_gate("success", "success", "success", "failure", "success", "success", "success") == 1
+    assert run_gate("success", "success", "success", "success", "failure", "success", "success") == 1
+    assert run_gate("success", "success", "success", "success", "success", "failure", "success") == 1
+    assert run_gate("success", "success", "success", "success", "success", "success", "cancelled") == 1
 
 
 def test_deploy_and_verify_web_jobs_install_through_the_same_containerized_task() -> None:

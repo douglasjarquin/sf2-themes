@@ -46,6 +46,10 @@ jobs:
               - 'themes/**'
               - 'src/**'
               - 'sf2-themes'
+              - 'install.sh'
+              - 'scripts/ci/build-release.sh'
+              - 'scripts/ci/rehearse-install.sh'
+              - '.github/release-notes.md'
               - 'mise.toml'
               - 'mise.lock'
             web:
@@ -173,6 +177,43 @@ jobs:
           mise install python
           mise run parity:check
 
+  release-rehearsal:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      MISE_ENABLE_TOOLS: go
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: go
+      - name: Build release assets
+        run: scripts/ci/build-release.sh 0.0.0-rehearsal dist
+      - name: Verify checksums
+        working-directory: dist
+        run: |
+          if command -v sha256sum >/dev/null; then sha256sum -c checksums.txt; else shasum -a 256 -c checksums.txt; fi
+      - name: Check the native binaries report the stamped version
+        run: |
+          os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+          for bin in dist/sf2-themes_"$os"_*; do
+            case "$bin" in *_amd64) arch=x86_64 ;; *) arch=arm64 ;; esac
+            if [ "$arch" = "$(uname -m)" ] || { [ "$arch" = arm64 ] && [ "$(uname -m)" = aarch64 ]; }; then
+              test "$("$bin" --version)" = 0.0.0-rehearsal
+            fi
+          done
+      - name: Install into a clean Linux container and apply a theme
+        if: matrix.os == 'ubuntu-latest'
+        run: docker run --rm -v "$PWD/dist:/release:ro" -v "$PWD/scripts/ci:/ci:ro" debian:bookworm-slim sh /ci/rehearse-install.sh /release 0.0.0-rehearsal
+      - name: Install on macOS and apply a theme
+        if: matrix.os == 'macos-latest'
+        run: scripts/ci/rehearse-install.sh "$PWD/dist" 0.0.0-rehearsal
+
   web:
     needs: changes
     if: needs.changes.outputs.web == 'true'
@@ -201,7 +242,7 @@ jobs:
 
   gate:
     if: always()
-    needs: [changes, actionlint, test, toolchain-checks, go, web]
+    needs: [changes, actionlint, test, toolchain-checks, go, release-rehearsal, web]
     runs-on: ubuntu-latest
     steps:
       - name: Require selected checks to pass
@@ -211,13 +252,14 @@ jobs:
           PYTHON: ${{ needs.test.result }}
           TOOLCHAIN_CHECKS: ${{ needs.toolchain-checks.result }}
           GO: ${{ needs.go.result }}
+          RELEASE_REHEARSAL: ${{ needs.release-rehearsal.result }}
           WEB: ${{ needs.web.result }}
         run: |
           if [[ "$CHANGES" != "success" ]]; then
             echo "changes job result: $CHANGES"
             exit 1
           fi
-          for result in "$ACTIONLINT" "$PYTHON" "$TOOLCHAIN_CHECKS" "$GO" "$WEB"; do
+          for result in "$ACTIONLINT" "$PYTHON" "$TOOLCHAIN_CHECKS" "$GO" "$RELEASE_REHEARSAL" "$WEB"; do
             case "$result" in
               success|skipped) ;;
               *) echo "selected job result: $result"; exit 1 ;;

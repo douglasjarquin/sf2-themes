@@ -29,8 +29,8 @@ description = "Run ruff over the Python source tree"
 run = "ruff check src tests mise-tasks"
 
 [tasks.shellcheck]
-description = "Run shellcheck over the shell file tasks and container orchestration scripts"
-run = "shellcheck mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
+description = "Run shellcheck over the installer, shell file tasks, and CI scripts"
+run = "shellcheck install.sh mise-tasks/test-cli scripts/ci/*.sh docker/dev/entrypoint.sh"
 
 [tasks."validate-catalog"]
 description = "Validate every theme in the catalog"
