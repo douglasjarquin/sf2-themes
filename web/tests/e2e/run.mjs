@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 
 const port = process.env.E2E_PORT ?? "4321";
 const baseURL = `http://127.0.0.1:${port}/sf2-themes/`;
@@ -12,6 +13,32 @@ const reachable = async () => {
 };
 
 let preview;
+let tests;
+
+const stopPreview = () => {
+  if (!preview) {
+    return;
+  }
+  const { pid } = preview;
+  preview = undefined;
+  try {
+    process.kill(-pid);
+  } catch (error) {
+    if (error.code !== "ESRCH") {
+      throw error;
+    }
+  }
+};
+
+process.on("exit", stopPreview);
+for (const [signal, code] of [["SIGINT", 130], ["SIGTERM", 143]]) {
+  process.on(signal, () => {
+    tests?.kill(signal);
+    stopPreview();
+    process.exit(code);
+  });
+}
+
 if (await reachable()) {
   if (process.env.CI) {
     console.error(`${baseURL} is already serving; CI never reuses a preview server`);
@@ -31,18 +58,16 @@ if (await reachable()) {
   while (!(await reachable())) {
     if (Date.now() > deadline || preview.exitCode !== null) {
       console.error(`the preview server never answered at ${baseURL}`);
-      process.kill(-preview.pid);
       process.exit(1);
     }
     await new Promise((resolve) => setTimeout(resolve, 250));
   }
 }
 
-const tests = spawnSync(process.execPath, ["--test", "tests/e2e/*.spec.mjs"], {
+tests = spawn(process.execPath, ["--test", "tests/e2e/*.spec.mjs"], {
   env: { ...process.env, SF2_E2E_BASE_URL: baseURL },
   stdio: "inherit",
 });
-if (preview) {
-  process.kill(-preview.pid);
-}
-process.exit(tests.status ?? 1);
+const [status] = await once(tests, "exit");
+stopPreview();
+process.exit(status ?? 1);
