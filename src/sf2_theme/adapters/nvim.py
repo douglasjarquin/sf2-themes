@@ -224,7 +224,8 @@ def inspect_nvim(themes: Sequence[Theme], config_dir: Path | None) -> Inspection
     return recorded(Ownership.MANAGED, recorded_id(pointer.read_text(encoding="utf-8"), ID_COMMENT), themes)
 
 
-def plan_nvim(theme: Theme, themes: Sequence[Theme], config_dir: Path | None) -> list[Step]:
+def plan_nvim(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan every colorscheme, the pointer, and the loader; Neovim has no user-owned setting for `slot` to keep."""
     target = colors_dir(config_dir)
     steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.lua") for entry in themes]
     steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)

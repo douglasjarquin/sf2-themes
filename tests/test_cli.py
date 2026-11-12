@@ -264,3 +264,26 @@ def test_repeat_apply_reports_no_changes(app: str, tmp_path: Path, monkeypatch, 
     assert dispatch(arguments) == 0
     assert "changes: no changes" in capsys.readouterr().out
     assert not list(tmp_path.rglob("*.bak.*"))
+
+
+@pytest.mark.parametrize(
+    ("app", "name", "content"),
+    [
+        ("claude", "settings.json", "{"),
+        ("herdr-app", "settings.json", "{"),
+        ("codex", "config.toml", "[tui\n"),
+        ("herdr", "config.toml", "[theme\n"),
+        ("starship", "starship.toml", "palette = \n"),
+        ("lazygit", "config.yml", "gui:\n  # >>> sf2-themes managed theme\n"),
+    ],
+)
+def test_broken_config_refuses_and_writes_nothing(app: str, name: str, content: str, tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / app
+    config_dir.mkdir()
+    (config_dir / name).write_text(content, encoding="utf-8")
+    assert dispatch(["apply", app, "--config-dir", str(config_dir)]) == 1
+    assert capsys.readouterr().err.startswith("error: ")
+    assert [path.name for path in config_dir.iterdir()] == [name]
+    assert (config_dir / name).read_text(encoding="utf-8") == content
+    assert dispatch(["current", app, "--config-dir", str(config_dir)]) == 1
+    assert str(config_dir / name) in capsys.readouterr().err

@@ -44,12 +44,12 @@ def _read_settings(path: Path) -> dict:
     try:
         data = json.loads(existing) if existing.strip() else {}
     except json.JSONDecodeError as error:
-        raise ThemeError(f"Herdr app settings.json is not valid JSON: {error}") from error
+        raise ThemeError(f"{path} is not valid JSON: {error}") from error
     if not isinstance(data, dict):
-        raise ThemeError(f"Herdr app settings.json must contain an object ({path})")
+        raise ThemeError(f"{path} must contain a JSON object")
     selection = data.get("theme")
     if "theme" in data and not isinstance(selection, str | dict):
-        raise ThemeError(f"Herdr app settings.json theme must be a name or object ({path})")
+        raise ThemeError(f"{path} theme must be a name or object")
     return data
 
 

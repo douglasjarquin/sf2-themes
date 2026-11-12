@@ -7,6 +7,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.adapters.zsh_syntax import plan_zsh_syntax
+from sf2_theme.errors import ThemeError
 from sf2_theme.model import Theme
 from sf2_theme.plan import Inspection, Ownership, Step, Write, read_existing, recorded, recorded_id
 
@@ -15,6 +16,7 @@ MANAGED_END = "# <<< sf2-themes managed theme"
 ID_COMMENT = re.compile(r"^# sf2-themes:\s+(\S+)\s*$")
 TABLE_HEADER = re.compile(r"^\s*\[")
 TOP_LEVEL_PALETTE = re.compile(r"^\s*palette\s*=")
+MULTI_LINE_QUOTES = ('"""', "'''")
 
 # Starship `style = "blue"` resolves through `palette`, not the terminal ANSI
 # table. Remap the named colors the stock prompt uses onto SF2 tokens so dirname
@@ -82,9 +84,35 @@ def _without_block(existing: str) -> str | None:
     return existing[:start] + existing[after:]
 
 
+def _open_string(line: str, delimiter: str | None) -> str | None:
+    """Return the multi-line string delimiter still open after `line`, given the one open before it."""
+    position = 0
+    while True:
+        if delimiter is None:
+            found = [(index, quote) for quote in MULTI_LINE_QUOTES if (index := line.find(quote, position)) != -1]
+            if not found:
+                return None
+            position, delimiter = min(found)
+        else:
+            position = line.find(delimiter, position)
+            if position == -1:
+                return delimiter
+            delimiter = None
+        position += 3
+
+
 def _top_level_end(lines: list[str]) -> int:
-    """Return where the top-level key region ends, keeping a comment that heads the first table with it."""
-    end = next((index for index, line in enumerate(lines) if TABLE_HEADER.match(line)), len(lines))
+    """Return where the top-level key region ends, keeping a comment that heads the first table with it.
+
+    Lines inside a multi-line string, such as a preset's `format`, are never table headers.
+    """
+    end = len(lines)
+    delimiter: str | None = None
+    for index, line in enumerate(lines):
+        if delimiter is None and TABLE_HEADER.match(line):
+            end = index
+            break
+        delimiter = _open_string(line, delimiter)
     while end > 0 and lines[end - 1].lstrip().startswith("#"):
         end -= 1
     return end
@@ -102,7 +130,8 @@ def merge_theme(existing: str, theme: Theme) -> str:
     head = [line for line in lines[:split] if not TOP_LEVEL_PALETTE.match(line)]
     parts = ["\n".join(head).rstrip("\n"), render_block(theme).rstrip("\n"), "\n".join(lines[split:]).strip("\n")]
     merged = "\n\n".join(part for part in parts if part) + "\n"
-    tomllib.loads(merged)
+    if tomllib.loads(merged).get("palette") != "sf2":
+        raise ThemeError("Starship config would not load the managed palette as a top-level key")
     return merged
 
 

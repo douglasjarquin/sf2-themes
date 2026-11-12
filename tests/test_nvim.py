@@ -26,6 +26,7 @@ def test_apply_writes_every_catalog_colorscheme_and_current_pointer(tmp_path: Pa
             get_theme("main", catalog),
             catalog,
             config_dir=tmp_path / "nvim",
+            slot=True,
         )
     )
 
@@ -52,6 +53,7 @@ def test_nvim_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path: Pa
             get_theme("main", catalog),
             catalog,
             config_dir=config_dir,
+            slot=True,
         )
     )
 
@@ -85,6 +87,7 @@ def test_apply_backs_up_current_pointer_and_current_reads_theme(tmp_path: Path, 
             get_theme("main", catalog),
             catalog,
             config_dir=config_dir,
+            slot=True,
         )
     )
 
@@ -105,6 +108,7 @@ def test_apply_dry_run_leaves_existing_pointer_unchanged(tmp_path: Path) -> None
             get_theme("main", catalog),
             catalog,
             config_dir=config_dir,
+            slot=True,
         )
     )
     pointer = config_dir / "sf2-theme" / "current.lua"

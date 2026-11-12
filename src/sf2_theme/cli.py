@@ -50,10 +50,6 @@ class App:
     stderr_hint: str = ""
 
 
-def _plan_nvim(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, _slot: bool) -> list[Step]:
-    return plan_nvim(theme, themes, config_dir)
-
-
 APPS: dict[str, App] = {
     "wezterm": App(
         "WezTerm",
@@ -77,7 +73,7 @@ APPS: dict[str, App] = {
         pair=True,
         reload="settings apply live; appearance, layout themes, and the theme picker can override the pair",
     ),
-    "nvim": App("Neovim", inspect_nvim, _plan_nvim, pair=True, reload="restart Neovim to load the new colorscheme"),
+    "nvim": App("Neovim", inspect_nvim, plan_nvim, pair=True, reload="restart Neovim to load the new colorscheme"),
     "codex": App("Codex", inspect_codex, plan_codex, reload="restart Codex, or reselect with /theme"),
     "starship": App(
         "Starship",

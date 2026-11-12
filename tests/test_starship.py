@@ -1,5 +1,6 @@
 """Starship managed palette and zsh-syntax companion."""
 
+import tomllib
 from pathlib import Path
 
 from sf2_theme.adapters.starship import merge_theme, plan_starship, render_block
@@ -51,3 +52,12 @@ def test_apply_starship_writes_palette_and_zsh(tmp_path: Path, monkeypatch) -> N
 def test_apps_lists_starship(capsys) -> None:
     assert dispatch(["apps"]) == 0
     assert "starship" in capsys.readouterr().out
+
+
+def test_palette_stays_top_level_after_a_multi_line_format_string(tmp_path: Path) -> None:
+    preset = 'format = """\n[](#9A348E)\\\n$os\\\n[ ](bg:#DA627D)\\\n$directory"""\n\n[character]\nsymbol = ">"\n'
+    merged = merge_theme(preset, get_theme("main", parse_catalog()))
+    config = tomllib.loads(merged)
+    assert config["palette"] == "sf2"
+    assert "sf2-themes" not in config["format"]
+    assert merge_theme(merged, get_theme("main", parse_catalog())) == merged
