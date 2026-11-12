@@ -11,6 +11,7 @@ jobs:
     outputs:
       workflows: ${{ steps.select.outputs.workflows }}
       python: ${{ steps.select.outputs.python }}
+      go: ${{ steps.select.outputs.go }}
       web: ${{ steps.select.outputs.web }}
     steps:
       - uses: actions/checkout@v7
@@ -36,6 +37,15 @@ jobs:
               - 'mise.toml'
               - 'mise.lock'
               - 'sf2-themes'
+            go:
+              - 'go.mod'
+              - 'go.sum'
+              - '.golangci.yml'
+              - 'cmd/**'
+              - 'internal/**'
+              - 'themes/**'
+              - 'mise.toml'
+              - 'mise.lock'
             web:
               - 'web/**'
               - 'themes/**'
@@ -50,6 +60,7 @@ jobs:
           FILTER_OUTCOME: ${{ steps.filter.outcome }}
           FILTER_WORKFLOWS: ${{ steps.filter.outputs.workflows }}
           FILTER_PYTHON: ${{ steps.filter.outputs.python }}
+          FILTER_GO: ${{ steps.filter.outputs.go }}
           FILTER_WEB: ${{ steps.filter.outputs.web }}
           EVENT_BEFORE: ${{ github.event.before }}
           EVENT_NAME: ${{ github.event_name }}
@@ -63,12 +74,14 @@ jobs:
             {
               echo 'workflows=true'
               echo 'python=true'
+              echo 'go=true'
               echo 'web=true'
             } >> "$GITHUB_OUTPUT"
           else
             {
               echo "workflows=$FILTER_WORKFLOWS"
               echo "python=$FILTER_PYTHON"
+              echo "go=$FILTER_GO"
               echo "web=$FILTER_WEB"
             } >> "$GITHUB_OUTPUT"
           fi
@@ -129,6 +142,28 @@ jobs:
         if: always()
         run: scripts/ci/gc-job-overlay-volumes.sh
 
+  go:
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      MISE_ENABLE_TOOLS: go,golangci-lint
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: go golangci-lint
+      - name: Build
+        run: mise run go:build
+      - name: Test
+        run: mise run go:test
+      - name: Lint
+        run: mise run go:lint
+
   web:
     needs: changes
     if: needs.changes.outputs.web == 'true'
@@ -157,7 +192,7 @@ jobs:
 
   gate:
     if: always()
-    needs: [changes, actionlint, test, toolchain-checks, web]
+    needs: [changes, actionlint, test, toolchain-checks, go, web]
     runs-on: ubuntu-latest
     steps:
       - name: Require selected checks to pass
@@ -166,13 +201,14 @@ jobs:
           ACTIONLINT: ${{ needs.actionlint.result }}
           PYTHON: ${{ needs.test.result }}
           TOOLCHAIN_CHECKS: ${{ needs.toolchain-checks.result }}
+          GO: ${{ needs.go.result }}
           WEB: ${{ needs.web.result }}
         run: |
           if [[ "$CHANGES" != "success" ]]; then
             echo "changes job result: $CHANGES"
             exit 1
           fi
-          for result in "$ACTIONLINT" "$PYTHON" "$TOOLCHAIN_CHECKS" "$WEB"; do
+          for result in "$ACTIONLINT" "$PYTHON" "$TOOLCHAIN_CHECKS" "$GO" "$WEB"; do
             case "$result" in
               success|skipped) ;;
               *) echo "selected job result: $result"; exit 1 ;;
