@@ -6,8 +6,8 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import AdapterColors, Theme, project_adapter_colors
+from sf2_theme.plan import Remove, Step, Write
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.toml"
@@ -151,108 +151,24 @@ def merge_config(existing: str, theme: Theme) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _write_themes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    if not dry_run:
-        for theme in themes:
-            (themes_dir(config_dir) / f"{theme.metadata.id}{THEME_SUFFIX}").unlink(missing_ok=True)
-    return [
-        write_file(
-            theme_path(theme, config_dir),
-            render_theme(theme),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for theme in themes
-    ]
-
-
-def _write_config(
-    theme: Theme,
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    path = config_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    return write_file(
-        path,
-        merge_config(existing, theme),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_codex(
+def plan_codex(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    results = _write_themes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-    results.append(
-        _write_config(
-            theme,
-            config_dir=config_dir,
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-    )
-    return results
-
-
-def setup_codex(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     replace_theme: bool = True,
-) -> list[WriteResult]:
-    results = _write_themes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
+) -> list[Step]:
+    steps: list[Step] = [Remove(themes_dir(config_dir) / f"{entry.metadata.id}{THEME_SUFFIX}") for entry in themes]
+    steps.extend(Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes)
     path = config_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    if replace_theme or not _has_tui_theme(existing):
-        results.append(
-            _write_config(
-                theme,
-                config_dir=config_dir,
-                dry_run=dry_run,
-                follow_symlinks=follow_symlinks,
-            )
-        )
-    else:
+    selected: Theme | None = theme
+    if not replace_theme and _has_tui_theme(existing):
         configured = tomllib.loads(existing).get("tui", {}).get("theme")
-        legacy_theme = next((candidate for candidate in themes if candidate.metadata.id == configured), None)
-        if legacy_theme is not None:
-            results.append(
-                _write_config(
-                    legacy_theme,
-                    config_dir=config_dir,
-                    dry_run=dry_run,
-                    follow_symlinks=follow_symlinks,
-                )
-            )
-    return results
+        selected = next((candidate for candidate in themes if candidate.metadata.id == configured), None)
+    if selected is not None:
+        steps.append(Write(path, merge_config(existing, selected)))
+    return steps
 
 
 def read_current_id(config_dir: Path | None) -> str:

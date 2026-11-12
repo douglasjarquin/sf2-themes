@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pytest
+
 from sf2_theme.cli import dispatch
 
 
@@ -277,3 +279,53 @@ def test_setup_without_selection_installs_default(tmp_path: Path, monkeypatch, c
     out = capsys.readouterr().out
     assert "setup starship: sf2-main" in out
     assert "existing selection kept" not in out
+
+
+def test_refused_lazygit_apply_writes_no_theme_files(tmp_path: Path) -> None:
+    config_dir = tmp_path / "lazygit"
+    config_dir.mkdir()
+    (config_dir / "config.yml").write_text("gui:\n  theme:\n    activeBorderColor:\n      - red\n", encoding="utf-8")
+    assert dispatch(["apply", "lazygit", "--config-dir", str(config_dir)]) != 0
+    assert not (config_dir / "themes").exists()
+
+
+def test_refused_codex_apply_writes_no_theme_files(tmp_path: Path) -> None:
+    config_dir = tmp_path / "codex"
+    config_dir.mkdir()
+    (config_dir / "config.toml").write_text('tui = { theme = "dracula" }\n', encoding="utf-8")
+    assert dispatch(["apply", "codex", "--config-dir", str(config_dir)]) != 0
+    assert not (config_dir / "themes").exists()
+
+
+def test_symlinked_claude_settings_refuse_before_any_theme_file(tmp_path: Path, capsys) -> None:
+    config_dir = tmp_path / "claude"
+    config_dir.mkdir()
+    real = tmp_path / "real-settings.json"
+    real.write_text("{}\n", encoding="utf-8")
+    (config_dir / "settings.json").symlink_to(real)
+    assert dispatch(["apply", "claude", "--config-dir", str(config_dir)]) != 0
+    assert "symlink" in capsys.readouterr().err
+    assert not (config_dir / "themes").exists()
+    assert real.read_text(encoding="utf-8") == "{}\n"
+
+
+def test_dry_run_lists_legacy_removal_and_keeps_the_file(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    config_dir = tmp_path / "wezterm"
+    legacy = config_dir / "colors" / "street-fighter-ii-ryu.toml"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text("old managed scheme\n", encoding="utf-8")
+    assert dispatch(["apply", "wezterm", "--config-dir", str(config_dir), "--dry-run"]) == 0
+    assert f"would remove: {legacy}" in capsys.readouterr().out
+    assert legacy.read_text(encoding="utf-8") == "old managed scheme\n"
+
+
+@pytest.mark.parametrize("app", ["wezterm", "herdr", "herdr-app", "nvim", "codex", "starship", "lazygit", "claude"])
+def test_repeat_apply_reports_no_changes(app: str, tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
+    arguments = ["apply", app, "--theme", "ryu", "--config-dir", str(tmp_path / app)]
+    assert dispatch(arguments) == 0
+    capsys.readouterr()
+    assert dispatch(arguments) == 0
+    assert "changes: no changes" in capsys.readouterr().out
+    assert not list(tmp_path.rglob("*.bak.*"))

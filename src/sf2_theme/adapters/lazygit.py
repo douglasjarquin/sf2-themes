@@ -7,8 +7,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors
+from sf2_theme.plan import Step, Write
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.yml"
@@ -230,71 +230,19 @@ def merge_config(existing: str, theme: Theme, *, adopt: bool) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _write_themes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    return [
-        write_file(
-            theme_path(theme, config_dir),
-            render_theme(theme),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for theme in themes
-    ]
-
-
-def apply_lazygit(
+def plan_lazygit(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     adopt: bool,
-) -> list[WriteResult]:
-    """Install every catalog fragment and select one in config.yml."""
-    results = _write_themes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
+) -> list[Step]:
+    """Plan every catalog fragment and the selection in config.yml."""
+    steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
     path = config_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    results.append(
-        write_file(
-            path,
-            merge_config(existing, theme, adopt=adopt),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-    )
-    return results
-
-
-def setup_lazygit(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-    adopt: bool,
-) -> list[WriteResult]:
-    """Set up Lazygit theme fragments and select the requested theme."""
-    return apply_lazygit(
-        theme,
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-        adopt=adopt,
-    )
+    steps.append(Write(path, merge_config(existing, theme, adopt=adopt)))
+    return steps
 
 
 def read_current_id(config_dir: Path | None) -> str:

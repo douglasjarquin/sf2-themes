@@ -8,8 +8,8 @@ from pathlib import Path
 
 from sf2_theme.catalog import theme_pair
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, ThemeVariant, project_adapter_colors
+from sf2_theme.plan import Step, Write
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
@@ -157,22 +157,19 @@ def merge_theme(existing: str, theme: Theme, themes: Sequence[Theme], *, adopt: 
     return merged if merged.endswith("\n") else merged + "\n"
 
 
-def apply_herdr(
+def plan_herdr(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     adopt: bool,
-) -> WriteResult:
-    """Write the managed Herdr theme block for a dark/light pair."""
+) -> list[Step]:
+    """Plan the managed Herdr theme block for a dark/light pair."""
     path = herdr_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     if existing:
         tomllib.loads(existing)
-    merged = merge_theme(existing, theme, themes, adopt=adopt)
-    return write_file(path, merged, dry_run=dry_run, follow_symlinks=follow_symlinks)
+    return [Write(path, merge_theme(existing, theme, themes, adopt=adopt))]
 
 
 def read_current_id(config_dir: Path | None) -> str:

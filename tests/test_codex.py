@@ -2,9 +2,10 @@ import tomllib
 from pathlib import Path
 from xml.etree import ElementTree
 
-from sf2_theme.adapters.codex import setup_codex
+from sf2_theme.adapters.codex import plan_codex
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.cli import dispatch
+from sf2_theme.filesystem import commit
 
 
 def test_apps_lists_codex(capsys) -> None:
@@ -57,13 +58,13 @@ def test_setup_codex_migrates_existing_unprefixed_selection(tmp_path: Path) -> N
     (config_dir / "config.toml").write_text('[tui]\ntheme = "ken"\n', encoding="utf-8")
     catalog = parse_catalog()
 
-    setup_codex(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
-        replace_theme=False,
+    commit(
+        plan_codex(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=config_dir,
+            replace_theme=False,
+        )
     )
 
     assert tomllib.loads((config_dir / "config.toml").read_text(encoding="utf-8"))["tui"]["theme"] == "sf2-ken"

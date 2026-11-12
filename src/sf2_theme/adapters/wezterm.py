@@ -1,4 +1,4 @@
-"""WezTerm color-scheme files, path discovery, and apply/setup."""
+"""WezTerm color-scheme files, path discovery, and the planned integration."""
 
 import os
 from collections.abc import Sequence
@@ -7,8 +7,8 @@ from pathlib import Path
 from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
 from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors, selectable_id
+from sf2_theme.plan import Remove, Step, Write
 
 LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
 
@@ -171,95 +171,33 @@ def render_pointer(dark: Theme, light: Theme) -> str:
     )
 
 
-def write_schemes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    """Write every scheme file into WezTerm's colors directory."""
-    target = colors_dir(config_dir)
-    if not dry_run:
-        for theme in themes:
-            (target / f"{LEGACY_SCHEME_FILE_PREFIX}-{theme.metadata.id}.toml").unlink(missing_ok=True)
-    results: list[WriteResult] = []
-    for theme in themes:
-        results.append(
-            write_file(
-                target / scheme_filename(theme),
-                render_scheme(theme),
-                dry_run=dry_run,
-                follow_symlinks=follow_symlinks,
-            )
-        )
-    return results
-
-
-def write_pointer(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    """Write the managed current-scheme pointer for a dark/light pair."""
-    dark, light = theme_pair(theme, themes)
-    return write_file(
-        current_pointer_path(),
-        render_pointer(dark, light),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_wezterm(
+def plan_wezterm(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    """Write schemes and the current pointer. Does not edit user Lua."""
-    results = write_schemes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results
-
-
-def setup_wezterm(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     adopt: bool = False,
     replace_pointer: bool = True,
-) -> tuple[list[WriteResult], LuaSetup]:
-    """Install schemes, pointer, and optionally a known-safe Lua integration."""
-    results = write_schemes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-    pointer = current_pointer_path()
-    if replace_pointer or not pointer.is_file():
-        results.append(write_pointer(theme, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    else:
+) -> tuple[list[Step], LuaSetup]:
+    """Plan schemes, the pointer, and a known-safe Lua integration when possible."""
+    target = colors_dir(config_dir)
+    steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.toml") for entry in themes]
+    steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)
+    pointer_theme: Theme | None = theme
+    if not replace_pointer and current_pointer_path().is_file():
         try:
-            current = installed_theme(read_current_id(), themes)
+            pointer_theme = installed_theme(read_current_id(), themes)
         except ThemeError:
-            current = None
-        if current is not None:
-            results.append(write_pointer(current, themes, dry_run=dry_run, follow_symlinks=follow_symlinks))
+            pointer_theme = None
+    if pointer_theme is not None:
+        dark, light = theme_pair(pointer_theme, themes)
+        steps.append(Write(current_pointer_path(), render_pointer(dark, light)))
     lua_path = wezterm_lua_path(config_dir)
     existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
     lua = setup_lua(existing, current_pointer_path(), adopt=adopt)
     if lua.mutated:
-        results.append(write_file(lua_path, lua.content, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results, lua
+        steps.append(Write(lua_path, lua.content))
+    return steps, lua
 
 
 def read_current_id() -> str:

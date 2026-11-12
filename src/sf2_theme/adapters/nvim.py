@@ -6,8 +6,8 @@ from typing import Final
 
 from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme, project_adapter_colors
+from sf2_theme.plan import Remove, Step, Write
 
 LEGACY_SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
 CURRENT_DIR_NAME: Final = "sf2-theme"
@@ -217,121 +217,27 @@ def render_loader() -> str:
     )
 
 
-def write_schemes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    target = colors_dir(config_dir)
-    if not dry_run:
-        for theme in themes:
-            (target / f"{LEGACY_SCHEME_FILE_PREFIX}-{theme.metadata.id}.lua").unlink(missing_ok=True)
-    return [
-        write_file(
-            target / scheme_filename(theme),
-            render_scheme(theme),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for theme in themes
-    ]
-
-
-def write_pointer(
+def plan_nvim(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    dark, light = theme_pair(theme, themes)
-    return write_file(
-        current_pointer_path(config_dir),
-        render_pointer(dark, light),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_nvim(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    results = write_schemes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-    results.append(
-        write_pointer(
-            theme,
-            themes,
-            config_dir=config_dir,
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-    )
-    return results
-
-
-def setup_nvim(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     replace_pointer: bool = True,
-) -> list[WriteResult]:
-    results = write_schemes(
-        themes,
-        config_dir=config_dir,
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-    pointer = current_pointer_path(config_dir)
-    if replace_pointer or not pointer.is_file():
-        results.append(
-            write_pointer(
-                theme,
-                themes,
-                config_dir=config_dir,
-                dry_run=dry_run,
-                follow_symlinks=follow_symlinks,
-            )
-        )
-    else:
+) -> list[Step]:
+    target = colors_dir(config_dir)
+    steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.lua") for entry in themes]
+    steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)
+    pointer_theme: Theme | None = theme
+    if not replace_pointer and current_pointer_path(config_dir).is_file():
         try:
-            current = installed_theme(read_current_id(config_dir), themes)
+            pointer_theme = installed_theme(read_current_id(config_dir), themes)
         except ThemeError:
-            current = None
-        if current is not None:
-            results.append(
-                write_pointer(
-                    current,
-                    themes,
-                    config_dir=config_dir,
-                    dry_run=dry_run,
-                    follow_symlinks=follow_symlinks,
-                )
-            )
-    results.append(
-        write_file(
-            plugin_path(config_dir),
-            render_loader(),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-    )
-    return results
+            pointer_theme = None
+    if pointer_theme is not None:
+        dark, light = theme_pair(pointer_theme, themes)
+        steps.append(Write(current_pointer_path(config_dir), render_pointer(dark, light)))
+    steps.append(Write(plugin_path(config_dir), render_loader()))
+    return steps
 
 
 def read_current_id(config_dir: Path | None = None) -> str:

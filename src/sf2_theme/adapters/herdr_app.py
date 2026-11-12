@@ -5,8 +5,8 @@ from pathlib import Path
 
 from sf2_theme.catalog import installed_theme, load_catalog, theme_pair
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
+from sf2_theme.plan import Step, Write
 
 
 def app_home(config_dir: Path | None) -> Path:
@@ -53,15 +53,13 @@ def _read_settings(path: Path) -> tuple[str, dict]:
     return existing, data
 
 
-def setup_herdr_app(
+def plan_herdr_app(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     replace_theme: bool = True,
-) -> list[WriteResult]:
+) -> list[Step]:
     home = app_home(config_dir)
     path = home / "settings.json"
     existing, data = _read_settings(path)
@@ -76,18 +74,12 @@ def setup_herdr_app(
         content = json.dumps(data, indent=2) + "\n"
     else:
         content = existing
-    write_file(path, content, dry_run=True, follow_symlinks=follow_symlinks)
-    results = [
-        write_file(
-            home / "themes" / f"{candidate.metadata.selectable_id}.json",
-            render_theme(candidate),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
+    steps: list[Step] = [
+        Write(home / "themes" / f"{candidate.metadata.selectable_id}.json", render_theme(candidate))
         for candidate in themes
     ]
-    results.append(write_file(path, content, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results
+    steps.append(Write(path, content))
+    return steps
 
 
 def selection_exists(config_dir: Path | None) -> bool:

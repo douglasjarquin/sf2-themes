@@ -4,9 +4,10 @@ import os
 import re
 from pathlib import Path
 
+from sf2_theme.adapters.zsh_syntax import plan_zsh_syntax
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
+from sf2_theme.plan import Step, Write
 
 MANAGED_START = "# >>> sf2-themes managed theme"
 MANAGED_END = "# <<< sf2-themes managed theme"
@@ -87,18 +88,11 @@ def merge_theme(existing: str, theme: Theme) -> str:
     return merged if merged.endswith("\n") else merged + "\n"
 
 
-def apply_starship(
-    theme: Theme,
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    """Write the managed Starship palette block."""
+def plan_starship(theme: Theme, *, config_dir: Path | None) -> list[Step]:
+    """Plan the managed Starship palette block and the matching zsh highlight snippet."""
     path = starship_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    merged = merge_theme(existing, theme)
-    return write_file(path, merged, dry_run=dry_run, follow_symlinks=follow_symlinks)
+    return [Write(path, merge_theme(existing, theme)), plan_zsh_syntax(theme)]
 
 
 def read_current_id(config_dir: Path | None) -> str:

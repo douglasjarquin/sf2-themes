@@ -4,9 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from sf2_theme.adapters.lazygit import apply_lazygit, merge_config, render_theme
+from sf2_theme.adapters.lazygit import merge_config, plan_lazygit, render_theme
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import commit
 
 
 def test_render_theme_covers_current_lazygit_schema() -> None:
@@ -84,32 +85,33 @@ def test_apply_lazygit_is_idempotent_and_dry_run_is_non_mutating(tmp_path: Path)
     theme = get_theme("main", parse_catalog())
     themes = parse_catalog()
 
-    first = apply_lazygit(
-        theme,
-        themes,
-        config_dir=tmp_path,
-        dry_run=False,
-        follow_symlinks=False,
-        adopt=False,
+    first = commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=tmp_path,
+            adopt=False,
+        )
     )
-    second = apply_lazygit(
-        theme,
-        themes,
-        config_dir=tmp_path,
-        dry_run=False,
-        follow_symlinks=False,
-        adopt=False,
+    second = commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=tmp_path,
+            adopt=False,
+        )
     )
     assert all(result.action.value in {"created", "unchanged"} for result in first + second)
     assert not list(tmp_path.glob("*.bak.*"))
 
     dry_run_dir = tmp_path / "dry-run"
-    apply_lazygit(
-        theme,
-        themes,
-        config_dir=dry_run_dir,
+    commit(
+        plan_lazygit(
+            theme,
+            themes,
+            config_dir=dry_run_dir,
+            adopt=False,
+        ),
         dry_run=True,
-        follow_symlinks=False,
-        adopt=False,
     )
     assert not dry_run_dir.exists()

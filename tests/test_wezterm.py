@@ -6,16 +6,16 @@ from pathlib import Path
 import pytest
 
 from sf2_theme.adapters.wezterm import (
-    apply_wezterm,
     current_pointer_path,
+    plan_wezterm,
     render_pointer,
     render_scheme,
-    setup_wezterm,
     wezterm_lua_path,
 )
 from sf2_theme.adapters.wezterm_lua import setup_lua
 from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import commit
 from sf2_theme.parse import parse_theme
 
 
@@ -54,12 +54,12 @@ def test_incomplete_palette_fails_before_wezterm_write(tmp_path: Path, missing_f
 
     with pytest.raises(ThemeError, match=rf"ui\.{missing_field}"):
         theme = parse_theme(raw, source="incomplete.toml")
-        apply_wezterm(
-            theme,
-            (theme,),
-            config_dir=config_dir,
-            dry_run=False,
-            follow_symlinks=False,
+        commit(
+            plan_wezterm(
+                theme,
+                (theme,),
+                config_dir=config_dir,
+            )[0]
         )
 
     assert not config_dir.exists()
@@ -191,12 +191,12 @@ def test_apply_does_not_touch_lua(tmp_path: Path, monkeypatch) -> None:
     original = 'return { color_scheme = "other" }\n'
     lua.write_text(original, encoding="utf-8")
     catalog = parse_catalog()
-    apply_wezterm(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=lua_dir,
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_wezterm(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=lua_dir,
+        )[0]
     )
     assert lua.read_text(encoding="utf-8") == original
     assert (lua_dir / "colors" / "sf2-main.toml").is_file()
@@ -211,12 +211,12 @@ def test_wezterm_generated_ids_are_prefixed_and_old_files_are_replaced(tmp_path:
     (colors / "street-fighter-ii-main.toml").write_text("old managed scheme", encoding="utf-8")
     catalog = parse_catalog()
 
-    apply_wezterm(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=config_dir,
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_wezterm(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=config_dir,
+        )[0]
     )
 
     written_ids = {path.stem for path in colors.glob("*.toml")}
@@ -234,13 +234,8 @@ def test_setup_writes_starter_when_missing(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.delenv("WEZTERM_CONFIG_DIR", raising=False)
     monkeypatch.delenv("WEZTERM_CONFIG_FILE", raising=False)
     catalog = parse_catalog()
-    results, lua = setup_wezterm(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=None,
-        dry_run=False,
-        follow_symlinks=False,
-    )
+    steps, lua = plan_wezterm(get_theme("main", catalog), catalog, config_dir=None)
+    results = commit(steps)
     assert lua.mutated is True
     written = (tmp_path / "xdg" / "wezterm" / "wezterm.lua").read_text(encoding="utf-8")
     assert "dofile(sf2_current)" in written
@@ -251,12 +246,12 @@ def test_setup_writes_starter_when_missing(tmp_path: Path, monkeypatch) -> None:
 def test_setup_without_theme_keeps_existing_pointer(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
     catalog = parse_catalog()
-    apply_wezterm(
-        get_theme("ken", catalog),
-        catalog,
-        config_dir=tmp_path / "wezterm",
-        dry_run=False,
-        follow_symlinks=False,
+    commit(
+        plan_wezterm(
+            get_theme("ken", catalog),
+            catalog,
+            config_dir=tmp_path / "wezterm",
+        )[0]
     )
     assert "sf2-ken" in current_pointer_path().read_text(encoding="utf-8")
 
@@ -269,26 +264,26 @@ def test_setup_wezterm_migrates_existing_unprefixed_pointer(tmp_path: Path, monk
     pointer.write_text('-- sf2-themes: ken\nreturn "Street Fighter II - Ken"\n', encoding="utf-8")
     catalog = parse_catalog()
 
-    setup_wezterm(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=tmp_path / "wezterm",
-        dry_run=False,
-        follow_symlinks=False,
-        replace_pointer=False,
+    commit(
+        plan_wezterm(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=tmp_path / "wezterm",
+            replace_pointer=False,
+        )[0]
     )
 
     assert "-- sf2-themes: sf2-ken" in pointer.read_text(encoding="utf-8")
     assert 'return "sf2-ken"' in pointer.read_text(encoding="utf-8")
     assert 'return "sf2-ken-light"' in pointer.read_text(encoding="utf-8")
     assert "get_appearance" in pointer.read_text(encoding="utf-8")
-    setup_wezterm(
-        get_theme("main", catalog),
-        catalog,
-        config_dir=tmp_path / "wezterm",
-        dry_run=False,
-        follow_symlinks=False,
-        replace_pointer=False,
+    commit(
+        plan_wezterm(
+            get_theme("main", catalog),
+            catalog,
+            config_dir=tmp_path / "wezterm",
+            replace_pointer=False,
+        )[0]
     )
     assert "sf2-ken" in current_pointer_path().read_text(encoding="utf-8")
 

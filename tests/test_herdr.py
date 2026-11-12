@@ -4,9 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from sf2_theme.adapters.herdr import HERDR_TOKENS, apply_herdr, merge_theme, render_block
+from sf2_theme.adapters.herdr import HERDR_TOKENS, merge_theme, plan_herdr, render_block
 from sf2_theme.catalog import get_theme, parse_catalog, theme_pair
 from sf2_theme.errors import ThemeError
+from sf2_theme.filesystem import commit
 
 
 def _assert_mode_custom_tables(block: str) -> None:
@@ -137,8 +138,8 @@ def test_apply_herdr_round_trip(tmp_path: Path) -> None:
     config_dir = tmp_path / "herdr"
     config_dir.mkdir()
     (config_dir / "config.toml").write_text('[ui]\ntheme = "follow-system"\n', encoding="utf-8")
-    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
-    apply_herdr(theme, catalog, config_dir=config_dir, dry_run=False, follow_symlinks=False, adopt=False)
+    commit(plan_herdr(theme, catalog, config_dir=config_dir, adopt=False))
+    commit(plan_herdr(theme, catalog, config_dir=config_dir, adopt=False))
     text = (config_dir / "config.toml").read_text(encoding="utf-8")
     _assert_mode_custom_tables(text)
     assert sum(line.strip() == "[theme.custom.dark]" for line in text.splitlines()) == 1

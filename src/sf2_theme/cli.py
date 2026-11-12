@@ -9,27 +9,27 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme import __version__
+from sf2_theme.adapters.claude import plan_claude
 from sf2_theme.adapters.claude import read_current_id as claude_current
-from sf2_theme.adapters.claude import setup_claude
+from sf2_theme.adapters.codex import plan_codex
 from sf2_theme.adapters.codex import read_current_id as codex_current
-from sf2_theme.adapters.codex import setup_codex
-from sf2_theme.adapters.herdr import apply_herdr
+from sf2_theme.adapters.herdr import plan_herdr
 from sf2_theme.adapters.herdr import read_current_id as herdr_current
+from sf2_theme.adapters.herdr_app import plan_herdr_app
 from sf2_theme.adapters.herdr_app import read_current_id as herdr_app_current
 from sf2_theme.adapters.herdr_app import selection_exists as herdr_app_selection_exists
-from sf2_theme.adapters.herdr_app import setup_herdr_app
+from sf2_theme.adapters.lazygit import plan_lazygit
 from sf2_theme.adapters.lazygit import read_current_id as lazygit_current
-from sf2_theme.adapters.lazygit import setup_lazygit
 from sf2_theme.adapters.nvim import current_pointer_path as nvim_pointer_path
+from sf2_theme.adapters.nvim import plan_nvim
 from sf2_theme.adapters.nvim import read_current_id as nvim_current
-from sf2_theme.adapters.nvim import setup_nvim
 from sf2_theme.adapters.slack import render_theme as slack_import_line
-from sf2_theme.adapters.starship import apply_starship
+from sf2_theme.adapters.starship import plan_starship
 from sf2_theme.adapters.starship import read_current_id as starship_current
 from sf2_theme.adapters.wezterm import current_pointer_path as wezterm_pointer_path
+from sf2_theme.adapters.wezterm import plan_wezterm
 from sf2_theme.adapters.wezterm import read_current_id as wezterm_current
-from sf2_theme.adapters.wezterm import setup_wezterm
-from sf2_theme.adapters.zsh_syntax import SOURCE_HINT, apply_zsh_syntax
+from sf2_theme.adapters.zsh_syntax import SOURCE_HINT
 from sf2_theme.catalog import (
     catalog_issues,
     default_theme,
@@ -41,7 +41,7 @@ from sf2_theme.catalog import (
     theme_pair,
 )
 from sf2_theme.errors import CliError, ThemeError
-from sf2_theme.filesystem import WriteAction, WriteResult
+from sf2_theme.filesystem import WriteAction, WriteResult, commit
 from sf2_theme.model import Theme, ThemeVariant
 from sf2_theme.validation import validate_theme
 
@@ -79,6 +79,8 @@ _ACTION_TEXT = {
     WriteAction.UNCHANGED: "unchanged",
     WriteAction.WOULD_CREATE: "would create",
     WriteAction.WOULD_UPDATE: "would update",
+    WriteAction.REMOVED: "removed",
+    WriteAction.WOULD_REMOVE: "would remove",
 }
 
 # What the user still has to do by hand after a completed apply.
@@ -165,17 +167,10 @@ def _validate(ns: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
-def _starship_results(theme: Theme, ns: argparse.Namespace, config_dir: Path | None) -> list[WriteResult]:
-    return [
-        apply_starship(theme, config_dir=config_dir, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
-        apply_zsh_syntax(theme, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks),
-    ]
-
-
 def _report(results: Sequence[WriteResult], *, verbose: bool) -> None:
     """Print the plan. Dry-run always lists planned writes; otherwise --verbose."""
     for result in results:
-        planned = result.action in (WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
+        planned = result.action in (WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE, WriteAction.WOULD_REMOVE)
         if not (verbose or planned):
             continue
         print(f"{_ACTION_TEXT[result.action]}: {result.path}")
@@ -195,16 +190,14 @@ def _summarize(
     blocked: bool,
 ) -> None:
     counts = Counter(result.action for result in results)
-    changed = sum(
-        counts[action]
-        for action in (WriteAction.CREATED, WriteAction.UPDATED, WriteAction.WOULD_CREATE, WriteAction.WOULD_UPDATE)
-    )
-    if changed:
+    if any(action is not WriteAction.UNCHANGED for action in counts):
         order = (
             WriteAction.CREATED,
             WriteAction.UPDATED,
+            WriteAction.REMOVED,
             WriteAction.WOULD_CREATE,
             WriteAction.WOULD_UPDATE,
+            WriteAction.WOULD_REMOVE,
             WriteAction.UNCHANGED,
         )
         changes = ", ".join(f"{counts[action]} {_ACTION_TEXT[action]}" for action in order if counts[action])
@@ -276,77 +269,26 @@ def _mutate(command: str, ns: argparse.Namespace, parser: argparse.ArgumentParse
     adoptable = False
     match ns.app:
         case "wezterm":
-            results, lua = setup_wezterm(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                adopt=ns.adopt,
-                replace_pointer=select,
-            )
+            steps, lua = plan_wezterm(theme, catalog, config_dir=config_dir, adopt=ns.adopt, replace_pointer=select)
             manual = lua.snippet
             adoptable = lua.adoptable
         case "nvim":
-            results = setup_nvim(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_pointer=select,
-            )
+            steps = plan_nvim(theme, catalog, config_dir=config_dir, replace_pointer=select)
         case "codex":
-            results = setup_codex(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
+            steps = plan_codex(theme, catalog, config_dir=config_dir, replace_theme=select)
         case "lazygit":
-            results = setup_lazygit(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                adopt=ns.adopt,
-            )
+            steps = plan_lazygit(theme, catalog, config_dir=config_dir, adopt=ns.adopt)
         case "starship":
-            results = _starship_results(theme, ns, config_dir)
+            steps = plan_starship(theme, config_dir=config_dir)
         case "herdr-app":
-            results = setup_herdr_app(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
+            steps = plan_herdr_app(theme, catalog, config_dir=config_dir, replace_theme=select)
         case "claude":
-            results = setup_claude(
-                theme,
-                catalog,
-                config_dir=config_dir,
-                dry_run=ns.dry_run,
-                follow_symlinks=ns.follow_symlinks,
-                replace_theme=select,
-            )
+            steps = plan_claude(theme, catalog, config_dir=config_dir, replace_theme=select)
         case "herdr":
-            results = [
-                apply_herdr(
-                    theme,
-                    catalog,
-                    config_dir=config_dir,
-                    dry_run=ns.dry_run,
-                    follow_symlinks=ns.follow_symlinks,
-                    adopt=ns.adopt,
-                )
-            ]
+            steps = plan_herdr(theme, catalog, config_dir=config_dir, adopt=ns.adopt)
         case unreachable:
             raise CliError(f"unsupported app: {unreachable}; choose from {', '.join(APP_NAMES)}")
+    results = commit(steps, dry_run=ns.dry_run, follow_symlinks=ns.follow_symlinks)
     _report(results, verbose=ns.verbose)
     _summarize(command, ns.app, select, theme, catalog, results, kept=kept, blocked=manual is not None)
     if ns.app == "starship":

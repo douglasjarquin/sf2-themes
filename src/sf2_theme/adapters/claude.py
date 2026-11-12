@@ -4,8 +4,8 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
-from sf2_theme.filesystem import WriteResult, write_file
 from sf2_theme.model import Theme
+from sf2_theme.plan import Step, Write
 
 THEME_DIR_NAME = "themes"
 SETTINGS_FILE_NAME = "settings.json"
@@ -71,77 +71,23 @@ def merge_settings(existing: str, theme: Theme) -> str:
     return json.dumps(data, indent=2) + "\n"
 
 
-def _write_themes(
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    return [
-        write_file(
-            theme_path(candidate, config_dir),
-            render_theme(candidate),
-            dry_run=dry_run,
-            follow_symlinks=follow_symlinks,
-        )
-        for candidate in themes
-    ]
-
-
-def _write_settings(
-    theme: Theme,
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> WriteResult:
-    path = settings_path(config_dir)
-    existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    return write_file(
-        path,
-        merge_settings(existing, theme),
-        dry_run=dry_run,
-        follow_symlinks=follow_symlinks,
-    )
-
-
-def apply_claude(
+def plan_claude(
     theme: Theme,
     themes: Sequence[Theme],
     *,
     config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
-) -> list[WriteResult]:
-    results = _write_themes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-    results.append(_write_settings(theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    return results
-
-
-def setup_claude(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    dry_run: bool,
-    follow_symlinks: bool,
     replace_theme: bool = True,
-) -> list[WriteResult]:
-    results = _write_themes(themes, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
+) -> list[Step]:
+    steps: list[Step] = [Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes]
     path = settings_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    if replace_theme or not _has_sf2_theme(existing):
-        results.append(_write_settings(theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks))
-    else:
-        configured = json.loads(existing).get("theme", "")
-        current_id = configured.removeprefix(CUSTOM_THEME_PREFIX)
-        legacy_theme = next((candidate for candidate in themes if candidate.metadata.selectable_id == current_id), None)
-        if legacy_theme is not None:
-            results.append(
-                _write_settings(legacy_theme, config_dir=config_dir, dry_run=dry_run, follow_symlinks=follow_symlinks)
-            )
-    return results
+    selected: Theme | None = theme
+    if not replace_theme and _has_sf2_theme(existing):
+        current_id = json.loads(existing).get("theme", "").removeprefix(CUSTOM_THEME_PREFIX)
+        selected = next((candidate for candidate in themes if candidate.metadata.selectable_id == current_id), None)
+    if selected is not None:
+        steps.append(Write(path, merge_settings(existing, selected)))
+    return steps
 
 
 def _has_sf2_theme(existing: str) -> bool:
