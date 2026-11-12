@@ -244,6 +244,10 @@ func TestChangesJobSelectsEveryFilterAndFailsOpen(t *testing.T) {
 			map[string]string{"workflows": "false", "tooling": "true", "go": "false", "web": "true"}},
 		{"push with filter data", withFilters(map[string]string{"FILTER_OUTCOME": "success", "EVENT_NAME": "push", "EVENT_BEFORE": "abc"}),
 			map[string]string{"workflows": "false", "tooling": "true", "go": "false", "web": "true"}},
+		{"successful filter missing one output", map[string]string{"FILTER_OUTCOME": "success", "EVENT_NAME": "pull_request", "BASE_SHA": "abc",
+			"FILTER_WORKFLOWS": "false", "FILTER_TOOLING": "false", "FILTER_WEB": "false"}, everything},
+		{"successful filter with a non-boolean output", map[string]string{"FILTER_OUTCOME": "success", "EVENT_NAME": "pull_request", "BASE_SHA": "abc",
+			"FILTER_WORKFLOWS": "false", "FILTER_TOOLING": "false", "FILTER_GO": "maybe", "FILTER_WEB": "false"}, everything},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := selected(tc.env); !maps.Equal(got, tc.want) {
@@ -306,48 +310,70 @@ func TestGateJobRequiresEverySelectedCheck(t *testing.T) {
 	}
 }
 
-func TestGateJobScriptFailsWhenAnySelectedJobDidNotSucceed(t *testing.T) {
+func TestGateJobScriptRequiresSelectedJobsToSucceed(t *testing.T) {
 	gate := job(t, loadWorkflow(t, "verify.yml"), "gate")
 	script := gate.Steps[0].Run
-	vars := []string{"CHANGES", "ACTIONLINT", "TOOLCHAIN_CHECKS", "GO", "RELEASE_REHEARSAL", "WEB"}
-	needs := map[string]string{
+	results := map[string]string{
 		"CHANGES": "changes", "ACTIONLINT": "actionlint", "TOOLCHAIN_CHECKS": "toolchain-checks",
 		"GO": "go", "RELEASE_REHEARSAL": "release-rehearsal", "WEB": "web",
 	}
-	if got := sortedKeys(gate.Steps[0].Env); !slices.Equal(got, slices.Sorted(slices.Values(vars))) {
-		t.Errorf("gate env = %v, want %v", got, slices.Sorted(slices.Values(vars)))
+	selections := map[string]string{
+		"SELECTED_WORKFLOWS": "workflows", "SELECTED_TOOLING": "tooling", "SELECTED_GO": "go", "SELECTED_WEB": "web",
 	}
-	for _, name := range vars {
-		if want := "${{ needs." + needs[name] + ".result }}"; gate.Steps[0].Env[name] != want {
+	want := slices.Sorted(maps.Keys(results))
+	want = slices.Sorted(slices.Values(append(want, slices.Collect(maps.Keys(selections))...)))
+	if got := sortedKeys(gate.Steps[0].Env); !slices.Equal(got, want) {
+		t.Errorf("gate env = %v, want %v", got, want)
+	}
+	for name, need := range results {
+		if want := "${{ needs." + need + ".result }}"; gate.Steps[0].Env[name] != want {
 			t.Errorf("gate env %s = %q, want %q", name, gate.Steps[0].Env[name], want)
 		}
 	}
-	runGate := func(results ...string) int {
-		t.Helper()
-		env := map[string]string{}
-		for i, name := range vars {
-			env[name] = results[i]
+	for name, output := range selections {
+		if want := "${{ needs.changes.outputs." + output + " }}"; gate.Steps[0].Env[name] != want {
+			t.Errorf("gate env %s = %q, want %q", name, gate.Steps[0].Env[name], want)
 		}
-		return runBash(t, script, env)
+	}
+	all := map[string]string{"SELECTED_WORKFLOWS": "true", "SELECTED_TOOLING": "true", "SELECTED_GO": "true", "SELECTED_WEB": "true"}
+	none := map[string]string{"SELECTED_WORKFLOWS": "false", "SELECTED_TOOLING": "false", "SELECTED_GO": "false", "SELECTED_WEB": "false"}
+	only := func(output string) map[string]string {
+		selection := maps.Clone(none)
+		selection["SELECTED_"+strings.ToUpper(output)] = "true"
+		return selection
+	}
+	succeeded := map[string]string{"CHANGES": "success", "ACTIONLINT": "success", "TOOLCHAIN_CHECKS": "success", "GO": "success", "RELEASE_REHEARSAL": "success", "WEB": "success"}
+	skipped := map[string]string{"CHANGES": "success", "ACTIONLINT": "skipped", "TOOLCHAIN_CHECKS": "skipped", "GO": "skipped", "RELEASE_REHEARSAL": "skipped", "WEB": "skipped"}
+	with := func(base map[string]string, name, result string) map[string]string {
+		changed := maps.Clone(base)
+		changed[name] = result
+		return changed
 	}
 	for _, tc := range []struct {
-		results []string
-		want    int
+		name      string
+		selection map[string]string
+		results   map[string]string
+		want      int
 	}{
-		{[]string{"success", "success", "success", "success", "success", "success"}, 0},
-		{[]string{"success", "skipped", "skipped", "skipped", "skipped", "skipped"}, 0},
-		{[]string{"success", "skipped", "success", "skipped", "success", "skipped"}, 0},
-		{[]string{"failure", "success", "success", "success", "success", "success"}, 1},
-		{[]string{"skipped", "success", "success", "success", "success", "success"}, 1},
-		{[]string{"success", "failure", "success", "success", "success", "success"}, 1},
-		{[]string{"success", "success", "failure", "success", "success", "success"}, 1},
-		{[]string{"success", "success", "success", "failure", "success", "success"}, 1},
-		{[]string{"success", "success", "success", "success", "failure", "success"}, 1},
-		{[]string{"success", "success", "success", "success", "success", "cancelled"}, 1},
+		{"every selected job succeeded", all, succeeded, 0},
+		{"nothing selected and everything skipped", none, skipped, 0},
+		{"only the selected job ran", only("go"), with(with(skipped, "GO", "success"), "RELEASE_REHEARSAL", "success"), 0},
+		{"a selected job was skipped", all, with(succeeded, "WEB", "skipped"), 1},
+		{"the selected go filter skipped the release rehearsal", only("go"), with(skipped, "GO", "success"), 1},
+		{"an unselected job failed", only("web"), with(with(skipped, "WEB", "success"), "ACTIONLINT", "failure"), 1},
+		{"an unselected job was cancelled", none, with(skipped, "TOOLCHAIN_CHECKS", "cancelled"), 1},
+		{"the changes job failed", all, with(succeeded, "CHANGES", "failure"), 1},
+		{"the changes job was skipped", all, with(succeeded, "CHANGES", "skipped"), 1},
+		{"a selected job failed", all, with(succeeded, "TOOLCHAIN_CHECKS", "failure"), 1},
+		{"a selected job was cancelled", all, with(succeeded, "WEB", "cancelled"), 1},
 	} {
-		if got := runGate(tc.results...); got != tc.want {
-			t.Errorf("gate with %v exited %d, want %d", tc.results, got, tc.want)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+			env := maps.Clone(tc.results)
+			maps.Copy(env, tc.selection)
+			if got := runBash(t, script, env); got != tc.want {
+				t.Errorf("gate exited %d, want %d", got, tc.want)
+			}
+		})
 	}
 }
 

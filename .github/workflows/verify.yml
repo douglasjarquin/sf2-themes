@@ -74,11 +74,19 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
+          select_all=false
           if [[ "$FILTER_OUTCOME" != "success" ||
                 ( "$EVENT_NAME" == "push" &&
                   ( -z "$EVENT_BEFORE" ||
                     "$EVENT_BEFORE" == "0000000000000000000000000000000000000000" ) ) ||
                 ( "$EVENT_NAME" == "pull_request" && -z "$BASE_SHA" ) ]]; then
+            select_all=true
+          fi
+          # A filter output that is missing or not a boolean is unusable data: fail open.
+          for value in "$FILTER_WORKFLOWS" "$FILTER_TOOLING" "$FILTER_GO" "$FILTER_WEB"; do
+            [[ "$value" == "true" || "$value" == "false" ]] || select_all=true
+          done
+          if [[ "$select_all" == "true" ]]; then
             {
               echo 'workflows=true'
               echo 'tooling=true'
@@ -218,6 +226,10 @@ jobs:
       - name: Require selected checks to pass
         env:
           CHANGES: ${{ needs.changes.result }}
+          SELECTED_WORKFLOWS: ${{ needs.changes.outputs.workflows }}
+          SELECTED_TOOLING: ${{ needs.changes.outputs.tooling }}
+          SELECTED_GO: ${{ needs.changes.outputs.go }}
+          SELECTED_WEB: ${{ needs.changes.outputs.web }}
           ACTIONLINT: ${{ needs.actionlint.result }}
           TOOLCHAIN_CHECKS: ${{ needs.toolchain-checks.result }}
           GO: ${{ needs.go.result }}
@@ -228,9 +240,19 @@ jobs:
             echo "changes job result: $CHANGES"
             exit 1
           fi
-          for result in "$ACTIONLINT" "$TOOLCHAIN_CHECKS" "$GO" "$RELEASE_REHEARSAL" "$WEB"; do
-            case "$result" in
-              success|skipped) ;;
-              *) echo "selected job result: $result"; exit 1 ;;
-            esac
-          done
+          # A selected job must succeed; a job that was not selected may only be skipped or succeed.
+          check() {
+            if [[ "$2" == "true" ]]; then
+              [[ "$3" == "success" ]] || { echo "$1 was selected and finished: $3"; exit 1; }
+            else
+              case "$3" in
+                success|skipped) ;;
+                *) echo "$1 result: $3"; exit 1 ;;
+              esac
+            fi
+          }
+          check actionlint "$SELECTED_WORKFLOWS" "$ACTIONLINT"
+          check toolchain-checks "$SELECTED_TOOLING" "$TOOLCHAIN_CHECKS"
+          check go "$SELECTED_GO" "$GO"
+          check release-rehearsal "$SELECTED_GO" "$RELEASE_REHEARSAL"
+          check web "$SELECTED_WEB" "$WEB"
