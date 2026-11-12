@@ -33,7 +33,6 @@ const (
 // groups appear here is skipped against the Go binary with that reason. Delete a group's
 // line when the Go binary gains it; delete the map and its one use once it is empty.
 var PendingInGo = map[Group]string{
-	GroupSlack:    "slack paste line is not ported to Go yet",
 	GroupWezterm:  "wezterm adapter not ported to Go yet",
 	GroupNvim:     "nvim adapter not ported to Go yet",
 	GroupHerdr:    "herdr adapter not ported to Go yet",

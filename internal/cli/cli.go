@@ -2,7 +2,6 @@
 package cli
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -135,18 +134,4 @@ func runValidate(ctx *Context, req Request) (int, error) {
 	}
 	printf(ctx.Stdout, "valid: %s\n", strings.Join(ids, ", "))
 	return 0, nil
-}
-
-var errNotImplemented = errors.New("not implemented in this build yet")
-
-func runSetup(_ *Context, _ Request) (int, error) {
-	return 0, fmt.Errorf("setup: %w", errNotImplemented)
-}
-
-func runApply(_ *Context, _ Request) (int, error) {
-	return 0, fmt.Errorf("apply: %w", errNotImplemented)
-}
-
-func runCurrent(_ *Context, _ Request) (int, error) {
-	return 0, fmt.Errorf("current: %w", errNotImplemented)
 }

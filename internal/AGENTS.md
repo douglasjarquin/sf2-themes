@@ -20,7 +20,9 @@ The Python CLI at the parity reference is the behavior contract: the Go binary p
 | Catalog lifecycle | `catalog/catalog.go` | `fs.FS` discovery, deterministic order, validated loading, lookup, pairing, and defaults. |
 | Argument parsing | `cli/args.go` | The command set, flags in any position, `--name=value`, `--`, and argparse-compatible error lines. |
 | Help text | `cli/help.go` | Hand-written help and usage lines that never depend on terminal width. |
-| Public dispatch | `cli/cli.go`, `cmd/sf2-themes` | `cli.Main`, the command handlers, the app table, the ownership gate, selection, refusal text, and summaries. |
+| Public dispatch | `cli/cli.go`, `cmd/sf2-themes` | `cli.Main` and the read-only command handlers. |
+| Mutating commands | `cli/mutate.go` | `setup`, `apply`, and `current`: the ownership gate, selection, refusal text, and summaries. |
+| App registry | `cli/apps.go`, `cli/app_<name>.go` | One registration file per adapter; `internal/adapters/AGENTS.md` holds the adapter contract. |
 | Python behaviors | `pycompat/` | Text reads, line splitting, whitespace, regex classes, paths, `repr`, JSON, and unified diffs as Python produces them. |
 | Parity proof | `parity/` | Goldens recorded from the Python reference and the TOML/JSON parser corpus. |
 

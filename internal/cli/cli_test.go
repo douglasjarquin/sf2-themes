@@ -155,11 +155,18 @@ options:
 	}
 }
 
-func TestMutatingCommandsAreNotBuiltYet(t *testing.T) {
-	for _, command := range []string{"setup", "apply", "current"} {
-		_, stderr, status := run(command, "wezterm")
-		if status != 1 || !strings.HasPrefix(stderr, "error: "+command+": not implemented") {
-			t.Errorf("%s: status %d, stderr %q", command, status, stderr)
+func TestAnAppWithoutAnAdapterFailsClearly(t *testing.T) {
+	for _, name := range appNames {
+		if _, ok := apps[name]; ok || name == "slack" {
+			continue
 		}
+		for _, command := range []string{"setup", "apply", "current"} {
+			_, stderr, status := run(command, name)
+			if status != 1 || stderr != "error: "+name+": adapter is not ported to this build yet\n" {
+				t.Errorf("%s %s: status %d, stderr %q", command, name, status, stderr)
+			}
+		}
+		return
 	}
+	t.Skip("every app has an adapter")
 }
