@@ -2,4 +2,3 @@ ca-certificates
 curl
 git
 build-essential
-python3

@@ -35,7 +35,6 @@ if [ -n "${GITHUB_RUN_ID:-}" ] && [ -n "${GITHUB_JOB:-}" ]; then
 else
   job_scope="dev"
 fi
-VENV_VOL="sf2-themes-${job_scope}-venv"
 FE_NM_VOL="sf2-themes-${job_scope}-web-node-modules"
 FE_ASTRO_VOL="sf2-themes-${job_scope}-web-astro"
 FE_DIST_VOL="sf2-themes-${job_scope}-web-dist"
@@ -75,7 +74,6 @@ docker run --name "$NAME" --rm --init \
   --user root \
   --entrypoint /bin/bash \
   --mount type=bind,src="$PWD",dst=/workspace/sf2-themes \
-  --mount type=volume,src="$VENV_VOL",dst=/workspace/sf2-themes/.venv \
   --mount type=volume,src="$FE_NM_VOL",dst=/workspace/sf2-themes/web/node_modules \
   --mount type=volume,src="$FE_ASTRO_VOL",dst=/workspace/sf2-themes/web/.astro \
   "${dist_mount_args[@]}" \
@@ -95,7 +93,6 @@ docker run --name "$NAME" --rm --init \
     chmod 1777 /tmp/fslock
     chown -R "$HOST_UID:$HOST_GID" "$HOME"
     chown "$HOST_UID:$HOST_GID" \
-      /workspace/sf2-themes/.venv \
       /workspace/sf2-themes/web/node_modules \
       /workspace/sf2-themes/web/.astro
     if [ "$BIND_DIST" -eq 1 ]; then

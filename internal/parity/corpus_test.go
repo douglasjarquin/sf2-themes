@@ -1,11 +1,9 @@
 package parity
 
 import (
-	"bytes"
 	"fmt"
 	"io/fs"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -15,8 +13,10 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
-// The parser corpus holds the Go TOML and JSON readers to the verdicts Python 3.11's
-// tomllib and json record, so a user config is broken for both implementations or neither.
+// The parser corpus holds the Go TOML and JSON readers to the verdicts recorded from Python
+// 3.11 tomllib and json at the 1.x parity reference, so a user config the 1.x CLI read is
+// classified the same way. The verdicts are committed data; a new input needs a verdict
+// worked out from the TOML 1.0 or JSON specification.
 const (
 	corpusDir       = "testdata/corpus"
 	verdictsFile    = "testdata/corpus/verdicts.txt"
@@ -44,24 +44,6 @@ var corpusReaders = map[string]func([]byte) bool{
 		return err == nil
 	},
 }
-
-// verdictScript records what the reference adapters' read does with each input: read the
-// file as UTF-8 text with universal newlines, then tomllib.loads or json.loads it.
-// Any other exception propagates and fails the recording.
-const verdictScript = `
-import json, sys, tomllib
-from pathlib import Path
-
-root = Path(sys.argv[1])
-for rel in sys.stdin.read().splitlines():
-    load = tomllib.loads if rel.startswith("toml/") else json.loads
-    try:
-        load((root / rel).read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, tomllib.TOMLDecodeError, json.JSONDecodeError):
-        print("reject", rel)
-    else:
-        print("accept", rel)
-`
 
 // corpusInputs lists every corpus input, slash-separated and relative to the corpus directory.
 func corpusInputs(t *testing.T) []string {
@@ -115,7 +97,7 @@ func readDivergences(text string) (map[string]string, error) {
 	return divergences, nil
 }
 
-// corpusMismatches lists the inputs of one format where reader disagrees with the reference
+// corpusMismatches lists the inputs of one format where reader disagrees with the recorded
 // verdict and the disagreement is not a listed divergence, and the listed divergences
 // reader no longer has, so the list stays exactly the divergences that remain.
 func corpusMismatches(format string, verdicts map[string]bool, divergences map[string]string, reader func([]byte) bool, read func(string) ([]byte, error)) ([]string, error) {
@@ -157,47 +139,9 @@ func readCorpusInput(input string) ([]byte, error) {
 	return os.ReadFile(filepath.Join(corpusDir, filepath.FromSlash(input)))
 }
 
-// referenceVerdicts runs the verdict script on Python 3.11 over every input.
-func referenceVerdicts(t *testing.T, inputs []string) string {
-	t.Helper()
-	python, err := python311()
-	must(t, err)
-	// -I: the inputs are downloaded data; nothing from the working directory is importable.
-	command := exec.Command(python, "-I", "-c", verdictScript, corpusDir)
-	command.Stdin = strings.NewReader(strings.Join(inputs, "\n"))
-	var stderr bytes.Buffer
-	command.Stderr = &stderr
-	out, err := command.Output()
-	if err != nil {
-		t.Fatalf("verdict script: %v\n%s", err, stderr.String())
-	}
-	return string(out)
-}
-
-// TestCorpusVerdictsMatchTheReference rewrites the verdicts in record mode and re-checks them
-// against Python 3.11 in reference mode.
-func TestCorpusVerdictsMatchTheReference(t *testing.T) {
-	if !referenceMode() {
-		t.Skip("reference verdicts are checked with " + envReference + " set")
-	}
-	got := referenceVerdicts(t, corpusInputs(t))
-	if recording() {
-		must(t, os.WriteFile(verdictsFile, []byte(got), 0o644))
-		return
-	}
-	want, err := os.ReadFile(verdictsFile)
-	must(t, err)
-	if string(want) != got {
-		t.Errorf("Python 3.11 verdicts differ from %s:\n%s", verdictsFile, describeDifference(string(want), got))
-	}
-}
-
 // TestCorpusIsComplete needs no reader: every input has one verdict and every listed
 // divergence names an input.
 func TestCorpusIsComplete(t *testing.T) {
-	if recording() {
-		t.Skip("record mode rewrites the verdicts")
-	}
 	verdicts, divergences := loadCorpus(t)
 	inputs := corpusInputs(t)
 	for _, input := range inputs {
@@ -220,7 +164,7 @@ func TestCorpusIsComplete(t *testing.T) {
 	}
 }
 
-// TestCorpusGoReadersAgree holds each Go reader to the reference verdicts.
+// TestCorpusGoReadersAgree holds each Go reader to the recorded verdicts.
 func TestCorpusGoReadersAgree(t *testing.T) {
 	verdicts, divergences := loadCorpus(t)
 	for _, format := range []string{"toml", "json"} {

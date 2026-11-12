@@ -1,0 +1,10 @@
+step apply codex --config-dir {SANDBOX}/config/codex
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/codex/config.toml: not valid UTF-8
+tree
+dir 0755 config
+dir 0755 config/codex
+file 0644 b8deeed7ba984955 config/codex/config.toml
+dir 0755 home

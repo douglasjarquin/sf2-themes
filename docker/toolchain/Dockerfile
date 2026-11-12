@@ -42,4 +42,4 @@ RUN mkdir -p "$MISE_CONFIG_DIR" && \
 
 LABEL org.opencontainers.image.source="https://github.com/douglasjarquin/sf2-themes" \
       org.opencontainers.image.title="sf2-themes-toolchain" \
-      org.opencontainers.image.description="Prewarmed mise toolchain (Python, Node, aube, ruff, shellcheck) for sf2-themes, no app source"
+      org.opencontainers.image.description="Prewarmed mise toolchain (Go, golangci-lint, Node, aube, shellcheck) for sf2-themes, no app source"

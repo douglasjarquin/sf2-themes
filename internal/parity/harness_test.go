@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -19,37 +18,26 @@ import (
 	"time"
 )
 
-// The binary under test is chosen by environment, not by a go test flag, because
+// Record mode is chosen by environment, not by a go test flag, because
 // `go test ./...` rejects a flag the other packages do not define.
-const (
-	// envReference holds the path of the Python standalone. When set, the cases run
-	// against it on a Python 3.11 interpreter found on PATH instead of the Go binary.
-	envReference = "SF2_PARITY_REFERENCE"
-	// envRecord, set to 1 together with envReference, rewrites goldens and parser verdicts.
-	envRecord = "SF2_PARITY_RECORD"
-)
+//
+// envRecord, set to 1, rewrites the goldens from the Go binary built from this checkout.
+// Record only after reviewing the behavior change the new goldens will pin.
+const envRecord = "SF2_PARITY_RECORD"
 
 const (
 	goldenDir = "testdata/golden"
 	blobDir   = "testdata/blobs"
 )
 
-// subject is the binary under test.
-type subject struct {
-	reference bool
-	command   []string // program and leading arguments
-}
-
 var (
 	subjectOnce sync.Once
-	subjectVal  subject
+	subjectBin  string
 	subjectErr  error
 	buildDir    string
 )
 
 func recording() bool { return os.Getenv(envRecord) == "1" }
-
-func referenceMode() bool { return os.Getenv(envReference) != "" }
 
 func TestMain(m *testing.M) {
 	flag.Parse()
@@ -68,49 +56,10 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// python311 finds the Python 3.11 interpreter that runs the reference and checks its version.
-func python311() (string, error) {
-	python, err := exec.LookPath("python3.11")
-	if err != nil {
-		if python, err = exec.LookPath("python3"); err != nil {
-			return "", fmt.Errorf("no python3.11 or python3 on PATH: %w", err)
-		}
-	}
-	out, err := exec.Command(python, "-I", "-c", `import sys; print("%d.%d" % sys.version_info[:2])`).Output()
-	if err != nil {
-		return "", fmt.Errorf("%s: %w", python, err)
-	}
-	if version := strings.TrimSpace(string(out)); version != "3.11" {
-		return "", fmt.Errorf("the reference runs on Python 3.11, but %s is Python %s", python, version)
-	}
-	return python, nil
-}
-
-func underTest(t *testing.T) subject {
+// underTest builds the sf2-themes binary once and returns its path.
+func underTest(t *testing.T) string {
 	t.Helper()
 	subjectOnce.Do(func() {
-		if recording() && !referenceMode() {
-			subjectErr = fmt.Errorf("%s=1 records from the reference; set %s too", envRecord, envReference)
-			return
-		}
-		if referenceMode() {
-			ref, err := filepath.Abs(os.Getenv(envReference))
-			if err != nil {
-				subjectErr = err
-				return
-			}
-			if _, err := os.Stat(ref); err != nil {
-				subjectErr = fmt.Errorf("%s: %w", envReference, err)
-				return
-			}
-			python, err := python311()
-			if err != nil {
-				subjectErr = err
-				return
-			}
-			subjectVal = subject{reference: true, command: []string{python, ref}}
-			return
-		}
 		dir, err := os.MkdirTemp("", "sf2-parity-bin-")
 		if err != nil {
 			subjectErr = err
@@ -124,21 +73,18 @@ func underTest(t *testing.T) subject {
 			subjectErr = fmt.Errorf("go build ./cmd/sf2-themes: %w\n%s", err, out)
 			return
 		}
-		subjectVal = subject{command: []string{bin}}
+		subjectBin = bin
 	})
 	if subjectErr != nil {
 		t.Fatal(subjectErr)
 	}
-	return subjectVal
+	return subjectBin
 }
 
-// skipReason returns why a case does not run in the current mode, or "".
+// skipReason returns why a case does not run on this operating system, or "".
 func skipReason(c Case) string {
 	if c.PerOS && runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		return "default locations are recorded for darwin and linux only"
-	}
-	if referenceMode() && c.GoOnly != nil {
-		return "Go-only expectation: the reference behaves differently here on purpose"
 	}
 	return ""
 }
@@ -298,7 +244,7 @@ type rawStep struct {
 	stdout, stderr []byte
 }
 
-func runSteps(t *testing.T, bin subject, c Case, root string, todo []Step) []rawStep {
+func runSteps(t *testing.T, bin string, c Case, root string, todo []Step) []rawStep {
 	t.Helper()
 	env := environment(c, root)
 	var steps []rawStep
@@ -307,7 +253,7 @@ func runSteps(t *testing.T, bin subject, c Case, root string, todo []Step) []raw
 		for i, arg := range s.Args {
 			args[i] = Expand(arg, root)
 		}
-		command := exec.Command(bin.command[0], append(bin.command[1:], args...)...)
+		command := exec.Command(bin, args...)
 		command.Dir = root
 		command.Env = env
 		var stdout, stderr bytes.Buffer
@@ -328,7 +274,7 @@ func runSteps(t *testing.T, bin subject, c Case, root string, todo []Step) []raw
 
 // runCase runs a case in a fresh sandbox under dir and returns its normalized result,
 // the tail masks that matched nothing, and the tree, without backups, as it stood before the last step.
-func runCase(t *testing.T, bin subject, c Case, dir string) (result Result, unmatched []Mask, beforeLast []Entry) {
+func runCase(t *testing.T, bin string, c Case, dir string) (result Result, unmatched []Mask, beforeLast []Entry) {
 	t.Helper()
 	root := newSandbox(t, dir)
 	seedSandbox(t, c, root)
@@ -381,11 +327,7 @@ func TestParity(t *testing.T) {
 	}
 }
 
-func checkCase(t *testing.T, bin subject, c Case) {
-	if c.GoOnly != nil {
-		checkGoOnly(t, bin, c)
-		return
-	}
+func checkCase(t *testing.T, bin string, c Case) {
 	var before map[string]string
 	if c.GuardRealHome {
 		before = realHomeSnapshot(t)
@@ -403,7 +345,7 @@ func checkCase(t *testing.T, bin subject, c Case) {
 	path := goldenPath(c)
 	if recording() {
 		if len(unmatched) > 0 {
-			t.Fatalf("masks matched no reference output: %+v", unmatched)
+			t.Fatalf("masks matched no output: %+v", unmatched)
 		}
 		must(t, os.MkdirAll(filepath.Dir(path), 0o755))
 		must(t, os.WriteFile(path, []byte(text), 0o644))
@@ -431,41 +373,6 @@ func checkNoChanges(t *testing.T, result Result, before []Entry) {
 	if was, now := Render(Result{Tree: before}, Hash), Render(Result{Tree: result.Tree}, Hash); was != now {
 		t.Errorf("last step changed the tree:\n%s", describeDifference(was, now))
 	}
-}
-
-func checkGoOnly(t *testing.T, bin subject, c Case) {
-	root := newSandbox(t, t.TempDir())
-	seedSandbox(t, c, root)
-	before, err := Snapshot(root)
-	must(t, err)
-	steps := runSteps(t, bin, c, root, c.Steps)
-	last := steps[len(steps)-1]
-	for _, failure := range goOnlyFailures(*c.GoOnly, last.exit, string(last.stderr)) {
-		t.Error(failure)
-	}
-	after, err := Snapshot(root)
-	must(t, err)
-	if Render(Result{Tree: before}, Hash) != Render(Result{Tree: after}, Hash) {
-		t.Errorf("the sandbox changed:\nbefore\n%s\nafter\n%s", Render(Result{Tree: before}, Hash), Render(Result{Tree: after}, Hash))
-	}
-}
-
-// goOnlyFailures lists how a step's exit code and stderr miss a Go-only expectation.
-func goOnlyFailures(want GoExpectation, exit int, stderr string) []string {
-	var failures []string
-	if exit != want.Exit {
-		failures = append(failures, fmt.Sprintf("exit %d, want %d (stderr %q)", exit, want.Exit, stderr))
-	}
-	if !strings.HasPrefix(stderr, want.StderrPrefix) {
-		failures = append(failures, fmt.Sprintf("stderr %q does not start with %q", stderr, want.StderrPrefix))
-	}
-	if want.UsageError && !slices.ContainsFunc(strings.Split(stderr, "\n"), usageErrorLine.MatchString) {
-		failures = append(failures, fmt.Sprintf("stderr %q has no sf2-themes usage error line", stderr))
-	}
-	if strings.Contains(stderr, "panic:") {
-		failures = append(failures, fmt.Sprintf("stderr %q holds a panic", stderr))
-	}
-	return failures
 }
 
 // realHomeSnapshot hashes the real home directory's config files the CLI could write by default.
@@ -573,9 +480,6 @@ func firstLineDifference(want, got string) string {
 func pruneGoldens() error {
 	allowed := map[string]bool{}
 	for _, c := range Cases() {
-		if c.GoOnly != nil {
-			continue
-		}
 		name := filepath.Join(goldenDir, filepath.FromSlash(c.Name))
 		if c.PerOS {
 			allowed[name+".darwin.golden"] = true
@@ -634,14 +538,14 @@ func TestGoldenStoreMatchesTheCaseTable(t *testing.T) {
 			t.Errorf("duplicate case name %s", c.Name)
 		}
 		byName[c.Name] = c
-		if len(c.Steps) == 0 && c.GoOnly == nil {
+		if len(c.Steps) == 0 {
 			t.Errorf("%s has no steps", c.Name)
 		}
 		if len(c.Groups) == 0 {
 			t.Errorf("%s belongs to no group", c.Name)
 		}
 		if c.SeedFrom != "" {
-			if source, ok := byName[c.SeedFrom]; !ok || source.GoOnly != nil || source.SeedFrom != "" {
+			if source, ok := byName[c.SeedFrom]; !ok || source.SeedFrom != "" {
 				t.Errorf("%s seeds from %s, which must be an earlier recorded case without a seed of its own", c.Name, c.SeedFrom)
 			}
 		}
@@ -672,9 +576,6 @@ func TestGoldenStoreMatchesTheCaseTable(t *testing.T) {
 	})
 	must(t, err)
 	for _, c := range Cases() {
-		if c.GoOnly != nil {
-			continue
-		}
 		if c.PerOS {
 			for _, goos := range []string{"darwin", "linux"} {
 				path := filepath.Join(goldenDir, filepath.FromSlash(c.Name)+"."+goos+".golden")
@@ -811,31 +712,5 @@ func TestBackupsAreRecordedPerStep(t *testing.T) {
 	write("config.toml.bak.20000101T000000Z", "extra\n", second)
 	if got, want := render(Backups(afterTwo, snapshot())), stepLines+backupLine("extra\n")+"tree\n"; got != want {
 		t.Errorf("an extra backup recorded\n%s\nwant\n%s", got, want)
-	}
-}
-
-// A Go-only expectation holds the error line, so a panic, which also exits 2, fails it.
-func TestGoOnlyExpectationsRejectAPanic(t *testing.T) {
-	cases := goOnlyCases()
-	usage, notUTF8 := *cases[0].GoOnly, *cases[len(cases)-1].GoOnly
-	panicked := "panic: runtime error: index out of range [1] with length 1\n\ngoroutine 1 [running]:\nmain.main()\n"
-	for _, tc := range []struct {
-		name   string
-		want   GoExpectation
-		exit   int
-		stderr string
-		passes bool
-	}{
-		{"usage error", usage, 2, "usage: sf2-themes [-h] [-V] <command> ...\nsf2-themes: error: argument command: invalid choice: 'install'\n", true},
-		{"subcommand usage error", usage, 2, "usage: sf2-themes apply ...\nsf2-themes apply: error: unrecognized arguments: --dry\n", true},
-		{"usage panic", usage, 2, panicked, false},
-		{"usage without an error line", usage, 2, "usage: sf2-themes [-h] [-V] <command> ...\n", false},
-		{"usage error then panic", usage, 2, "sf2-themes: error: x\npanic: boom\n", false},
-		{"not UTF-8", notUTF8, 1, "error: {SANDBOX}/config/codex/config.toml is not valid UTF-8\n", true},
-		{"not UTF-8 panic", notUTF8, 1, "error: x\npanic: boom\n", false},
-	} {
-		if got := goOnlyFailures(tc.want, tc.exit, tc.stderr); (len(got) == 0) != tc.passes {
-			t.Errorf("%s: failures %q, want passes=%v", tc.name, got, tc.passes)
-		}
 	}
 }

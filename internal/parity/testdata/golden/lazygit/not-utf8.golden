@@ -1,0 +1,10 @@
+step apply lazygit --config-dir {SANDBOX}/config/lazygit
+exit 1
+stdout
+stderr
+| error: {SANDBOX}/config/lazygit/config.yml: not valid UTF-8
+tree
+dir 0755 config
+dir 0755 config/lazygit
+file 0644 b8deeed7ba984955 config/lazygit/config.yml
+dir 0755 home
