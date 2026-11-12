@@ -239,6 +239,16 @@ func statIs(stat func(string) (fs.FileInfo, error), path string, test func(fs.Fi
 	return test(info.Mode()), nil
 }
 
+// Exists is pathlib's exists: false when the path does not exist or cannot be reached.
+func Exists(path string) (bool, error) {
+	return statIs(os.Stat, path, func(fs.FileMode) bool { return true })
+}
+
+// IsFile is pathlib's is_file: false when the path does not exist, cannot be reached, or is not a regular file.
+func IsFile(path string) (bool, error) {
+	return statIs(os.Stat, path, fs.FileMode.IsRegular)
+}
+
 // ignorable is pathlib's _ignore_error: the errors that make an existence check answer false instead of raising.
 func ignorable(err error) bool {
 	return errors.Is(err, syscall.ENOENT) || errors.Is(err, syscall.ENOTDIR) ||

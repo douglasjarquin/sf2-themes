@@ -130,29 +130,15 @@ func underTest(t *testing.T) subject {
 	return subjectVal
 }
 
-// pendingReason returns why the Go binary cannot run a case yet, or "".
-func pendingReason(c Case) string {
-	var reasons []string
-	for _, group := range c.Groups {
-		if reason, pending := PendingInGo[group]; pending {
-			reasons = append(reasons, reason)
-		}
-	}
-	return strings.Join(reasons, "; ")
-}
-
 // skipReason returns why a case does not run in the current mode, or "".
 func skipReason(c Case) string {
 	if c.PerOS && runtime.GOOS != "darwin" && runtime.GOOS != "linux" {
 		return "default locations are recorded for darwin and linux only"
 	}
-	if referenceMode() {
-		if c.GoOnly != nil {
-			return "Go-only expectation: the reference behaves differently here on purpose"
-		}
-		return ""
+	if referenceMode() && c.GoOnly != nil {
+		return "Go-only expectation: the reference behaves differently here on purpose"
 	}
-	return pendingReason(c)
+	return ""
 }
 
 func goldenPath(c Case) string {

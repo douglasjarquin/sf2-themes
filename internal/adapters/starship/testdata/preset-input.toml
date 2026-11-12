@@ -1,0 +1,8 @@
+format = """
+[](#9A348E)\
+$os\
+[ ](bg:#DA627D)\
+$directory"""
+
+[character]
+symbol = ">"
