@@ -5,9 +5,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from xml.sax.saxutils import escape
 
-from sf2_theme.errors import ThemeError
-from sf2_theme.model import AdapterColors, Theme, project_adapter_colors
-from sf2_theme.plan import Remove, Step, Write
+from sf2_theme.model import SELECTABLE_PREFIX, AdapterColors, Theme, project_adapter_colors
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, recorded
 
 THEME_DIR_NAME = "themes"
 CONFIG_FILE_NAME = "config.toml"
@@ -122,24 +121,11 @@ def _has_inline_tui(existing: str) -> bool:
     return any(re.match(r"^\s*tui\s*[.=]", line) for line in existing.splitlines())
 
 
-def _has_tui_theme(existing: str) -> bool:
-    lines = existing.splitlines()
-    bounds = _section_bounds(lines, "tui")
-    if bounds is None:
-        return False
-    start, end = bounds
-    return any(THEME_ASSIGNMENT.match(line) for line in lines[start + 1 : end])
-
-
 def merge_config(existing: str, theme: Theme) -> str:
-    if existing:
-        tomllib.loads(existing)
     lines = existing.splitlines()
     bounds = _section_bounds(lines, "tui")
     assignment = f'theme = "{theme.metadata.selectable_id}"'
     if bounds is None:
-        if _has_inline_tui(existing):
-            raise ThemeError("Codex config has an inline tui table; replace it with [tui] before applying")
         prefix = existing.rstrip()
         return f"{prefix}\n\n[tui]\n{assignment}\n" if prefix else f"[tui]\n{assignment}\n"
     start, end = bounds
@@ -151,32 +137,39 @@ def merge_config(existing: str, theme: Theme) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def plan_codex(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    replace_theme: bool = True,
-) -> list[Step]:
-    steps: list[Step] = [Remove(themes_dir(config_dir) / f"{entry.metadata.id}{THEME_SUFFIX}") for entry in themes]
-    steps.extend(Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes)
+def inspect_codex(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
     path = config_path(config_dir)
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
-    selected: Theme | None = theme
-    if not replace_theme and _has_tui_theme(existing):
-        configured = tomllib.loads(existing).get("tui", {}).get("theme")
-        selected = next((candidate for candidate in themes if candidate.metadata.id == configured), None)
-    if selected is not None:
-        steps.append(Write(path, merge_config(existing, selected)))
+    try:
+        config = tomllib.loads(existing)
+    except tomllib.TOMLDecodeError as error:
+        return Inspection(Ownership.BROKEN, detail=f"{path} is not valid TOML: {error}")
+    if _section_bounds(existing.splitlines(), "tui") is None:
+        if _has_inline_tui(existing):
+            return Inspection(
+                Ownership.UNKNOWN_SHAPE,
+                detail=(
+                    f"Convert the inline tui value in {path} into a [tui] table, for example:\n\n"
+                    '[tui]\ntheme = "..."'
+                ),
+            )
+        return Inspection(Ownership.ABSENT)
+    configured = config.get("tui", {}).get("theme")
+    if configured is None:
+        return Inspection(Ownership.ABSENT)
+    if isinstance(configured, str) and configured.startswith(SELECTABLE_PREFIX):
+        return recorded(Ownership.MANAGED, configured, themes)
+    legacy = next((entry for entry in themes if entry.metadata.id == configured), None)
+    if legacy is not None:
+        return Inspection(Ownership.LEGACY, current=legacy)
+    return Inspection(Ownership.FOREIGN)
+
+
+def plan_codex(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    steps: list[Step] = [Remove(themes_dir(config_dir) / f"{entry.metadata.id}{THEME_SUFFIX}") for entry in themes]
+    steps.extend(Write(theme_path(entry, config_dir), render_theme(entry)) for entry in themes)
+    if slot:
+        path = config_path(config_dir)
+        existing = path.read_text(encoding="utf-8") if path.exists() else ""
+        steps.append(Write(path, merge_config(existing, theme)))
     return steps
-
-
-def read_current_id(config_dir: Path | None) -> str:
-    path = config_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Codex theme applied yet ({path} missing)")
-    config = tomllib.loads(path.read_text(encoding="utf-8"))
-    tui = config.get("tui")
-    if not isinstance(tui, dict) or not isinstance(tui.get("theme"), str):
-        raise ThemeError(f"could not read theme id from {path}")
-    return tui["theme"]

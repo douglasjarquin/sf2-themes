@@ -1,16 +1,18 @@
 """WezTerm color-scheme files, path discovery, and the planned integration."""
 
 import os
+import re
 from collections.abc import Sequence
+from dataclasses import replace
 from pathlib import Path
 
-from sf2_theme.adapters.wezterm_lua import LuaSetup, setup_lua
-from sf2_theme.catalog import installed_theme, theme_pair
-from sf2_theme.errors import ThemeError
+from sf2_theme.adapters.wezterm_lua import classify, integrate, integration_snippet
+from sf2_theme.catalog import theme_pair
 from sf2_theme.model import Theme, project_adapter_colors, selectable_id
-from sf2_theme.plan import Remove, Step, Write
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, recorded, recorded_id
 
 LEGACY_SCHEME_FILE_PREFIX = "street-fighter-ii"
+ID_COMMENT = re.compile(r"^-- sf2-themes:\s*(\S+)\s*$")
 
 
 def config_root() -> Path:
@@ -171,42 +173,29 @@ def render_pointer(dark: Theme, light: Theme) -> str:
     )
 
 
-def plan_wezterm(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    adopt: bool = False,
-    replace_pointer: bool = True,
-) -> tuple[list[Step], LuaSetup]:
-    """Plan schemes, the pointer, and a known-safe Lua integration when possible."""
+def inspect_wezterm(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
+    """Ownership comes from wezterm.lua; the selection from the sf2-owned pointer."""
+    pointer = current_pointer_path()
+    lua_path = wezterm_lua_path(config_dir)
+    ownership = classify(lua_path.read_text(encoding="utf-8") if lua_path.exists() else "", pointer)
+    if pointer.is_file():
+        selection = recorded(ownership, recorded_id(pointer.read_text(encoding="utf-8"), ID_COMMENT), themes)
+    else:
+        selection = Inspection(ownership)
+    if ownership is Ownership.UNKNOWN_SHAPE:
+        return replace(selection, detail=f"Add this integration to {lua_path}:\n\n{integration_snippet(pointer)}")
+    return selection
+
+
+def plan_wezterm(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
+    """Plan schemes and the pointer, and the wezterm.lua integration when `slot` allows it."""
     target = colors_dir(config_dir)
     steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.toml") for entry in themes]
     steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)
-    pointer_theme: Theme | None = theme
-    if not replace_pointer and current_pointer_path().is_file():
-        try:
-            pointer_theme = installed_theme(read_current_id(), themes)
-        except ThemeError:
-            pointer_theme = None
-    if pointer_theme is not None:
-        dark, light = theme_pair(pointer_theme, themes)
-        steps.append(Write(current_pointer_path(), render_pointer(dark, light)))
-    lua_path = wezterm_lua_path(config_dir)
-    existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
-    lua = setup_lua(existing, current_pointer_path(), adopt=adopt)
-    if lua.mutated:
-        steps.append(Write(lua_path, lua.content))
-    return steps, lua
-
-
-def read_current_id() -> str:
-    """Read the theme id stored in the managed pointer."""
-    path = current_pointer_path()
-    if not path.is_file():
-        raise ThemeError(f"no WezTerm theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if stripped.startswith("-- sf2-themes:"):
-            return stripped.split(":", 1)[1].strip()
-    raise ThemeError(f"could not read theme id from {path}")
+    dark, light = theme_pair(theme, themes)
+    steps.append(Write(current_pointer_path(), render_pointer(dark, light)))
+    if slot:
+        lua_path = wezterm_lua_path(config_dir)
+        existing = lua_path.read_text(encoding="utf-8") if lua_path.exists() else ""
+        steps.append(Write(lua_path, integrate(existing, current_pointer_path())))
+    return steps

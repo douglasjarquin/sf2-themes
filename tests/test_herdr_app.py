@@ -40,6 +40,9 @@ def test_apply_preserves_settings_and_is_idempotent(tmp_path: Path, capsys) -> N
     }
     path.write_text(json.dumps(original))
     args = ["apply", "herdr-app", "--config-dir", str(tmp_path)]
+    assert dispatch(args) == 1
+    assert json.loads(path.read_text()) == original
+    args.append("--adopt")
     assert dispatch(args) == 0
     expected = {**original, "theme": {"dark": "sf2-main", "light": "sf2-main-light", "extra": True}}
     assert json.loads(path.read_text()) == expected
@@ -56,7 +59,9 @@ def test_setup_preserves_foreign_mixed_and_single_selections(tmp_path: Path) -> 
         path.write_text(original)
         assert dispatch(["setup", "herdr-app", "--config-dir", str(tmp_path)]) == 0
         assert path.read_text() == original
-    assert dispatch(["setup", "herdr-app", "--theme", "ken", "--config-dir", str(tmp_path)]) == 0
+    assert dispatch(["setup", "herdr-app", "--theme", "ken", "--config-dir", str(tmp_path)]) == 1
+    assert path.read_text() == original
+    assert dispatch(["setup", "herdr-app", "--theme", "ken", "--adopt", "--config-dir", str(tmp_path)]) == 0
     assert json.loads(path.read_text())["theme"] == {"light": "sf2-ken-light", "dark": "sf2-ken"}
 
 

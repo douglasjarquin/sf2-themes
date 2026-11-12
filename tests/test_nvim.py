@@ -78,20 +78,12 @@ def test_setup_writes_managed_loader_and_default_current(tmp_path: Path) -> None
 
 
 def test_setup_nvim_migrates_existing_unprefixed_pointer(tmp_path: Path) -> None:
-    catalog = parse_catalog()
     config_dir = tmp_path / "nvim"
     pointer = config_dir / "sf2-theme" / "current.lua"
     pointer.parent.mkdir(parents=True)
     pointer.write_text('-- sf2-themes: ken\nvim.cmd("colorscheme street-fighter-ii-ken")\n', encoding="utf-8")
 
-    commit(
-        plan_nvim(
-            get_theme("main", catalog),
-            catalog,
-            config_dir=config_dir,
-            replace_pointer=False,
-        )
-    )
+    assert dispatch(["setup", "nvim", "--config-dir", str(config_dir)]) == 0
 
     assert "-- sf2-themes: sf2-ken" in pointer.read_text(encoding="utf-8")
     assert "colorscheme sf2-ken" in pointer.read_text(encoding="utf-8")

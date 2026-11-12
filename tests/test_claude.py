@@ -1,10 +1,8 @@
 import json
 from pathlib import Path
 
-from sf2_theme.adapters.claude import plan_claude
 from sf2_theme.catalog import get_theme, parse_catalog
 from sf2_theme.cli import dispatch
-from sf2_theme.filesystem import commit
 
 
 def test_apps_lists_claude(capsys) -> None:
@@ -43,16 +41,7 @@ def test_setup_claude_preserves_existing_selection(tmp_path: Path) -> None:
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     (config_dir / "settings.json").write_text(json.dumps({"theme": "custom:sf2-ken"}), encoding="utf-8")
-    catalog = parse_catalog()
-
-    commit(
-        plan_claude(
-            get_theme("main", catalog),
-            catalog,
-            config_dir=config_dir,
-            replace_theme=False,
-        )
-    )
+    assert dispatch(["setup", "claude", "--config-dir", str(config_dir)]) == 0
 
     assert json.loads((config_dir / "settings.json").read_text(encoding="utf-8"))["theme"] == "custom:sf2-ken"
 
@@ -106,20 +95,20 @@ def test_apply_claude_refuses_settings_symlink_without_follow_flag(tmp_path: Pat
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     target = tmp_path / "real-settings.json"
-    target.write_text(json.dumps({"theme": "dark"}), encoding="utf-8")
+    target.write_text(json.dumps({"model": "sonnet"}), encoding="utf-8")
     (config_dir / "settings.json").symlink_to(target)
 
     assert dispatch(["apply", "claude", "--config-dir", str(config_dir)]) == 1
 
     assert "symlink" in capsys.readouterr().err
-    assert json.loads(target.read_text(encoding="utf-8")) == {"theme": "dark"}
+    assert json.loads(target.read_text(encoding="utf-8")) == {"model": "sonnet"}
 
 
 def test_apply_claude_follows_settings_symlink_when_requested(tmp_path: Path) -> None:
     config_dir = tmp_path / "claude"
     config_dir.mkdir()
     target = tmp_path / "real-settings.json"
-    target.write_text(json.dumps({"theme": "dark"}), encoding="utf-8")
+    target.write_text(json.dumps({"model": "sonnet"}), encoding="utf-8")
     (config_dir / "settings.json").symlink_to(target)
 
     assert (

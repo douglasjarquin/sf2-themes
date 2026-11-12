@@ -41,7 +41,7 @@ def test_apply_starship_writes_palette_and_zsh(tmp_path: Path, monkeypatch) -> N
     config_dir.mkdir()
     (config_dir / "starship.toml").write_text('[directory]\nstyle = "blue"\n', encoding="utf-8")
     monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path / "xdg"))
-    commit(plan_starship(theme, config_dir=config_dir))
+    commit(plan_starship(theme, parse_catalog(), config_dir, slot=True))
     starship = (config_dir / "starship.toml").read_text(encoding="utf-8")
     assert f'blue = "{theme.ui.accent}"' in starship
     highlight = (tmp_path / "xdg" / "sf2-theme" / "zsh-syntax-highlighting.zsh").read_text(encoding="utf-8")

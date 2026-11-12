@@ -3,10 +3,10 @@ import os
 from collections.abc import Sequence
 from pathlib import Path
 
-from sf2_theme.catalog import installed_theme, load_catalog, theme_pair
+from sf2_theme.catalog import installed_theme, theme_pair
 from sf2_theme.errors import ThemeError
 from sf2_theme.model import Theme
-from sf2_theme.plan import Step, Write
+from sf2_theme.plan import Inspection, Ownership, Step, Write
 
 
 def app_home(config_dir: Path | None) -> Path:
@@ -39,7 +39,7 @@ def render_theme(theme: Theme) -> str:
     )
 
 
-def _read_settings(path: Path) -> tuple[str, dict]:
+def _read_settings(path: Path) -> dict:
     existing = path.read_text(encoding="utf-8") if path.exists() else ""
     try:
         data = json.loads(existing) if existing.strip() else {}
@@ -50,20 +50,38 @@ def _read_settings(path: Path) -> tuple[str, dict]:
     selection = data.get("theme")
     if "theme" in data and not isinstance(selection, str | dict):
         raise ThemeError(f"Herdr app settings.json theme must be a name or object ({path})")
-    return existing, data
+    return data
 
 
-def plan_herdr_app(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    replace_theme: bool = True,
-) -> list[Step]:
+def inspect_herdr_app(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
+    try:
+        data = _read_settings(app_home(config_dir) / "settings.json")
+    except ThemeError as error:
+        return Inspection(Ownership.BROKEN, detail=error.message)
+    if "theme" not in data:
+        return Inspection(Ownership.ABSENT)
+    selection = data["theme"]
+    if isinstance(selection, dict):
+        dark_id, light_id = selection.get("dark"), selection.get("light")
+        if isinstance(dark_id, str) and isinstance(light_id, str):
+            try:
+                dark, light = theme_pair(installed_theme(dark_id, themes), themes)
+            except ThemeError:
+                return Inspection(Ownership.FOREIGN)
+            if (dark_id, light_id) == (dark.metadata.selectable_id, light.metadata.selectable_id):
+                return Inspection(Ownership.MANAGED, current=dark)
+    return Inspection(Ownership.FOREIGN)
+
+
+def plan_herdr_app(theme: Theme, themes: Sequence[Theme], config_dir: Path | None, slot: bool) -> list[Step]:
     home = app_home(config_dir)
-    path = home / "settings.json"
-    existing, data = _read_settings(path)
-    if replace_theme or "theme" not in data:
+    steps: list[Step] = [
+        Write(home / "themes" / f"{candidate.metadata.selectable_id}.json", render_theme(candidate))
+        for candidate in themes
+    ]
+    if slot:
+        path = home / "settings.json"
+        data = _read_settings(path)
         dark, light = theme_pair(theme, themes)
         selection = data.get("theme")
         data["theme"] = {
@@ -71,31 +89,5 @@ def plan_herdr_app(
             "dark": dark.metadata.selectable_id,
             "light": light.metadata.selectable_id,
         }
-        content = json.dumps(data, indent=2) + "\n"
-    else:
-        content = existing
-    steps: list[Step] = [
-        Write(home / "themes" / f"{candidate.metadata.selectable_id}.json", render_theme(candidate))
-        for candidate in themes
-    ]
-    steps.append(Write(path, content))
+        steps.append(Write(path, json.dumps(data, indent=2) + "\n"))
     return steps
-
-
-def selection_exists(config_dir: Path | None) -> bool:
-    _, data = _read_settings(app_home(config_dir) / "settings.json")
-    return "theme" in data
-
-
-def read_current_id(config_dir: Path | None) -> str:
-    path = app_home(config_dir) / "settings.json"
-    _, data = _read_settings(path)
-    selection = data.get("theme")
-    if isinstance(selection, dict):
-        dark_id, light_id = selection.get("dark"), selection.get("light")
-        if isinstance(dark_id, str) and isinstance(light_id, str):
-            catalog = load_catalog()
-            dark, light = theme_pair(installed_theme(dark_id, catalog), catalog)
-            if (dark_id, light_id) == (dark.metadata.selectable_id, light.metadata.selectable_id):
-                return dark_id
-    raise ThemeError(f"no matching SF2 light/dark pair in Herdr app settings.json ({path})")

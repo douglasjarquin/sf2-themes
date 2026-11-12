@@ -4,10 +4,9 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from sf2_theme.catalog import installed_theme, theme_pair
-from sf2_theme.errors import ThemeError
+from sf2_theme.catalog import theme_pair
 from sf2_theme.model import Theme, project_adapter_colors
-from sf2_theme.plan import Remove, Step, Write
+from sf2_theme.plan import Inspection, Ownership, Remove, Step, Write, recorded, recorded_id
 
 LEGACY_SCHEME_FILE_PREFIX: Final = "street-fighter-ii"
 CURRENT_DIR_NAME: Final = "sf2-theme"
@@ -217,35 +216,19 @@ def render_loader() -> str:
     )
 
 
-def plan_nvim(
-    theme: Theme,
-    themes: Sequence[Theme],
-    *,
-    config_dir: Path | None,
-    replace_pointer: bool = True,
-) -> list[Step]:
+def inspect_nvim(themes: Sequence[Theme], config_dir: Path | None) -> Inspection:
+    """The adapter owns its files outright, so the pointer alone decides."""
+    pointer = current_pointer_path(config_dir)
+    if not pointer.is_file():
+        return Inspection(Ownership.ABSENT)
+    return recorded(Ownership.MANAGED, recorded_id(pointer.read_text(encoding="utf-8"), ID_COMMENT), themes)
+
+
+def plan_nvim(theme: Theme, themes: Sequence[Theme], config_dir: Path | None) -> list[Step]:
     target = colors_dir(config_dir)
     steps: list[Step] = [Remove(target / f"{LEGACY_SCHEME_FILE_PREFIX}-{entry.metadata.id}.lua") for entry in themes]
     steps.extend(Write(target / scheme_filename(entry), render_scheme(entry)) for entry in themes)
-    pointer_theme: Theme | None = theme
-    if not replace_pointer and current_pointer_path(config_dir).is_file():
-        try:
-            pointer_theme = installed_theme(read_current_id(config_dir), themes)
-        except ThemeError:
-            pointer_theme = None
-    if pointer_theme is not None:
-        dark, light = theme_pair(pointer_theme, themes)
-        steps.append(Write(current_pointer_path(config_dir), render_pointer(dark, light)))
+    dark, light = theme_pair(theme, themes)
+    steps.append(Write(current_pointer_path(config_dir), render_pointer(dark, light)))
     steps.append(Write(plugin_path(config_dir), render_loader()))
     return steps
-
-
-def read_current_id(config_dir: Path | None = None) -> str:
-    path = current_pointer_path(config_dir)
-    if not path.is_file():
-        raise ThemeError(f"no Neovim theme applied yet ({path} missing)")
-    for line in path.read_text(encoding="utf-8").splitlines():
-        match = ID_COMMENT.match(line.strip())
-        if match:
-            return match.group(1)
-    raise ThemeError(f"could not read theme id from {path}")
