@@ -1,0 +1,7 @@
+step apply codex -vx
+exit 2
+stdout
+stderr
+| sf2-themes: error: unrecognized arguments: -x
+tree
+dir 0755 home

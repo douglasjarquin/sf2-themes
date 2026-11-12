@@ -2,17 +2,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/douglasjarquin/sf2-themes/v2/internal/version"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/cli"
 )
 
 func main() {
-	if len(os.Args) == 2 && os.Args[1] == "--version" {
-		fmt.Println(version.Version)
-		return
-	}
-	fmt.Fprintln(os.Stderr, "sf2-themes: not implemented")
-	os.Exit(2)
+	// The TOML library switches to TOML 1.1 when this variable is set. User configs must be
+	// read as TOML 1.0, the way the Python CLI read them, whatever the user's environment holds.
+	_ = os.Unsetenv("BURNTSUSHI_TOML_110")
+	os.Exit(cli.Main(os.Args[1:], os.Stdout, os.Stderr))
 }

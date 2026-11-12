@@ -87,6 +87,9 @@ func Expand(text, root string) string {
 	return strings.ReplaceAll(text, Sandbox, root)
 }
 
+// usageErrorLine is the line of a usage error that is compared; the usage text above it is not.
+var usageErrorLine = regexp.MustCompile(`^sf2-themes( [a-z-]+)?: error: `)
+
 // ApplyMasks masks one normalized stream. It reports whether the stream is exempt, and
 // returns the tail masks for this stream that matched no line.
 func ApplyMasks(text string, stream Stream, masks []Mask) (masked string, exempt bool, unmatched []Mask) {
@@ -97,6 +100,19 @@ func ApplyMasks(text string, stream Stream, masks []Mask) (masked string, exempt
 		}
 		if mask.Whole {
 			return "", true, nil
+		}
+		if mask.ErrorLine {
+			kept := out[:0:0]
+			for _, line := range out {
+				if usageErrorLine.MatchString(line) {
+					kept = append(kept, line)
+				}
+			}
+			if len(kept) == 0 {
+				unmatched = append(unmatched, mask)
+			}
+			out = append(kept, "")
+			continue
 		}
 		matched := false
 		for i, line := range out {

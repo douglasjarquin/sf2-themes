@@ -1,6 +1,7 @@
 step show
 exit 2
 stdout
-stderr exempt
+stderr
+| sf2-themes show: error: the following arguments are required: theme
 tree
 dir 0755 home

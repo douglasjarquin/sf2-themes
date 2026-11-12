@@ -35,8 +35,18 @@ func ReadText(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	text, err := DecodeText(data)
+	if err != nil {
+		return "", fmt.Errorf("%s: %w", path, err)
+	}
+	return text, nil
+}
+
+// DecodeText is the decoding half of ReadText for bytes already in hand: strict UTF-8,
+// with `\r\n` and a lone `\r` both read as `\n`. It returns ErrInvalidUTF8 where Python raises UnicodeDecodeError.
+func DecodeText(data []byte) (string, error) {
 	if !utf8.Valid(data) {
-		return "", fmt.Errorf("%s: %w", path, ErrInvalidUTF8)
+		return "", ErrInvalidUTF8
 	}
 	return strings.ReplaceAll(strings.ReplaceAll(string(data), "\r\n", "\n"), "\r", "\n"), nil
 }

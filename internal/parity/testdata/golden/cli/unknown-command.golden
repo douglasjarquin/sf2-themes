@@ -1,6 +1,7 @@
 step frob
 exit 2
 stdout
-stderr exempt
+stderr
+| sf2-themes: error: argument COMMAND: invalid choice: 'frob' (choose from <masked>
 tree
 dir 0755 home

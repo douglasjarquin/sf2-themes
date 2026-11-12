@@ -1,0 +1,7 @@
+step validate ryu --all ken
+exit 2
+stdout
+stderr
+| sf2-themes: error: unrecognized arguments: ken
+tree
+dir 0755 home

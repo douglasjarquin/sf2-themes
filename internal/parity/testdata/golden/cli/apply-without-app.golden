@@ -1,6 +1,7 @@
 step apply
 exit 2
 stdout
-stderr exempt
+stderr
+| sf2-themes apply: error: the following arguments are required: app
 tree
 dir 0755 home

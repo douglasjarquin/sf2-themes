@@ -1,53 +1,5 @@
 # Inputs whose Go reader verdict may differ from Python 3.11, as "<input>: <config shape it affects>".
 # The corpus test fails on an unlisted disagreement and on a listed input the Go reader agrees on,
-# so once the Go readers exist this list holds exactly the divergences that remain.
-# Seeded from a probe of BurntSushi/toml v1.6.0 and encoding/json, after UTF-8 decoding and
-# universal-newline translation.
-
-# TOML 1.1 syntax. tomllib reads TOML 1.0 only.
-toml/toml-test/valid/datetime/no-seconds.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-toml/toml-test/valid/inline-table/newline-comment.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/valid/inline-table/newline.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/valid/key/empty-05.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/valid/string/escape-esc.toml: Herdr, Starship, or Codex TOML with a \e string escape, such as a Starship format; Python classifies it broken
-toml/toml-test/valid/string/hex-escape.toml: Herdr, Starship, or Codex TOML with a \x string escape; Python classifies it broken
-toml/toml-test/invalid/datetime/no-secs.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-toml/toml-test/invalid/local-datetime/no-secs.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-toml/toml-test/invalid/local-time/no-secs.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-toml/toml-test/invalid/inline-table/linebreak-01.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/invalid/inline-table/linebreak-02.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/invalid/inline-table/linebreak-03.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/invalid/inline-table/linebreak-04.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml-test/invalid/inline-table/trailing-comma.toml: Herdr, Starship, or Codex TOML with a trailing comma in an inline table; Python classifies it broken
-toml/toml-test/invalid/string/basic-byte-escapes.toml: Herdr, Starship, or Codex TOML with a \x string escape; Python classifies it broken
-toml/toml11/datetime-without-seconds.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-toml/toml11/escape-e.toml: Herdr, Starship, or Codex TOML with a \e string escape, such as a Starship format; Python classifies it broken
-toml/toml11/escape-x.toml: Herdr, Starship, or Codex TOML with a \x string escape; Python classifies it broken
-toml/toml11/inline-table-newlines.toml: Herdr, Starship, or Codex TOML with a multi-line inline table; Python classifies it broken
-toml/toml11/inline-table-trailing-comma.toml: Herdr, Starship, or Codex TOML with a trailing comma in an inline table; Python classifies it broken
-toml/toml11/local-time-without-seconds.toml: Herdr, Starship, or Codex TOML with a time that omits seconds; Python classifies it broken
-
-# Invalid TOML 1.0 the probe accepted: a table or key defined twice.
-toml/toml-test/invalid/array/extend-defined-aot.toml: Herdr, Starship, or Codex TOML that extends an array of tables through a dotted key; Python classifies it broken
-toml/toml-test/invalid/inline-table/duplicate-key-03.toml: Herdr, Starship, or Codex TOML that extends an inline table through a dotted key; Python classifies it broken
-toml/toml-test/invalid/inline-table/overwrite-02.toml: Herdr, Starship, or Codex TOML that extends an inline table with a table header; Python classifies it broken
-toml/toml-test/invalid/inline-table/overwrite-08.toml: Herdr, Starship, or Codex TOML that extends an inline table through a dotted key; Python classifies it broken
-toml/toml-test/invalid/spec-1.0.0/inline-table-2-0.toml: Herdr, Starship, or Codex TOML that extends an inline table through a dotted key; Python classifies it broken
-toml/toml-test/invalid/spec-1.0.0/table-9-1.toml: Herdr, Starship, or Codex TOML that redefines a dotted-key table with a header; Python classifies it broken
-toml/toml-test/invalid/table/append-with-dotted-keys-01.toml: Herdr, Starship, or Codex TOML that adds dotted keys to a table defined by a header; Python classifies it broken
-toml/toml-test/invalid/table/append-with-dotted-keys-02.toml: Herdr, Starship, or Codex TOML that adds dotted keys to a table defined by a header; Python classifies it broken
-toml/toml-test/invalid/table/append-with-dotted-keys-03.toml: Herdr, Starship, or Codex TOML that adds dotted keys to a table defined by a header; Python classifies it broken
-toml/toml-test/invalid/table/append-with-dotted-keys-05.toml: Herdr, Starship, or Codex TOML that adds dotted keys to a table defined by a header; Python classifies it broken
-toml/toml-test/invalid/table/append-with-dotted-keys-08.toml: Herdr, Starship, or Codex TOML that adds dotted keys to a table defined by a header; Python classifies it broken
-toml/toml-test/invalid/table/duplicate-key-04.toml: Herdr, Starship, or Codex TOML that redefines a dotted-key table with a header; Python classifies it broken
-toml/toml-test/invalid/table/duplicate-key-05.toml: Herdr, Starship, or Codex TOML that redefines a dotted-key table with a header; Python classifies it broken
-toml/toml-test/invalid/table/redefine-02.toml: Herdr, Starship, or Codex TOML that redefines a dotted-key table with a header; Python classifies it broken
-toml/toml-test/invalid/table/redefine-03.toml: Herdr, Starship, or Codex TOML that redefines a dotted-key table with a header; Python classifies it broken
-toml/shapes/starship-merge-collision-result.toml: Starship config with a top-level dotted palettes.sf2 key; Python refuses the merged config, a lenient reader would write it
-toml/toml-test/invalid/datetime/offset-overflow-minute.toml: Herdr, Starship, or Codex TOML with a UTC offset minute above 59; Python classifies it broken
-
-# JSON that Python's json reads and a strict JSON reader rejects.
-json/edge/nan.json: Claude or Herdr app settings.json holding NaN; Python classifies it by its theme key, a strict reader would call it broken
-json/edge/infinity.json: Claude or Herdr app settings.json holding Infinity; Python classifies it by its theme key, a strict reader would call it broken
-json/edge/negative-infinity.json: Claude or Herdr app settings.json holding -Infinity; Python classifies it by its theme key, a strict reader would call it broken
-json/edge/float-overflow.json: Claude or Herdr app settings.json holding a number beyond float64; Python reads it as infinity, a strict reader would call it broken
+# so this list holds exactly the divergences that remain.
+# None remain: catalog.DecodeTOML (BurntSushi/toml v1.5 held to TOML 1.0, plus tomllib's table-definition
+# and UTC-offset rules) and pycompat.Loads agree with tomllib and json on every input.

@@ -33,8 +33,6 @@ const (
 // groups appear here is skipped against the Go binary with that reason. Delete a group's
 // line when the Go binary gains it; delete the map and its one use once it is empty.
 var PendingInGo = map[Group]string{
-	GroupCLI:      "argument parsing, help, and usage errors are not ported to Go yet",
-	GroupCatalog:  "catalog commands (apps, themes, show, validate) are not ported to Go yet",
 	GroupSlack:    "slack paste line is not ported to Go yet",
 	GroupWezterm:  "wezterm adapter not ported to Go yet",
 	GroupNvim:     "nvim adapter not ported to Go yet",
@@ -65,15 +63,18 @@ type Mask struct {
 	Stream Stream
 	After  string
 	Whole  bool
+	// ErrorLine keeps only the `<prog>: error: <message>` line of the stream.
+	ErrorLine bool
 }
 
 // HelpText exempts stdout of a help request: help text is rewritten in Go and does not
 // depend on terminal width. The exit code and stderr are still compared.
 func HelpText() Mask { return Mask{Stream: Stdout, Whole: true} }
 
-// UsageError exempts stderr of a usage error: the usage text is rewritten in Go. The exit
-// code, which must stay 2, and stdout are still compared.
-func UsageError() Mask { return Mask{Stream: Stderr, Whole: true} }
+// UsageError drops the usage text from stderr of a usage error, because it is rewritten in
+// Go, and still compares the `<prog>: error: <message>` line, the exit code, which must stay
+// 2, and stdout.
+func UsageError() Mask { return Mask{Stream: Stderr, ErrorLine: true} }
 
 // VersionLine masks the version line: the Go binary prints its own release version.
 func VersionLine() Mask { return Mask{Stream: Stdout} }
@@ -177,13 +178,23 @@ func cliCases() []Case {
 		{Name: "cli/no-command", Groups: cli, Steps: []Step{step().masked(HelpText())}},
 		{Name: "cli/help", Groups: cli, Steps: []Step{step("--help").masked(HelpText())}},
 		{Name: "cli/apply-help", Groups: cli, Steps: []Step{step("apply", "--help").masked(HelpText())}},
-		usage("unknown-command", "frob"),
+		// The command list no longer offers the removed install command.
+		{Name: "cli/unknown-command", Groups: cli, Steps: []Step{step("frob").masked(UsageError(), Tail(" (choose from "))}},
 		usage("apply-without-app", "apply"),
 		usage("apply-unknown-app", "apply", "vim"),
 		usage("apply-unknown-flag", "apply", "codex", "--bogus"),
 		usage("apply-theme-without-value", "apply", "codex", "--theme"),
 		usage("show-without-theme", "show"),
 		usage("current-without-app", "current"),
+		usage("validate-names-after-an-option", "validate", "ryu", "--all", "ken"),
+		usage("double-dash-without-positional", "apps", "--", "x"),
+		usage("combined-switch-with-unknown-char", "apply", "codex", "-vx"),
+		usage("combined-switch-with-dash", "apply", "codex", "-v-"),
+		{Name: "cli/combined-short-help", Groups: cli, Steps: []Step{step("apply", "codex", "-vh").masked(HelpText())}},
+		{Name: "cli/combined-top-level-help", Groups: cli, Steps: []Step{step("-hV").masked(HelpText())}},
+		{Name: "cli/double-dash-inside-names", Groups: []Group{GroupCLI, GroupCatalog}, Steps: []Step{step("validate", "ryu", "--", "ken")}},
+		{Name: "cli/double-dash-after-name", Groups: []Group{GroupCLI, GroupCatalog}, Steps: []Step{step("show", "ryu", "--")}},
+		{Name: "cli/double-dash-names-an-option", Groups: []Group{GroupCLI, GroupCatalog}, Steps: []Step{step("validate", "ryu", "--", "--all")}},
 	}
 }
 

@@ -10,6 +10,9 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
 // The parser corpus holds the Go TOML and JSON readers to the verdicts Python 3.11's
@@ -24,8 +27,22 @@ const (
 // bytes, after the same UTF-8 decoding and newline translation the adapters apply. A nil
 // reader is not built yet; pointing an entry at the real reader enables its half of the corpus.
 var corpusReaders = map[string]func([]byte) bool{
-	"toml": nil,
-	"json": nil,
+	"toml": func(data []byte) bool {
+		text, err := pycompat.DecodeText(data)
+		if err != nil {
+			return false
+		}
+		_, err = catalog.DecodeTOML(text)
+		return err == nil
+	},
+	"json": func(data []byte) bool {
+		text, err := pycompat.DecodeText(data)
+		if err != nil {
+			return false
+		}
+		_, err = pycompat.Loads(text)
+		return err == nil
+	},
 }
 
 // verdictScript records what the reference adapters' read does with each input: read the
