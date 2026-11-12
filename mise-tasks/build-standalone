@@ -15,6 +15,7 @@ MODULES: tuple[tuple[str, Path, bool], ...] = (
     ("sf2_theme.model", SRC / "model.py", False),
     ("sf2_theme.parse", SRC / "parse.py", False),
     ("sf2_theme.validation", SRC / "validation.py", False),
+    ("sf2_theme.plan", SRC / "plan.py", False),
     ("sf2_theme.filesystem", SRC / "filesystem.py", False),
     ("sf2_theme.catalog", SRC / "catalog.py", False),
     ("sf2_theme.adapters", SRC / "adapters" / "__init__.py", True),

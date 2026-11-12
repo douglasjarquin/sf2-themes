@@ -3,6 +3,7 @@
 import os
 import stat
 import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from difflib import unified_diff
@@ -10,6 +11,7 @@ from enum import StrEnum, unique
 from pathlib import Path
 
 from sf2_theme.errors import ThemeError
+from sf2_theme.plan import Remove, Step, Write
 
 
 @unique
@@ -19,6 +21,8 @@ class WriteAction(StrEnum):
     UNCHANGED = "unchanged"
     WOULD_CREATE = "would_create"
     WOULD_UPDATE = "would_update"
+    REMOVED = "removed"
+    WOULD_REMOVE = "would_remove"
 
 
 @dataclass(frozen=True, slots=True)
@@ -53,6 +57,31 @@ def write_file(
     _replace(destination, content, mode)
     action = WriteAction.CREATED if existing is None else WriteAction.UPDATED
     return WriteResult(path=destination, action=action, diff=diff)
+
+
+def commit(
+    steps: Sequence[Step],
+    *,
+    dry_run: bool = False,
+    follow_symlinks: bool = False,
+) -> list[WriteResult]:
+    """Perform a planned mutation, refusing before the first write when any destination is unsafe."""
+    destinations = [
+        _resolve_destination(step.path, follow_symlinks=follow_symlinks) if isinstance(step, Write) else step.path
+        for step in steps
+    ]
+    results: list[WriteResult] = []
+    for step, destination in zip(steps, destinations, strict=True):
+        match step:
+            case Write(content=content):
+                results.append(write_file(destination, content, dry_run=dry_run))
+            case Remove():
+                if destination.is_file() or destination.is_symlink():
+                    if not dry_run:
+                        destination.unlink()
+                    action = WriteAction.WOULD_REMOVE if dry_run else WriteAction.REMOVED
+                    results.append(WriteResult(path=destination, action=action, diff=""))
+    return results
 
 
 def _resolve_destination(path: Path, *, follow_symlinks: bool) -> Path:
