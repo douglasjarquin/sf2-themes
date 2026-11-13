@@ -6,6 +6,8 @@ import { chromium } from "playwright-core";
 // Stagehand has no auto-waiting or expect(); every assertion here re-reads the DOM until it passes or the
 // deadline, like Playwright's web-first assertions did.
 const TIMEOUT = 5000;
+// A hung CDP call fails its test instead of stalling the suite.
+const TEST_TIMEOUT = 120000;
 const DESKTOP = { width: 1280, height: 720 };
 
 export const baseURL =
@@ -16,10 +18,14 @@ export const url = (path, base = baseURL) => new URL(path, base).href;
 // playwright-core only provisions Chromium (Linux arm64 included); Stagehand drives it over CDP.
 const chromePath = () => process.env.CHROME_PATH || chromium.executablePath();
 
+// Docker caps /dev/shm at 64 MB, and Chrome aborts at startup once three suites' browsers fill it (font_data_service
+// "No space left on device"). Playwright passed this flag on Linux for us; Stagehand's localBrowser does not.
+const CHROME_ARGS = ["--disable-dev-shm-usage"];
+
 // Each test gets its own browser, so localStorage and init scripts never leak between tests.
 export function test(name, fn, { viewport = DESKTOP, initScript } = {}) {
-  nodeTest(name, async () => {
-    const browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport });
+  nodeTest(name, { timeout: TEST_TIMEOUT }, async () => {
+    const browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport, args: CHROME_ARGS });
     let stagehand;
     try {
       stagehand = await Stagehand.create({ browser, logging: { level: "warn" } });
