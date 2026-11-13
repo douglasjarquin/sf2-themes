@@ -56,6 +56,34 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
   assert.equal(software.codeRepository, "https://github.com/douglasjarquin/sf2-themes");
 });
 
+// Agents that fetch rather than render read discovery files they find through links, so the links have to be in
+// the served HTML, not added by a script.
+nodeTest("the raw home HTML links docs, license, llms.txt, and the sitemap", async () => {
+  const response = await get("/sf2-themes/");
+  const html = await response.text();
+
+  assert.equal(response.ok, true);
+  assert.ok(html.includes('<link rel="alternate" type="text/plain" title="llms.txt" href="/sf2-themes/llms.txt">'));
+  assert.ok(html.includes(`<link rel="sitemap" type="application/xml" href="${origin}/sf2-themes/sitemap.xml">`));
+  assert.ok(html.includes('<link rel="license" href="https://github.com/douglasjarquin/sf2-themes/blob/main/LICENSE">'));
+  assert.ok(html.includes('href="https://github.com/douglasjarquin/sf2-themes/tree/main/docs/sf2-themes"'));
+  assert.ok(html.includes('<a href="/sf2-themes/llms.txt">llms.txt</a>'));
+  assert.match(html, /free and open source \(MIT\)/);
+  assert.match(html, /<code class="language-sh"[\s>]/);
+
+  for (const path of ["/sf2-themes/llms.txt", "/sf2-themes/sitemap.xml"]) {
+    assert.equal((await get(path)).status, 200, `${path} resolves`);
+  }
+});
+
+test("the footer links docs, license, and llms.txt", async (page) => {
+  await open(page, "./");
+
+  await expectAttr(page, by("footer a", /docs/), "href", "https://github.com/douglasjarquin/sf2-themes/tree/main/docs/sf2-themes");
+  await expectAttr(page, by("footer a", /mit license/), "href", "https://github.com/douglasjarquin/sf2-themes/blob/main/LICENSE");
+  await expectAttr(page, by("footer a", "llms.txt"), "href", "/sf2-themes/llms.txt");
+});
+
 nodeTest("robots.txt allows the project path and names the sitemap", async () => {
   const response = await get("/sf2-themes/robots.txt");
   const body = await response.text();
@@ -83,6 +111,9 @@ nodeTest("llms.txt summarizes the CLI, catalog, live site, and repository", asyn
   assert.ok(body.includes("Live site: https://douglasjarquin.github.io/sf2-themes/"));
   assert.ok(body.includes("Repository: https://github.com/douglasjarquin/sf2-themes"));
   assert.ok(!body.includes("game"));
+  assert.ok(body.includes("## Pricing\n\nFree and open source under the MIT License."));
+  assert.ok(body.includes("## Docs\n"));
+  assert.ok(body.includes("```sh\nsf2 apps\nsf2 apply wezterm --theme ryu\n"));
 });
 
 nodeTest("sitemap.xml lists only the home route", async () => {

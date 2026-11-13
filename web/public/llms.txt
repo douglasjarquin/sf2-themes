@@ -9,13 +9,34 @@ Repository: https://github.com/douglasjarquin/sf2-themes
 
 Install the latest release into ~/.local/bin:
 
-```
+```sh
 curl -fsSL https://github.com/douglasjarquin/sf2-themes/releases/latest/download/install.sh | sh
 ```
 
 Pin a release by piping into `SF2_THEMES_VERSION=2.0.0 sh` instead. If a 1.x copy installed with uv is present, run `uv tool uninstall sf2-themes` first.
 
 Catalog ids stay short (`ryu`, `ken-light`). Installed identities use `sf2-<catalog-id>`.
+
+Then apply a theme to an app. `sf2 apps` lists the app ids, and `--dry-run` prints every write without making it:
+
+```sh
+sf2 apps
+sf2 apply wezterm --theme ryu
+sf2 apply nvim --theme ken-light --dry-run
+```
+
+## Pricing
+
+Free and open source under the MIT License. No account, API key, or paid tier. License: https://github.com/douglasjarquin/sf2-themes/blob/main/LICENSE
+
+## Docs
+
+- [Install](https://github.com/douglasjarquin/sf2-themes/blob/main/docs/sf2-themes/install.md): the installer, version pins, verification, and upgrading from 1.x
+- [Apply and setup](https://github.com/douglasjarquin/sf2-themes/blob/main/docs/sf2-themes/setup-and-apply.md): apply a theme to each app in one step, ownership rules, --adopt, and --dry-run
+- [Commands](https://github.com/douglasjarquin/sf2-themes/blob/main/docs/sf2-themes/commands.md): apps, themes, show, validate, current, and boss aliases
+- [File writes](https://github.com/douglasjarquin/sf2-themes/blob/main/docs/sf2-themes/file-writes.md): paths, overrides, symlinks, and backups
+- [Uninstall](https://github.com/douglasjarquin/sf2-themes/blob/main/docs/sf2-themes/uninstall.md): files and settings to remove
+- [Changelog](https://github.com/douglasjarquin/sf2-themes/blob/main/CHANGELOG.md): what changed in each release
 
 ## Pages
 
