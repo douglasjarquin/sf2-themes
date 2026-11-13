@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Make the site easier for AI agents to read (AgentReady audit, #65): link `llms.txt`, the sitemap, the MIT license, and the docs from every page; say "free and open source (MIT)" on the home page; give `llms.txt` a pricing line, a docs index, and a first `apply` call; tag every code fence with its language.
 - `apply` and `setup` summaries print a `target:` line with the resolved config file or directory, and mark unpaired selections (Codex, Claude Code, Starship, Lazygit) as fixed rather than following host appearance. `current --help` now describes its arguments.
 - Upgrade the website to Astro 7.4 and run its browser tests on Stagehand v4 instead of Playwright Test.
 - Upgrade the website to Astro 7.3.

@@ -68,7 +68,7 @@ const defaultSteps = [
   <div class="page">
     <h1 class="h1"><span class="hp" aria-hidden="true"># </span>Fight for your terminal.</h1>
     <p class="lede">36 Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code. Pick a fighter and this whole site wears the palette.</p>
-    <p class="meta">36 themes · 8 apps plus Slack · one binary for macOS and Linux</p>
+    <p class="meta">36 themes · 8 apps plus Slack · one binary for macOS and Linux · free and open source (MIT)</p>
 
     <section id="preview" aria-labelledby="preview-heading">
       <h2 class="h2" id="preview-heading">
@@ -111,7 +111,7 @@ const defaultSteps = [
                 <span data-step-label>{step.label}</span>
               </div>
               <div class="step__cmd">
-                <code><span class="dim">$ </span><span data-step-cmd>{step.display.split(/(?<!\|) /).map((word, i) => (
+                <code class="language-sh"><span class="dim">$ </span><span data-step-cmd>{step.display.split(/(?<!\|) /).map((word, i) => (
                   <Fragment>{i > 0 ? " " : ""}<span class="step__word">{word.split(/(?<=\/)(?!\/)/).map((part, j) => (
                     <Fragment>{j > 0 && <wbr />}{part}</Fragment>
                   ))}</span></Fragment>

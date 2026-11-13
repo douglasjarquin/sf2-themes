@@ -1,4 +1,4 @@
-// Package repometa holds contract tests over the repository's CI workflows, dev container,
+// Package repometa holds contract tests over the repository's CI workflows, dev container, docs,
 // and Cursor Cloud environment. It has no runtime code.
 package repometa
 

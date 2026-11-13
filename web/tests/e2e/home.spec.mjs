@@ -37,6 +37,7 @@ test("home renders the hero, live preview, install steps, and ports", async (pag
   await expectVisible(page, H1);
   await expectContainsText(page, ".meta", "36 themes · 8 apps plus Slack");
   await expectContainsText(page, ".meta", "one binary for macOS and Linux");
+  await expectContainsText(page, ".meta", "free and open source (MIT)");
   await expectLacksText(page, ".meta", /python|\buv\b/i);
 
   await expectText(page, "#preview [data-t='fileId']", "sf2-ryu");
@@ -147,6 +148,9 @@ test("the home page remains useful without client JavaScript", async (page) => {
     assert.equal(await read(page, "html", "attr", "data-theme"), "ryu", "the deep-link script ran");
     await expectVisible(page, H1);
     await expectText(page, "[data-step-cmd]", INSTALL_COMMAND);
+    await expectAttr(page, ".step__cmd code", "class", "language-sh");
+    await expectContainsText(page, ".meta", "free and open source (MIT)");
+    await expectAttr(page, by("footer a", /docs/), "href", "https://github.com/douglasjarquin/sf2-themes/tree/main/docs/sf2-themes");
     await expectCount(page, ".port-row", 7);
     await expectVisible(page, '[data-pane="shell"]');
   } finally {
