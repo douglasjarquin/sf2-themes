@@ -213,6 +213,8 @@ jobs:
       - name: Check
         run: scripts/ci/run-in-dev-container.sh mise run web:check
       - name: Test
+        # Backstop only: a wedged browser should fail in minutes, not hold the runner for six hours.
+        timeout-minutes: 20
         run: scripts/ci/run-in-dev-container.sh mise run web:test
       - name: Remove this job's overlay volumes
         if: always()
