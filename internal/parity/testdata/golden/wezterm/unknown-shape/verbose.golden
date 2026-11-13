@@ -85,6 +85,7 @@ stdout
 | +end
 | +return "sf2-ken-light"
 | apply wezterm: incomplete (config left unchanged)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   pointer: sf2-ken + sf2-ken-light (follows host appearance)
 |   changes: 37 created
 stderr

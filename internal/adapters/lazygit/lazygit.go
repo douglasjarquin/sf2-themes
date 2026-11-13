@@ -23,6 +23,7 @@ var App = adapters.App{
 	Label:   "Lazygit",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  target,
 	Reload:  "restart lazygit to render the new theme",
 }
 
@@ -71,6 +72,11 @@ func Dir(configDir string) (string, error) {
 		root = pycompat.Path(userHome, ".config")
 	}
 	return pycompat.Path(root, "lazygit"), nil
+}
+
+func target(configDir string) (string, error) {
+	dir, err := Dir(configDir)
+	return pycompat.Path(dir, configFileName), err
 }
 
 type themeColor struct {

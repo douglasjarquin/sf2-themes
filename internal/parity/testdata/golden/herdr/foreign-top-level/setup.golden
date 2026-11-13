@@ -2,6 +2,7 @@ step setup herdr --config-dir {SANDBOX}/config/herdr
 exit 0
 stdout
 | setup herdr: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: no changes
 stderr
 tree

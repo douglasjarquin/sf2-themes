@@ -2,6 +2,7 @@ step apply wezterm --theme ken --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: 38 created
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

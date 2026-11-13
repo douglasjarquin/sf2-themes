@@ -2,6 +2,7 @@ step apply wezterm
 exit 0
 stdout
 | apply wezterm: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/home/.config/wezterm/wezterm.lua
 |   changes: 38 created
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
@@ -9,6 +10,7 @@ step apply herdr
 exit 0
 stdout
 | apply herdr: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/home/.config/herdr/config.toml
 |   changes: 1 created
 |   note: run `herdr server reload-config` to apply the selection
 stderr
@@ -16,6 +18,7 @@ step apply herdr-app
 exit 0
 stdout
 | apply herdr-app: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/home/.config/herdr-app/settings.json
 |   changes: 37 created
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr
@@ -23,20 +26,23 @@ step apply nvim
 exit 0
 stdout
 | apply nvim: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/home/.config/nvim
 |   changes: 38 created
 |   note: restart Neovim to load the new colorscheme
 stderr
 step apply codex
 exit 0
 stdout
-| apply codex: sf2-main
+| apply codex: sf2-main (fixed; does not follow host appearance)
+|   target: {SANDBOX}/home/.codex/config.toml
 |   changes: 37 created
 |   note: restart Codex, or reselect with /theme
 stderr
 step apply starship
 exit 0
 stdout
-| apply starship: sf2-main
+| apply starship: sf2-main (fixed; does not follow host appearance)
+|   target: {SANDBOX}/home/.config/starship.toml
 |   changes: 2 created
 stderr
 | Source the zsh highlight snippet after zsh-syntax-highlighting:
@@ -45,7 +51,8 @@ stderr
 step apply claude
 exit 0
 stdout
-| apply claude: sf2-main
+| apply claude: sf2-main (fixed; does not follow host appearance)
+|   target: {SANDBOX}/home/.claude/settings.json
 |   changes: 37 created
 |   note: reselect with /theme in a running Claude Code session
 stderr

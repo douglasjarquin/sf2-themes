@@ -2,6 +2,7 @@ step setup herdr --config-dir {SANDBOX}/config/herdr
 exit 0
 stdout
 | setup herdr: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: 1 created
 |   note: run `herdr server reload-config` to apply the selection
 stderr

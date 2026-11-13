@@ -16,6 +16,7 @@ stdout
 | -return "sf2-ryu-light"
 | +return "sf2-ken-light"
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: 1 would update, 37 unchanged
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

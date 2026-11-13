@@ -2,6 +2,7 @@ step setup wezterm --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | setup wezterm: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   pointer: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
 |   changes: 37 created
 stderr

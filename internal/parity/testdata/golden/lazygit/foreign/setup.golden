@@ -2,6 +2,7 @@ step setup lazygit --config-dir {SANDBOX}/config/lazygit
 exit 0
 stdout
 | setup lazygit: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/lazygit/config.yml
 |   changes: 36 created
 stderr
 tree

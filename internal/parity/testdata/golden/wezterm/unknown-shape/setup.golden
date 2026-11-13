@@ -2,6 +2,7 @@ step setup wezterm --config-dir {SANDBOX}/config/wezterm
 exit 1
 stdout
 | setup wezterm: incomplete (config left unchanged)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   pointer: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
 |   changes: 37 created
 stderr

@@ -2,6 +2,7 @@ step setup claude --config-dir {SANDBOX}/config/claude
 exit 0
 stdout
 | setup claude: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/claude/settings.json
 |   changes: 36 created
 stderr
 tree

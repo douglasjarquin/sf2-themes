@@ -2,6 +2,7 @@ step apply herdr --theme t-hawk-light --config-dir {SANDBOX}/config/herdr
 exit 0
 stdout
 | apply herdr: sf2-t-hawk + sf2-t-hawk-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr/config.toml
 |   changes: 1 created
 |   note: run `herdr server reload-config` to apply the selection
 stderr

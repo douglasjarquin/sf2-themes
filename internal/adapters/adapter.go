@@ -21,6 +21,9 @@ type App struct {
 	// Plan returns every write and removal for theme. slot=false means plan the theme files only and leave the
 	// app's theme setting untouched. It never writes.
 	Plan func(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bool) ([]plan.Step, error)
+	// Target resolves the configuration file or directory that holds the app's theme setting, printed as the
+	// `target:` summary line.
+	Target func(configDir string) (string, error)
 	// Pair reports a dark and light sibling pair that follows host appearance in the summary.
 	Pair bool
 	// OwnsFilesOnUnknownShape lets an unknown-shape config still receive the theme files, then exit nonzero

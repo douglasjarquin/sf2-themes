@@ -2,6 +2,7 @@ step apply wezterm --theme ryu --config-dir {SANDBOX}/config/wezterm
 exit 1
 stdout
 | apply wezterm: incomplete (config left unchanged)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   pointer: sf2-ryu + sf2-ryu-light (follows host appearance)
 |   changes: 37 created
 stderr

@@ -2,6 +2,7 @@ step setup nvim --theme ken --config-dir {SANDBOX}/config/nvim
 exit 0
 stdout
 | setup nvim: sf2-ken + sf2-ken-light (follows host appearance)
+|   target: {SANDBOX}/config/nvim
 |   changes: 38 created
 |   note: restart Neovim to load the new colorscheme
 stderr

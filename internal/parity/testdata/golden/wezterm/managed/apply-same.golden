@@ -2,6 +2,7 @@ step apply wezterm --theme ryu --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | apply wezterm: sf2-ryu + sf2-ryu-light (follows host appearance)
+|   target: {SANDBOX}/config/wezterm/wezterm.lua
 |   changes: no changes
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr

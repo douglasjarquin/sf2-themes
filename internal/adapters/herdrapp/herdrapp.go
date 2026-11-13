@@ -17,6 +17,7 @@ var App = adapters.App{
 	Label:   "Herdr app",
 	Inspect: Inspect,
 	Plan:    Plan,
+	Target:  target,
 	Pair:    true,
 	Reload:  "settings apply live; appearance, layout themes, and the theme picker can override the pair",
 }
@@ -41,6 +42,11 @@ func home(configDir string) (string, error) {
 		return "", err
 	}
 	return pycompat.Path(expanded, "herdr-app"), nil
+}
+
+func target(configDir string) (string, error) {
+	dir, err := home(configDir)
+	return pycompat.Path(dir, "settings.json"), err
 }
 
 // RenderTheme returns the Herdr app theme JSON for one catalog theme.

@@ -2,6 +2,7 @@ step setup herdr-app --config-dir {SANDBOX}/config/herdr-app
 exit 0
 stdout
 | setup herdr-app: kept your own theme (config left unchanged)
+|   target: {SANDBOX}/config/herdr-app/settings.json
 |   changes: 36 created
 stderr
 tree

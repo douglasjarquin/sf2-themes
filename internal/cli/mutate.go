@@ -127,6 +127,10 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	target, err := app.Target(configDir)
+	if err != nil {
+		return 0, err
+	}
 	results, err := fsys.Commit(steps, fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose})
 	if err != nil {
 		return 0, err
@@ -136,7 +140,7 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	summarize(ctx, req.Command, req.App, app, decided, label, results)
+	summarize(ctx, req.Command, req.App, app, decided, label, target, results)
 	if decided.incomplete {
 		return 0, refusal(req.App, app, inspection)
 	}
@@ -207,6 +211,8 @@ func selectionText(app adapters.App, theme catalog.Theme, how selection, themes 
 			return "", err
 		}
 		label = dark.Metadata.SelectableID() + " + " + light.Metadata.SelectableID() + " (follows host appearance)"
+	} else {
+		label += " (fixed; does not follow host appearance)"
 	}
 	switch how {
 	case kept:
@@ -219,7 +225,7 @@ func selectionText(app adapters.App, theme catalog.Theme, how selection, themes 
 	return label, nil
 }
 
-func summarize(ctx *Context, verb, name string, app adapters.App, decided decision, selection string, results []fsys.Result) {
+func summarize(ctx *Context, verb, name string, app adapters.App, decided decision, selection, target string, results []fsys.Result) {
 	switch {
 	case decided.incomplete:
 		printf(ctx.Stdout, "%s %s: incomplete (config left unchanged)\n", verb, name)
@@ -228,6 +234,7 @@ func summarize(ctx *Context, verb, name string, app adapters.App, decided decisi
 	default:
 		printf(ctx.Stdout, "%s %s: %s\n", verb, name, selection)
 	}
+	printf(ctx.Stdout, "  target: %s\n", target)
 	if !decided.slot && app.OwnsFilesOnUnknownShape {
 		printf(ctx.Stdout, "  pointer: %s\n", selection)
 	}

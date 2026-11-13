@@ -85,6 +85,7 @@ stdout
 | +  }
 | +}
 | apply herdr-app: sf2-main + sf2-main-light (follows host appearance)
+|   target: {SANDBOX}/config/herdr-app/settings.json
 |   changes: 36 would create, 1 would update
 |   note: settings apply live; appearance, layout themes, and the theme picker can override the pair
 stderr

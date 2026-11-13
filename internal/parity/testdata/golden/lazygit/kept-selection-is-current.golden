@@ -1,14 +1,16 @@
 step apply lazygit --theme chun-li-light --config-dir {SANDBOX}/config/lazygit
 exit 0
 stdout
-| apply lazygit: sf2-chun-li-light
+| apply lazygit: sf2-chun-li-light (fixed; does not follow host appearance)
+|   target: {SANDBOX}/config/lazygit/config.yml
 |   changes: 37 created
 |   note: restart lazygit to render the new theme
 stderr
 step setup lazygit --config-dir {SANDBOX}/config/lazygit
 exit 0
 stdout
-| setup lazygit: kept sf2-chun-li-light
+| setup lazygit: kept sf2-chun-li-light (fixed; does not follow host appearance)
+|   target: {SANDBOX}/config/lazygit/config.yml
 |   changes: no changes
 |   note: restart lazygit to render the new theme
 stderr
