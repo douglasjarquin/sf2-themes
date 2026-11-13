@@ -15,15 +15,22 @@
     "test:unit": "go run ../cmd/sf2-dev web-data --check && node --test tests/unit/*.test.mjs test/*.test.mjs",
     "themes:generate": "go run ../cmd/sf2-dev web-data",
     "themes:check": "go run ../cmd/sf2-dev web-data --check",
-    "test:e2e": "playwright test",
+    "test:e2e": "node tests/e2e/run.mjs",
     "test": "aubr test:unit && aubr test:e2e"
   },
   "dependencies": {},
   "devDependencies": {
-    "@astrojs/check": "0.9.10",
-    "@playwright/test": "1.62.1",
+    "@astrojs/check": "0.9.12",
+    "@browserbasehq/stagehand": "4.4.0",
     "@types/node": "25.2.3",
-    "astro": "7.3.1",
+    "astro": "7.4.11",
+    "playwright-core": "1.62.1",
     "typescript": "5.9.3"
+  },
+  "overrides": {
+    "fast-uri@3": "3.1.9",
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2",
+    "undici@8": "8.12.4"
   }
 }
