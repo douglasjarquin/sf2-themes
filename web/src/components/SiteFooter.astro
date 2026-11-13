@@ -1,5 +1,5 @@
 ---
-import { REPOSITORY_URL } from "../lib/seo.mjs";
+import { DOCS_URL, LICENSE_URL, REPOSITORY_URL, llmsTxtLocation } from "../lib/seo.mjs";
 ---
 
 <footer class="site-footer">
@@ -10,5 +10,8 @@ import { REPOSITORY_URL } from "../lib/seo.mjs";
   <nav class="site-footer__links" aria-label="Site">
     <a href={REPOSITORY_URL} rel="noreferrer" target="_blank">github <span aria-hidden="true">↗</span></a>
     <a href={`${REPOSITORY_URL}/issues`} rel="noreferrer" target="_blank">issues <span aria-hidden="true">↗</span></a>
+    <a href={DOCS_URL} rel="noreferrer" target="_blank">docs <span aria-hidden="true">↗</span></a>
+    <a href={LICENSE_URL} rel="license noreferrer" target="_blank">mit license <span aria-hidden="true">↗</span></a>
+    <a href={llmsTxtLocation()}>llms.txt</a>
   </nav>
 </footer>

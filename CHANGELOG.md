@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Make the site easier for AI agents to read (AgentReady audit, #65): link `llms.txt`, the sitemap, the MIT license, and the docs from every page; say "free and open source (MIT)" on the home page; give `llms.txt` a pricing line, a docs index, and a first `apply` call; tag every code fence with its language.
 - Upgrade the website to Astro 7.4 and run its browser tests on Stagehand v4 instead of Playwright Test.
 - Upgrade the website to Astro 7.3.
 - Add a `claude` app: installs every catalog theme under `~/.claude/themes/` and selects one with `theme` in `~/.claude/settings.json`. Claude Code's custom-theme format has no host-appearance auto-switch, so applying a sibling pins it like Codex rather than following like WezTerm/Herdr/Neovim.

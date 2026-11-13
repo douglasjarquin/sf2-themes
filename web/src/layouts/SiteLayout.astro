@@ -5,9 +5,12 @@ import SiteHeader from "../components/SiteHeader.astro";
 import { siteThemeFamilies } from "../data/site-theme-data.mjs";
 import {
   PRODUCT_DESCRIPTION,
+  LICENSE_URL,
   PRODUCT_NAME,
   canonicalUrl,
+  llmsTxtLocation,
   productJsonLd,
+  sitemapLocation,
 } from "../lib/seo.mjs";
 import "../styles/global.css";
 import "../styles/site-chrome.css";
@@ -60,6 +63,9 @@ const siteThemePayload = JSON.stringify({ families: siteThemeFamilies })
     {noindex ? <meta name="robots" content="noindex" /> : null}
     <meta name="viewport" content="width=device-width" />
     <link rel="canonical" href={pageUrl} />
+    <link rel="alternate" type="text/plain" title="llms.txt" href={llmsTxtLocation()} />
+    <link rel="sitemap" type="application/xml" href={sitemapLocation()} />
+    <link rel="license" href={LICENSE_URL} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />

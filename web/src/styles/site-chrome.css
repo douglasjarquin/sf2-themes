@@ -104,7 +104,8 @@
 
 .site-footer__links {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
   margin-top: 8px;
 }
 
