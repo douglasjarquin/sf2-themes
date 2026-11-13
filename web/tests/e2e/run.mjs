@@ -64,7 +64,8 @@ if (await reachable()) {
   }
 }
 
-tests = spawn(process.execPath, ["--test", "tests/e2e/*.spec.mjs"], {
+// --test-force-exit: once every test has reported, exit even if a wedged browser handle is still open.
+tests = spawn(process.execPath, ["--test", "--test-force-exit", "tests/e2e/*.spec.mjs"], {
   env: { ...process.env, SF2_E2E_BASE_URL: baseURL },
   stdio: "inherit",
 });
