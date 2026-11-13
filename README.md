@@ -55,7 +55,7 @@ From a checkout, use `mise run apply -- …` in place of `sf2 apply …`. The ot
 
 ## How it works
 
-```
+```text
 themes/
  │  short catalog id, default main
  ▼
