@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test as nodeTest } from "node:test";
+import { after, test as nodeTest } from "node:test";
 import { localBrowser, Stagehand } from "@browserbasehq/stagehand";
 import { chromium } from "playwright-core";
 
@@ -22,21 +22,53 @@ const chromePath = () => process.env.CHROME_PATH || chromium.executablePath();
 // "No space left on device"). Playwright passed this flag on Linux for us; Stagehand's localBrowser does not.
 const CHROME_ARGS = ["--disable-dev-shm-usage"];
 
+// node:test fails a timed-out test but never aborts its pending awaits, so a wedged CDP call would skip the finally
+// below and leave Chrome (its own process group) running. On abort, close the browser directly: browser.close() is
+// bounded (a 5 s Browser.close, then SIGTERM and SIGKILL). after() holds the file open until those closes settle.
+const REAP_TIMEOUT = 15000;
+const reaping = new Set();
+after(() => Promise.allSettled(reaping));
+
+function reap(browser, stagehand) {
+  let timer;
+  const closed = Promise.race([
+    Promise.allSettled([browser?.close(), stagehand?.close()]),
+    new Promise((resolve) => {
+      timer = setTimeout(resolve, REAP_TIMEOUT);
+    }),
+  ]).finally(() => {
+    clearTimeout(timer);
+    reaping.delete(closed);
+  });
+  reaping.add(closed);
+}
+
 // Each test gets its own browser, so localStorage and init scripts never leak between tests.
 export function test(name, fn, { viewport = DESKTOP, initScript } = {}) {
-  nodeTest(name, { timeout: TEST_TIMEOUT }, async () => {
-    const browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport, args: CHROME_ARGS });
+  nodeTest(name, { timeout: TEST_TIMEOUT }, async (t) => {
+    let browser;
     let stagehand;
+    const onAbort = () => reap(browser, stagehand);
+    t.signal.addEventListener("abort", onAbort, { once: true });
     try {
+      browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport, args: CHROME_ARGS });
+      t.signal.throwIfAborted();
       stagehand = await Stagehand.create({ browser, logging: { level: "warn" } });
+      t.signal.throwIfAborted();
       const page = await browser.context.newPage();
       if (initScript) {
         await page.addInitScript(initScript);
       }
       await fn(page);
     } finally {
-      await stagehand?.close();
-      await browser.close();
+      t.signal.removeEventListener("abort", onAbort);
+      if (t.signal.aborted) {
+        // The abort may have fired before launch or Stagehand.create resolved, so reap what exists now.
+        reap(browser, stagehand);
+      } else {
+        await stagehand?.close();
+        await browser?.close();
+      }
     }
   });
 }
