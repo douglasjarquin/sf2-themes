@@ -50,9 +50,11 @@ RUN if [ ! -f "$MISE_CONFIG_DIR/config.toml" ]; then \
       chmod -R a+rX "$MISE_CONFIG_DIR" "$MISE_DATA_DIR"; \
     fi
 
+# Cursor Cloud runs `mise install --locked` as dev, which rebuilds the shims
+# even when every tool is installed; a root-owned shims directory fails that.
 RUN if ! id -u dev >/dev/null 2>&1; then useradd -m -s /bin/bash dev; fi && \
-    mkdir -p /workspace/sf2-themes/web && \
-    chown -R dev:dev /workspace && \
+    mkdir -p /workspace/sf2-themes/web "$MISE_DATA_DIR/shims" && \
+    chown -R dev:dev /workspace "$MISE_DATA_DIR/shims" && \
     echo "dev ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/dev && \
     chmod 0440 /etc/sudoers.d/dev
 

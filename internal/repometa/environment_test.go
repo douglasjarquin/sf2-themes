@@ -120,6 +120,22 @@ func TestDevDockerfileMakesFslockWritableBeforeNonrootAube(t *testing.T) {
 	}
 }
 
+// Cursor Cloud's install step runs `mise install --locked` as dev, and mise rebuilds its shims on every install, so
+// dev must own the shims directory even though root installed the tools.
+func TestDevDockerfileGivesDevTheMiseShimsBeforeNonrootInstall(t *testing.T) {
+	lines := instructions(t, "docker/dev/Dockerfile")
+	chown := lineIndex(t, lines, func(l string) bool {
+		return strings.Contains(l, "chown -R dev:dev") && strings.Contains(l, `"$MISE_DATA_DIR/shims"`)
+	}, "giving dev the mise shims directory")
+	install := lineIndex(t, lines, func(l string) bool { return strings.Contains(l, "mise install --locked") }, "running mise install")
+	if chown <= install {
+		t.Errorf("shims chown at %d, root mise install at %d: want the chown after the root install", chown, install)
+	}
+	if env := loadCursorEnvironment(t); env.User != "dev" || !strings.HasPrefix(env.Install, "mise install") {
+		t.Errorf("Cursor runs %q as %q; this test assumes mise install as dev", env.Install, env.User)
+	}
+}
+
 func TestDepsTaskDownloadsGoModulesAndInstallsAubeAndChromium(t *testing.T) {
 	var mise struct {
 		Tools map[string]any `toml:"tools"`

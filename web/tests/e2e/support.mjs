@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
-import { test as nodeTest } from "node:test";
+import { after, test as nodeTest } from "node:test";
 import { localBrowser, Stagehand } from "@browserbasehq/stagehand";
 import { chromium } from "playwright-core";
 
 // Stagehand has no auto-waiting or expect(); every assertion here re-reads the DOM until it passes or the
 // deadline, like Playwright's web-first assertions did.
 const TIMEOUT = 5000;
+// A hung CDP call fails its test instead of stalling the suite.
+const TEST_TIMEOUT = 120000;
 const DESKTOP = { width: 1280, height: 720 };
 
 export const baseURL =
@@ -16,21 +18,83 @@ export const url = (path, base = baseURL) => new URL(path, base).href;
 // playwright-core only provisions Chromium (Linux arm64 included); Stagehand drives it over CDP.
 const chromePath = () => process.env.CHROME_PATH || chromium.executablePath();
 
+// Docker caps /dev/shm at 64 MB, and Chrome aborts at startup once three suites' browsers fill it (font_data_service
+// "No space left on device"). Playwright passed this flag on Linux for us; Stagehand's localBrowser does not.
+const CHROME_ARGS = ["--disable-dev-shm-usage"];
+
+// node:test fails a timed-out test but never aborts its pending awaits, and it races the whole test function,
+// finally included, against the timeout. So cleanup must be bounded and must also run from the abort signal: a
+// wedged CDP call or a hung Stagehand.close() would otherwise leave Chrome (its own process group) running.
+// Stagehand.close() has no deadline of its own; browser.close() does (a 5 s Browser.close, then SIGTERM and SIGKILL).
+const STAGEHAND_CLOSE_TIMEOUT = 5000;
+const BROWSER_CLOSE_TIMEOUT = 15000;
+const cleaning = new Set();
+// Hold each file open until every cleanup settles, so --test-force-exit never strands a browser.
+after(() => Promise.allSettled(cleaning));
+
+async function bounded(promise, ms, what) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`${what} did not finish within ${ms} ms`)), ms);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// One cleanup path for passing, failing, and timed-out tests: Stagehand first, then the browser no matter what.
+// Safe to call twice (finally and the abort signal): browser.close() kills the launched Chrome only once.
+function cleanup(browser, stagehand) {
+  const done = (async () => {
+    const errors = [];
+    try {
+      await bounded(stagehand?.close(), STAGEHAND_CLOSE_TIMEOUT, "Stagehand.close()");
+    } catch (error) {
+      errors.push(error);
+    }
+    try {
+      await bounded(browser?.close(), BROWSER_CLOSE_TIMEOUT, "browser.close()");
+    } catch (error) {
+      errors.push(error);
+    }
+    return errors;
+  })().finally(() => cleaning.delete(done));
+  cleaning.add(done);
+  return done;
+}
+
 // Each test gets its own browser, so localStorage and init scripts never leak between tests.
 export function test(name, fn, { viewport = DESKTOP, initScript } = {}) {
-  nodeTest(name, async () => {
-    const browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport });
+  nodeTest(name, { timeout: TEST_TIMEOUT }, async (t) => {
+    let browser;
     let stagehand;
+    // Stays attached until cleanup settles, so a timeout that lands during cleanup still reaps Chrome.
+    const onAbort = () => cleanup(browser, stagehand);
+    t.signal.addEventListener("abort", onAbort, { once: true });
+    let passed = false;
     try {
+      browser = await localBrowser.launch({ headless: true, executablePath: chromePath(), viewport, args: CHROME_ARGS });
+      t.signal.throwIfAborted();
       stagehand = await Stagehand.create({ browser, logging: { level: "warn" } });
+      t.signal.throwIfAborted();
       const page = await browser.context.newPage();
       if (initScript) {
         await page.addInitScript(initScript);
       }
       await fn(page);
+      passed = true;
     } finally {
-      await stagehand?.close();
-      await browser.close();
+      // Also covers an abort that fired before launch or Stagehand.create resolved.
+      const errors = await cleanup(browser, stagehand);
+      t.signal.removeEventListener("abort", onAbort);
+      // A cleanup error fails an otherwise passing test; it never masks the test's own error.
+      if (passed && !t.signal.aborted && errors.length > 0) {
+        throw errors.length === 1 ? errors[0] : new AggregateError(errors, "browser cleanup failed");
+      }
     }
   });
 }
