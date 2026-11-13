@@ -52,7 +52,7 @@ docker_env=(
   -e HOME=/home/dev
   -e BIND_DIST="$BIND_DIST"
 )
-for var in CI PLAYWRIGHT_PORT; do
+for var in CI E2E_PORT; do
   if [ -n "${!var:-}" ]; then
     docker_env+=(-e "$var=${!var}")
   fi
