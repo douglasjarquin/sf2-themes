@@ -5,8 +5,8 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 ## DEPLOYMENT AND ROUTING
 
 - Keep `astro.config.mjs` on static output with the `/sf2-themes` GitHub Pages base and the configured production site origin.
-- Build every internal page and asset URL with `sitePath()` so local preview, Playwright, and GitHub Pages retain the same trailing-slash base contract.
-- Use relative route URLs against Playwright's configured base URL, and assert `/sf2-themes/.../` when the prefix itself is part of the behavior under test.
+- Build every internal page and asset URL with `sitePath()` so local preview, the e2e suite, and GitHub Pages retain the same trailing-slash base contract.
+- Use relative route URLs against the e2e suite's base URL (`url()` in `tests/e2e/support.mjs`), and assert `/sf2-themes/.../` when the prefix itself is part of the behavior under test.
 - Treat `web/dist/` as the disposable static package consumed by preview and the Pages artifact upload.
 
 ## SOURCE OWNERSHIP
@@ -16,7 +16,7 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - Keep shared tokens, focus treatment, shell layout, and cross-route responsive rules in `src/styles/global.css`, while route-only styling stays co-located with its route or component.
 - Route files under `src/pages/` own page composition and progressive route-local interactions, and every normal route renders through `SiteLayout`.
 - `src/scripts/site-theme.mjs` owns runtime family/mode switching, URL and localStorage persistence, the `⌘K` palette, SampleBlock binding, and install-step state; presence-guard every binding so pages may opt out.
-- Treat `data-*` hooks on the shell and page surfaces as a tested browser contract, and update their Node and Playwright consumers with any intentional change.
+- Treat `data-*` hooks on the shell and page surfaces as a tested browser contract, and update their Node and e2e consumers with any intentional change.
 - `src/data/theme-data.mjs` is the web adapter over the root TOML catalog, so pages and components consume its exports instead of duplicating theme parsing or palette order.
 - Run source-importing web commands with `web/` as the working directory because the default theme-data paths resolve the root catalog relative to that directory.
 
@@ -36,7 +36,7 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 - Install from `aube-lock.yaml` with `mise run web:install` locally or the containerized `mise run web:install` path in CI, matching both `verify.yml` and `deploy.yml`.
 - Keep `web/.npmrc` on `node-linker=hoisted` so Astro prerender can resolve native bindings and client entry files from an npm-compatible tree.
 - Keep `astro check`, unit tests, browser tests, and the production build as separate evidence because none substitutes for another.
-- The normal web CI path installs with aube, builds, then runs check and Playwright tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
+- The normal web CI path installs with aube, builds, then runs check and the unit and e2e tests, while the Pages workflow uploads `web/dist/` and deploys only outside pull requests.
 
 ## STABLE LOCAL DOMAIN (PORTLESS)
 
@@ -49,14 +49,16 @@ The repository-level guidance in `../AGENTS.md` still applies, and this file rec
 ## TEST SURFACES AND OWNED SERVERS
 
 - `tests/unit/*.test.mjs` and `test/*.test.mjs` are Node tests for config, data, and import boundaries without a browser page.
-- `tests/e2e/*.spec.mjs` are Playwright tests against a production build served under `/sf2-themes/` in desktop Chromium.
+- `tests/e2e/*.spec.mjs` are `node:test` files that drive desktop Chromium through Stagehand v4 (`localBrowser`, deterministic `page.locator()` and DOM reads only; no `act()`, `extract()`, model, or Browserbase) against a production build served under `/sf2-themes/`.
+- Stagehand does not auto-wait and has no `expect()`; use the polling assertions and `click()` in `tests/e2e/support.mjs`, and add an explicit wait before any read that follows an action.
+- `playwright-core` stays only to download Chromium (`playwright-core install chromium`, Linux arm64 included) and report its path; `CHROME_PATH` overrides it.
 - Use `aube -C web run test:unit` or `test:e2e` for a focused layer, while `mise run web:test` runs both layers in sequence.
-- Playwright builds and starts its own Astro preview on `PLAYWRIGHT_PORT`, which defaults to `4321`, and local runs may reuse a server already listening there.
-- The Playwright preview command passes `--ignore-lock` so concurrent E2E runs on different `PLAYWRIGHT_PORT` values can start independent preview servers instead of colliding on Astro's preview lockfile.
-- For concurrent or manual E2E runs, select an unused `PLAYWRIGHT_PORT` and confirm that any reused server belongs to this worktree.
-- Let Playwright close the preview it starts, and when starting a preview manually record its PID and port so cleanup stops only that owned process.
+- `tests/e2e/run.mjs` builds and starts its own Astro preview on `E2E_PORT`, which defaults to `4321`, and local runs may reuse a server already listening there.
+- The runner passes `--ignore-lock` to the preview so concurrent E2E runs on different `E2E_PORT` values can start independent preview servers instead of colliding on Astro's preview lockfile.
+- For concurrent or manual E2E runs, select an unused `E2E_PORT` and confirm that any reused server belongs to this worktree.
+- Let the runner close the preview it starts, and when starting a preview manually record its PID and port so cleanup stops only that owned process.
 
 ## GENERATED OUTPUTS
 
-- Treat `node_modules/`, `.astro/`, `dist/`, `test-results/`, and `playwright-report/` as generated dependency, cache, build, or diagnostic output rather than source.
+- Treat `node_modules/`, `.astro/`, and `dist/` as generated dependency, cache, or build output rather than source.
 - Preserve traces and screenshots long enough to diagnose browser failures, then remove only artifacts created by the current run.

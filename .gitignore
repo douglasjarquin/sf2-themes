@@ -7,8 +7,6 @@
 /web/node_modules/
 /web/.astro/
 /web/dist/
-web/test-results/
-web/playwright-report/
 /test-results/
 web/artifacts/
 .artifacts/

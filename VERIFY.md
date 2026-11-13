@@ -26,13 +26,13 @@ mise install
 mise run deps
 ```
 
-`mise run deps` downloads the Go modules, installs the Astro toolchain via aube, and installs Playwright Chromium for web e2e.
+`mise run deps` downloads the Go modules, installs the Astro toolchain via aube, and downloads the Chromium build the Stagehand e2e suite drives.
 
 ## Readiness
 
 `git rev-parse --show-toplevel` must print this repository's root.
 `mise tasks ls` must list `verify` with a source inside this repository; a `verify` task inherited from a parent directory is another project's command.
-`mise run deps` must have run once so the Go module cache, the `web/node_modules/` tree, and the Playwright Chromium build are present.
+`mise run deps` must have run once so the Go module cache, the `web/node_modules/` tree, and the Chromium build are present.
 
 ## Automated checks
 
@@ -50,7 +50,7 @@ It runs, in order:
 | Shell | `mise run shellcheck` | `install.sh`, the CI scripts, and the dev image entrypoint lint clean |
 | Web types | `mise run web:check` | `astro check` plus the theme-data freshness gate |
 | Web build | `mise run web:build` | all routes emit into `web/dist` under the `/sf2-themes/` base |
-| Web tests | `mise run web:test` | Node contract tests plus the Playwright e2e suite |
+| Web tests | `mise run web:test` | Node contract tests plus the Stagehand e2e suite |
 
 Scoped tasks stay available for iteration: `mise run build`, `mise run test`, `mise run lint`, `mise run validate-catalog`, `mise run shellcheck`, and the `web:`-prefixed tasks.
 For one package, run `go test -count=1 ./internal/<package>/...`.
@@ -64,18 +64,18 @@ A green `mise run verify` is evidence for the automated rows only, never for a s
 ## Isolation
 
 Go tests write only under `t.TempDir()` directories, and the parity harness and installer cases run the binary against a synthetic HOME.
-The web e2e suite builds `web/dist` and serves it through Astro's own preview on `PLAYWRIGHT_PORT`; it never touches a deployed site.
+The web e2e suite builds `web/dist` and serves it through Astro's own preview on `E2E_PORT`; it never touches a deployed site.
 No check needs credentials, network services, or the user's real app configuration.
 
 ## Artifacts
 
 Each verification run may record `.artifacts/verification/<run-id>/` and captured evidence under `.artifacts/evidence/`; both are Git-ignored.
-`web/dist`, `web/test-results/`, and `web/playwright-report/` are regenerated or diagnostic output and are also Git-ignored.
+`web/dist` is regenerated output and is also Git-ignored.
 Reference records by path in reports rather than committing them.
 
 ## Teardown
 
-The checks leave nothing running: Go tests use temporary directories, and Playwright closes the preview server it started.
+The checks leave nothing running: Go tests use temporary directories, and the e2e runner closes the preview server it started.
 Remove `.artifacts/` when the records are no longer needed.
 
 ## Go / CLI

@@ -136,7 +136,7 @@ func TestDevDockerfileGivesDevTheMiseShimsBeforeNonrootInstall(t *testing.T) {
 	}
 }
 
-func TestDepsTaskDownloadsGoModulesAndInstallsAubeAndPlaywright(t *testing.T) {
+func TestDepsTaskDownloadsGoModulesAndInstallsAubeAndChromium(t *testing.T) {
 	var mise struct {
 		Tools map[string]any `toml:"tools"`
 		Tasks map[string]struct {
@@ -147,7 +147,7 @@ func TestDepsTaskDownloadsGoModulesAndInstallsAubeAndPlaywright(t *testing.T) {
 		t.Fatal(err)
 	}
 	run := mise.Tasks["deps"].Run
-	for _, want := range []string{"go mod download", "aube -C web install", "playwright install chromium"} {
+	for _, want := range []string{"go mod download", "aube -C web install", "playwright-core install chromium"} {
 		if !strings.Contains(run, want) {
 			t.Errorf("deps runs %q, which misses %q", run, want)
 		}
