@@ -74,7 +74,7 @@ The command palette overlay is `min(580px, 92vw)` and the SampleBlock tab bar sc
 
 ### Install Steps
 
-- Structure: port picker (7 apps as bare underlined buttons), two labelled rounds (install the CLI, apply the theme), bordered command rows with copy buttons, and a per-port note.
+- Structure: port picker (8 apps as bare underlined buttons), two labelled rounds (install the CLI, apply the theme), bordered command rows with copy buttons, and a per-port note.
 - Command rows wrap instead of scrolling: each word wraps as a unit, and a URL wider than the row breaks only after a slash.
 - Each copy button copies exactly the command its row displays; buttons are hidden when `navigator.clipboard` is unavailable.
 
