@@ -47,8 +47,11 @@ test("home renders the hero, live preview, install steps, and ports", async (pag
   await expectCount(page, "[data-step]", 2);
   await expectText(page, "[data-step-cmd]", INSTALL_COMMAND);
   await expectLacksText(page, "#install", /python|\buv\b|uvx/i);
-  await expectCount(page, "[data-port-id]", 7);
-  await expectCount(page, ".port-row", 7);
+  await expectCount(page, "[data-port-id]", 8);
+  await expectCount(page, ".port-row", 8);
+  await expectText(page, '[data-port-id="herdr-app"]', "herdr-app");
+  await expectContainsText(page, by(".port-row", /herdr-app/), "~/.config/herdr-app/themes/");
+  await expectContainsText(page, ".lede", "Herdr (terminal and desktop app)");
 });
 
 test("theme selection rewrites the preview and install steps", async (page) => {
@@ -87,6 +90,17 @@ test("port selection rewrites the install steps", async (page) => {
     "[data-port-note-out]",
     "The loader applies your pick every time Neovim starts.",
   );
+});
+
+test("the herdr-app port rewrites the install steps for the Herdr desktop app", async (page) => {
+  await open(page, "./");
+
+  await click(page, '[data-port-id="herdr-app"]');
+  await expectAttr(page, '[data-port-id="herdr-app"]', "aria-pressed", "true");
+  await expectAttr(page, '[data-port-id="herdr"]', "aria-pressed", "false");
+  await expectText(page, APPLY_CMD, "sf2 apply herdr-app --theme ryu");
+  await expectText(page, by("[data-step] [data-step-label]", undefined, { index: 1 }), "Apply Ryu to Herdr desktop app. K.O.");
+  await expectContainsText(page, "[data-port-note-out]", "Settings apply live.");
 });
 
 test(
@@ -151,7 +165,7 @@ test("the home page remains useful without client JavaScript", async (page) => {
     await expectAttr(page, ".step__cmd code", "class", "language-sh");
     await expectContainsText(page, ".meta", "free and open source (MIT)");
     await expectAttr(page, by("footer a", /docs/), "href", "https://github.com/douglasjarquin/sf2-themes/tree/main/docs/sf2-themes");
-    await expectCount(page, ".port-row", 7);
+    await expectCount(page, ".port-row", 8);
     await expectVisible(page, '[data-pane="shell"]');
   } finally {
     proxy.close();

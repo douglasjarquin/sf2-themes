@@ -35,7 +35,7 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
 
   const title = "Street Fighter II terminal themes | sf2-themes";
   const description =
-    "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.";
+    "Street Fighter II color themes for WezTerm, Herdr (terminal and desktop app), Neovim, Codex, Starship, Lazygit, and Claude Code.";
 
   await expectAttr(page, 'meta[name="description"]', "content", description);
   await expectAttr(page, 'link[rel="canonical"]', "href", `${origin}/sf2-themes/`);
@@ -43,6 +43,7 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
   await expectAttr(page, 'meta[property="og:description"]', "content", description);
   await expectAttr(page, 'meta[property="og:url"]', "content", `${origin}/sf2-themes/`);
   await expectAttr(page, 'meta[name="twitter:card"]', "content", "summary");
+  await expectAttr(page, 'meta[name="twitter:description"]', "content", description);
 
   const jsonLd = JSON.parse(await read(page, 'script[type="application/ld+json"]', "text"));
   assert.deepEqual(
@@ -51,6 +52,7 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
   );
   assert.doesNotMatch(JSON.stringify(jsonLd), /aggregateRating|"offers"|ratingValue/);
   const software = jsonLd["@graph"].find((node) => node["@type"] === "SoftwareApplication");
+  for (const node of jsonLd["@graph"]) assert.equal(node.description, description);
   assert.equal(software.operatingSystem, "Linux, macOS");
   assert.equal(software.downloadUrl, "https://github.com/douglasjarquin/sf2-themes/releases/latest");
   assert.equal(software.codeRepository, "https://github.com/douglasjarquin/sf2-themes");
@@ -153,6 +155,9 @@ test("the project 404 page is branded, linked, and noindexed", async (page) => {
   await expectTitle(page, "Page not found | sf2-themes");
   await expectAttr(page, 'meta[name="robots"]', "content", "noindex");
   await expectCount(page, 'script[type="application/ld+json"]', 0);
+  // A noindex page claims no canonical address; a self canonical would point at /sf2-themes/404/, which 404s.
+  await expectCount(page, 'link[rel="canonical"]', 0);
+  await expectCount(page, 'meta[property="og:url"]', 0);
   await expectContainsText(page, '[data-testid="project-404"]', "This URL is not a page in sf2-themes.");
   await expectContainsText(page, "h1", "Round over.");
 
