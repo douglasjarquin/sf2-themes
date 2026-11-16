@@ -23,7 +23,7 @@
     "@astrojs/check": "0.9.12",
     "@browserbasehq/stagehand": "4.4.0",
     "@types/node": "25.2.3",
-    "astro": "7.4.11",
+    "astro": "7.4.12",
     "playwright-core": "1.62.1",
     "typescript": "5.9.3"
   },
