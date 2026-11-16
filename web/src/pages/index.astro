@@ -2,7 +2,7 @@
 import SampleBlock from "../components/SampleBlock.astro";
 import { siteThemeFamilies } from "../data/site-theme-data.mjs";
 import SiteLayout from "../layouts/SiteLayout.astro";
-import { INSTALL_COMMAND, PRODUCT_DESCRIPTION, REPOSITORY_URL } from "../lib/seo.mjs";
+import { APPS_PHRASE, INSTALL_COMMAND, PRODUCT_DESCRIPTION, REPOSITORY_URL } from "../lib/seo.mjs";
 
 const ryu = siteThemeFamilies.find(({ id }) => id === "ryu") ?? siteThemeFamilies[0];
 
@@ -18,6 +18,12 @@ const PORTS = [
     name: "Herdr",
     desc: "Writes a marked theme block to config.toml and leaves the rest of your config alone.",
     note: "Run herdr server reload-config after applying. An unmarked [theme] section needs --adopt.",
+  },
+  {
+    id: "herdr-app",
+    name: "Herdr desktop app",
+    desc: "Installs a JSON theme per palette under ~/.config/herdr-app/themes/ and selects the light/dark pair in settings.json.",
+    note: "Settings apply live. A theme picked in the app or set by a layout takes precedence.",
   },
   {
     id: "nvim",
@@ -67,7 +73,7 @@ const defaultSteps = [
 >
   <div class="page">
     <h1 class="h1"><span class="hp" aria-hidden="true"># </span>Fight for your terminal.</h1>
-    <p class="lede">36 Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code. Pick a fighter and this whole site wears the palette.</p>
+    <p class="lede">36 Street Fighter II color themes for {APPS_PHRASE}. Pick a fighter and this whole site wears the palette.</p>
     <p class="meta">36 themes · 8 apps plus Slack · one binary for macOS and Linux · free and open source (MIT)</p>
 
     <section id="preview" aria-labelledby="preview-heading">

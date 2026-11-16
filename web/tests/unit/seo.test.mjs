@@ -5,6 +5,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 
 import {
+  APPS_PHRASE,
   DOCS,
   DOCS_URL,
   INDEXABLE_PATHS,
@@ -76,7 +77,8 @@ test("llms.txt names the CLI, install command, catalog size, live site, and repo
   assert.match(committed, /36-theme TOML catalog/);
   assert.match(committed, /Live site: https:\/\/douglasjarquin\.github\.io\/sf2-themes\//);
   assert.match(committed, /Repository: https:\/\/github\.com\/douglasjarquin\/sf2-themes/);
-  assert.match(committed, /WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code/);
+  assert.ok(committed.includes(`into ${APPS_PHRASE}.`));
+  assert.ok(committed.includes("Herdr (terminal and desktop app)"));
 });
 
 test("llms.txt states the price and indexes first-party docs that exist in the repository", () => {
@@ -144,4 +146,32 @@ test("the install command pipes the latest release's installer into sh", () => {
   );
   assert.equal(DOWNLOAD_URL, "https://github.com/douglasjarquin/sf2-themes/releases/latest");
   assert.equal(PRODUCT_OPERATING_SYSTEM, "Linux, macOS");
+});
+
+// The CLI's `sf2 apps` golden is the source of truth for which apps ship. Every app except Slack (a printed paste
+// string, not an install) must be a home-page port, the hero's "N apps plus Slack" must count them, and the shared
+// description must name each one, with Herdr covering both its terminal and desktop adapters.
+test("the home page ports, hero count, and description match the CLI's app list", () => {
+  const cliApps = readFileSync(path.join(repositoryRoot, "internal/cli/testdata/apps.stdout"), "utf8")
+    .trim()
+    .split("\n");
+  const installable = cliApps.filter((id) => id !== "slack");
+  assert.ok(installable.includes("herdr-app"));
+
+  const home = readFileSync(path.join(repositoryRoot, "web/src/pages/index.astro"), "utf8");
+  const portsBlock = home.match(/const PORTS = \[([\s\S]*?)\n\];/)?.[1] ?? "";
+  const portIds = [...portsBlock.matchAll(/^    id: "([^"]+)",$/gm)].map((match) => match[1]);
+  assert.deepEqual(portIds, installable);
+  assert.ok(home.includes(`36 themes · ${installable.length} apps plus Slack`));
+  assert.ok(home.includes('36 Street Fighter II color themes for {APPS_PHRASE}.'));
+
+  assert.equal(
+    PRODUCT_DESCRIPTION,
+    "Street Fighter II color themes for WezTerm, Herdr (terminal and desktop app), Neovim, Codex, Starship, Lazygit, and Claude Code.",
+  );
+  assert.ok(PRODUCT_DESCRIPTION.includes(APPS_PHRASE));
+  assert.doesNotMatch(PRODUCT_DESCRIPTION, /Slack/);
+  for (const name of ["WezTerm", "Herdr", "desktop app", "Neovim", "Codex", "Starship", "Lazygit", "Claude Code"]) {
+    assert.ok(PRODUCT_DESCRIPTION.includes(name), `description names ${name}`);
+  }
 });

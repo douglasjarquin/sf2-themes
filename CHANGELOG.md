@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- List the Herdr desktop app (`herdr-app`) in the site's install picker and Ports list, so the page shows the 8 apps its hero counts, and name Herdr's terminal and desktop app in the description, social cards, JSON-LD, and `llms.txt`. The 404 page no longer emits a canonical link or `og:url`, which pointed at `/sf2-themes/404/`, a URL that returns 404.
 - Make the site easier for AI agents to read (AgentReady audit, #65): link `llms.txt`, the sitemap, the MIT license, and the docs from every page; say "free and open source (MIT)" on the home page; give `llms.txt` a pricing line, a docs index, and a first `apply` call; tag every code fence with its language.
 - `apply` and `setup` summaries print a `target:` line with the resolved config file or directory, and mark unpaired selections (Codex, Claude Code, Starship, Lazygit) as fixed rather than following host appearance. `current --help` now describes its arguments.
 - Upgrade the website to Astro 7.4 and run its browser tests on Stagehand v4 instead of Playwright Test.

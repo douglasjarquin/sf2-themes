@@ -3,8 +3,11 @@ import astroConfig from "../../astro.config.mjs";
 export const SITE_ORIGIN = astroConfig.site;
 export const SITE_BASE = `${astroConfig.base.replace(/\/+$/, "")}/`;
 export const PRODUCT_NAME = "sf2-themes";
-export const PRODUCT_DESCRIPTION =
-  "Street Fighter II color themes for WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.";
+// The installable apps as one phrase. Herdr counts twice: its terminal (`herdr`) and desktop app (`herdr-app`)
+// are separate adapters. Slack only gets a printed paste string, so it is left out of the metadata.
+export const APPS_PHRASE =
+  "WezTerm, Herdr (terminal and desktop app), Neovim, Codex, Starship, Lazygit, and Claude Code";
+export const PRODUCT_DESCRIPTION = `Street Fighter II color themes for ${APPS_PHRASE}.`;
 export const REPOSITORY_URL = "https://github.com/douglasjarquin/sf2-themes";
 export const PRODUCT_OPERATING_SYSTEM = "Linux, macOS";
 export const DOWNLOAD_URL = `${REPOSITORY_URL}/releases/latest`;
@@ -72,7 +75,7 @@ export function llmsTxt() {
 
 > ${PRODUCT_DESCRIPTION}
 
-sf2-themes is a single-binary CLI named \`sf2-themes\`, also linked as \`sf2\`, for macOS and Linux on arm64 and amd64. It has no runtime dependencies. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into WezTerm, Herdr, Neovim, Codex, Starship, Lazygit, and Claude Code.
+sf2-themes is a single-binary CLI named \`sf2-themes\`, also linked as \`sf2\`, for macOS and Linux on arm64 and amd64. It has no runtime dependencies. It installs a 36-theme TOML catalog (dark and light main variants plus the Super Street Fighter II Turbo roster) into ${APPS_PHRASE}.
 
 Live site: ${liveUrl}
 Repository: ${REPOSITORY_URL}
