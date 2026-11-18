@@ -175,12 +175,21 @@ jobs:
       - name: Refuse a release build with Go other than the mise pin
         if: matrix.os == 'ubuntu-latest'
         run: |
-          if mise exec go@1.27.1 -- scripts/ci/build-release.sh 0.0.0-rehearsal "$RUNNER_TEMP/refused" 2> "$RUNNER_TEMP/refused.err"; then
-            echo "build-release.sh built with Go 1.27.1" >&2
-            exit 1
-          fi
-          cat "$RUNNER_TEMP/refused.err"
-          grep -q "build Go go1.27.1 is not the mise-pinned go$(mise current go)" "$RUNNER_TEMP/refused.err"
+          refused() {
+            if "$@" scripts/ci/build-release.sh 0.0.0-rehearsal "$RUNNER_TEMP/refused" 2> "$RUNNER_TEMP/refused.err"; then
+              echo "build-release.sh built with Go 1.27.1 via: $*" >&2
+              exit 1
+            fi
+            cat "$RUNNER_TEMP/refused.err"
+            grep -q "build Go go1.27.1 is not the mise-pinned go$(sed -n 's/^go = "\(.*\)"$/\1/p' mise.toml)" "$RUNNER_TEMP/refused.err"
+          }
+          # An older go first on PATH.
+          refused mise exec go@1.27.1 --
+          # A mise override that also changes what `mise current go` reports.
+          refused env MISE_GO_VERSION=1.27.1 mise exec --
+      - name: Build release assets into an output path with spaces
+        if: matrix.os == 'ubuntu-latest'
+        run: scripts/ci/build-release.sh 0.0.0-rehearsal "$RUNNER_TEMP/release out"
       - name: Verify checksums
         working-directory: dist
         run: |
