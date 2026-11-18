@@ -12,6 +12,17 @@ out="${2:-dist}"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$repo_root"
 
+# Released binaries embed the toolchain that built them, so build only with the
+# Go that mise.toml pins: never let GOTOOLCHAIN switch to another one, and
+# refuse an older or newer go found first on PATH.
+export GOTOOLCHAIN=local
+want_go="go$(mise current go)"
+build_go="$(go env GOVERSION)"
+if [[ "$build_go" != "$want_go" ]]; then
+  echo "build Go $build_go is not the mise-pinned $want_go" >&2
+  exit 1
+fi
+
 rm -rf "$out"
 mkdir -p "$out"
 
@@ -24,7 +35,13 @@ for target in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64; do
   CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
     -ldflags "-X github.com/douglasjarquin/sf2-themes/v2/internal/version.Version=$version" \
     -o "$out/sf2-themes_${os}_${arch}" ./cmd/sf2-themes
+  embedded_go="$(go version "$out/sf2-themes_${os}_${arch}" | awk '{print $2}')"
+  if [[ "$embedded_go" != "$want_go" ]]; then
+    echo "sf2-themes_${os}_${arch} embeds $embedded_go, want $want_go" >&2
+    exit 1
+  fi
 done
+go version "$out"/sf2-themes_* | sed "s|^$out/||"
 
 cp install.sh "$out/install.sh"
 

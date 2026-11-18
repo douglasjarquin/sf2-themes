@@ -172,6 +172,15 @@ jobs:
           install_args: go
       - name: Build release assets
         run: scripts/ci/build-release.sh 0.0.0-rehearsal dist
+      - name: Refuse a release build with Go other than the mise pin
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          if mise exec go@1.27.1 -- scripts/ci/build-release.sh 0.0.0-rehearsal "$RUNNER_TEMP/refused" 2> "$RUNNER_TEMP/refused.err"; then
+            echo "build-release.sh built with Go 1.27.1" >&2
+            exit 1
+          fi
+          cat "$RUNNER_TEMP/refused.err"
+          grep -q "build Go go1.27.1 is not the mise-pinned go$(mise current go)" "$RUNNER_TEMP/refused.err"
       - name: Verify checksums
         working-directory: dist
         run: |
