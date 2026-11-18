@@ -70,7 +70,7 @@ docs/                Authored contracts and generated SVG previews
 
 ## CONVENTIONS
 
-- Tool versions and stable developer commands live in `mise.toml`: Go 1.27, golangci-lint 2.15, Node 24, Aube 2.2.4, and shellcheck 0.11.0.
+- Tool versions and stable developer commands live in `mise.toml`: Go 1.27.4, golangci-lint 2.15, Node 24, Aube 2.2.4, and shellcheck 0.11.0.
 - The Go module is `github.com/douglasjarquin/sf2-themes/v2`, and `github.com/BurntSushi/toml` is its only runtime dependency.
 - Catalog IDs stay short; adapter-installed identities use `sf2-<catalog-id>`.
 - Catalog order is `main.toml`, optional `main-light.toml`, then sorted character TOMLs.

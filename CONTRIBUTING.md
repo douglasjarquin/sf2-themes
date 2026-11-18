@@ -24,7 +24,7 @@ That file is the source of truth for local and CI verification. Path-selected Gi
 ## Repo conventions
 
 - Go CLI: the `sf2-themes` binary is built from `cmd/sf2-themes` over the packages in `internal/`, and the installer links `sf2` to it. Maintainer generators live in `cmd/sf2-dev`.
-- Tool versions and developer commands live in `mise.toml` (Go 1.27, golangci-lint 2.15, Node 24, aube, shellcheck). Prefer `mise run …` over ad-hoc tool invocations.
+- Tool versions and developer commands live in `mise.toml` (Go 1.27.4, golangci-lint 2.15, Node 24, aube, shellcheck). Prefer `mise run …` over ad-hoc tool invocations.
 - Theme catalog lives in `themes/` (36 TOML entries). Catalog ids stay short (`ryu`, `ken-light`); installed adapter identities use `sf2-<catalog-id>`.
 - Adapters live in `internal/adapters/<app>/` (WezTerm, Herdr, Herdr app, Neovim, Codex, Claude Code, Starship, Lazygit, and Slack). Preserve unrelated user config when mutating files.
 - The parity goldens in `internal/parity/testdata/` pin CLI output and written files. Re-record them with `mise run parity:record` only for an intended behavior change, and call that change out in the PR.
