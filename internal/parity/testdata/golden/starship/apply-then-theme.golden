@@ -36,3 +36,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/starship
 file 0600 e9af69fbcf2da29f home/.local/state/sf2/backups/starship/starship.toml.1
 file 0644 7716b39f38194a44 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

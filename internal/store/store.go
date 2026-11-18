@@ -10,10 +10,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -88,6 +88,10 @@ func Load(path string) (Manifest, error) {
 	if err := decoder.Decode(&manifest); err != nil {
 		return Manifest{}, fmt.Errorf("%s is not a valid sf2 manifest: %w", path, err)
 	}
+	// The whole file must be that one document; trailing data is never silently dropped by the next save.
+	if _, err := decoder.Token(); !errors.Is(err, io.EOF) {
+		return Manifest{}, fmt.Errorf("%s is not a valid sf2 manifest: unexpected data after the manifest", path)
+	}
 	if manifest.Version != Version {
 		return Manifest{}, fmt.Errorf("%s has manifest version %d; this sf2 reads version %d", path, manifest.Version, Version)
 	}
@@ -143,27 +147,61 @@ func Save(path string, manifest Manifest) error {
 	return fsys.Replace(path, string(data)+"\n", 0o644)
 }
 
-// KeepPrior copies a backup into backups/<app>/ beside the manifest at manifestPath and returns the copy's path. Each
-// copy takes the next free `<name>.<n>`, so a later backup written in the same second over the original can never
-// replace what the user had before sf2.
-func KeepPrior(manifestPath, app, backup string) (string, error) {
-	data, err := os.ReadFile(backup)
-	if err != nil {
-		return "", err
-	}
-	name := backupStamp.ReplaceAllString(pycompat.Name(backup), "")
+// KeepPrior keeps data, the bytes of a user's setting file named name before sf2 first changed it, under
+// backups/<app>/ beside the manifest at manifestPath and returns the copy's path. Each copy is published exclusively
+// at the next free `<name>.<n>`, so no later or concurrent copy can replace it.
+func KeepPrior(manifestPath, app, name string, data []byte) (string, error) {
 	dir := pycompat.Path(pycompat.Parent(manifestPath), "backups", app)
 	for n := 1; ; n++ {
 		kept := pycompat.Path(dir, fmt.Sprintf("%s.%d", name, n))
-		exists, err := fsys.Exists(kept)
-		if err != nil {
-			return "", err
+		err := fsys.CreateExclusive(kept, data, 0o600)
+		if errors.Is(err, fs.ErrExist) {
+			continue
 		}
-		if !exists {
-			return kept, fsys.Replace(kept, string(data), 0o600)
-		}
+		return kept, err
 	}
 }
 
-// backupStamp is the suffix fsys.Commit gives a backup.
-var backupStamp = regexp.MustCompile(`\.bak\.\d{8}T\d{6}Z$`)
+// Session is the manifest held under the store's lock for one mutating command, so concurrent commands apply their
+// records one after another instead of saving over each other.
+type Session struct {
+	Path     string
+	Manifest Manifest
+	unlock   func()
+}
+
+// Open checks that the state directory can take app's records, takes the store's lock, and loads the manifest. It
+// refuses before any application is touched when a state path is a symlink or the wrong kind of file, or the
+// manifest is unreadable. Close releases the lock.
+func Open(app string) (*Session, error) {
+	path, err := Path()
+	if err != nil {
+		return nil, err
+	}
+	dir := pycompat.Parent(path)
+	for _, required := range []string{dir, pycompat.Path(dir, "backups"), pycompat.Path(dir, "backups", app)} {
+		if err := fsys.RequireDir(required); err != nil {
+			return nil, err
+		}
+	}
+	unlock, err := fsys.Lock(pycompat.Path(dir, "manifest.lock"))
+	if err != nil {
+		return nil, err
+	}
+	session := &Session{Path: path, unlock: unlock}
+	if err := fsys.RequireFile(path); err != nil {
+		session.Close()
+		return nil, err
+	}
+	if session.Manifest, err = Load(path); err != nil {
+		session.Close()
+		return nil, err
+	}
+	return session, nil
+}
+
+// Save writes the session's manifest.
+func (s *Session) Save() error { return Save(s.Path, s.Manifest) }
+
+// Close releases the lock.
+func (s *Session) Close() { s.unlock() }

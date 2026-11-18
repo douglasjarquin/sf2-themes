@@ -59,3 +59,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/lazygit
 file 0600 3bd5032c1145d3d8 home/.local/state/sf2/backups/lazygit/config.yml.1
 file 0644 6573559571ff1227 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

@@ -65,29 +65,82 @@ func code(existing string) string {
 	return strings.Join(kept, "\n")
 }
 
-// namesPointer reports whether a Lua code line holds pointer as a quoted string literal.
-func namesPointer(existing, pointer string) bool {
-	return strings.Contains(code(existing), `"`+luaPathLiteral(pointer)+`"`)
+// pointerAssignment is the `local sf2_current = <string>` line sf2's integration starts with, optionally followed by a
+// comment. Group 1 is a double-quoted body and group 2 a single-quoted one.
+var pointerAssignment = regexp.MustCompile(`^` + pycompat.Space + `*local` + pycompat.Space + `+sf2_current` +
+	pycompat.Space + `*=` + pycompat.Space + `*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')` + pycompat.Space + `*(?:--.*)?$`)
+
+// unescapeLua decodes a Lua short string body that uses only the escapes luaPathLiteral writes, plus \'.
+func unescapeLua(body string) (string, bool) {
+	var b strings.Builder
+	for i := 0; i < len(body); i++ {
+		if body[i] != '\\' {
+			b.WriteByte(body[i])
+			continue
+		}
+		i++
+		if i == len(body) || !strings.ContainsRune(`\"'`, rune(body[i])) {
+			return "", false
+		}
+		b.WriteByte(body[i])
+	}
+	return b.String(), true
 }
 
-// retarget moves an integration from the legacy shared pointer to the target's own pointer by replacing the exact
-// quoted legacy path on code lines; any other text, including comments, is kept byte for byte.
+// assignedPointer returns the pointer path the one sf2_current assignment on a code line names. Comments never
+// count, and a config with no such assignment, more than one, or a string sf2 cannot decode names none.
+func assignedPointer(existing string) (string, bool) {
+	var named []string
+	for _, line := range pycompat.SplitLines(code(existing)) {
+		match := pointerAssignment.FindStringSubmatchIndex(line)
+		if match == nil {
+			continue
+		}
+		var body string
+		if match[2] >= 0 {
+			body = line[match[2]:match[3]]
+		} else {
+			body = line[match[4]:match[5]]
+		}
+		path, ok := unescapeLua(body)
+		if !ok {
+			return "", false
+		}
+		named = append(named, path)
+	}
+	if len(named) != 1 {
+		return "", false
+	}
+	return named[0], true
+}
+
+// retarget moves an integration from the legacy shared pointer to the target's own pointer by rewriting the one
+// sf2_current assignment that names it; every other line, including comments, is kept byte for byte.
 func retarget(existing, legacy, pointer string) string {
-	if legacy == pointer || !namesPointer(existing, legacy) {
+	if named, ok := assignedPointer(existing); !ok || named != legacy {
 		return existing
 	}
-	from, to := `"`+luaPathLiteral(legacy)+`"`, `"`+luaPathLiteral(pointer)+`"`
 	lines := pycompat.SplitLinesKeepEnds(existing)
 	for i, line := range lines {
-		if !strings.HasPrefix(pycompat.LStrip(line), "--") {
-			lines[i] = strings.ReplaceAll(line, from, to)
+		body := strings.TrimRight(line, "\r\n")
+		if strings.HasPrefix(pycompat.LStrip(body), "--") {
+			continue
 		}
+		match := pointerAssignment.FindStringSubmatchIndex(body)
+		if match == nil {
+			continue
+		}
+		start, end := match[4]-1, match[5]+1
+		if match[2] >= 0 {
+			start, end = match[2]-1, match[3]+1
+		}
+		lines[i] = body[:start] + `"` + luaPathLiteral(pointer) + `"` + body[end:] + line[len(body):]
 	}
 	return strings.Join(lines, "")
 }
 
 func referencesPointer(code, pointer string) bool {
-	return strings.Contains(code, "wezterm-current.lua") &&
+	return strings.Contains(code, "wezterm-current") &&
 		(strings.Contains(code, pointer) || strings.Contains(code, "dofile"))
 }
 
@@ -167,12 +220,16 @@ func builderName(code string) (string, bool) {
 //
 // Pointer integration is recognised before the config shape, so a pasted snippet in a config sf2-themes cannot
 // edit still counts as managed.
-func classify(existing, pointer string) plan.Ownership {
+func classify(existing, pointer, legacy string) plan.Ownership {
 	if pycompat.Strip(existing) == "" {
 		return plan.Absent
 	}
 	code := code(existing)
 	if referencesPointer(code, pointer) {
+		// Only an integration that loads this target's pointer, or the legacy shared one sf2 can migrate, is sf2's.
+		if named, ok := assignedPointer(existing); !ok || (named != pointer && named != legacy) {
+			return plan.UnknownShape
+		}
 		if strings.Contains(code, termThemeGuard) {
 			return plan.Managed
 		}
@@ -197,9 +254,12 @@ func classify(existing, pointer string) plan.Ownership {
 //
 // The caller has already classified the config and approved replacing any color-scheme assignment; a shape
 // classify rejects is returned unchanged.
-func integrate(existing, pointer string) string {
+func integrate(existing, pointer, legacy string) string {
 	if pycompat.Strip(existing) == "" {
 		return starterConfig(pointer)
+	}
+	if classify(existing, pointer, legacy) == plan.UnknownShape {
+		return existing
 	}
 	code := code(existing)
 	if referencesPointer(code, pointer) {

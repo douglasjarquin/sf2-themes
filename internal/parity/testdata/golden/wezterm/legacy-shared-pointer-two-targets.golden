@@ -122,6 +122,7 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/wezterm
 file 0600 2fe86e31fa2a4bbd home/.local/state/sf2/backups/wezterm/wezterm.lua.1
 file 0644 a7f5d33802311259 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 dir 0755 xdg
 dir 0755 xdg/sf2-theme
 file 0644 a2c3b6f7e5f9d6ec xdg/sf2-theme/wezterm-current.lua

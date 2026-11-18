@@ -56,3 +56,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/claude
 file 0600 b5a06965a0fbf4dc home/.local/state/sf2/backups/claude/settings.json.1
 file 0644 5be64851123a0ba3 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

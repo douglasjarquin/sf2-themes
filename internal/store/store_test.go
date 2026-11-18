@@ -1,10 +1,12 @@
 package store
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -125,13 +127,9 @@ func TestSaveWritesTheDocumentedShapeAndRoundTrips(t *testing.T) {
 func TestKeepPriorNeverReplacesAnEarlierCopy(t *testing.T) {
 	dir := t.TempDir()
 	manifest := filepath.Join(dir, "state", "sf2", "manifest.json")
-	backup := filepath.Join(dir, "config.toml.bak.20261117T010203Z")
 	var kept []string
-	for _, content := range []string{"mine\n", "later\n"} {
-		if err := os.WriteFile(backup, []byte(content), 0o644); err != nil {
-			t.Fatal(err)
-		}
-		path, err := KeepPrior(manifest, "codex", backup)
+	for _, content := range []string{"mine\r\n", "later\n"} {
+		path, err := KeepPrior(manifest, "codex", "config.toml", []byte(content))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -141,11 +139,107 @@ func TestKeepPriorNeverReplacesAnEarlierCopy(t *testing.T) {
 	if kept[0] != base+"/config.toml.1" || kept[1] != base+"/config.toml.2" {
 		t.Errorf("kept %v", kept)
 	}
-	for i, want := range []string{"mine\n", "later\n"} {
+	for i, want := range []string{"mine\r\n", "later\n"} {
 		data, err := os.ReadFile(kept[i])
 		info, statErr := os.Stat(kept[i])
 		if err != nil || statErr != nil || string(data) != want || info.Mode().Perm() != 0o600 {
 			t.Errorf("%s: %q %v %v", kept[i], data, err, statErr)
 		}
+	}
+}
+
+func TestTrailingDataAfterTheManifestIsAnError(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "manifest.json")
+	for _, content := range []string{`{"version":1,"targets":[]}TRAILING`, `{"version":1,"targets":[]}{}`, `{"version":1,"targets":[]}]`} {
+		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Load(path); err == nil || !strings.Contains(err.Error(), "is not a valid sf2 manifest") {
+			t.Errorf("%s: %v", content, err)
+		}
+	}
+	if err := os.WriteFile(path, []byte("{\"version\":1,\"targets\":[]}\n\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(path); err != nil {
+		t.Errorf("trailing whitespace: %v", err)
+	}
+}
+
+func TestOpenRefusesUnusableStateBeforeLocking(t *testing.T) {
+	for name, setup := range map[string]func(t *testing.T, sf2 string){
+		"manifest symlink": func(t *testing.T, sf2 string) {
+			real := filepath.Join(filepath.Dir(sf2), "real.json")
+			writeFile(t, real, `{"version":1,"targets":[]}`)
+			if err := os.Symlink(real, filepath.Join(sf2, "manifest.json")); err != nil {
+				t.Fatal(err)
+			}
+		},
+		"manifest directory": func(t *testing.T, sf2 string) { mkdir(t, filepath.Join(sf2, "manifest.json")) },
+		"backups file":       func(t *testing.T, sf2 string) { writeFile(t, filepath.Join(sf2, "backups"), "x") },
+		"app backups file":   func(t *testing.T, sf2 string) { writeFile(t, filepath.Join(sf2, "backups", "codex"), "x") },
+		"state dir file":     func(t *testing.T, sf2 string) { writeFile(t, sf2, "x") },
+	} {
+		t.Run(name, func(t *testing.T) {
+			state := t.TempDir()
+			t.Setenv("XDG_STATE_HOME", state)
+			sf2 := filepath.Join(state, "sf2")
+			if name != "state dir file" {
+				mkdir(t, sf2)
+			}
+			setup(t, sf2)
+			if session, err := Open("codex"); err == nil {
+				session.Close()
+				t.Error("opened")
+			}
+		})
+	}
+}
+
+func TestSessionsSerializeConcurrentUpdates(t *testing.T) {
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	const writers = 16
+	var group sync.WaitGroup
+	errs := make(chan error, writers)
+	for i := range writers {
+		group.Add(1)
+		go func() {
+			defer group.Done()
+			session, err := Open("wezterm")
+			if err != nil {
+				errs <- err
+				return
+			}
+			defer session.Close()
+			session.Manifest.Record(Target{App: "wezterm", Target: fmt.Sprintf("/t/%02d/wezterm.lua", i)})
+			errs <- session.Save()
+		}()
+	}
+	group.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	path, _ := Path()
+	manifest, err := Load(path)
+	if err != nil || len(manifest.Targets) != writers {
+		t.Errorf("%d targets, %v", len(manifest.Targets), err)
+	}
+}
+
+func writeFile(t *testing.T, path, content string) {
+	t.Helper()
+	mkdir(t, filepath.Dir(path))
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func mkdir(t *testing.T, path string) {
+	t.Helper()
+	if err := os.MkdirAll(path, 0o755); err != nil {
+		t.Fatal(err)
 	}
 }

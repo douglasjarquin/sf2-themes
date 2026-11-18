@@ -3,6 +3,9 @@ package cli
 import (
 	"errors"
 	"fmt"
+	"io/fs"
+	"os"
+	"slices"
 	"strings"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/adapters"
@@ -132,23 +135,30 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	opts := fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose}
+	// Refuse an unsafe destination before taking the state lock, so a refused run leaves sf2's state untouched too.
+	destinations, err := fsys.Preflight(steps, opts)
+	if err != nil {
+		return 0, err
+	}
 	var owned *ownership
 	if !req.DryRun {
-		if owned, err = loadOwnership(); err != nil {
+		if owned, err = openOwnership(req.App, target); err != nil {
+			return 0, err
+		}
+		defer owned.session.Close()
+		if err := owned.keepPrior(steps, destinations); err != nil {
 			return 0, err
 		}
 	}
-	results, err := fsys.Commit(steps, fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose})
-	if owned != nil {
+	results, err := fsys.Commit(steps, opts)
+	if owned != nil && len(results) > 0 {
 		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
-		identity, idErr := selectionID(app, theme, themes, decided)
-		if idErr != nil && err == nil {
-			err = idErr
-		}
-		if idErr == nil {
-			if saveErr := owned.record(req.App, target, identity, results); saveErr != nil && err == nil {
-				err = saveErr
-			}
+		if recordErr := owned.record(results, err == nil && !decided.slot, func() (*catalog.Theme, error) {
+			inspected, err := app.Inspect(themes, configDir)
+			return inspected.Current, err
+		}); recordErr != nil && err == nil {
+			err = recordErr
 		}
 	}
 	if err != nil {
@@ -318,61 +328,98 @@ func runCurrent(ctx *Context, req Request) (int, error) {
 	return 0, fmt.Errorf("no %s theme applied yet", app.Label)
 }
 
-// ownership is the loaded manifest a run records its writes into.
+// ownership is one run's record for its app target, held under the store's lock from before the first application
+// write until the record is saved.
 type ownership struct {
-	path     string
-	manifest store.Manifest
+	session *store.Session
+	app     string
+	target  string
 }
 
-// loadOwnership reads the manifest before anything is written, so an unreadable manifest refuses the whole run.
-func loadOwnership() (*ownership, error) {
-	path, err := store.Path()
+// openOwnership refuses an unusable state directory or an unreadable manifest before anything is written.
+func openOwnership(app, target string) (*ownership, error) {
+	session, err := store.Open(app)
 	if err != nil {
 		return nil, err
 	}
-	manifest, err := store.Load(path)
-	if err != nil {
-		return nil, err
-	}
-	return &ownership{path: path, manifest: manifest}, nil
+	return &ownership{session: session, app: app, target: target}, nil
 }
 
-// record saves what one run wrote for app at target. The file at target is the user's own configuration, recorded as
-// the setting sf2 edited; every other written file is wholly sf2's. Removed files are no longer owned.
-func (o *ownership) record(app, target, selection string, results []fsys.Result) error {
-	previous := o.manifest.Find(app, target)
-	entry := store.Target{App: app, Target: target, Selection: selection}
+// entry is a copy of the target's recorded entry, or a new one.
+func (o *ownership) entry() store.Target {
+	if previous := o.session.Manifest.Find(o.app, o.target); previous != nil {
+		entry := *previous
+		entry.Files = slices.Clone(previous.Files)
+		return entry
+	}
+	return store.Target{App: o.app, Target: o.target}
+}
+
+// keepPrior keeps the bytes of the user's setting file before sf2 first changes it, and records the copy before the
+// commit, so neither a failed commit nor a failed save can lose what the user had. A target keeps one prior: the
+// first one sf2 ever took.
+func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
+	entry := o.entry()
+	if entry.Prior != "" || entry.Setting != nil {
+		return nil
+	}
+	for i, step := range steps {
+		if step.Remove || step.Path != o.target {
+			continue
+		}
+		raw, err := os.ReadFile(destinations[i])
+		if errors.Is(err, fs.ErrNotExist) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		if text, err := pycompat.DecodeText(raw); err == nil && text == step.Content {
+			return nil
+		}
+		if entry.Prior, err = store.KeepPrior(o.session.Path, o.app, pycompat.Name(o.target), raw); err != nil {
+			return err
+		}
+		o.session.Manifest.Record(entry)
+		return o.session.Save()
+	}
+	return nil
+}
+
+// record merges what one commit did into the target's entry and saves it. The file at the target is the user's
+// own configuration, recorded as the setting sf2 edited; every other written file is wholly sf2's. A removed file is
+// no longer owned, and a record the commit did not reach is kept as it was. releasedSetting drops the setting
+// record after a complete run that left the user's own setting in place. The selection is what the configuration
+// selects after the commit, read back through inspect, and stays as recorded when it cannot be read.
+func (o *ownership) record(results []fsys.Result, releasedSetting bool, current func() (*catalog.Theme, error)) error {
+	entry := o.entry()
+	files := map[string]string{}
+	for _, file := range entry.Files {
+		files[file.Path] = file.SHA256
+	}
 	for _, result := range results {
-		if result.Fingerprint == "" {
-			continue
-		}
-		file := store.File{Path: result.Path, SHA256: result.Fingerprint}
-		if result.Requested != target {
-			entry.Files = append(entry.Files, file)
-			continue
-		}
-		entry.Setting = &file
-		if result.Backup != "" && (previous == nil || previous.Setting == nil) {
-			prior, err := store.KeepPrior(o.path, app, result.Backup)
-			if err != nil {
-				return err
-			}
-			entry.Prior = prior
+		switch {
+		case result.Action == fsys.Removed:
+			delete(files, result.Path)
+		case result.Requested == o.target:
+			entry.Setting = &store.File{Path: result.Path, SHA256: result.Fingerprint}
+		default:
+			files[result.Path] = result.Fingerprint
 		}
 	}
-	o.manifest.Record(entry)
-	return store.Save(o.path, o.manifest)
-}
-
-// selectionID is the sf2 identity a run selected for the target, the dark sibling for a pair, or "" when the run
-// kept the user's own theme and wrote no selection.
-func selectionID(app adapters.App, theme catalog.Theme, themes []catalog.Theme, decided decision) (string, error) {
-	if !decided.slot && !app.OwnsFilesOnUnknownShape {
-		return "", nil
+	if releasedSetting {
+		entry.Setting = nil
 	}
-	if !app.Pair {
-		return theme.Metadata.SelectableID(), nil
+	entry.Files = entry.Files[:0]
+	for path, sha := range files {
+		entry.Files = append(entry.Files, store.File{Path: path, SHA256: sha})
 	}
-	dark, _, err := catalog.ThemePair(theme, themes)
-	return dark.Metadata.SelectableID(), err
+	if theme, err := current(); err == nil {
+		entry.Selection = ""
+		if theme != nil {
+			entry.Selection = theme.Metadata.SelectableID()
+		}
+	}
+	o.session.Manifest.Record(entry)
+	return o.session.Save()
 }

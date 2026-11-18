@@ -17,4 +17,5 @@ dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
 file 0644 e6d189a31023dcc0 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 file 0644 35916798c1909940 prompt.toml

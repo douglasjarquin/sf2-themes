@@ -61,17 +61,9 @@ var now = time.Now
 // Commit performs a planned mutation, refusing before the first write when any destination is unsafe.
 // Removing a file that does not exist reports nothing.
 func Commit(steps []plan.Step, opts Options) ([]Result, error) {
-	destinations := make([]string, len(steps))
-	for i, step := range steps {
-		destinations[i] = step.Path
-		if step.Remove {
-			continue
-		}
-		destination, err := resolveDestination(step.Path, opts.FollowSymlinks)
-		if err != nil {
-			return nil, err
-		}
-		destinations[i] = destination
+	destinations, err := Preflight(steps, opts)
+	if err != nil {
+		return nil, err
 	}
 	var results []Result
 	for i, step := range steps {
@@ -108,6 +100,24 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 	return results, nil
 }
 
+// Preflight resolves every destination of steps and refuses an unsafe one, writing nothing. It returns the
+// destinations Commit would use, so a caller can refuse a run before touching anything else.
+func Preflight(steps []plan.Step, opts Options) ([]string, error) {
+	destinations := make([]string, len(steps))
+	for i, step := range steps {
+		destinations[i] = step.Path
+		if step.Remove {
+			continue
+		}
+		destination, err := resolveDestination(step.Path, opts.FollowSymlinks)
+		if err != nil {
+			return nil, err
+		}
+		destinations[i] = destination
+	}
+	return destinations, nil
+}
+
 // writeFile atomically replaces destination, already resolved, with content, keeping its mode and backing up what it
 // held.
 func writeFile(destination, content string, opts Options) (Result, error) {
@@ -116,16 +126,21 @@ func writeFile(destination, content string, opts Options) (Result, error) {
 		return Result{}, err
 	}
 	var existing *string
+	var raw []byte
 	if isFile {
-		text, err := pycompat.ReadText(destination)
-		if err != nil {
+		if raw, err = os.ReadFile(destination); err != nil {
 			return Result{}, err
+		}
+		text, err := pycompat.DecodeText(raw)
+		if err != nil {
+			return Result{}, fmt.Errorf("%s: %w", destination, err)
 		}
 		existing = &text
 	}
 	fingerprint := Fingerprint(content)
 	if existing != nil && *existing == content {
-		return Result{Path: destination, Action: Unchanged, Fingerprint: fingerprint}, nil
+		// Equal text is a no-op, but the file may differ in bytes, such as CRLF line ends; ownership records the bytes.
+		return Result{Path: destination, Action: Unchanged, Fingerprint: Fingerprint(string(raw))}, nil
 	}
 	var diff string
 	if opts.DryRun || opts.Verbose {

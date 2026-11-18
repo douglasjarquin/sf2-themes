@@ -59,3 +59,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/herdr-app
 file 0600 ca3d163bab055381 home/.local/state/sf2/backups/herdr-app/settings.json.1
 file 0644 531d8531b34a5bd4 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

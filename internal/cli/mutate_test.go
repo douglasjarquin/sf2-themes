@@ -268,6 +268,8 @@ func TestApplyRecordsOwnedFilesTheSettingAndItsFirstPrior(t *testing.T) {
 	}
 
 	for _, id := range []string{"ryu", "ken"} {
+		// The stub's inspection after the commit reports what the run selected, as a real adapter reads it back.
+		inspection.Current = id
 		if _, stderr, status := run("apply", "codex", "--theme", id, "--config-dir", dir); status != 0 {
 			t.Fatalf("apply %s: %d %s", id, status, stderr)
 		}
@@ -290,8 +292,10 @@ func TestApplyRecordsOwnedFilesTheSettingAndItsFirstPrior(t *testing.T) {
 	if entry.Selection != "sf2-ken" || entry.Setting == nil || *entry.Setting != (store.File{Path: config, SHA256: sha(ken)}) {
 		t.Errorf("entry %+v", entry)
 	}
+	// Files written by earlier runs stay owned while they exist; nothing removed them.
 	want := []store.File{
 		{Path: pycompat.Path(dir, "themes", "sf2-ken.txt"), SHA256: sha("palette sf2-ken\n")},
+		{Path: pycompat.Path(dir, "themes", "sf2-ryu.txt"), SHA256: sha("palette sf2-ryu\n")},
 	}
 	if !slices.Equal(entry.Files, want) {
 		t.Errorf("files %+v, want %+v", entry.Files, want)
