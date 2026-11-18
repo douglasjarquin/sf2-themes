@@ -1,36 +1,51 @@
 #!/usr/bin/env bash
-# Print the Docker Buildx version to stderr and fail unless it is at least MIN_BUILDX_VERSION.
+# Log the Docker Buildx version to stderr and fail unless it is at least MIN_BUILDX_VERSION.
 # Every image build path runs this before `docker buildx build`.
 set -euo pipefail
 
 # Buildx 0.38.1 is built with Go 1.26.10, which rejects the compromised eMudhra intermediates.
 MIN_BUILDX_VERSION="0.38.1"
 
-if ! output="$(docker buildx version 2>&1)"; then
-  printf '[require-buildx] docker buildx version failed:\n%s\n' "$output" >&2
+fail() {
+  printf '[require-buildx] %s\n' "$1" >&2
   exit 1
-fi
-printf '[require-buildx] %s\n' "$output" >&2
-
-# `github.com/docker/buildx v0.39.0 <commit>`; distro and Desktop builds may drop the `v` or add a suffix.
-version="$(printf '%s\n' "$output" | awk 'NR == 1 { print $2 }')"
-version="${version#v}"
-version="${version%%[-+]*}"
-if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  printf '[require-buildx] cannot parse a Buildx version from: %s\n' "$output" >&2
-  exit 1
-fi
-
-# Compare major, minor, then patch; 10# keeps a leading zero from reading as octal.
-ordinal() {
-  local major minor patch
-  IFS=. read -r major minor patch <<<"$1"
-  printf '%s\n' "$((10#$major * 1000000 + 10#$minor * 1000 + 10#$patch))"
 }
-if (($(ordinal "$version") >= $(ordinal "$MIN_BUILDX_VERSION"))); then
-  exit 0
-fi
 
-printf '[require-buildx] Buildx %s is older than the required %s; upgrade Docker Buildx before building images\n' \
-  "$version" "$MIN_BUILDX_VERSION" >&2
-exit 1
+# Docker diagnostics stay on stderr; the version record is on stdout.
+output="$(docker buildx version)" || fail "docker buildx version failed"
+record="$(printf '%s\n' "$output" | awk '$1 == "github.com/docker/buildx" { print; exit }')"
+[ -n "$record" ] || fail "docker buildx version printed no github.com/docker/buildx record: ${output}"
+printf '[require-buildx] %s\n' "$record" >&2
+
+# SemVer with an optional leading `v`: core, optional -prerelease, optional +build metadata.
+semver='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z.-]+))?(\+[0-9A-Za-z.-]+)?$'
+version="$(printf '%s\n' "$record" | awk '{ print $2 }')"
+[[ "$version" =~ $semver ]] || fail "cannot parse a Buildx version from: ${record}"
+have=("${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${BASH_REMATCH[3]}")
+prerelease="${BASH_REMATCH[5]}"
+# Docker Desktop ships released Buildx as `-desktop.N`; that is packaging, not a prerelease.
+[[ "$prerelease" =~ ^desktop\.[0-9]+$ ]] && prerelease=""
+IFS=. read -r -a want <<<"$MIN_BUILDX_VERSION"
+
+# Compare decimal strings of any length: drop leading zeros, then the longer is larger.
+compare() {
+  local a="${1#"${1%%[!0]*}"}" b="${2#"${2%%[!0]*}"}"
+  if ((${#a} != ${#b})); then
+    ((${#a} > ${#b})) && echo 1 || echo -1
+  elif [[ "$a" > "$b" ]]; then
+    echo 1
+  elif [[ "$a" < "$b" ]]; then
+    echo -1
+  else
+    echo 0
+  fi
+}
+
+for i in 0 1 2; do
+  case "$(compare "${have[i]}" "${want[i]}")" in
+    1) exit 0 ;;
+    -1) fail "Buildx ${version} is older than the required ${MIN_BUILDX_VERSION}; upgrade Docker Buildx before building images" ;;
+  esac
+done
+# Same core: a prerelease precedes its release.
+[ -z "$prerelease" ] || fail "Buildx ${version} is a prerelease of ${MIN_BUILDX_VERSION}; upgrade Docker Buildx before building images"
