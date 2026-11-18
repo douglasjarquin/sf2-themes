@@ -46,7 +46,7 @@ docs/                Authored contracts and generated SVG previews
 | Ownership manifest | `internal/store/`, `internal/cli/mutate.go` | `setup`/`apply` record each target's selection, owned files, and prior setting; dry-run records nothing |
 | Repository contracts | `internal/repometa/` | Tests that pin the CI workflow, dev image, and Cursor environment |
 | Release | `.github/workflows/release.yml`, `scripts/ci/build-release.sh`, `install.sh`, `.github/release-notes.md` | Version is stamped into `internal/version` at build time |
-| Generators | `cmd/sf2-dev`, `internal/devtools/` | `previews` writes `docs/previews/`; `web-data` writes the site's theme data |
+| Generators | `cmd/sf2-dev`, `internal/devtools/` | `previews` writes `docs/previews/`; `web-data` writes the site's theme data; `favicons` writes `web/public/` icons |
 | Theme design contract | `docs/theme-guidelines.md`, `docs/roster.md` | Covers IDs, dark/light pairs, semantics, and validation |
 | Astro shell and routes | `web/src/layouts/`, `web/src/pages/`, `web/src/lib/site-path.mjs` | Static Pages base is `/sf2-themes` |
 | Site theme runtime | `web/src/scripts/site-theme.mjs`, `web/src/data/site-theme-data.mjs` | Header controls, `⌘K` palette, `?theme=` deep links |
@@ -83,7 +83,7 @@ docs/                Authored contracts and generated SVG previews
 
 ## ANTI-PATTERNS
 
-- Do not hand-edit `docs/previews/` or `web/src/data/generated-theme-data.json`; run `mise run generate-previews` or `mise run generate-web-theme-data`.
+- Do not hand-edit `docs/previews/`, `web/src/data/generated-theme-data.json`, or the `web/public/` favicons; run `mise run generate-previews`, `mise run generate-web-theme-data`, or `mise run generate-favicons`.
 - Do not edit parity goldens by hand or re-record them to make a failing test pass without an intended behavior change.
 - Do not duplicate catalog parsing or semantic color rules inside adapters or pages.
 - Do not write files from an adapter; return plan steps for `fsys.Commit`.
@@ -104,6 +104,7 @@ mise run apply -- wezterm --theme vega
 go run ./cmd/sf2-themes --version
 mise run generate-previews
 mise run generate-web-theme-data
+mise run generate-favicons
 mise run parity:record
 mise run web:install
 mise run web:check
@@ -116,7 +117,7 @@ scripts/ci/run-in-dev-container.sh mise run test
 
 ## NOTES
 
-- Catalog changes require `mise run generate-previews` and `mise run generate-web-theme-data`; the web build fails while the site's theme data is stale.
+- Catalog changes require `mise run generate-previews` and `mise run generate-web-theme-data`, plus `mise run generate-favicons` when the Ryu colors change; the web build fails while the site's theme data is stale, and `mise run test` fails while the favicons are.
 - `mise run verify` is the pre-PR gate; `VERIFY.md` lists what it runs.
 - The Neovim adapter owns managed `colors/`, `sf2-theme/current.lua`, and `plugin/sf2-theme.lua` output.
 - The installer verifies SHA-256 against `checksums.txt` (integrity, not origin); `gh attestation verify` proves origin.

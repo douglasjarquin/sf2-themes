@@ -31,6 +31,23 @@ func TestWebDataCheckDefaultsToModuleRoot(t *testing.T) {
 	}
 }
 
+func TestFaviconsCheckDefaultsToModuleRoot(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if root, err = filepath.EvalSymlinks(root); err != nil {
+		t.Fatal(err)
+	}
+	code, stdout, stderr := run3("favicons", "--check")
+	if code != 0 || stderr != "" {
+		t.Fatalf("exit %d, stderr %q", code, stderr)
+	}
+	if want := "verified favicons: " + root + "/web/public\n"; stdout != want {
+		t.Fatalf("stdout %q, want %q", stdout, want)
+	}
+}
+
 func TestUsageErrorsExitTwo(t *testing.T) {
 	// The error text after the program name is recorded from the Python generator's argparse.
 	cases := []struct {
