@@ -20,6 +20,7 @@ if docker pull "$TAG" >&2 2>/dev/null; then
 fi
 
 TOOLCHAIN_TAG="$(scripts/ci/ensure-toolchain-image.sh)"
+scripts/ci/require-buildx.sh
 printf '[ensure-dev-image] building %s locally on top of %s (not found local or remote)\n' "$TAG" "$TOOLCHAIN_TAG" >&2
 docker buildx build --load \
   --cache-from "type=registry,ref=${IMAGE_PREFIX}:buildcache" \

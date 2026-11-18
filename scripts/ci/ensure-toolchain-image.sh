@@ -19,6 +19,7 @@ if docker pull "$TAG" >&2 2>/dev/null; then
   exit 0
 fi
 
+scripts/ci/require-buildx.sh
 printf '[ensure-toolchain-image] building %s locally (not found local or remote)\n' "$TAG" >&2
 docker buildx build --load \
   --cache-from "type=registry,ref=${IMAGE_PREFIX}:buildcache" \
