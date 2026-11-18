@@ -43,7 +43,8 @@ func (l iconLayout) origin() (x, y int) {
 	return (l.size - w) / 2, (l.size - h) / 2
 }
 
-// The SVG keeps the 32px layout, which lands on whole pixels wherever browsers draw a 16px favicon at 2x.
+// The SVG keeps the 32px layout for browsers that prefer it. Chrome downsamples an SVG favicon for its 16px
+// tab icon, so SiteLayout declares every ICO frame size and Chrome takes these rasters instead.
 // The 16px raster drops the shadow, which would smear a digit only two pixels wide.
 var (
 	svgLayout   = iconLayout{size: 32, cell: 3, shadow: 1, radius: 6}

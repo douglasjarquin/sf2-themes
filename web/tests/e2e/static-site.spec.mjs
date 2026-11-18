@@ -63,18 +63,22 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
 nodeTest("the raw home HTML links the favicons under the project base", async () => {
   const html = await (await get("/sf2-themes/")).text();
 
-  assert.ok(html.includes('<link rel="icon" href="/sf2-themes/favicon.ico" sizes="32x32">'));
+  assert.ok(html.includes('<link rel="icon" href="/sf2-themes/favicon.ico" sizes="16x16 32x32 48x48">'));
   assert.ok(html.includes('<link rel="icon" href="/sf2-themes/favicon.svg" type="image/svg+xml">'));
   assert.ok(html.includes('<link rel="apple-touch-icon" href="/sf2-themes/apple-touch-icon.png">'));
 
-  for (const [path, type] of [
-    ["/sf2-themes/favicon.ico", "image/"],
-    ["/sf2-themes/favicon.svg", "image/svg+xml"],
-    ["/sf2-themes/apple-touch-icon.png", "image/png"],
+  const notFound = await (await get("/sf2-themes/404.html")).text();
+  assert.ok(notFound.includes('<link rel="icon" href="/sf2-themes/favicon.ico" sizes="16x16 32x32 48x48">'), "the 404 page links the favicon");
+
+  for (const [path, types] of [
+    ["/sf2-themes/favicon.ico", ["image/x-icon", "image/vnd.microsoft.icon"]],
+    ["/sf2-themes/favicon.svg", ["image/svg+xml"]],
+    ["/sf2-themes/apple-touch-icon.png", ["image/png"]],
   ]) {
     const response = await get(path);
     assert.equal(response.status, 200, `${path} resolves`);
-    assert.ok(response.headers.get("content-type")?.startsWith(type), `${path} is served as ${type}`);
+    const type = response.headers.get("content-type")?.split(";")[0].trim();
+    assert.ok(types.includes(type), `${path} is served as ${type}, want one of ${types.join(", ")}`);
   }
 });
 
