@@ -92,11 +92,29 @@ func colorsDir(configDir string) (string, error) {
 	return pycompat.Path(dir, "colors"), err
 }
 
-// pointerPath is the target's own selection pointer, beside its colors directory, so two configuration targets keep
-// independent selections.
+// pointerPath is the target's own selection pointer, so two configuration targets keep independent selections.
+//
+// A target is its wezterm.lua. The common `<wezterm-config>/wezterm.lua` gets `<wezterm-config>/sf2-theme/
+// wezterm-current.lua`; any other wezterm.lua, or a target whose common name would be the legacy shared pointer, gets
+// a name carrying a digest of its wezterm.lua path. No target's pointer is ever the legacy shared pointer.
 func pointerPath(configDir string) (string, error) {
 	dir, err := weztermDir(configDir)
-	return pycompat.Path(dir, "sf2-theme", pointerFileName), err
+	if err != nil {
+		return "", err
+	}
+	lua, err := luaPath(configDir)
+	if err != nil {
+		return "", err
+	}
+	legacy, err := legacyPointerPath()
+	if err != nil {
+		return "", err
+	}
+	common := pycompat.Path(dir, "sf2-theme", pointerFileName)
+	if lua == pycompat.Path(dir, "wezterm.lua") && common != legacy {
+		return common, nil
+	}
+	return pycompat.Path(dir, "sf2-theme", "wezterm-current-"+fsys.Fingerprint(lua)[:12]+".lua"), nil
 }
 
 // legacyPointerPath is the single pointer every target shared before selections were per target. A target adopts
@@ -215,16 +233,19 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	ownership := classify(existing, pointer)
+	ownership := classify(existing, pointer, legacy)
 	selection := plan.Inspection{Ownership: ownership}
+	// The selection is the pointer the configuration actually loads: the legacy shared one while an unmigrated
+	// integration names it, otherwise the target's own. An integration sf2 cannot verify selects nothing sf2 knows.
 	selector := pointer
-	isFile, err := fsys.IsFile(pointer)
-	if err != nil {
-		return plan.Inspection{}, err
-	}
-	if !isFile && namesPointer(existing, legacy) {
+	if named, ok := assignedPointer(existing); ok && named == legacy {
 		selector = legacy
-		if isFile, err = fsys.IsFile(legacy); err != nil {
+	} else if ownership == plan.UnknownShape && referencesPointer(code(existing), pointer) {
+		selector = ""
+	}
+	isFile := false
+	if selector != "" {
+		if isFile, err = fsys.IsFile(selector); err != nil {
 			return plan.Inspection{}, err
 		}
 	}
@@ -277,7 +298,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		steps = append(steps, plan.Write(lua, integrate(retarget(existing, legacy, pointer), pointer)))
+		steps = append(steps, plan.Write(lua, integrate(retarget(existing, legacy, pointer), pointer, legacy)))
 	}
 	return steps, nil
 }

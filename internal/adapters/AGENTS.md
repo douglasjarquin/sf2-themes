@@ -40,8 +40,10 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 ## WezTerm
 
 - The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the per-target pointer `<wezterm-config>/sf2-theme/wezterm-current.lua`, and edits `wezterm.lua` only when the gate allows the setting.
-- Selection belongs to the target: two `--config-dir` targets never share a pointer.
-- The legacy shared pointer `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua` supplies a target's selection only while that target has no pointer of its own and its `wezterm.lua` names the exact legacy path in code; writing the setting then retargets that literal and never writes or removes the legacy file.
+- Selection belongs to the target, which is its `wezterm.lua`: a `wezterm.lua` that is not `<wezterm-config>/wezterm.lua`, or whose common pointer would be the legacy shared one, gets `wezterm-current-<12 hex of the SHA-256 of its path>.lua`, so no two targets share a pointer and none is ever the legacy file.
+- Ownership of an integration is its one `local sf2_current = "<path>"` (or single-quoted) assignment on a code line; comments never count.
+- An assignment naming the legacy shared pointer `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua` makes that file the selection while it stays, and writing the setting retargets only that assignment; the legacy file is never written or removed.
+- An integration naming any other pointer, several, or an undecodable string is an unknown shape: `wezterm.lua` stays unchanged and inspection reports no selection.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Ownership comes from `wezterm.lua` and the selection from the pointer, so a foreign Lua config with a readable pointer is foreign for the gate and kept for the selection.
@@ -130,6 +132,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 ## Shared write contract
 
 - The CLI, not an adapter, records each committed write in the `internal/store` manifest; the file at the app's `Target` is recorded as the edited setting and every other write as a wholly owned file.
+- The CLI refuses unsafe destinations with `fsys.Preflight` before it locks state, keeps the setting's original bytes before the commit, merges the commit's results into the earlier record, and reads the selection back through `Inspect`.
 
 - Return every managed text write and legacy-file removal as a plan step so every adapter shares one mutation contract.
 - `fsys.Commit` resolves every destination before the first write; it refuses destination symlinks by default, follows only when explicitly requested, writes the resolved target, and retains the symlink itself.

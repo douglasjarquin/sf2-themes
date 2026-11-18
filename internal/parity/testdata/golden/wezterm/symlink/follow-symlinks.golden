@@ -61,3 +61,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/wezterm
 file 0600 785b9fe39fe7f4d0 home/.local/state/sf2/backups/wezterm/wezterm.lua.1
 file 0644 635a29b195b38525 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

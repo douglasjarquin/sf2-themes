@@ -155,7 +155,7 @@
           "sha256": "<current>"
         },
         {
-          "path": "{SANDBOX}/home/.config/wezterm/sf2-theme/wezterm-current.lua",
+          "path": "{SANDBOX}/home/.config/wezterm/sf2-theme/wezterm-current-<digest>.lua",
           "sha256": "<current>"
         }
       ]

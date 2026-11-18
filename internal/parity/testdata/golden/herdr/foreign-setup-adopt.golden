@@ -19,3 +19,4 @@ dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/herdr
 file 0600 2483d50cf4abfce2 home/.local/state/sf2/backups/herdr/config.toml.1
 file 0644 3a7d8c0d79472711 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

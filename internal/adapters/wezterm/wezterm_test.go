@@ -1,6 +1,8 @@
 package wezterm
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"strings"
@@ -62,6 +64,9 @@ func TestRenderPointerFollowsHostAppearance(t *testing.T) {
 
 const testPointer = "/tmp/xdg/sf2-theme/wezterm-current.lua"
 
+// testLegacy is a legacy shared pointer no classify case names.
+const testLegacy = "/tmp/xdg-legacy/sf2-theme/wezterm-current.lua"
+
 func integrated(builder, rest string) string {
 	return "local wezterm = require(\"wezterm\")\nlocal " + builder + " = wezterm.config_builder()\n" +
 		rest +
@@ -107,10 +112,10 @@ func TestClassifyAndIntegrate(t *testing.T) {
 		{"pasted snippet", pasted, plan.Managed, pasted},
 	}
 	for _, tc := range cases {
-		if got := classify(tc.existing, testPointer); got != tc.ownership {
+		if got := classify(tc.existing, testPointer, testLegacy); got != tc.ownership {
 			t.Errorf("%s: classify = %q, want %q", tc.name, got, tc.ownership)
 		}
-		if got := integrate(tc.existing, testPointer); got != tc.want {
+		if got := integrate(tc.existing, testPointer, testLegacy); got != tc.want {
 			t.Errorf("%s: integrate =\n%s\nwant\n%s", tc.name, got, tc.want)
 		}
 	}
@@ -119,10 +124,10 @@ func TestClassifyAndIntegrate(t *testing.T) {
 func TestPreviousSF2SchemeAssignmentIsUpgraded(t *testing.T) {
 	existing := readTestdata(t, "wezterm-previous-sf2.lua")
 	const pointer = "/home/fighter/.config/sf2-theme/wezterm-current.lua"
-	if got := classify(existing, pointer); got != plan.Legacy {
+	if got := classify(existing, pointer, testLegacy); got != plan.Legacy {
 		t.Errorf("classify = %q, want legacy", got)
 	}
-	if got, want := integrate(existing, pointer), readTestdata(t, "wezterm-previous-sf2-integrated.lua"); got != want {
+	if got, want := integrate(existing, pointer, testLegacy), readTestdata(t, "wezterm-previous-sf2-integrated.lua"); got != want {
 		t.Errorf("integrate =\n%s", got)
 	}
 }
@@ -304,8 +309,13 @@ func TestALegacySharedPointerMigratesOnlyToTheTargetThatNamesIt(t *testing.T) {
 		}
 	}
 
-	// Once the target has its own pointer, the legacy one no longer decides its selection.
+	// While wezterm.lua still loads the legacy pointer, that pointer is the selection, even beside an own pointer.
 	writeFile(t, pointer, "-- sf2-themes: sf2-ken\n")
+	if _, id := currentID(t, themes, dir+"/owned"); id != "sf2-ryu" {
+		t.Errorf("unmigrated: %s, want the legacy pointer's sf2-ryu", id)
+	}
+	// Once wezterm.lua loads the target's own pointer, the legacy one no longer decides its selection.
+	writeFile(t, dir+"/owned/wezterm.lua", lua.Content)
 	if _, id := currentID(t, themes, dir+"/owned"); id != "sf2-ken" {
 		t.Errorf("own pointer: %s", id)
 	}
@@ -318,5 +328,42 @@ func writeFile(t *testing.T, path, content string) {
 	}
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestPointerPathsAreUniquePerTargetAndNeverTheLegacyPointer(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("HOME", dir+"/home")
+	t.Setenv("XDG_CONFIG_HOME", dir+"/xdg")
+	t.Setenv("WEZTERM_CONFIG_DIR", "")
+	t.Setenv("WEZTERM_CONFIG_FILE", "")
+	digest := func(lua string) string {
+		sum := sha256.Sum256([]byte(lua))
+		return hex.EncodeToString(sum[:])[:12]
+	}
+	legacy := dir + "/xdg/sf2-theme/wezterm-current.lua"
+	cases := []struct {
+		name, configDir, configFile, want string
+	}{
+		{"default", "", "", dir + "/xdg/wezterm/sf2-theme/wezterm-current.lua"},
+		{"config dir", dir + "/a", "", dir + "/a/sf2-theme/wezterm-current.lua"},
+		{"config dir at XDG_CONFIG_HOME", dir + "/xdg", "", dir + "/xdg/sf2-theme/wezterm-current-" + digest(dir+"/xdg/wezterm.lua") + ".lua"},
+		{"config file one", "", dir + "/one.lua", dir + "/xdg/wezterm/sf2-theme/wezterm-current-" + digest(dir+"/one.lua") + ".lua"},
+		{"config file two", "", dir + "/two.lua", dir + "/xdg/wezterm/sf2-theme/wezterm-current-" + digest(dir+"/two.lua") + ".lua"},
+	}
+	seen := map[string]string{}
+	for _, tc := range cases {
+		t.Setenv("WEZTERM_CONFIG_FILE", tc.configFile)
+		got, err := pointerPath(tc.configDir)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got != tc.want || got == legacy {
+			t.Errorf("%s: %s, want %s", tc.name, got, tc.want)
+		}
+		if other, ok := seen[got]; ok {
+			t.Errorf("%s shares its pointer with %s", tc.name, other)
+		}
+		seen[got] = tc.name
 	}
 }

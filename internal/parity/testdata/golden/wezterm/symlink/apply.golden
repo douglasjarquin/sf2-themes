@@ -11,7 +11,3 @@ dir 0755 elsewhere
 dir 0755 elsewhere/wezterm
 file 0644 785b9fe39fe7f4d0 elsewhere/wezterm/wezterm.lua
 dir 0755 home
-dir 0755 home/.local
-dir 0755 home/.local/state
-dir 0755 home/.local/state/sf2
-file 0644 414f67722a3ae0e1 home/.local/state/sf2/manifest.json

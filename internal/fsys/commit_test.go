@@ -345,3 +345,32 @@ func TestReplaceRefusesASymlink(t *testing.T) {
 		t.Error("wrote through the symlink")
 	}
 }
+
+func TestAnUnchangedFileIsFingerprintedByItsBytes(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "crlf.toml")
+	writeText(t, path, "new\r\n", 0o644)
+	results, err := Commit([]plan.Step{plan.Write(path, "new\n")}, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The output of `printf 'new\r\n' | shasum -a 256`.
+	const crlf = "9f5d1ba48d2fd5c3aaa39bad078e9a929f1d292511f8febc308def37c3840ab2"
+	if len(results) != 1 || results[0].Action != Unchanged || results[0].Fingerprint != crlf {
+		t.Errorf("results %+v", results)
+	}
+}
+
+func TestPreflightRefusesWithoutWriting(t *testing.T) {
+	dir := t.TempDir()
+	writeText(t, filepath.Join(dir, "real.toml"), "x\n", 0o644)
+	if err := os.Symlink(filepath.Join(dir, "real.toml"), filepath.Join(dir, "link.toml")); err != nil {
+		t.Fatal(err)
+	}
+	_, err := Preflight([]plan.Step{plan.Write(filepath.Join(dir, "new.toml"), "n\n"), plan.Write(filepath.Join(dir, "link.toml"), "y\n")}, Options{})
+	if err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
+		t.Errorf("err %v", err)
+	}
+	if got := entries(t, dir); !slices.Equal(got, []string{"link.toml", "real.toml"}) {
+		t.Errorf("entries %v", got)
+	}
+}

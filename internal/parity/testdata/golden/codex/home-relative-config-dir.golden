@@ -12,6 +12,7 @@ dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
 file 0644 e9b7bd87b478b724 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 dir 0755 home/codex
 file 0644 9c3e7c385c0410f1 home/codex/config.toml
 dir 0755 home/codex/themes

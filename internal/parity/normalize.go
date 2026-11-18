@@ -87,9 +87,14 @@ func Hash(content []byte) string {
 	return hex.EncodeToString(sum[:8])
 }
 
-// Normalize replaces the sandbox root with the placeholder.
+// pointerDigest is the digest of a wezterm.lua path in a per-target WezTerm pointer name. It is derived from the
+// absolute path, so it changes with the sandbox root; the WezTerm adapter's tests pin how it is derived.
+var pointerDigest = regexp.MustCompile(`wezterm-current-[0-9a-f]{12}\.lua`)
+
+// Normalize replaces the sandbox root with the placeholder and masks per-target WezTerm pointer digests.
 func Normalize(raw []byte, root string) []byte {
-	return []byte(strings.ReplaceAll(string(raw), root, Sandbox))
+	text := strings.ReplaceAll(string(raw), root, Sandbox)
+	return []byte(pointerDigest.ReplaceAllString(text, "wezterm-current-<digest>.lua"))
 }
 
 // Expand replaces the placeholder with the sandbox root.
@@ -153,7 +158,7 @@ func Snapshot(root string) ([]Entry, error) {
 		if err != nil {
 			return err
 		}
-		rel = filepath.ToSlash(rel)
+		rel = string(Normalize([]byte(filepath.ToSlash(rel)), root))
 		info, err := os.Lstat(path)
 		if err != nil {
 			return err

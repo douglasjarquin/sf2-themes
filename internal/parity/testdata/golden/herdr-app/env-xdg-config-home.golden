@@ -12,6 +12,7 @@ dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
 file 0644 61123ad0c4bdf07f home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 dir 0755 xdg
 dir 0755 xdg/herdr-app
 file 0644 f6fef0a1c1e8af46 xdg/herdr-app/settings.json

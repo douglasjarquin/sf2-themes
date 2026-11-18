@@ -96,3 +96,4 @@ dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
 file 0644 3f5d40fd1559a7a0 home/.local/state/sf2/manifest.json
+file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
