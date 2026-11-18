@@ -18,6 +18,9 @@ import "../styles/site-chrome.css";
 
 const { description = PRODUCT_DESCRIPTION, noindex = false, title } = Astro.props;
 const pageTitle = `${title} | ${PRODUCT_NAME}`;
+// Chrome rasterizes favicon.svg large and downsamples it, which blurs the 16px tab icon. Declaring every
+// ICO frame size makes Chrome take the hand-tuned 16px and 32px frames; other browsers may still use the SVG.
+const faviconIcoSizes = "16x16 32x32 48x48";
 // A noindex page has no canonical address to claim: the 404 page would otherwise point at /404/, which 404s.
 const pageUrl = canonicalUrl(Astro.url.pathname);
 const jsonLd = noindex ? "" : JSON.stringify(productJsonLd());
@@ -65,7 +68,7 @@ const siteThemePayload = JSON.stringify({ families: siteThemeFamilies })
     {noindex ? <meta name="robots" content="noindex" /> : null}
     <meta name="viewport" content="width=device-width" />
     {noindex ? null : <link rel="canonical" href={pageUrl} />}
-    <link rel="icon" href={`${SITE_BASE}favicon.ico`} sizes="32x32" />
+    <link rel="icon" href={`${SITE_BASE}favicon.ico`} sizes={faviconIcoSizes} />
     <link rel="icon" href={`${SITE_BASE}favicon.svg`} type="image/svg+xml" />
     <link rel="apple-touch-icon" href={`${SITE_BASE}apple-touch-icon.png`} />
     <link rel="alternate" type="text/plain" title="llms.txt" href={llmsTxtLocation()} />
