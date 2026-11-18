@@ -60,6 +60,24 @@ test("the home page carries a self-canonical, description, and JSON-LD", async (
 
 // Agents that fetch rather than render read discovery files they find through links, so the links have to be in
 // the served HTML, not added by a script.
+nodeTest("the raw home HTML links the favicons under the project base", async () => {
+  const html = await (await get("/sf2-themes/")).text();
+
+  assert.ok(html.includes('<link rel="icon" href="/sf2-themes/favicon.ico" sizes="32x32">'));
+  assert.ok(html.includes('<link rel="icon" href="/sf2-themes/favicon.svg" type="image/svg+xml">'));
+  assert.ok(html.includes('<link rel="apple-touch-icon" href="/sf2-themes/apple-touch-icon.png">'));
+
+  for (const [path, type] of [
+    ["/sf2-themes/favicon.ico", "image/"],
+    ["/sf2-themes/favicon.svg", "image/svg+xml"],
+    ["/sf2-themes/apple-touch-icon.png", "image/png"],
+  ]) {
+    const response = await get(path);
+    assert.equal(response.status, 200, `${path} resolves`);
+    assert.ok(response.headers.get("content-type")?.startsWith(type), `${path} is served as ${type}`);
+  }
+});
+
 nodeTest("the raw home HTML links docs, license, llms.txt, and the sitemap", async () => {
   const response = await get("/sf2-themes/");
   const html = await response.text();

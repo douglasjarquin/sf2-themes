@@ -51,6 +51,10 @@ run = "go run ./cmd/sf2-dev previews"
 description = "Regenerate the site's theme data from the catalog"
 run = "go run ./cmd/sf2-dev web-data"
 
+[tasks."generate-favicons"]
+description = "Regenerate the site favicons in web/public from the default theme"
+run = "go run ./cmd/sf2-dev favicons"
+
 [tasks."parity:record"]
 description = "Re-record the parity goldens from the Go binary after an intended behavior change"
 env = { SF2_PARITY_RECORD = "1" }

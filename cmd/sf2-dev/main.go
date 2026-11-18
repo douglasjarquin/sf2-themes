@@ -16,15 +16,17 @@ import (
 )
 
 const (
-	usage         = "usage: sf2-dev {previews,web-data} ..."
+	usage         = "usage: sf2-dev {previews,web-data,favicons} ..."
 	previewsUsage = "usage: sf2-dev previews [-h] [--output OUTPUT]"
 	webDataUsage  = "usage: sf2-dev web-data [-h] [--source SOURCE] [--output OUTPUT] [--check]"
+	faviconsUsage = "usage: sf2-dev favicons [-h] [--output OUTPUT] [--check]"
 )
 
 const (
 	catalogDir    = "themes"
 	previewsDir   = "docs/previews"
 	webDataOutput = "web/src/data/generated-theme-data.json"
+	faviconsDir   = "web/public"
 )
 
 func main() {
@@ -36,7 +38,8 @@ func main() {
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) > 0 && (args[0] == "-h" || args[0] == "--help") {
 		_, _ = fmt.Fprintf(stdout, "%s\n\ncommands:\n  previews  write an SVG swatch for every theme to docs/previews\n"+
-			"  web-data  generate web/src/data/generated-theme-data.json from the catalog\n", usage)
+			"  web-data  generate web/src/data/generated-theme-data.json from the catalog\n"+
+			"  favicons  write the site favicons to web/public from the default theme\n", usage)
 		return 0
 	}
 	if len(args) == 0 {
@@ -47,9 +50,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return previews(args[1:], stdout, stderr)
 	case "web-data":
 		return webData(args[1:], stdout, stderr)
+	case "favicons":
+		return favicons(args[1:], stdout, stderr)
 	}
 	return usageError(stderr, usage, "sf2-dev",
-		fmt.Sprintf("argument command: invalid choice: %s (choose from 'previews', 'web-data')", pycompat.Repr(args[0])))
+		fmt.Sprintf("argument command: invalid choice: %s (choose from 'previews', 'web-data', 'favicons')", pycompat.Repr(args[0])))
 }
 
 func previews(args []string, stdout, stderr io.Writer) int {
@@ -101,6 +106,28 @@ func webData(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	return devtools.WebData(source, pycompat.Path(output), opts.flags["--check"], stdout, stderr)
+}
+
+func favicons(args []string, stdout, stderr io.Writer) int {
+	opts, err := parseOptions(args, []string{"--output"}, []string{"--check"})
+	if errors.Is(err, errHelp) {
+		_, _ = fmt.Fprintf(stdout, "%s\n\nWrite the site favicons from the default theme.\n\noptions:\n"+
+			"  -h, --help       show this help message and exit\n  --output OUTPUT\n  --check\n", faviconsUsage)
+		return 0
+	}
+	if err != nil {
+		return usageError(stderr, faviconsUsage, "sf2-dev favicons", err.Error())
+	}
+	output, ok := opts.values["--output"]
+	if !ok {
+		root, err := moduleRoot()
+		if err != nil {
+			_, _ = fmt.Fprintln(stderr, err)
+			return 1
+		}
+		output = filepath.Join(root, faviconsDir)
+	}
+	return devtools.Favicons(output, opts.flags["--check"], stdout, stderr)
 }
 
 func usageError(stderr io.Writer, usage, prog, message string) int {
