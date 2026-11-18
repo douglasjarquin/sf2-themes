@@ -20,6 +20,6 @@ uv tool uninstall sf2-themes
 ```
 
 Then run the install command above.
-Configs that 1.x wrote need no change; `sf2 apply <app>` reports `no changes` on them.
+Configs that 1.x wrote still load. `sf2 apply wezterm` moves one off the shared pointer 1.x wrote at `~/.config/sf2-theme/wezterm-current.lua` onto that config's own pointer, so that run changes files. The other file-writing apps report `no changes` when their files already match. Slack only prints a paste string.
 
 The deprecated `install` command and the hidden `current --theme` flag are gone; use `apply` and `current`.
