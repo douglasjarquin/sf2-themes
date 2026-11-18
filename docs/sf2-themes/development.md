@@ -2,7 +2,7 @@
 
 Local toolchain and the Astro site. Moved out of the README.
 
-The repository's `mise.toml` pins the local toolchain to Go 1.27, golangci-lint 2.15, Node 24, aube 2.2.4, and shellcheck 0.11.0.
+The repository's `mise.toml` pins the local toolchain to Go 1.27.4, golangci-lint 2.15, Node 24, aube 2.2.4, and shellcheck 0.11.0.
 
 ```sh
 mise install
