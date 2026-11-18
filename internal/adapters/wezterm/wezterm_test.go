@@ -3,10 +3,12 @@ package wezterm
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/plan"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
 // Expected values were recorded from sf2_theme.adapters.wezterm and wezterm_lua under Python 3.11;
@@ -153,7 +155,7 @@ func TestInspectReadsThePointerCommentWithZeroOrMoreSpaces(t *testing.T) {
 	for _, tc := range cases {
 		dir := t.TempDir()
 		t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "xdg"))
-		writeFile(t, filepath.Join(dir, "xdg", "sf2-theme", "wezterm-current.lua"), tc.pointer)
+		writeFile(t, filepath.Join(dir, "wezterm", "sf2-theme", "wezterm-current.lua"), tc.pointer)
 		got, err := Inspect(themes, filepath.Join(dir, "wezterm"))
 		if err != nil {
 			t.Fatal(err)
@@ -178,7 +180,7 @@ func TestInspectCarriesTheSnippetForAnUnknownShape(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "Add this integration to " + dir + "/wezterm/wezterm.lua:\n\n" +
-		"local sf2_current = \"" + dir + "/xdg/sf2-theme/wezterm-current.lua\"\n" +
+		"local sf2_current = \"" + dir + "/wezterm/sf2-theme/wezterm-current.lua\"\n" +
 		"wezterm.add_to_config_reload_watch_list(sf2_current)\n" +
 		"local sf2_scheme = dofile(sf2_current)\nconfig.color_scheme = sf2_scheme\n" +
 		"local sf2_env = config.set_environment_variables or {}\n" +
@@ -208,12 +210,104 @@ func TestPlanLeavesWeztermLuaAloneWithoutTheSlot(t *testing.T) {
 		if !steps[0].Remove || steps[0].Path != dir+"/wezterm/colors/street-fighter-ii-main.toml" {
 			t.Errorf("first step: %+v", steps[0])
 		}
-		if pointer := steps[2*len(themes)]; pointer.Path != dir+"/xdg/sf2-theme/wezterm-current.lua" {
+		if pointer := steps[2*len(themes)]; pointer.Path != dir+"/wezterm/sf2-theme/wezterm-current.lua" {
 			t.Errorf("pointer step: %+v", pointer)
 		}
 		if slot && steps[len(steps)-1].Path != dir+"/wezterm/wezterm.lua" {
 			t.Errorf("integration step: %+v", steps[len(steps)-1])
 		}
+	}
+}
+
+func currentID(t *testing.T, themes []catalog.Theme, configDir string) (plan.Inspection, string) {
+	t.Helper()
+	got, err := Inspect(themes, configDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Current == nil {
+		return got, ""
+	}
+	return got, got.Current.Metadata.SelectableID()
+}
+
+func TestTwoConfigDirTargetsKeepIndependentSelections(t *testing.T) {
+	_, themes := loadTheme(t, "main")
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir+"/xdg")
+	for target, id := range map[string]string{"a": "ryu", "b": "ken"} {
+		theme, _ := loadTheme(t, id)
+		steps, err := Plan(theme, themes, dir+"/"+target, true)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, step := range steps {
+			if !step.Remove {
+				writeFile(t, step.Path, step.Content)
+			}
+		}
+	}
+	for target, want := range map[string]string{"a": "sf2-ryu", "b": "sf2-ken"} {
+		if got, id := currentID(t, themes, dir+"/"+target); id != want || got.Ownership != plan.Managed {
+			t.Errorf("%s: %s %+v, want %s", target, id, got, want)
+		}
+	}
+	if _, err := os.Stat(dir + "/xdg/sf2-theme"); !os.IsNotExist(err) {
+		t.Errorf("a target wrote the legacy shared pointer: %v", err)
+	}
+}
+
+// legacyLua is the integration earlier releases wrote, naming the shared pointer under XDG_CONFIG_HOME.
+func legacyLua(legacy string) string {
+	return "local wezterm = require(\"wezterm\")\nlocal config = wezterm.config_builder()\n" +
+		"-- was \"" + legacy + "\"\n" + "config.font_size = 13\n" +
+		pycompat.RStrip(integrationSnippet(legacy, "config")) + "\nreturn config\n"
+}
+
+func TestALegacySharedPointerMigratesOnlyToTheTargetThatNamesIt(t *testing.T) {
+	theme, themes := loadTheme(t, "main")
+	dir := t.TempDir()
+	t.Setenv("XDG_CONFIG_HOME", dir+"/xdg")
+	legacy := dir + "/xdg/sf2-theme/wezterm-current.lua"
+	writeFile(t, legacy, "-- sf2-themes: sf2-ryu\n")
+	existing := legacyLua(legacy)
+	writeFile(t, dir+"/owned/wezterm.lua", existing)
+	writeFile(t, dir+"/other/wezterm.lua", "")
+	writeFile(t, dir+"/commented/wezterm.lua", "-- \""+legacy+"\"\n")
+
+	got, id := currentID(t, themes, dir+"/owned")
+	if got.Ownership != plan.Managed || id != "sf2-ryu" {
+		t.Errorf("owned: %s %+v", id, got)
+	}
+	for _, target := range []string{"other", "commented"} {
+		if got, id := currentID(t, themes, dir+"/"+target); id != "" || got.Unreadable {
+			t.Errorf("%s adopted the legacy pointer it does not name: %s %+v", target, id, got)
+		}
+	}
+
+	steps, err := Plan(theme, themes, dir+"/owned", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pointer := dir + "/owned/sf2-theme/wezterm-current.lua"
+	lua := steps[len(steps)-1]
+	if steps[len(steps)-2].Path != pointer || lua.Path != dir+"/owned/wezterm.lua" {
+		t.Fatalf("steps end with %+v, %+v", steps[len(steps)-2], lua)
+	}
+	want := strings.Replace(existing, "local sf2_current = \""+legacy+"\"", "local sf2_current = \""+pointer+"\"", 1)
+	if lua.Content != want {
+		t.Errorf("migrated wezterm.lua:\n%s\nwant:\n%s", lua.Content, want)
+	}
+	for _, step := range steps {
+		if step.Path == legacy {
+			t.Errorf("planned a change to the legacy pointer: %+v", step)
+		}
+	}
+
+	// Once the target has its own pointer, the legacy one no longer decides its selection.
+	writeFile(t, pointer, "-- sf2-themes: sf2-ken\n")
+	if _, id := currentID(t, themes, dir+"/owned"); id != "sf2-ken" {
+		t.Errorf("own pointer: %s", id)
 	}
 }
 

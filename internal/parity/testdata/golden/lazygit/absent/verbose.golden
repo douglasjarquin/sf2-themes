@@ -122,3 +122,7 @@ file 0644 b6c9a816205b6398 config/lazygit/themes/sf2-vega.yml
 file 0644 878895d608cdce96 config/lazygit/themes/sf2-zangief-light.yml
 file 0644 71d83ebcbe9e061d config/lazygit/themes/sf2-zangief.yml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 3acba1ff2a8c7385 home/.local/state/sf2/manifest.json

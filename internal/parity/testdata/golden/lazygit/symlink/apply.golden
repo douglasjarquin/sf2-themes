@@ -11,3 +11,7 @@ dir 0755 elsewhere
 dir 0755 elsewhere/lazygit
 file 0644 3bd5032c1145d3d8 elsewhere/lazygit/config.yml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 879adabdc6cfde01 home/.local/state/sf2/manifest.json

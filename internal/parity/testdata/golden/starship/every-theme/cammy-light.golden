@@ -16,3 +16,7 @@ dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme
 file 0644 b077fac5a0831714 home/.config/sf2-theme/zsh-syntax-highlighting.zsh
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 34a74275d9349f72 home/.local/state/sf2/manifest.json

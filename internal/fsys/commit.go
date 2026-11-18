@@ -3,6 +3,8 @@
 package fsys
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -33,13 +35,17 @@ func (a Action) Planned() bool {
 	return a == WouldCreate || a == WouldUpdate || a == WouldRemove
 }
 
-// Result is the outcome of one step. Path is the destination written, which is the resolved target of a followed
-// symlink. Diff is the unified diff of a write that changes content when the commit is a dry run or verbose, and ""
-// otherwise.
+// Result is the outcome of one step. Requested is the step's path and Path the destination written, which is the
+// resolved target of a followed symlink. Diff is the unified diff of a write that changes content when the commit is
+// a dry run or verbose, and "" otherwise. Fingerprint is the SHA-256 of a write's content, and Backup the backup a
+// changed file received; both are "" for a removal.
 type Result struct {
-	Path   string
-	Action Action
-	Diff   string
+	Requested   string
+	Path        string
+	Action      Action
+	Diff        string
+	Fingerprint string
+	Backup      string
 }
 
 // Options are the command-line switches that shape a commit.
@@ -75,6 +81,7 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 			if err != nil {
 				return results, err
 			}
+			result.Requested = step.Path
 			results = append(results, result)
 			continue
 		}
@@ -96,7 +103,7 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 			}
 			action = Removed
 		}
-		results = append(results, Result{Path: destination, Action: action})
+		results = append(results, Result{Requested: step.Path, Path: destination, Action: action})
 	}
 	return results, nil
 }
@@ -116,8 +123,9 @@ func writeFile(destination, content string, opts Options) (Result, error) {
 		}
 		existing = &text
 	}
+	fingerprint := Fingerprint(content)
 	if existing != nil && *existing == content {
-		return Result{Path: destination, Action: Unchanged}, nil
+		return Result{Path: destination, Action: Unchanged, Fingerprint: fingerprint}, nil
 	}
 	var diff string
 	if opts.DryRun || opts.Verbose {
@@ -128,10 +136,11 @@ func writeFile(destination, content string, opts Options) (Result, error) {
 		if existing != nil {
 			action = WouldUpdate
 		}
-		return Result{Path: destination, Action: action, Diff: diff}, nil
+		return Result{Path: destination, Action: action, Diff: diff, Fingerprint: fingerprint}, nil
 	}
+	var saved string
 	if existing != nil {
-		if err := backup(destination, *existing); err != nil {
+		if saved, err = backup(destination, *existing); err != nil {
 			return Result{}, err
 		}
 	}
@@ -151,7 +160,35 @@ func writeFile(destination, content string, opts Options) (Result, error) {
 	if existing != nil {
 		action = Updated
 	}
-	return Result{Path: destination, Action: action, Diff: diff}, nil
+	return Result{Path: destination, Action: action, Diff: diff, Fingerprint: fingerprint, Backup: saved}, nil
+}
+
+// Fingerprint is the hex SHA-256 of content, the identity a manifest records for a managed file.
+func Fingerprint(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(sum[:])
+}
+
+// Replace atomically replaces path with content without a backup, for sf2's own state files. It refuses a symlinked
+// path, gives a new file mode, keeps an existing file's mode, and leaves an identical file untouched.
+func Replace(path, content string, mode fs.FileMode) error {
+	if _, err := resolveDestination(path, false); err != nil {
+		return err
+	}
+	info, err := os.Stat(path)
+	switch {
+	case err == nil:
+		mode = info.Mode().Perm()
+		if text, err := os.ReadFile(path); err == nil && string(text) == content {
+			return nil
+		}
+	case !ignorable(err):
+		return err
+	}
+	if err := os.MkdirAll(pycompat.Parent(path), 0o777); err != nil {
+		return err
+	}
+	return replace(path, content, mode)
 }
 
 // resolveDestination refuses a symlinked destination unless the caller follows symlinks, and then returns its
@@ -175,17 +212,18 @@ func resolveDestination(path string, follow bool) (string, error) {
 	return resolved, nil
 }
 
-func backup(path, existing string) error {
+// backup writes existing beside path with a UTC-stamped name and returns that name.
+func backup(path, existing string) (string, error) {
 	stamp := now().UTC().Format("20060102T150405Z")
 	name := pycompat.WithName(path, pycompat.Name(path)+".bak."+stamp)
 	if err := os.WriteFile(name, []byte(existing), 0o666); err != nil {
-		return err
+		return "", err
 	}
 	info, err := os.Stat(path)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return os.Chmod(name, info.Mode().Perm())
+	return name, os.Chmod(name, info.Mode().Perm())
 }
 
 // replace writes content to a temporary file beside path and renames it over path, so a reader never sees a

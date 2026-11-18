@@ -26,7 +26,10 @@ var App = adapters.App{
 	Reload:                  "restart WezTerm, or let a config reload pick up the managed pointer",
 }
 
-const legacySchemeFilePrefix = "street-fighter-ii"
+const (
+	legacySchemeFilePrefix = "street-fighter-ii"
+	pointerFileName        = "wezterm-current.lua"
+)
 
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `*(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
 
@@ -89,9 +92,18 @@ func colorsDir(configDir string) (string, error) {
 	return pycompat.Path(dir, "colors"), err
 }
 
-func pointerPath() (string, error) {
+// pointerPath is the target's own selection pointer, beside its colors directory, so two configuration targets keep
+// independent selections.
+func pointerPath(configDir string) (string, error) {
+	dir, err := weztermDir(configDir)
+	return pycompat.Path(dir, "sf2-theme", pointerFileName), err
+}
+
+// legacyPointerPath is the single pointer every target shared before selections were per target. A target adopts
+// its selection only when its wezterm.lua names this exact path.
+func legacyPointerPath() (string, error) {
 	root, err := configRoot()
-	return pycompat.Path(root, "sf2-theme", "wezterm-current.lua"), err
+	return pycompat.Path(root, "sf2-theme", pointerFileName), err
 }
 
 func schemeFilename(theme catalog.Theme) string {
@@ -184,9 +196,14 @@ func renderPointer(dark, light catalog.Theme) string {
 	}, "\n")
 }
 
-// Inspect takes ownership from wezterm.lua and the selection from the sf2-owned pointer.
+// Inspect takes ownership from wezterm.lua and the selection from the target's sf2-owned pointer. Before the target
+// has its own pointer, a wezterm.lua that names the legacy shared pointer proves that pointer holds its selection.
 func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) {
-	pointer, err := pointerPath()
+	pointer, err := pointerPath(configDir)
+	if err != nil {
+		return plan.Inspection{}, err
+	}
+	legacy, err := legacyPointerPath()
 	if err != nil {
 		return plan.Inspection{}, err
 	}
@@ -200,12 +217,19 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	}
 	ownership := classify(existing, pointer)
 	selection := plan.Inspection{Ownership: ownership}
+	selector := pointer
 	isFile, err := fsys.IsFile(pointer)
 	if err != nil {
 		return plan.Inspection{}, err
 	}
+	if !isFile && namesPointer(existing, legacy) {
+		selector = legacy
+		if isFile, err = fsys.IsFile(legacy); err != nil {
+			return plan.Inspection{}, err
+		}
+	}
 	if isFile {
-		text, err := pycompat.ReadText(pointer)
+		text, err := pycompat.ReadText(selector)
 		if err != nil {
 			return plan.Inspection{}, err
 		}
@@ -235,7 +259,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 	if err != nil {
 		return nil, err
 	}
-	pointer, err := pointerPath()
+	pointer, err := pointerPath(configDir)
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +273,11 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		steps = append(steps, plan.Write(lua, integrate(existing, pointer)))
+		legacy, err := legacyPointerPath()
+		if err != nil {
+			return nil, err
+		}
+		steps = append(steps, plan.Write(lua, integrate(retarget(existing, legacy, pointer), pointer)))
 	}
 	return steps, nil
 }

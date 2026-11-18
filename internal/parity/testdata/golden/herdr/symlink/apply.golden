@@ -11,3 +11,7 @@ dir 0755 elsewhere
 dir 0755 elsewhere/herdr
 file 0644 b49f1c77ffcc6474 elsewhere/herdr/config.toml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 7ce5679eb0b261b2 home/.local/state/sf2/manifest.json

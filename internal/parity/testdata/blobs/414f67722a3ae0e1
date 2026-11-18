@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "wezterm",
+      "target": "{SANDBOX}/config/wezterm/wezterm.lua",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

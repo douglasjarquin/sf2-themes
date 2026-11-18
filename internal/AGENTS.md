@@ -19,6 +19,7 @@ They were first recorded from the 1.x Python CLI at commit `607a602`, and the Go
 | TOML shape | `catalog/parse.go` | Schema, required fields, enum values, unknown keys, and typed construction. |
 | Semantic validity | `catalog/validate.go` | Contrast, ANSI distinctions, lookup-key uniqueness, and error versus warning severity. |
 | Catalog lifecycle | `catalog/catalog.go` | `fs.FS` discovery, deterministic order, validated loading, lookup, pairing, and defaults. |
+| Ownership state | `store/` | The `$XDG_STATE_HOME/sf2/manifest.json` record of each app target's selection, owned files, edited setting, and prior copy. |
 | Argument parsing | `cli/args.go` | The command set, flags in any position, `--name=value`, `--`, and argparse-compatible error lines. |
 | Help text | `cli/help.go` | Hand-written help and usage lines that never depend on terminal width. |
 | Public dispatch | `cli/cli.go`, `cmd/sf2-themes` | `cli.Main` and the read-only command handlers. |
@@ -38,7 +39,7 @@ They were first recorded from the 1.x Python CLI at commit `607a602`, and the Go
 - Derive installed names through `ThemeMetadata.SelectableID` or `catalog.SelectableID` so adapter-facing identities are consistently `sf2-<catalog-id>`.
 - Preserve the intentional spelling split: public commands `sf2`/`sf2-themes`, Go module `sf2-themes`, and managed state directory `sf2-theme`.
 - The binary always reads the embedded catalog; `SF2_THEME_DIR` is not honored, and maintainer tools pass `os.DirFS(dir)` to `ParseFS`/`LoadFS`.
-- Decode every TOML document through `catalog.DecodeTOML` and every JSON document through `pycompat.Loads`, after `pycompat.ReadText` or `pycompat.DecodeText`.
+- Decode every TOML document through `catalog.DecodeTOML` and every user or app JSON document through `pycompat.Loads`, after `pycompat.ReadText` or `pycompat.DecodeText`; sf2's own manifest in `store/` is typed `encoding/json` that no Python release ever wrote.
 - Reproduce any Python behavior that reaches output bytes through `pycompat`, never with an ad hoc helper.
 - Command handlers write only to the `cli.Context` streams and return an error for an `error:` line; nothing below `cmd/` calls `os.Exit`.
 - Let adapters own syntax-aware reads and merges, then return final content as plan steps for the commit step.

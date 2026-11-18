@@ -52,3 +52,7 @@ file 0644 beb70a25f49a87b2 config/nvim/plugin/sf2-theme.lua
 dir 0755 config/nvim/sf2-theme
 file 0644 7e40daab59e81eed config/nvim/sf2-theme/current.lua
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 51d2d13ce8e47eae home/.local/state/sf2/manifest.json

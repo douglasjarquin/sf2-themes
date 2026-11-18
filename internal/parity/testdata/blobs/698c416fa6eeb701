@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "starship",
+      "target": "{SANDBOX}/xdg/starship.toml",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/xdg/starship.toml",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/xdg/sf2-theme/zsh-syntax-highlighting.zsh",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

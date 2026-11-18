@@ -1,10 +1,13 @@
 package cli
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -12,6 +15,7 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/plan"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/store"
 )
 
 // stubInspection is the inspection a gate case makes the stub adapter report.
@@ -240,4 +244,82 @@ func TestRegisterAcceptsOnlyFileWritingAppNames(t *testing.T) {
 			register(name, adapters.App{})
 		}()
 	}
+}
+
+func TestApplyRecordsOwnedFilesTheSettingAndItsFirstPrior(t *testing.T) {
+	state := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", state)
+	inspection := stubInspection{Ownership: "managed"}
+	useApp(t, "codex", stubApp(&inspection, adapters.App{Label: "Stub"}))
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "config.txt"), []byte("mine = 1\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "legacy.txt"), []byte("old\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	manifestPath := filepath.Join(state, "sf2", "manifest.json")
+
+	if _, stderr, status := run("apply", "codex", "--theme", "ryu", "--dry-run", "--config-dir", dir); status != 0 {
+		t.Fatalf("dry run: %d %s", status, stderr)
+	}
+	if _, err := os.Stat(filepath.Join(state, "sf2")); !os.IsNotExist(err) {
+		t.Fatalf("dry run wrote state: %v", err)
+	}
+
+	for _, id := range []string{"ryu", "ken"} {
+		if _, stderr, status := run("apply", "codex", "--theme", id, "--config-dir", dir); status != 0 {
+			t.Fatalf("apply %s: %d %s", id, status, stderr)
+		}
+	}
+	manifest, err := store.Load(manifestPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := pycompat.Path(dir, "config.txt")
+	entry := manifest.Find("codex", config)
+	if entry == nil || len(manifest.Targets) != 1 {
+		t.Fatalf("manifest %+v", manifest)
+	}
+	// The prior is the backup holding the user's own config, not the one holding sf2's first selection.
+	prior, err := os.ReadFile(entry.Prior)
+	if err != nil || string(prior) != "mine = 1\n" {
+		t.Errorf("prior %s: %q, %v", entry.Prior, prior, err)
+	}
+	ken := "keep = 1\ntheme = sf2-ken\n"
+	if entry.Selection != "sf2-ken" || entry.Setting == nil || *entry.Setting != (store.File{Path: config, SHA256: sha(ken)}) {
+		t.Errorf("entry %+v", entry)
+	}
+	want := []store.File{
+		{Path: pycompat.Path(dir, "themes", "sf2-ken.txt"), SHA256: sha("palette sf2-ken\n")},
+	}
+	if !slices.Equal(entry.Files, want) {
+		t.Errorf("files %+v, want %+v", entry.Files, want)
+	}
+}
+
+func TestAnUnreadableManifestRefusesBeforeWriting(t *testing.T) {
+	state := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", state)
+	if err := os.MkdirAll(filepath.Join(state, "sf2"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(state, "sf2", "manifest.json"), []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	inspection := stubInspection{Ownership: "absent"}
+	useApp(t, "codex", stubApp(&inspection, adapters.App{Label: "Stub"}))
+	dir := t.TempDir()
+	stdout, stderr, status := run("apply", "codex", "--config-dir", dir)
+	if status != 1 || stdout != "" || !strings.Contains(stderr, "manifest.json is not a valid sf2 manifest") {
+		t.Errorf("status %d, stdout %q, stderr %q", status, stdout, stderr)
+	}
+	if got := tree(t, dir); len(got) != 0 {
+		t.Errorf("wrote %v", got)
+	}
+}
+
+func sha(content string) string {
+	sum := sha256.Sum256([]byte(content))
+	return hex.EncodeToString(sum[:])
 }

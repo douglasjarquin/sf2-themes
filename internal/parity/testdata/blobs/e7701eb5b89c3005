@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "codex",
+      "target": "{SANDBOX}/config/codex/config.toml",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/config/codex/config.toml",
+        "sha256": "<current>"
+      },
+      "prior": "{SANDBOX}/home/.local/state/sf2/backups/codex/config.toml.1",
+      "files": [
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-akuma-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-akuma.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-balrog-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-balrog.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-blanka-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-blanka.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-cammy-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-cammy.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-chun-li-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-chun-li.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-dee-jay-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-dee-jay.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-dhalsim-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-dhalsim.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-e-honda-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-e-honda.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-fei-long-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-fei-long.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-guile-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-guile.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-ken-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-ken.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-m-bison-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-m-bison.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-main-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-main.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-ryu-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-ryu.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-sagat-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-sagat.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-t-hawk-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-t-hawk.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-vega-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-vega.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-zangief-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/codex/themes/sf2-zangief.tmTheme",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

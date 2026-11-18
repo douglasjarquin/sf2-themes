@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "nvim",
+      "target": "{SANDBOX}/config/nvim",
+      "selection": "sf2-ken",
+      "files": [
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-akuma-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-akuma.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-balrog-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-balrog.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-blanka-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-blanka.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-cammy-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-cammy.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-chun-li-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-chun-li.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-dee-jay-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-dee-jay.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-dhalsim-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-dhalsim.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-e-honda-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-e-honda.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-fei-long-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-fei-long.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-guile-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-guile.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-ken-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-ken.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-m-bison-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-m-bison.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-main-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-main.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-ryu-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-ryu.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-sagat-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-sagat.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-t-hawk-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-t-hawk.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-vega-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-vega.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-zangief-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/colors/sf2-zangief.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/plugin/sf2-theme.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/nvim/sf2-theme/current.lua",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

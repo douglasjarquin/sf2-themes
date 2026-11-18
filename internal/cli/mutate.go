@@ -11,6 +11,7 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/plan"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/store"
 )
 
 // actionText is how the plan listing and the `changes:` line name each outcome.
@@ -131,7 +132,25 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	var owned *ownership
+	if !req.DryRun {
+		if owned, err = loadOwnership(); err != nil {
+			return 0, err
+		}
+	}
 	results, err := fsys.Commit(steps, fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose})
+	if owned != nil {
+		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
+		identity, idErr := selectionID(app, theme, themes, decided)
+		if idErr != nil && err == nil {
+			err = idErr
+		}
+		if idErr == nil {
+			if saveErr := owned.record(req.App, target, identity, results); saveErr != nil && err == nil {
+				err = saveErr
+			}
+		}
+	}
 	if err != nil {
 		return 0, err
 	}
@@ -297,4 +316,63 @@ func runCurrent(ctx *Context, req Request) (int, error) {
 		return 0, fmt.Errorf("could not read the sf2 theme %s selects", app.Label)
 	}
 	return 0, fmt.Errorf("no %s theme applied yet", app.Label)
+}
+
+// ownership is the loaded manifest a run records its writes into.
+type ownership struct {
+	path     string
+	manifest store.Manifest
+}
+
+// loadOwnership reads the manifest before anything is written, so an unreadable manifest refuses the whole run.
+func loadOwnership() (*ownership, error) {
+	path, err := store.Path()
+	if err != nil {
+		return nil, err
+	}
+	manifest, err := store.Load(path)
+	if err != nil {
+		return nil, err
+	}
+	return &ownership{path: path, manifest: manifest}, nil
+}
+
+// record saves what one run wrote for app at target. The file at target is the user's own configuration, recorded as
+// the setting sf2 edited; every other written file is wholly sf2's. Removed files are no longer owned.
+func (o *ownership) record(app, target, selection string, results []fsys.Result) error {
+	previous := o.manifest.Find(app, target)
+	entry := store.Target{App: app, Target: target, Selection: selection}
+	for _, result := range results {
+		if result.Fingerprint == "" {
+			continue
+		}
+		file := store.File{Path: result.Path, SHA256: result.Fingerprint}
+		if result.Requested != target {
+			entry.Files = append(entry.Files, file)
+			continue
+		}
+		entry.Setting = &file
+		if result.Backup != "" && (previous == nil || previous.Setting == nil) {
+			prior, err := store.KeepPrior(o.path, app, result.Backup)
+			if err != nil {
+				return err
+			}
+			entry.Prior = prior
+		}
+	}
+	o.manifest.Record(entry)
+	return store.Save(o.path, o.manifest)
+}
+
+// selectionID is the sf2 identity a run selected for the target, the dark sibling for a pair, or "" when the run
+// kept the user's own theme and wrote no selection.
+func selectionID(app adapters.App, theme catalog.Theme, themes []catalog.Theme, decided decision) (string, error) {
+	if !decided.slot && !app.OwnsFilesOnUnknownShape {
+		return "", nil
+	}
+	if !app.Pair {
+		return theme.Metadata.SelectableID(), nil
+	}
+	dark, _, err := catalog.ThemePair(theme, themes)
+	return dark.Metadata.SelectableID(), err
 }

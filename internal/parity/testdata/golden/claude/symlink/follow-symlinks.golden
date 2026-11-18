@@ -52,3 +52,10 @@ dir 0755 elsewhere
 dir 0755 elsewhere/claude
 file 0644 42b875c20d67b8b3 elsewhere/claude/settings.json
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/claude
+file 0600 ca3d163bab055381 home/.local/state/sf2/backups/claude/settings.json.1
+file 0644 0d46cb58653d894d home/.local/state/sf2/manifest.json

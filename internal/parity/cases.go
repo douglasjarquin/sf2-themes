@@ -530,9 +530,21 @@ func scenarioCases() []Case {
 		Case{Name: "wezterm/pasted-snippet-apply", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", pasted)}, Steps: []Step{cmd("apply", "wezterm")}},
 		Case{Name: "wezterm/pasted-snippet-setup", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", pasted)}, Steps: []Step{cmd("setup", "wezterm")}},
 		Case{Name: "wezterm/commented-out-integration", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", builderLua(`-- local sf2_current = "`+pointer+`" -- dofile(sf2_current) TERM_THEME`))}, Steps: []Step{cmd("apply", "wezterm")}},
-		Case{Name: "wezterm/unreadable-pointer", Groups: wezterm, Env: xdg, Seed: []File{{Path: "xdg/sf2-theme/wezterm-current.lua", Content: lines(`return "sf2-ryu"`)}}, Steps: []Step{
+		Case{Name: "wezterm/unreadable-pointer", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "sf2-theme/wezterm-current.lua", lines(`return "sf2-ryu"`))}, Steps: []Step{
 			cmd("setup", "wezterm"),
 			cmd("current", "wezterm"),
+		}},
+		// The shared pointer earlier releases wrote moves to the one target whose wezterm.lua names it; another
+		// target keeps its own selection, and the shared pointer itself is left in place.
+		Case{Name: "wezterm/legacy-shared-pointer-two-targets", Groups: wezterm, Env: xdg, Seed: []File{
+			seed("wezterm", "wezterm.lua", builderLua(strings.Join([]string{"config.font_size = 13", snippet, "config.color_scheme = sf2_scheme"}, "\n"))),
+			{Path: "xdg/sf2-theme/wezterm-current.lua", Content: lines("-- sf2-themes: sf2-ryu", `return "sf2-ryu"`)},
+		}, Steps: []Step{
+			cmd("current", "wezterm"),
+			cmd("setup", "wezterm"),
+			step("apply", "wezterm", "--theme", "ken", "--config-dir", Sandbox+"/config/other"),
+			cmd("current", "wezterm"),
+			step("current", "wezterm", "--config-dir", Sandbox+"/config/other"),
 		}},
 		Case{Name: "wezterm/foreign-setup-then-current", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", builderLua(`config.color_scheme = "Builtin Dark"`))}, Steps: []Step{
 			cmd("setup", "wezterm"),

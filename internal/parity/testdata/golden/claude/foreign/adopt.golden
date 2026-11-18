@@ -49,3 +49,10 @@ file 0644 26e036c6b17dfcbe config/claude/themes/sf2-vega.json
 file 0644 20e1a7ab81072dcc config/claude/themes/sf2-zangief-light.json
 file 0644 e672e4b9e1d8cccf config/claude/themes/sf2-zangief.json
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/claude
+file 0600 ceb7d0245faec668 home/.local/state/sf2/backups/claude/settings.json.1
+file 0644 5be64851123a0ba3 home/.local/state/sf2/manifest.json

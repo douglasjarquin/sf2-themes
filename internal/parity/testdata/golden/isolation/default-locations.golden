@@ -221,7 +221,6 @@ file 0644 beb70a25f49a87b2 home/.config/nvim/plugin/sf2-theme.lua
 dir 0755 home/.config/nvim/sf2-theme
 file 0644 c034d480f8fddf2a home/.config/nvim/sf2-theme/current.lua
 dir 0755 home/.config/sf2-theme
-file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
 file 0644 ebbd35eb058a87b1 home/.config/sf2-theme/zsh-syntax-highlighting.zsh
 file 0644 35916798c1909940 home/.config/starship.toml
 dir 0755 home/.config/wezterm
@@ -262,4 +261,10 @@ file 0644 2614769d73b1ef95 home/.config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 home/.config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 home/.config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b home/.config/wezterm/colors/sf2-zangief.toml
-file 0644 7d8f6d344297802e home/.config/wezterm/wezterm.lua
+dir 0755 home/.config/wezterm/sf2-theme
+file 0644 f173abe553e31147 home/.config/wezterm/sf2-theme/wezterm-current.lua
+file 0644 b7e15ed13edb36ea home/.config/wezterm/wezterm.lua
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 35e8aa1701ad196c home/.local/state/sf2/manifest.json

@@ -52,3 +52,10 @@ dir 0755 elsewhere
 dir 0755 elsewhere/lazygit
 file 0644 493e44276b68647d elsewhere/lazygit/config.yml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/lazygit
+file 0600 3bd5032c1145d3d8 home/.local/state/sf2/backups/lazygit/config.yml.1
+file 0644 6573559571ff1227 home/.local/state/sf2/manifest.json

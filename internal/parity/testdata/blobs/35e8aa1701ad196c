@@ -1,0 +1,813 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "claude",
+      "target": "{SANDBOX}/home/.claude/settings.json",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.claude/settings.json",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-akuma-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-akuma.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-balrog-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-balrog.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-blanka-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-blanka.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-cammy-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-cammy.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-chun-li-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-chun-li.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-dee-jay-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-dee-jay.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-dhalsim-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-dhalsim.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-e-honda-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-e-honda.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-fei-long-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-fei-long.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-guile-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-guile.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-ken-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-ken.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-m-bison-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-m-bison.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-main-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-main.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-ryu-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-ryu.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-sagat-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-sagat.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-t-hawk-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-t-hawk.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-vega-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-vega.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-zangief-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.claude/themes/sf2-zangief.json",
+          "sha256": "<current>"
+        }
+      ]
+    },
+    {
+      "app": "codex",
+      "target": "{SANDBOX}/home/.codex/config.toml",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.codex/config.toml",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-akuma-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-akuma.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-balrog-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-balrog.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-blanka-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-blanka.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-cammy-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-cammy.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-chun-li-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-chun-li.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-dee-jay-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-dee-jay.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-dhalsim-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-dhalsim.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-e-honda-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-e-honda.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-fei-long-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-fei-long.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-guile-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-guile.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-ken-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-ken.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-m-bison-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-m-bison.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-main-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-main.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-ryu-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-ryu.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-sagat-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-sagat.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-t-hawk-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-t-hawk.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-vega-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-vega.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-zangief-light.tmTheme",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.codex/themes/sf2-zangief.tmTheme",
+          "sha256": "<current>"
+        }
+      ]
+    },
+    {
+      "app": "herdr",
+      "target": "{SANDBOX}/home/.config/herdr/config.toml",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.config/herdr/config.toml",
+        "sha256": "<current>"
+      },
+      "files": []
+    },
+    {
+      "app": "herdr-app",
+      "target": "{SANDBOX}/home/.config/herdr-app/settings.json",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.config/herdr-app/settings.json",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-akuma-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-akuma.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-balrog-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-balrog.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-blanka-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-blanka.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-cammy-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-cammy.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-chun-li-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-chun-li.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-dee-jay-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-dee-jay.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-dhalsim-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-dhalsim.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-e-honda-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-e-honda.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-fei-long-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-fei-long.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-guile-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-guile.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-ken-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-ken.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-m-bison-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-m-bison.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-main-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-main.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-ryu-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-ryu.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-sagat-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-sagat.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-t-hawk-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-t-hawk.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-vega-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-vega.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-zangief-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/herdr-app/themes/sf2-zangief.json",
+          "sha256": "<current>"
+        }
+      ]
+    },
+    {
+      "app": "nvim",
+      "target": "{SANDBOX}/home/.config/nvim",
+      "selection": "sf2-main",
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-akuma-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-akuma.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-balrog-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-balrog.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-blanka-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-blanka.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-cammy-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-cammy.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-chun-li-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-chun-li.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-dee-jay-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-dee-jay.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-dhalsim-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-dhalsim.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-e-honda-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-e-honda.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-fei-long-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-fei-long.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-guile-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-guile.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-ken-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-ken.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-m-bison-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-m-bison.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-main-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-main.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-ryu-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-ryu.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-sagat-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-sagat.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-t-hawk-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-t-hawk.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-vega-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-vega.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-zangief-light.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/colors/sf2-zangief.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/plugin/sf2-theme.lua",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/nvim/sf2-theme/current.lua",
+          "sha256": "<current>"
+        }
+      ]
+    },
+    {
+      "app": "starship",
+      "target": "{SANDBOX}/home/.config/starship.toml",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.config/starship.toml",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.config/sf2-theme/zsh-syntax-highlighting.zsh",
+          "sha256": "<current>"
+        }
+      ]
+    },
+    {
+      "app": "wezterm",
+      "target": "{SANDBOX}/home/.config/wezterm/wezterm.lua",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/home/.config/wezterm/wezterm.lua",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-akuma-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-akuma.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-balrog-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-balrog.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-blanka-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-blanka.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-cammy-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-cammy.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-chun-li-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-chun-li.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-dee-jay-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-dee-jay.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-dhalsim-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-dhalsim.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-e-honda-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-e-honda.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-fei-long-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-fei-long.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-guile-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-guile.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-ken-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-ken.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-m-bison-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-m-bison.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-main-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-main.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-ryu-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-ryu.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-sagat-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-sagat.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-t-hawk-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-t-hawk.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-vega-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-vega.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-zangief-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-zangief.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/home/.config/wezterm/sf2-theme/wezterm-current.lua",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

@@ -46,8 +46,11 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
-file 0644 7d8f6d344297802e config/wezterm/wezterm.lua
+dir 0755 config/wezterm/sf2-theme
+file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current.lua
+file 0644 d015926a176f1dad config/wezterm/wezterm.lua
 dir 0755 home
-dir 0755 home/.config
-dir 0755 home/.config/sf2-theme
-file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 7ac988cb4b5a3de3 home/.local/state/sf2/manifest.json

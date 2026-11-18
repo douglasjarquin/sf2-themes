@@ -17,3 +17,10 @@ dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme
 file 0644 ebbd35eb058a87b1 home/.config/sf2-theme/zsh-syntax-highlighting.zsh
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/starship
+file 0600 7ca9d6dc4561eba6 home/.local/state/sf2/backups/starship/starship.toml.1
+file 0644 d35b256b37f82bac home/.local/state/sf2/manifest.json

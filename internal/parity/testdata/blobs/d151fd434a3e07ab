@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "herdr",
+      "target": "{SANDBOX}/config/herdr/config.toml",
+      "selection": "sf2-blanka",
+      "setting": {
+        "path": "{SANDBOX}/config/herdr/config.toml",
+        "sha256": "<current>"
+      },
+      "files": []
+    }
+  ]
+}

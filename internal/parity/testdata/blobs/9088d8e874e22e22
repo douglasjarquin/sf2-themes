@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "claude",
+      "target": "{SANDBOX}/config/claude/settings.json",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "wezterm",
+      "target": "{SANDBOX}/config/wezterm/wezterm.lua",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/elsewhere/wezterm/wezterm.lua",
+        "sha256": "<current>"
+      },
+      "prior": "{SANDBOX}/home/.local/state/sf2/backups/wezterm/wezterm.lua.1",
+      "files": [
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-akuma-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-akuma.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-balrog-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-balrog.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-blanka-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-blanka.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-cammy-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-cammy.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-chun-li-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-chun-li.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-dee-jay-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-dee-jay.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-dhalsim-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-dhalsim.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-e-honda-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-e-honda.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-fei-long-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-fei-long.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-guile-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-guile.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-ken-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-ken.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-m-bison-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-m-bison.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-main-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-main.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-ryu-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-ryu.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-sagat-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-sagat.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-t-hawk-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-t-hawk.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-vega-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-vega.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-zangief-light.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/colors/sf2-zangief.toml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}
