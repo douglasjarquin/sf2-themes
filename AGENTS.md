@@ -43,6 +43,7 @@ docs/                Authored contracts and generated SVG previews
 | Adapter mutation | `internal/adapters/<app>/`, `internal/plan/`, `internal/fsys/` | Preserve unrelated user configuration and symlink policy; see `internal/adapters/AGENTS.md` |
 | Python-identical bytes | `internal/pycompat/` | Text, paths, `repr`, JSON, and diffs exactly as the 1.x Python CLI produced them |
 | Parity proof | `internal/parity/` | Goldens for every command and app, the TOML/JSON parser corpus, and the installer cases |
+| Ownership manifest | `internal/store/`, `internal/cli/mutate.go` | `setup`/`apply` record each target's selection, owned files, and prior setting; dry-run records nothing |
 | Repository contracts | `internal/repometa/` | Tests that pin the CI workflow, dev image, and Cursor environment |
 | Release | `.github/workflows/release.yml`, `scripts/ci/build-release.sh`, `install.sh`, `.github/release-notes.md` | Version is stamped into `internal/version` at build time |
 | Generators | `cmd/sf2-dev`, `internal/devtools/` | `previews` writes `docs/previews/`; `web-data` writes the site's theme data |

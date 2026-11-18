@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "lazygit",
+      "target": "{SANDBOX}/config/lazygit/config.yml",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

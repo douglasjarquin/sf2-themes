@@ -9,8 +9,6 @@ stderr
 tree
 dir 0755 home
 dir 0755 home/.config
-dir 0755 home/.config/sf2-theme
-file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
 dir 0755 home/.config/wezterm
 dir 0755 home/.config/wezterm/colors
 file 0644 3e2aa6b84092660c home/.config/wezterm/colors/sf2-akuma-light.toml
@@ -49,5 +47,11 @@ file 0644 2614769d73b1ef95 home/.config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 home/.config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 home/.config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b home/.config/wezterm/colors/sf2-zangief.toml
+dir 0755 home/.config/wezterm/sf2-theme
+file 0644 f173abe553e31147 home/.config/wezterm/sf2-theme/wezterm-current.lua
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 ceaaa240d45d4fcf home/.local/state/sf2/manifest.json
 dir 0755 lua
-file 0644 7d8f6d344297802e lua/custom.lua
+file 0644 b7e15ed13edb36ea lua/custom.lua

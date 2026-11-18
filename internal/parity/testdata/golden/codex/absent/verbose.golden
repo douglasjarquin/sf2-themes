@@ -126,3 +126,7 @@ file 0644 41a797b37eacaab6 config/codex/themes/sf2-vega.tmTheme
 file 0644 1f68f5acbb2103b2 config/codex/themes/sf2-zangief-light.tmTheme
 file 0644 8f5655ffc6020565 config/codex/themes/sf2-zangief.tmTheme
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 3f5d40fd1559a7a0 home/.local/state/sf2/manifest.json

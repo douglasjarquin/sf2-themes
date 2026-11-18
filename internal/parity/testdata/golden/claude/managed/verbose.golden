@@ -93,3 +93,7 @@ file 0644 26e036c6b17dfcbe config/claude/themes/sf2-vega.json
 file 0644 20e1a7ab81072dcc config/claude/themes/sf2-zangief-light.json
 file 0644 e672e4b9e1d8cccf config/claude/themes/sf2-zangief.json
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 0444d83d2d05e8bf home/.local/state/sf2/manifest.json

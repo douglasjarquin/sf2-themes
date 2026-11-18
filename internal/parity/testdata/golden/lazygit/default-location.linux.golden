@@ -53,3 +53,7 @@ file 0644 cb51b038ac93fc71 home/.config/lazygit/themes/sf2-vega-light.yml
 file 0644 b6c9a816205b6398 home/.config/lazygit/themes/sf2-vega.yml
 file 0644 878895d608cdce96 home/.config/lazygit/themes/sf2-zangief-light.yml
 file 0644 71d83ebcbe9e061d home/.config/lazygit/themes/sf2-zangief.yml
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 92ba14398f5bf8c7 home/.local/state/sf2/manifest.json

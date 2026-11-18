@@ -8,6 +8,10 @@ stdout
 stderr
 tree
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 e9aea6883b8566cf home/.local/state/sf2/manifest.json
 dir 0755 lazygit
 file 0644 701c1abf029d61f8 lazygit/config.yml
 dir 0755 lazygit/themes

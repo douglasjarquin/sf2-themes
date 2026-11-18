@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "herdr-app",
+      "target": "{SANDBOX}/config/herdr-app/settings.json",
+      "selection": "sf2-ryu",
+      "setting": {
+        "path": "{SANDBOX}/config/herdr-app/settings.json",
+        "sha256": "<current>"
+      },
+      "prior": "{SANDBOX}/home/.local/state/sf2/backups/herdr-app/settings.json.1",
+      "files": [
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-akuma-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-akuma.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-balrog-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-balrog.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-blanka-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-blanka.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-cammy-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-cammy.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-chun-li-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-chun-li.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-dee-jay-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-dee-jay.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-dhalsim-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-dhalsim.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-e-honda-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-e-honda.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-fei-long-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-fei-long.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-guile-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-guile.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-ken-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-ken.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-m-bison-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-m-bison.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-main-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-main.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-ryu-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-ryu.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-sagat-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-sagat.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-t-hawk-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-t-hawk.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-vega-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-vega.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-zangief-light.json",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/herdr-app/themes/sf2-zangief.json",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "starship",
+      "target": "{SANDBOX}/config/starship/starship.toml",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

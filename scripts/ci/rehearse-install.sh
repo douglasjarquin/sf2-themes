@@ -18,5 +18,6 @@ version="$("$HOME/.local/bin/sf2" --version)"
 "$HOME/.local/bin/sf2" apply wezterm --theme vega
 test -f "$HOME/.config/wezterm/colors/sf2-vega.toml"
 test -f "$HOME/.config/wezterm/wezterm.lua"
-test -f "$HOME/.config/sf2-theme/wezterm-current.lua"
+test -f "$HOME/.config/wezterm/sf2-theme/wezterm-current.lua"
+test -f "$HOME/.local/state/sf2/manifest.json"
 echo "install rehearsal: PASS"

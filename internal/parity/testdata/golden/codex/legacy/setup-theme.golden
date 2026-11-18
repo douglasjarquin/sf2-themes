@@ -49,3 +49,10 @@ file 0644 41a797b37eacaab6 config/codex/themes/sf2-vega.tmTheme
 file 0644 1f68f5acbb2103b2 config/codex/themes/sf2-zangief-light.tmTheme
 file 0644 8f5655ffc6020565 config/codex/themes/sf2-zangief.tmTheme
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/codex
+file 0600 c8ad27d9f5894f27 home/.local/state/sf2/backups/codex/config.toml.1
+file 0644 a79e30f26cbd79d0 home/.local/state/sf2/manifest.json

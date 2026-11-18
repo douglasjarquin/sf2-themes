@@ -73,12 +73,10 @@ stdout
 = 01c4167e830f84c0
 | created: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
 = 528b9ef8421415b0
-| updated: {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
-| --- {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
-| +++ {SANDBOX}/home/.config/sf2-theme/wezterm-current.lua
-| @@ -1,2 +1,7 @@
-| --- sf2-themes: sf2-ryu
-| -return "sf2-ryu"
+| created: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| --- /dev/null
+| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| @@ -0,0 +1,7 @@
 | +-- sf2-themes: sf2-ken
 | +local wezterm = require("wezterm")
 | +local appearance = wezterm.gui and wezterm.gui.get_appearance() or "Dark"
@@ -89,9 +87,11 @@ stdout
 | updated: {SANDBOX}/config/wezterm/wezterm.lua
 | --- {SANDBOX}/config/wezterm/wezterm.lua
 | +++ {SANDBOX}/config/wezterm/wezterm.lua
-| @@ -2,5 +2,9 @@
+| @@ -1,6 +1,10 @@
+|  local wezterm = require("wezterm")
 |  local config = wezterm.config_builder()
-|  local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+| -local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua"
 |  wezterm.add_to_config_reload_watch_list(sf2_current)
 | -config.color_scheme = dofile(sf2_current)
 | +local sf2_scheme = dofile(sf2_current)
@@ -102,11 +102,10 @@ stdout
 |  return config
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
 |   target: {SANDBOX}/config/wezterm/wezterm.lua
-|   changes: 36 created, 2 updated
+|   changes: 37 created, 1 updated
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
 backup 0644 d47dee599a379f39 config/wezterm/wezterm.lua.bak.<STAMP>
-backup 0644 a2c3b6f7e5f9d6ec home/.config/sf2-theme/wezterm-current.lua.bak.<STAMP>
 tree
 dir 0755 config
 dir 0755 config/wezterm
@@ -147,8 +146,17 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
-file 0644 7d8f6d344297802e config/wezterm/wezterm.lua
+dir 0755 config/wezterm/sf2-theme
+file 0644 f5d29221086e7845 config/wezterm/sf2-theme/wezterm-current.lua
+file 0644 d015926a176f1dad config/wezterm/wezterm.lua
 dir 0755 home
 dir 0755 home/.config
 dir 0755 home/.config/sf2-theme
-file 0644 f5d29221086e7845 home/.config/sf2-theme/wezterm-current.lua
+file 0644 a2c3b6f7e5f9d6ec home/.config/sf2-theme/wezterm-current.lua
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/wezterm
+file 0600 d47dee599a379f39 home/.local/state/sf2/backups/wezterm/wezterm.lua.1
+file 0644 41596832b55e1c85 home/.local/state/sf2/manifest.json

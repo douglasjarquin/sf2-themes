@@ -9,7 +9,7 @@ stderr
 | error: WezTerm config has a shape sf2-themes cannot edit safely.
 | Add this integration to {SANDBOX}/config/wezterm/wezterm.lua:
 | 
-| local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
+| local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua"
 | wezterm.add_to_config_reload_watch_list(sf2_current)
 | local sf2_scheme = dofile(sf2_current)
 | config.color_scheme = sf2_scheme
@@ -58,8 +58,11 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
+dir 0755 config/wezterm/sf2-theme
+file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current.lua
 file 0644 fc7a6d7726e69903 config/wezterm/wezterm.lua
 dir 0755 home
-dir 0755 home/.config
-dir 0755 home/.config/sf2-theme
-file 0644 f173abe553e31147 home/.config/sf2-theme/wezterm-current.lua
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 8bd0f1151b5f2955 home/.local/state/sf2/manifest.json

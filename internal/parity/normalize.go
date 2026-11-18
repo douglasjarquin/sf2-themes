@@ -173,6 +173,9 @@ func Snapshot(root string) ([]Entry, error) {
 			if err != nil {
 				return err
 			}
+			if strings.HasSuffix(rel, manifestSuffix) {
+				content = maskManifest(content)
+			}
 			entry.Kind, entry.Content = "file", Normalize(content, root)
 			entry.Hash = Hash(entry.Content)
 		default:
@@ -183,6 +186,35 @@ func Snapshot(root string) ([]Entry, error) {
 	})
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Path < entries[j].Path })
 	return entries, err
+}
+
+// manifestSuffix ends the sandbox path of sf2's ownership manifest.
+const manifestSuffix = "sf2/manifest.json"
+
+var (
+	manifestFingerprint = regexp.MustCompile(`("path": ("(?:[^"\\]|\\.)*"),\s*"sha256": )"([0-9a-f]{64})"`)
+)
+
+// maskManifest makes a manifest independent of the sandbox root. A recorded fingerprint that
+// matches the file now at its path becomes "<current>"; one that does not stays as the raw digest, so a stale or
+// wrong fingerprint still fails its golden.
+func maskManifest(content []byte) []byte {
+	text := manifestFingerprint.ReplaceAllStringFunc(string(content), func(match string) string {
+		groups := manifestFingerprint.FindStringSubmatch(match)
+		path, err := strconv.Unquote(groups[2])
+		if err != nil {
+			return match
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return match
+		}
+		if sum := sha256.Sum256(data); hex.EncodeToString(sum[:]) != groups[3] {
+			return match
+		}
+		return groups[1] + `"<current>"`
+	})
+	return []byte(text)
 }
 
 func isBackup(e Entry) bool { return e.Kind == "file" && backupName.MatchString(e.Path) }

@@ -49,3 +49,10 @@ file 0644 f255d9356b447a0b config/herdr-app/themes/sf2-vega.json
 file 0644 5f60805cc4b8a91e config/herdr-app/themes/sf2-zangief-light.json
 file 0644 d1639f5d9bb5527e config/herdr-app/themes/sf2-zangief.json
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/herdr-app
+file 0600 090857f39cb76dec home/.local/state/sf2/backups/herdr-app/settings.json.1
+file 0644 b316adba61b8c157 home/.local/state/sf2/manifest.json

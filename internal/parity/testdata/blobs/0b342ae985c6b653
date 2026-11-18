@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "lazygit",
+      "target": "{SANDBOX}/config/lazygit/config.yml",
+      "selection": "sf2-chun-li-light",
+      "setting": {
+        "path": "{SANDBOX}/config/lazygit/config.yml",
+        "sha256": "<current>"
+      },
+      "files": [
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-akuma-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-akuma.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-balrog-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-balrog.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-blanka-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-blanka.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-cammy-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-cammy.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-chun-li-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-chun-li.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-dee-jay-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-dee-jay.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-dhalsim-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-dhalsim.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-e-honda-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-e-honda.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-fei-long-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-fei-long.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-guile-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-guile.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-ken-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-ken.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-m-bison-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-m-bison.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-main-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-main.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-ryu-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-ryu.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-sagat-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-sagat.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-t-hawk-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-t-hawk.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-vega-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-vega.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-zangief-light.yml",
+          "sha256": "<current>"
+        },
+        {
+          "path": "{SANDBOX}/config/lazygit/themes/sf2-zangief.yml",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

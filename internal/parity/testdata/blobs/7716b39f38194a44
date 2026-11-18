@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "starship",
+      "target": "{SANDBOX}/config/starship/starship.toml",
+      "selection": "sf2-ken",
+      "setting": {
+        "path": "{SANDBOX}/config/starship/starship.toml",
+        "sha256": "<current>"
+      },
+      "prior": "{SANDBOX}/home/.local/state/sf2/backups/starship/starship.toml.1",
+      "files": [
+        {
+          "path": "{SANDBOX}/home/.config/sf2-theme/zsh-syntax-highlighting.zsh",
+          "sha256": "<current>"
+        }
+      ]
+    }
+  ]
+}

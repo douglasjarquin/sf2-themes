@@ -15,3 +15,10 @@ dir 0755 elsewhere
 dir 0755 elsewhere/herdr
 file 0644 7ee639992db2d71a elsewhere/herdr/config.toml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+dir 0755 home/.local/state/sf2/backups
+dir 0755 home/.local/state/sf2/backups/herdr
+file 0600 b49f1c77ffcc6474 home/.local/state/sf2/backups/herdr/config.toml.1
+file 0644 bfe4409d3cd88e07 home/.local/state/sf2/manifest.json

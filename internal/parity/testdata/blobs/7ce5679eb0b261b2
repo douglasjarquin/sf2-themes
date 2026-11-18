@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "herdr",
+      "target": "{SANDBOX}/config/herdr/config.toml",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

@@ -138,6 +138,9 @@ func TestASymlinkLoopIsRefusedWhenFollowed(t *testing.T) {
 	}
 }
 
+// newSHA is the output of `printf 'new\n' | shasum -a 256`.
+const newSHA = "7aa7a5359173d05b63cfd682e3c38487f3cb4f7f1d60659fe59fab1505977d4c"
+
 func TestDryRunReportsEveryOutcomeWithDiffsAndTouchesNothing(t *testing.T) {
 	root := t.TempDir()
 	t.Chdir(root)
@@ -157,10 +160,10 @@ func TestDryRunReportsEveryOutcomeWithDiffsAndTouchesNothing(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := []Result{
-		{Path: "r/new/created.toml", Action: WouldCreate, Diff: "--- /dev/null\n+++ r/new/created.toml\n@@ -0,0 +1 @@\n+new\n"},
-		{Path: "r/changed.toml", Action: WouldUpdate, Diff: "--- r/changed.toml\n+++ r/changed.toml\n@@ -1,2 +1,2 @@\n keep\n-old\n+new\n"},
-		{Path: "r/unchanged.toml", Action: Unchanged},
-		{Path: "r/legacy.toml", Action: WouldRemove},
+		{Requested: "r/new/created.toml", Path: "r/new/created.toml", Action: WouldCreate, Diff: "--- /dev/null\n+++ r/new/created.toml\n@@ -0,0 +1 @@\n+new\n", Fingerprint: newSHA},
+		{Requested: "r/changed.toml", Path: "r/changed.toml", Action: WouldUpdate, Diff: "--- r/changed.toml\n+++ r/changed.toml\n@@ -1,2 +1,2 @@\n keep\n-old\n+new\n", Fingerprint: "eb073290fa115c022d5fb4d5c11f71219c3f0d3a6af409fba606c6067ce292a6"},
+		{Requested: "r/unchanged.toml", Path: "r/unchanged.toml", Action: Unchanged, Fingerprint: "a6328afc76e9db71da297ebff4b0d3e7a7eb3b01d917c05a6573fef121b6ecb6"},
+		{Requested: "r/legacy.toml", Path: "r/legacy.toml", Action: WouldRemove},
 	}
 	if !slices.Equal(results, want) {
 		t.Errorf("results\n%#v\nwant\n%#v", results, want)
@@ -187,7 +190,7 @@ func TestCommitRemovesAnExistingFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(results, []Result{{Path: legacy, Action: Removed}}) {
+	if !slices.Equal(results, []Result{{Requested: legacy, Path: legacy, Action: Removed}}) {
 		t.Errorf("results %v", results)
 	}
 	if _, err := os.Stat(legacy); !os.IsNotExist(err) {
@@ -212,13 +215,17 @@ func TestAReplacedFileKeepsItsModeAndTheBackupHoldsTheDecodedOriginal(t *testing
 	dir := t.TempDir()
 	path := filepath.Join(dir, "crlf.toml")
 	writeText(t, path, "a\r\nb\r\n", 0o600)
-	if _, err := Commit([]plan.Step{plan.Write(path, "a\nc\n")}, Options{}); err != nil {
+	results, err := Commit([]plan.Step{plan.Write(path, "a\nc\n")}, Options{})
+	if err != nil {
 		t.Fatal(err)
 	}
 	if readText(t, path) != "a\nc\n" || mode(t, path) != 0o600 {
 		t.Errorf("content %q, mode %o", readText(t, path), mode(t, path))
 	}
 	backup := filepath.Join(dir, "crlf.toml.bak.20260102T020405Z")
+	if len(results) != 1 || results[0].Backup != backup {
+		t.Errorf("results %v, want backup %s", results, backup)
+	}
 	if got := readText(t, backup); got != "a\nb\n" {
 		t.Errorf("backup %q", got)
 	}
@@ -249,7 +256,7 @@ func TestUnchangedContentWritesNothingAndCreatesNoBackup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(results, []Result{{Path: path, Action: Unchanged}}) {
+	if !slices.Equal(results, []Result{{Requested: path, Path: path, Action: Unchanged, Fingerprint: newSHA}}) {
 		t.Errorf("results %v", results)
 	}
 	var backups []string
@@ -287,5 +294,54 @@ func TestAnExistingFileThatIsNotUTF8IsAnError(t *testing.T) {
 	}
 	if readText(t, path) != "\xff\xfe theme\n" {
 		t.Error("file changed")
+	}
+}
+
+func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "state", "manifest.json")
+	if err := Replace(path, "one\n", 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, path) != "one\n" || mode(t, path) != 0o644 {
+		t.Errorf("content %q, mode %o", readText(t, path), mode(t, path))
+	}
+	if err := os.Chmod(path, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := Replace(path, "one\n", 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if after, err := os.Stat(path); err != nil || !os.SameFile(before, after) {
+		t.Errorf("identical content replaced the file: %v", err)
+	}
+	if err := Replace(path, "two\n", 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, path) != "two\n" || mode(t, path) != 0o600 {
+		t.Errorf("content %q, mode %o", readText(t, path), mode(t, path))
+	}
+	if got := entries(t, filepath.Join(dir, "state")); !slices.Equal(got, []string{"manifest.json"}) {
+		t.Errorf("entries %v", got)
+	}
+}
+
+func TestReplaceRefusesASymlink(t *testing.T) {
+	dir := t.TempDir()
+	real := filepath.Join(dir, "real.json")
+	writeText(t, real, "keep\n", 0o644)
+	link := filepath.Join(dir, "manifest.json")
+	if err := os.Symlink(real, link); err != nil {
+		t.Fatal(err)
+	}
+	if err := Replace(link, "x\n", 0o644); err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
+		t.Errorf("err %v", err)
+	}
+	if readText(t, real) != "keep\n" {
+		t.Error("wrote through the symlink")
 	}
 }

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "herdr",
+      "target": "{SANDBOX}/config/herdr/config.toml",
+      "files": []
+    }
+  ]
+}

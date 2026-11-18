@@ -11,3 +11,7 @@ dir 0755 config
 dir 0755 config/herdr
 file 0644 cd46c20ab529a781 config/herdr/config.toml
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 e8920320d121d2b5 home/.local/state/sf2/manifest.json

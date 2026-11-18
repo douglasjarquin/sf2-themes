@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "app": "codex",
+      "target": "{SANDBOX}/config/codex/config.toml",
+      "selection": "sf2-main",
+      "files": []
+    }
+  ]
+}

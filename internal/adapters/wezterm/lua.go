@@ -65,6 +65,27 @@ func code(existing string) string {
 	return strings.Join(kept, "\n")
 }
 
+// namesPointer reports whether a Lua code line holds pointer as a quoted string literal.
+func namesPointer(existing, pointer string) bool {
+	return strings.Contains(code(existing), `"`+luaPathLiteral(pointer)+`"`)
+}
+
+// retarget moves an integration from the legacy shared pointer to the target's own pointer by replacing the exact
+// quoted legacy path on code lines; any other text, including comments, is kept byte for byte.
+func retarget(existing, legacy, pointer string) string {
+	if legacy == pointer || !namesPointer(existing, legacy) {
+		return existing
+	}
+	from, to := `"`+luaPathLiteral(legacy)+`"`, `"`+luaPathLiteral(pointer)+`"`
+	lines := pycompat.SplitLinesKeepEnds(existing)
+	for i, line := range lines {
+		if !strings.HasPrefix(pycompat.LStrip(line), "--") {
+			lines[i] = strings.ReplaceAll(line, from, to)
+		}
+	}
+	return strings.Join(lines, "")
+}
+
 func referencesPointer(code, pointer string) bool {
 	return strings.Contains(code, "wezterm-current.lua") &&
 		(strings.Contains(code, pointer) || strings.Contains(code, "dofile"))

@@ -56,3 +56,7 @@ dir 0755 elsewhere/nvim
 dir 0755 elsewhere/nvim/sf2-theme
 file 0644 c034d480f8fddf2a elsewhere/nvim/sf2-theme/current.lua
 dir 0755 home
+dir 0755 home/.local
+dir 0755 home/.local/state
+dir 0755 home/.local/state/sf2
+file 0644 98c1ad15e0fa22d4 home/.local/state/sf2/manifest.json
