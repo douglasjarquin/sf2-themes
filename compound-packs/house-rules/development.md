@@ -24,11 +24,14 @@ The parity goldens in `internal/parity/` are the CLI's behavior contract, byte f
 Re-record them with `mise run parity:record` only for an intended behavior change, and treat every golden diff in review as a behavior change that needs its own justification.
 Never re-record or hand-edit goldens to make a failing test pass.
 
-Adapters return plan steps and never write; `fsys.Commit` is the only writer and owns dry-run, backups, and the symlink policy.
-Preserve unrelated user configuration, unknown WezTerm Lua, and unmarked Herdr blocks, and never follow a configuration symlink unless `--follow-symlinks` selects it.
+Adapters return plan steps and never write; `fsys.Commit` applies adapter plans and owns their dry-run, backups, and symlink policy.
+sf2's own state files go through the `fsys` state helpers instead: the ownership store writes its manifest with `fsys.Replace` and its copies of prior settings with `fsys.CreateExclusive`.
+Preserve unrelated user configuration, unknown WezTerm Lua, and unmarked Herdr blocks, and never write through a destination symlink unless `--follow-symlinks` selects it.
 
 Tests never read or write the real home directory.
-Give every test that resolves a config path a synthetic `HOME` and `XDG_CONFIG_HOME` under `t.TempDir()` (with `t.Setenv`), and set or clear the app-specific variables it depends on, as the parity harness does.
+Give every test that resolves a config path a synthetic `HOME` under a temporary directory, and set or clear `XDG_CONFIG_HOME` and the app-specific variables it depends on, so it never inherits the caller's values.
+In-process tests do this with `t.Setenv` and `t.TempDir()`.
+The parity harness runs each step in a cleared environment with a synthetic `HOME`, and leaves `XDG_CONFIG_HOME` and the other adapter variables unset unless the case sets them, so cases can still exercise the unset-XDG fallback.
 Use synthetic configs and data in evidence as well.
 
 The site is static Astro under the `/sf2-themes` Pages base; build internal URLs with `sitePath()` and keep routes useful before scripts run.
@@ -36,4 +39,4 @@ The site is static Astro under the `/sf2-themes` Pages base; build internal URLs
 `mise run verify` is the pre-PR gate and runs the checks `VERIFY.md` lists.
 Attach a CLI transcript for CLI behavior changes, and before and after screenshots for visual site changes.
 
-A release is a `v<semver>` tag on `main`, and only Doug pushes one or merges.
+A release is a `v<semver>` tag on `main`; push one only with the owner's explicit go-ahead.
