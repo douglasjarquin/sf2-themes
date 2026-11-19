@@ -138,3 +138,12 @@ The agent already is the environment.
 Use `mise run test`, `mise run lint`, `mise run web:check`, and `mise run web:test`.
 `mise run web:dev:container` is already running in the `web` terminal on port 4322.
 Cloud verification uses the aube web tasks.
+
+## COMPOUND ENGINEERING
+
+Team defaults are in `.compound-engineering/config.yaml`; house rules for this repo are in `compound-packs/house-rules/`.
+`docs/solutions/` holds documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter (`module`, `tags`, `problem_type`); it is relevant when implementing or debugging in an area it documents.
+
+After a solved, verified problem, offer once to invoke the `ce-compound` skill at the completion checkpoint when the work corrected a wrong belief about how something behaves: an approach that failed, a review finding that exposed a real defect, or an assumption, document, or first diagnosis that turned out wrong. A naming, style, or preference change does not count. Work that went as first planned does not need the offer. Do not judge whether the lesson deserves a document: `ce-compound` decides whether it qualifies and what holds it (a test, a lint rule, a coding standard, or a learning), and writes nothing when nothing qualifies. Offer at the checkpoint so what it writes can ship in the PR that produced it, and only where the repository treats captured learnings as tracked, committed knowledge.
+
+Write every report, summary, or handoff to the user through the `ce-noslop` skill. This applies when you are the top-level agent writing to the user, not when you are a subagent reporting to its caller. Do not apply it to code, config, verbatim quotes, or text the user asked to post as written.
