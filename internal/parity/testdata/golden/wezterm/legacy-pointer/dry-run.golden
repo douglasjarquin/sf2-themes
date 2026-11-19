@@ -73,9 +73,9 @@ stdout
 = 01c4167e830f84c0
 | would create: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
 = 528b9ef8421415b0
-| would create: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| would create: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | --- /dev/null
-| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | @@ -0,0 +1,7 @@
 | +-- sf2-themes: sf2-ken
 | +local wezterm = require("wezterm")
@@ -91,7 +91,7 @@ stdout
 |  local wezterm = require("wezterm")
 |  local config = wezterm.config_builder()
 | -local sf2_current = "{SANDBOX}/home/.config/sf2-theme/wezterm-current.lua"
-| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua"
+| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua"
 |  wezterm.add_to_config_reload_watch_list(sf2_current)
 | -config.color_scheme = dofile(sf2_current)
 | +local sf2_scheme = dofile(sf2_current)

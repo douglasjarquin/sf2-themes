@@ -164,6 +164,23 @@ func (s *Staged) Publish(content string, mode fs.FileMode) (err error) {
 	return os.Chmod(s.path, mode)
 }
 
+// Probe refuses when an existing file at the staged path cannot be replaced, such as one marked immutable or
+// append-only: a file that refuses a second link refuses to be unlinked by the rename that would replace it. It
+// changes nothing it does not undo.
+func (s *Staged) Probe() error {
+	if _, err := os.Lstat(s.path); err != nil {
+		if ignorable(err) {
+			return nil
+		}
+		return err
+	}
+	probe := s.file.Name() + ".probe"
+	if err := os.Link(s.path, probe); err != nil {
+		return fmt.Errorf("%s cannot be replaced: %w", s.path, err)
+	}
+	return os.Remove(probe)
+}
+
 // Discard removes an unpublished temporary file.
 func (s *Staged) Discard() {
 	_ = s.file.Close()

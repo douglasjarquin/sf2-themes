@@ -1,6 +1,8 @@
 package parity
 
 import (
+	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
+
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
@@ -95,6 +97,19 @@ var pointerDigest = regexp.MustCompile(`wezterm-current-[0-9a-f]{12}\.lua`)
 func Normalize(raw []byte, root string) []byte {
 	text := strings.ReplaceAll(string(raw), root, Sandbox)
 	return []byte(pointerDigest.ReplaceAllString(text, "wezterm-current-<digest>.lua"))
+}
+
+// maskedPointer is an absolute pointer path whose digest Normalize masked.
+var maskedPointer = regexp.MustCompile(`(/[^"\s]*)/sf2-theme/wezterm-current-<digest>\.lua`)
+
+// ExpandDigests restores the masked digest of each absolute pointer path in a seeded tree. A seeded pointer belongs
+// to the wezterm.lua beside its sf2-theme directory, and the adapter names it after that file's canonical path.
+func ExpandDigests(text string) string {
+	return maskedPointer.ReplaceAllStringFunc(text, func(masked string) string {
+		dir := maskedPointer.FindStringSubmatch(masked)[1]
+		lua := fsys.Canonical(dir + "/wezterm.lua")
+		return dir + "/sf2-theme/wezterm-current-" + fsys.Fingerprint(lua)[:12] + ".lua"
+	})
 }
 
 // Expand replaces the placeholder with the sandbox root.

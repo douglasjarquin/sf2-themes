@@ -530,7 +530,7 @@ func scenarioCases() []Case {
 		Case{Name: "wezterm/pasted-snippet-apply", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", pasted)}, Steps: []Step{cmd("apply", "wezterm")}},
 		Case{Name: "wezterm/pasted-snippet-setup", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", pasted)}, Steps: []Step{cmd("setup", "wezterm")}},
 		Case{Name: "wezterm/commented-out-integration", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", builderLua(`-- local sf2_current = "`+pointer+`" -- dofile(sf2_current) TERM_THEME`))}, Steps: []Step{cmd("apply", "wezterm")}},
-		Case{Name: "wezterm/unreadable-pointer", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "sf2-theme/wezterm-current.lua", lines(`return "sf2-ryu"`))}, Steps: []Step{
+		Case{Name: "wezterm/unreadable-pointer", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "sf2-theme/wezterm-current-<digest>.lua", lines(`return "sf2-ryu"`))}, Steps: []Step{
 			cmd("setup", "wezterm"),
 			cmd("current", "wezterm"),
 		}},

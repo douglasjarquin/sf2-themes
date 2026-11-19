@@ -39,19 +39,22 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 
 ## WezTerm
 
-- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the per-target pointer `<wezterm-config>/sf2-theme/wezterm-current.lua`, and edits `wezterm.lua` only when the gate allows the setting.
-- Selection belongs to the target, which is its resolved `wezterm.lua`, however `--config-dir` or `WEZTERM_CONFIG_FILE` named it: a file named `wezterm.lua` gets `sf2-theme/wezterm-current.lua` beside it, and any other file, or a `wezterm.lua` whose common pointer is the legacy shared one by any spelling (`..`, symlink), gets `wezterm-current-<12 hex of the SHA-256 of its resolved path>.lua`.
-- Ownership of an integration is its one active `local sf2_current = "<path>"` (or single-quoted) assignment that `dofile(sf2_current)` loads; `lex.go` tokenizes the Lua, so comments, long comments (`--[=[ ]=]`), and strings never count and are never edited.
-- An assignment naming a former pointer, the legacy shared `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua` or phase A's `<wezterm-config>/sf2-theme/wezterm-current.lua`, makes that file the selection while it stays, and writing the setting retargets only that literal; a former pointer is never written or removed, since another target may load it.
-- An integration naming any other pointer, several, or an undecodable string is an unknown shape: `wezterm.lua` stays unchanged and inspection reports no selection.
+- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the target's pointer, and edits `wezterm.lua` only when the gate allows the setting.
+- A target is the `wezterm.lua` the filesystem opens, however `--config-dir`, `WEZTERM_CONFIG_FILE`, a symlink, `..`, or letter case named it; its pointer is `sf2-theme/wezterm-current-<12 hex of the SHA-256 of fsys.Canonical(lua)>.lua` beside that file, so `WEZTERM_CONFIG_DIR` never moves it.
+- No pointer is ever a plain `wezterm-current.lua`, the name earlier releases shared between targets, so writing one target's pointer never changes another target's selection.
+- `fsys.Canonical` resolves a path component by component (symlinks, `..` after resolution, on-disk letter case) and `fsys.SamePath` compares existing prefixes with `os.SameFile`; never compare pointer or setting paths as strings.
+- Ownership is exact recognition in `lua.go`, on tokens from `lex.go`; a file that does not lex completely (unterminated string or comment, unbalanced blocks) is an unknown shape.
+- Recognized integrations sit at the top level (outside any function, block, bracket, comment, or string) as exact generated lines under one indent: the full block sf2 writes today, the unguarded block earlier releases wrote (`<builder>.color_scheme = dofile(sf2_current)`, upgraded in place), or the marker.
+- The marker is exactly the first three generated lines (`local sf2_current = "<pointer>"`, the reload-watch line, `local sf2_scheme = dofile(sf2_current)`), so a pasted snippet adapted to any shape is managed when top-level code after it reads `sf2_scheme` and nothing reassigns it; otherwise it is not managed and reports no selection.
+- A recognized integration naming another pointer file (`wezterm-current.lua` or a digest name) is migrated: that file is the selection while the integration loads it, setting the theme rewrites only the pointer literal on the first line, the file is never written or removed, and the target's manifest record stops claiming it (`plan.Inspection.Released`).
+- An integration naming a file that is no pointer, more than one integration, or a single-quoted literal sf2 never generated, is not sf2's.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
-- Ownership comes from `wezterm.lua` and the selection from the pointer, so a foreign Lua config with a readable pointer is foreign for the gate and kept for the selection.
+- A foreign config reports no selection, even beside a readable pointer, because the pointer is not what it loads.
 - Every run that writes anything plans the pointer, including plain setup over a foreign config and an unknown shape.
-- Classification ignores Lua comments and long strings and recognizes pointer integration before the config shape, so a pasted snippet in any shape is managed.
-- Empty Lua is absent and receives a starter config; a recognized `wezterm.config_builder()` shape receives pointer integration before its matching return.
-- Integration without the `TERM_THEME` guard, or a literal SF2 `color_scheme` on a builder, is legacy and is upgraded while preserving unrelated Lua.
-- A non-SF2 `color_scheme` on a builder is foreign; adoption removes recognized color-scheme assignments and preserves every other Lua line.
+- Empty Lua is absent and receives a starter config; a top-level `local <name> = wezterm.config_builder()` that the chunk ends by returning receives the full block before that return.
+- A literal SF2 `color_scheme` on a builder is legacy; any other `color_scheme` is foreign, and adoption removes only whole top-level `<builder>.color_scheme = <value>` statements that start their line and end on it, keeping neighbouring comments and tokens.
+- An adoption that would need any other edit, or whose result sf2 would not recognize as managed, is refused before anything is written.
 - Any other shape is unknown: `wezterm.lua` stays byte-for-byte unchanged, scheme files and pointer are still written, and the run exits nonzero with the snippet.
 - Scheme files include compose_cursor, visual_bell, indexed 16/17, and retro `tab_bar` colors; fancy-tab `window_frame` stays Lua-only.
 

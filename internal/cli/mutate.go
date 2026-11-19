@@ -123,6 +123,7 @@ func mutate(ctx *Context, req Request) (int, error) {
 	}
 	var owned *ownership
 	if !req.DryRun {
+		awaitingLock()
 		if owned, err = openOwnership(req.App, run.target); err != nil {
 			return 0, err
 		}
@@ -133,18 +134,19 @@ func mutate(ctx *Context, req Request) (int, error) {
 			return 0, err
 		}
 		owned.target = run.target
-		if err := owned.keepPrior(run.steps, run.destinations); err != nil {
-			return 0, err
-		}
-		// Prove the record of this run can be published before the first application write.
-		if err := owned.session.Stage(); err != nil {
+		if err := owned.prepareWrites(run, opts); err != nil {
 			return 0, err
 		}
 	}
 	results, err := fsys.Commit(run.steps, opts)
 	if owned != nil && len(results) > 0 {
+		complete := err == nil
+		released := ""
+		if complete && run.decided.slot {
+			released = run.inspection.Released
+		}
 		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
-		if recordErr := owned.record(results, err == nil && !run.decided.slot, func() (*catalog.Theme, error) {
+		if recordErr := owned.record(results, complete && !run.decided.slot, released, func() (*catalog.Theme, error) {
 			inspected, err := app.Inspect(themes, configDir)
 			return inspected.Current, err
 		}); recordErr != nil && err == nil {
@@ -382,6 +384,32 @@ func (o *ownership) entry() store.Target {
 	return store.Target{App: o.app, Target: o.target}
 }
 
+// awaitingLock runs as a command that writes is about to wait for the state lock, after its first, lock-free
+// decision. Tests replace it to hold that moment.
+var awaitingLock = func() {}
+
+// prepareWrites readies the state for a commit that changes the application, before its first write: it keeps the
+// user's prior setting and proves the manifest can be published afterwards. A commit that changes nothing writes no
+// state, not even a temporary file.
+func (o *ownership) prepareWrites(run prepared, opts fsys.Options) error {
+	preview := opts
+	preview.DryRun, preview.Verbose = true, false
+	predicted, err := fsys.Commit(run.steps, preview)
+	if err != nil {
+		return err
+	}
+	if !slices.ContainsFunc(predicted, func(r fsys.Result) bool { return r.Action.Planned() }) {
+		return nil
+	}
+	if err := o.session.Stage(); err != nil {
+		return err
+	}
+	if err := o.keepPrior(run.steps, run.destinations); err != nil {
+		return err
+	}
+	return o.session.Stage()
+}
+
 // keepPrior keeps the bytes of the user's setting file before sf2 first changes it, and records the copy before the
 // commit, so neither a failed commit nor a failed save can lose what the user had. A target keeps one prior: the
 // first one sf2 ever took.
@@ -416,9 +444,13 @@ func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
 // record merges what one commit did into the target's entry and saves it. The file at the target is the user's
 // own configuration, recorded as the setting sf2 edited; every other written file is wholly sf2's. A removed file is
 // no longer owned, and a record the commit did not reach is kept as it was. releasedSetting drops the setting
-// record after a complete run that left the user's own setting in place. The selection is what the configuration
-// selects after the commit, read back through inspect, and stays as recorded when it cannot be read.
-func (o *ownership) record(results []fsys.Result, releasedSetting bool, current func() (*catalog.Theme, error)) error {
+// record after a complete run that left the user's own setting in place, and released drops a file the target stopped
+// owning. The selection is what the configuration selects after the commit, read back through inspect, and stays as
+// recorded when it cannot be read.
+//
+// Running a command again after one was interrupted between its application writes and this save records what is on
+// disk, so the manifest catches up.
+func (o *ownership) record(results []fsys.Result, releasedSetting bool, released string, current func() (*catalog.Theme, error)) error {
 	entry := o.entry()
 	files := map[string]string{}
 	for _, file := range entry.Files {
@@ -436,6 +468,11 @@ func (o *ownership) record(results []fsys.Result, releasedSetting bool, current 
 	}
 	if releasedSetting {
 		entry.Setting = nil
+	}
+	for recorded := range files {
+		if released != "" && fsys.SamePath(recorded, released) {
+			delete(files, recorded)
+		}
 	}
 	entry.Files = entry.Files[:0]
 	for path, sha := range files {

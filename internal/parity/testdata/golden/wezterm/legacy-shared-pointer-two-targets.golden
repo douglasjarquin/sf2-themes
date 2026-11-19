@@ -71,8 +71,8 @@ file 0644 81dd5942f42e5fc8 config/other/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/other/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/other/colors/sf2-zangief.toml
 dir 0755 config/other/sf2-theme
-file 0644 f5d29221086e7845 config/other/sf2-theme/wezterm-current.lua
-file 0644 d865d9b72c840591 config/other/wezterm.lua
+file 0644 f5d29221086e7845 config/other/sf2-theme/wezterm-current-<digest>.lua
+file 0644 68fa8adaf4438205 config/other/wezterm.lua
 dir 0755 config/wezterm
 dir 0755 config/wezterm/colors
 file 0644 3e2aa6b84092660c config/wezterm/colors/sf2-akuma-light.toml
@@ -112,8 +112,8 @@ file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
 dir 0755 config/wezterm/sf2-theme
-file 0644 f21f928d8ae02f9c config/wezterm/sf2-theme/wezterm-current.lua
-file 0644 e5da8ef0427e69aa config/wezterm/wezterm.lua
+file 0644 f21f928d8ae02f9c config/wezterm/sf2-theme/wezterm-current-<digest>.lua
+file 0644 d5dfe3ca7c2459d7 config/wezterm/wezterm.lua
 dir 0755 home
 dir 0755 home/.local
 dir 0755 home/.local/state
@@ -121,7 +121,7 @@ dir 0755 home/.local/state/sf2
 dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/wezterm
 file 0600 2fe86e31fa2a4bbd home/.local/state/sf2/backups/wezterm/wezterm.lua.1
-file 0644 a7f5d33802311259 home/.local/state/sf2/manifest.json
+file 0644 64c70e244f7aad88 home/.local/state/sf2/manifest.json
 file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 dir 0755 xdg
 dir 0755 xdg/sf2-theme

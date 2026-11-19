@@ -175,7 +175,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 			t.Fatalf("seed from %s: %v", c.SeedFrom, err)
 		}
 		for _, entry := range tree {
-			path := filepath.Join(root, filepath.FromSlash(entry.Path))
+			path := ExpandDigests(filepath.Join(root, filepath.FromSlash(entry.Path)))
 			switch entry.Kind {
 			case "dir":
 				must(t, os.MkdirAll(path, entry.Mode))
@@ -184,7 +184,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 				content, err := readBlob(entry.Hash)
 				must(t, err)
 				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
-				must(t, os.WriteFile(path, []byte(Expand(string(content), root)), entry.Mode))
+				must(t, os.WriteFile(path, []byte(ExpandDigests(Expand(string(content), root))), entry.Mode))
 				must(t, os.Chmod(path, entry.Mode))
 			case "link":
 				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
@@ -193,7 +193,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 		}
 	}
 	for _, file := range c.Seed {
-		path := filepath.Join(root, filepath.FromSlash(file.Path))
+		path := ExpandDigests(filepath.Join(root, filepath.FromSlash(file.Path)))
 		must(t, os.MkdirAll(filepath.Dir(path), 0o755))
 		if file.Link != "" {
 			must(t, os.Symlink(Expand(file.Link, root), path))
@@ -203,7 +203,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 		if file.Mode != 0 {
 			mode = fs.FileMode(file.Mode)
 		}
-		must(t, os.WriteFile(path, []byte(Expand(file.Content, root)), mode))
+		must(t, os.WriteFile(path, []byte(ExpandDigests(Expand(file.Content, root))), mode))
 		must(t, os.Chmod(path, mode))
 	}
 }

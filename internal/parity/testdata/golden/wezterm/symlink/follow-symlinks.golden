@@ -47,12 +47,12 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
-dir 0755 config/wezterm/sf2-theme
-file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current.lua
 link config/wezterm/wezterm.lua -> {SANDBOX}/elsewhere/wezterm/wezterm.lua
 dir 0755 elsewhere
 dir 0755 elsewhere/wezterm
-file 0644 2535ce06beed9bd7 elsewhere/wezterm/wezterm.lua
+dir 0755 elsewhere/wezterm/sf2-theme
+file 0644 f173abe553e31147 elsewhere/wezterm/sf2-theme/wezterm-current-<digest>.lua
+file 0644 1b0e6954b2485c9e elsewhere/wezterm/wezterm.lua
 dir 0755 home
 dir 0755 home/.local
 dir 0755 home/.local/state
@@ -60,5 +60,5 @@ dir 0755 home/.local/state/sf2
 dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/wezterm
 file 0600 785b9fe39fe7f4d0 home/.local/state/sf2/backups/wezterm/wezterm.lua.1
-file 0644 635a29b195b38525 home/.local/state/sf2/manifest.json
+file 0644 f4504fc14f72e54a home/.local/state/sf2/manifest.json
 file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

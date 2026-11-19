@@ -195,27 +195,56 @@ func Open(app string) (*Session, error) {
 		session.Close()
 		return nil, err
 	}
-	if err := session.Stage(); err != nil {
+	if err := removeStranded(dir); err != nil {
 		session.Close()
 		return nil, err
 	}
 	return session, nil
 }
 
-// Stage creates the temporary file the next Save publishes, so a state directory sf2 cannot write is refused before
-// a change the manifest would have to record. It does nothing when a save is already staged.
-func (s *Session) Stage() (err error) {
-	if s.staged == nil {
-		s.staged, err = fsys.Stage(s.Path)
+// removeStranded deletes temporary manifests a command left behind when it was killed. Only the holder of the lock
+// stages one, so under the lock every one found is stranded.
+func removeStranded(dir string) error {
+	stranded, err := filepath.Glob(filepath.Join(dir, ".manifest.json.*"))
+	if err != nil {
+		return err
 	}
-	return err
+	for _, path := range stranded {
+		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	}
+	return nil
 }
 
-// Save atomically publishes the session's manifest through the staged temporary file, staging one when none is.
+// Stage proves the next Save can publish before a change the manifest must record: it creates the temporary file
+// Save publishes, which refuses a state directory sf2 cannot write, and probes that the existing manifest can be
+// replaced. It does nothing when a save is already staged.
+func (s *Session) Stage() error {
+	if s.staged != nil {
+		return nil
+	}
+	staged, err := fsys.Stage(s.Path)
+	if err != nil {
+		return err
+	}
+	if err := staged.Probe(); err != nil {
+		staged.Discard()
+		return err
+	}
+	s.staged = staged
+	return nil
+}
+
+// Save atomically publishes the session's manifest through the staged temporary file, staging one when none is. A
+// manifest identical to the one on disk writes nothing.
 func (s *Session) Save() error {
 	data, err := encode(s.Manifest)
 	if err != nil {
 		return err
+	}
+	if existing, err := os.ReadFile(s.Path); err == nil && string(existing) == data {
+		return nil
 	}
 	if err := s.Stage(); err != nil {
 		return err

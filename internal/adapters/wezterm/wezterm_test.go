@@ -65,9 +65,6 @@ func TestRenderPointerFollowsHostAppearance(t *testing.T) {
 
 const testPointer = "/tmp/xdg/sf2-theme/wezterm-current.lua"
 
-// testFormer are former pointers no classify case names.
-var testFormer = []string{"/tmp/xdg-legacy/sf2-theme/wezterm-current.lua"}
-
 func integrated(builder, rest string) string {
 	return "local wezterm = require(\"wezterm\")\nlocal " + builder + " = wezterm.config_builder()\n" +
 		rest +
@@ -86,8 +83,10 @@ func TestClassifyAndIntegrate(t *testing.T) {
 	const commentedIntegration = "-- local sf2_current = \"/tmp/xdg/sf2-theme/wezterm-current.lua\" -- dofile(sf2_current) TERM_THEME\n"
 	const unguarded = "local sf2_current = \"/tmp/xdg/sf2-theme/wezterm-current.lua\"\n" +
 		"wezterm.add_to_config_reload_watch_list(sf2_current)\nconfig.color_scheme = dofile(sf2_current)\n"
+	// The snippet sf2 prints for a shape it cannot edit, pasted by hand and adapted to a table config.
 	const pasted = "local wezterm = require(\"wezterm\")\nlocal sf2_current = \"/tmp/xdg/sf2-theme/wezterm-current.lua\"\n" +
-		"local sf2_scheme = dofile(sf2_current)\nTERM_THEME\nreturn { color_scheme = sf2_scheme }\n"
+		"wezterm.add_to_config_reload_watch_list(sf2_current)\nlocal sf2_scheme = dofile(sf2_current)\n" +
+		"return { color_scheme = sf2_scheme }\n"
 	cases := []struct {
 		name      string
 		existing  string
@@ -106,30 +105,35 @@ func TestClassifyAndIntegrate(t *testing.T) {
 				"sf2_env.TERM_THEME = (type(sf2_scheme) == \"string\" and sf2_scheme:find(\"-light\", 1, true)) and \"light\" or \"dark\"\n" +
 				"config.set_environment_variables = sf2_env\n-- TERM_THEME\nreturn config\n"},
 		{"foreign scheme", builder + "config.color_scheme = \"Catppuccin Mocha\"\nreturn config\n", plan.Foreign, integrated("config", "")},
+		{"foreign call", builder + "config.color_scheme = scheme_for(wezterm.gui.get_appearance())\nreturn config\n", plan.Foreign, integrated("config", "")},
 		{"legacy literal scheme", builder + "config.color_scheme = \"street-fighter-2\"\nreturn config\n", plan.Legacy, integrated("config", "")},
-		{"builder name mismatch", builder + "return cfg\n", plan.UnknownShape, builder + "return cfg\n"},
-		{"plain table", "return {\n  font_size = 13,\n}\n", plan.UnknownShape, "return {\n  font_size = 13,\n}\n"},
+		{"builder name mismatch", builder + "return cfg\n", plan.UnknownShape, ""},
+		{"plain table", "return {\n  font_size = 13,\n}\n", plan.UnknownShape, ""},
 		{"discovered builder name", "local wezterm = require(\"wezterm\")\nlocal cfg = wezterm.config_builder()\nreturn cfg\n", plan.Absent, integrated("cfg", "")},
-		{"pasted snippet", pasted, plan.Managed, pasted},
+		{"adapted pasted marker", pasted, plan.Managed, pasted},
 	}
 	for _, tc := range cases {
-		if got := classify(tc.existing, testPointer, testFormer); got != tc.ownership {
+		if got := classify(tc.existing, testPointer); got != tc.ownership {
 			t.Errorf("%s: classify = %q, want %q", tc.name, got, tc.ownership)
 		}
-		if got := integrate(tc.existing, testPointer, testFormer); got != tc.want {
-			t.Errorf("%s: integrate =\n%s\nwant\n%s", tc.name, got, tc.want)
+		got, err := integrate(tc.existing, testPointer)
+		if tc.want == "" {
+			if err == nil {
+				t.Errorf("%s: integrated a shape sf2 cannot edit:\n%s", tc.name, got)
+			}
+		} else if err != nil || got != tc.want {
+			t.Errorf("%s: integrate = %v\n%s\nwant\n%s", tc.name, err, got, tc.want)
 		}
 	}
 }
-
 func TestPreviousSF2SchemeAssignmentIsUpgraded(t *testing.T) {
 	existing := readTestdata(t, "wezterm-previous-sf2.lua")
 	const pointer = "/home/fighter/.config/sf2-theme/wezterm-current.lua"
-	if got := classify(existing, pointer, testFormer); got != plan.Legacy {
+	if got := classify(existing, pointer); got != plan.Legacy {
 		t.Errorf("classify = %q, want legacy", got)
 	}
-	if got, want := integrate(existing, pointer, testFormer), readTestdata(t, "wezterm-previous-sf2-integrated.lua"); got != want {
-		t.Errorf("integrate =\n%s", got)
+	if got, err := integrate(existing, pointer); err != nil || got != readTestdata(t, "wezterm-previous-sf2-integrated.lua") {
+		t.Errorf("integrate = %v\n%s", err, got)
 	}
 }
 
@@ -161,7 +165,7 @@ func TestInspectReadsThePointerCommentWithZeroOrMoreSpaces(t *testing.T) {
 	for _, tc := range cases {
 		dir := t.TempDir()
 		t.Setenv("XDG_CONFIG_HOME", filepath.Join(dir, "xdg"))
-		writeFile(t, filepath.Join(dir, "wezterm", "sf2-theme", "wezterm-current.lua"), tc.pointer)
+		writeFile(t, ownPointer(t, filepath.Join(dir, "wezterm")), tc.pointer)
 		got, err := Inspect(themes, filepath.Join(dir, "wezterm"))
 		if err != nil {
 			t.Fatal(err)
@@ -186,12 +190,7 @@ func TestInspectCarriesTheSnippetForAnUnknownShape(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := "Add this integration to " + dir + "/wezterm/wezterm.lua:\n\n" +
-		"local sf2_current = \"" + dir + "/wezterm/sf2-theme/wezterm-current.lua\"\n" +
-		"wezterm.add_to_config_reload_watch_list(sf2_current)\n" +
-		"local sf2_scheme = dofile(sf2_current)\nconfig.color_scheme = sf2_scheme\n" +
-		"local sf2_env = config.set_environment_variables or {}\n" +
-		"sf2_env.TERM_THEME = (type(sf2_scheme) == \"string\" and sf2_scheme:find(\"-light\", 1, true)) and \"light\" or \"dark\"\n" +
-		"config.set_environment_variables = sf2_env\n"
+		integrationSnippet(ownPointer(t, dir+"/wezterm"), "config")
 	if got.Ownership != plan.UnknownShape || got.Detail != want {
 		t.Errorf("inspection: %+v", got)
 	}
@@ -216,13 +215,23 @@ func TestPlanLeavesWeztermLuaAloneWithoutTheSlot(t *testing.T) {
 		if !steps[0].Remove || steps[0].Path != dir+"/wezterm/colors/street-fighter-ii-main.toml" {
 			t.Errorf("first step: %+v", steps[0])
 		}
-		if pointer := steps[2*len(themes)]; pointer.Path != dir+"/wezterm/sf2-theme/wezterm-current.lua" {
+		if pointer := steps[2*len(themes)]; pointer.Path != ownPointer(t, dir+"/wezterm") {
 			t.Errorf("pointer step: %+v", pointer)
 		}
 		if slot && steps[len(steps)-1].Path != dir+"/wezterm/wezterm.lua" {
 			t.Errorf("integration step: %+v", steps[len(steps)-1])
 		}
 	}
+}
+
+// ownPointer is the target's own pointer.
+func ownPointer(t *testing.T, configDir string) string {
+	t.Helper()
+	pointer, err := pointerPath(configDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return pointer
 }
 
 func currentID(t *testing.T, themes []catalog.Theme, configDir string) (plan.Inspection, string) {
@@ -295,7 +304,10 @@ func TestALegacySharedPointerMigratesOnlyToTheTargetThatNamesIt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	pointer := dir + "/owned/sf2-theme/wezterm-current.lua"
+	pointer := ownPointer(t, dir+"/owned")
+	if inspection, _ := currentID(t, themes, dir+"/owned"); inspection.Released != legacy {
+		t.Errorf("released %q, want the legacy pointer", inspection.Released)
+	}
 	lua := steps[len(steps)-1]
 	if steps[len(steps)-2].Path != pointer || lua.Path != dir+"/owned/wezterm.lua" {
 		t.Fatalf("steps end with %+v, %+v", steps[len(steps)-2], lua)
@@ -332,128 +344,219 @@ func writeFile(t *testing.T, path, content string) {
 	}
 }
 
-func TestPointerPathsAreUniquePerTargetAndNeverTheLegacyPointer(t *testing.T) {
-	dir := t.TempDir()
+func TestPointerIdentityIsTheFileTheFilesystemOpens(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
 	t.Setenv("HOME", dir+"/home")
 	t.Setenv("XDG_CONFIG_HOME", dir+"/xdg")
 	t.Setenv("WEZTERM_CONFIG_DIR", "")
 	t.Setenv("WEZTERM_CONFIG_FILE", "")
+	pointerOf := func(configDir, configFile, configRoot string) string {
+		t.Helper()
+		t.Setenv("WEZTERM_CONFIG_FILE", configFile)
+		t.Setenv("WEZTERM_CONFIG_DIR", configRoot)
+		return ownPointer(t, configDir)
+	}
 	digest := func(lua string) string {
-		sum := sha256.Sum256([]byte(fsys.Canonical(lua)))
+		sum := sha256.Sum256([]byte(lua))
 		return hex.EncodeToString(sum[:])[:12]
 	}
-	legacy := dir + "/xdg/sf2-theme/wezterm-current.lua"
-	if err := os.MkdirAll(dir+"/xdg", 0o755); err != nil {
+	for _, d := range []string{"xdg/wezterm", "a", "root", "other/nested"} {
+		if err := os.MkdirAll(dir+"/"+d, 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	writeFile(t, dir+"/a/wezterm.lua", "")
+	if err := os.Symlink(dir+"/other/nested", dir+"/root/link"); err != nil {
 		t.Fatal(err)
 	}
 	if err := os.Symlink(dir+"/xdg", dir+"/alias"); err != nil {
 		t.Fatal(err)
 	}
-	cases := []struct {
-		name, configDir, configFile, want string
-	}{
-		{"default", "", "", dir + "/xdg/wezterm/sf2-theme/wezterm-current.lua"},
-		{"config dir", dir + "/a", "", dir + "/a/sf2-theme/wezterm-current.lua"},
-		{"config dir at XDG_CONFIG_HOME", dir + "/xdg", "", dir + "/xdg/sf2-theme/wezterm-current-" + digest(dir+"/xdg/wezterm.lua") + ".lua"},
-		{"config file one", "", dir + "/one.lua", dir + "/xdg/wezterm/sf2-theme/wezterm-current-" + digest(dir+"/one.lua") + ".lua"},
-		{"config file two", "", dir + "/two.lua", dir + "/xdg/wezterm/sf2-theme/wezterm-current-" + digest(dir+"/two.lua") + ".lua"},
-		{"config file named wezterm.lua", "", dir + "/b/wezterm.lua", dir + "/b/sf2-theme/wezterm-current.lua"},
-	}
-	seen := map[string]string{}
-	for _, tc := range cases {
-		t.Setenv("WEZTERM_CONFIG_FILE", tc.configFile)
-		got, err := pointerPath(tc.configDir)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if got != tc.want || got == legacy {
-			t.Errorf("%s: %s, want %s", tc.name, got, tc.want)
-		}
-		if other, ok := seen[got]; ok {
-			t.Errorf("%s shares its pointer with %s", tc.name, other)
-		}
-		seen[got] = tc.name
+	if err := os.Symlink(dir+"/a/wezterm.lua", dir+"/root/linked.lua"); err != nil {
+		t.Fatal(err)
 	}
 
-	// Every spelling of one location is one target: a dot-dot or symlinked spelling of XDG_CONFIG_HOME never gets
-	// the legacy pointer, and --config-dir X and WEZTERM_CONFIG_FILE=X/wezterm.lua get the same pointer.
-	t.Setenv("WEZTERM_CONFIG_FILE", "")
-	for _, alias := range []string{dir + "/xdg/../xdg", dir + "/alias"} {
-		got, err := pointerPath(alias)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if fsys.SamePath(got, legacy) || pycompat.Name(got) != "wezterm-current-"+digest(dir+"/xdg/wezterm.lua")+".lua" {
-			t.Errorf("%s: %s", alias, got)
+	// The pointer sits beside the file, named after its canonical path, never a name earlier releases shared.
+	if got, want := pointerOf("", "", ""), dir+"/xdg/wezterm/sf2-theme/wezterm-current-"+digest(dir+"/xdg/wezterm/wezterm.lua")+".lua"; got != want {
+		t.Errorf("default: %s, want %s", got, want)
+	}
+	// Spellings of one file share its pointer.
+	same := map[string]string{
+		"--config-dir":               pointerOf(dir+"/a", "", ""),
+		"WEZTERM_CONFIG_FILE":        pointerOf("", dir+"/a/wezterm.lua", ""),
+		"dot-dot":                    pointerOf(dir+"/root/../a", "", ""),
+		"followed file symlink":      pointerOf("", dir+"/root/linked.lua", ""),
+		"another WEZTERM_CONFIG_DIR": pointerOf("", dir+"/a/wezterm.lua", dir+"/elsewhere"),
+	}
+	for name, got := range same {
+		if got != same["--config-dir"] {
+			t.Errorf("%s: %s, want %s", name, got, same["--config-dir"])
 		}
 	}
-	viaDir, err := pointerPath(dir + "/b")
+	// The symlinked XDG_CONFIG_HOME and its real spelling are one target.
+	if a, b := pointerOf(dir+"/alias", "", ""), pointerOf(dir+"/xdg", "", ""); a != b || pycompat.Name(a) == "wezterm-current.lua" {
+		t.Errorf("alias %s, real %s", a, b)
+	}
+	// Distinct files never share one, including `link/..`, which opens the link target's parent.
+	viaLink := pointerOf("", dir+"/root/link/../profile.lua", "")
+	if viaLink != dir+"/other/sf2-theme/wezterm-current-"+digest(dir+"/other/profile.lua")+".lua" {
+		t.Errorf("link/..: %s", viaLink)
+	}
+	if beside := pointerOf("", dir+"/root/profile.lua", ""); beside == viaLink {
+		t.Errorf("distinct files share %s", beside)
+	}
+}
+
+func TestCanonicalFollowsTheFilesystem(t *testing.T) {
+	dir, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv("WEZTERM_CONFIG_FILE", dir+"/b/wezterm.lua")
-	if viaFile, err := pointerPath(""); err != nil || viaFile != viaDir {
-		t.Errorf("WEZTERM_CONFIG_FILE: %s, --config-dir: %s (%v)", viaFile, viaDir, err)
+	writeFile(t, dir+"/real/file.lua", "")
+	writeFile(t, dir+"/other/nested/x", "")
+	if err := os.Symlink(dir+"/other/nested", dir+"/real/link"); err != nil {
+		t.Fatal(err)
+	}
+	cases := map[string]string{
+		dir + "/real/file.lua":                 dir + "/real/file.lua",
+		dir + "/real/./missing/new.lua":        dir + "/real/missing/new.lua",
+		dir + "/real/link/../file.lua":         dir + "/other/file.lua",
+		dir + "/real/link/x":                   dir + "/other/nested/x",
+		dir + "/real/link/../../real/file.lua": dir + "/real/file.lua",
+	}
+	for in, want := range cases {
+		if got := fsys.Canonical(in); got != want {
+			t.Errorf("Canonical(%s) = %s, want %s", in, got, want)
+		}
+	}
+	if fsys.SamePath(dir+"/real/link/../file.lua", dir+"/real/file.lua") {
+		t.Error("link/.. compared equal to a distinct file")
+	}
+	if !fsys.SamePath(dir+"/real/link/x", dir+"/other/nested/x") {
+		t.Error("a symlinked spelling compared distinct")
+	}
+	// On a case-insensitive volume, a different letter case opens the same file and gets its on-disk spelling.
+	if info, err := os.Stat(dir + "/REAL/FILE.LUA"); err == nil {
+		real, _ := os.Stat(dir + "/real/file.lua")
+		if os.SameFile(info, real) {
+			if got := fsys.Canonical(dir + "/REAL/FILE.LUA"); got != dir+"/real/file.lua" {
+				t.Errorf("case: %s", got)
+			}
+			if !fsys.SamePath(dir+"/REAL", dir+"/real") {
+				t.Error("case spellings compared distinct")
+			}
+		}
 	}
 }
 
-func TestCommentsAndStringsNeverCountAsTheIntegration(t *testing.T) {
+const testBuilder = "local wezterm = require(\"wezterm\")\nlocal config = wezterm.config_builder()\n"
+
+// marker is the three lines sf2 recognizes as an integration a person pasted and adapted.
+func marker(pointer string) string {
+	return "local sf2_current = \"" + pointer + "\"\n" + watchLine + "\n" + schemeLine + "\n"
+}
+
+func TestOnlyGeneratedIntegrationAtTheTopLevelIsRecognized(t *testing.T) {
 	const legacy = "/tmp/xdg-legacy/sf2-theme/wezterm-current.lua"
-	const builder = "local wezterm = require(\"wezterm\")\nlocal config = wezterm.config_builder()\n"
+	notManaged := map[string]string{
+		"marker inside a function": testBuilder + "local function later()\n" + marker(testPointer) +
+			"  config.color_scheme = sf2_scheme\nend\nreturn config\n",
+		"marker inside a long comment":  testBuilder + "--[=[\n" + marker(testPointer) + "config.color_scheme = sf2_scheme\n]=]\nreturn config\n",
+		"marker inside a long string":   testBuilder + "local doc = [==[\n" + marker(testPointer) + "]==]\nreturn config\n",
+		"marker with sf2_scheme unused": testBuilder + marker(testPointer) + "return config\n",
+		"marker with sf2_scheme only in a comment": testBuilder + marker(testPointer) +
+			"-- config.color_scheme = sf2_scheme\nreturn config\n",
+		"marker with sf2_scheme reassigned": testBuilder + marker(testPointer) +
+			"sf2_scheme = \"Builtin\"\nconfig.color_scheme = sf2_scheme\nreturn config\n",
+		"dormant one-line function": testBuilder + "local function inactive() local sf2_current = \"" + legacy +
+			"\"; return dofile(sf2_current) end\nlocal TERM_THEME = \"untouched\"\nreturn config\n",
+		"unterminated string":               testBuilder + "config.font = \"Monaspace\nreturn config\n",
+		"unterminated long comment":         testBuilder + "--[[ never closed\nreturn config\n",
+		"unbalanced block":                  testBuilder + "if true then\nreturn config\n",
+		"two integrations":                  testBuilder + integrationSnippet(testPointer, "config") + integrationSnippet(testPointer, "config") + "return config\n",
+		"integration of a non-pointer file": strings.Replace(integrated("config", ""), testPointer, "/tmp/elsewhere/theme.lua", 1),
+	}
+	for name, existing := range notManaged {
+		if got := classify(existing, testPointer); got == plan.Managed || got == plan.Legacy {
+			t.Errorf("%s: classify = %q", name, got)
+		}
+		if _, ok := assignedPointer(existing, testPointer); ok {
+			t.Errorf("%s: reported a selector", name)
+		}
+	}
+
+	// Comments and strings never count, whatever they hold, and the integration goes in around them untouched.
 	inactive := "local sf2_current = \"" + legacy + "\"\nlocal sf2_scheme = dofile(sf2_current)\n" +
-		"config.color_scheme = sf2_scheme\nlocal TERM_THEME = \"untouched\"\nreturn config\n"
-	cases := map[string]string{
-		"level-1 long comment": "--[=[\n" + inactive + "]=]\n",
-		"long comment":         "--[[\n" + strings.ReplaceAll(inactive, "]]", "") + "]]\n",
+		"config.color_scheme = sf2_scheme\nlocal TERM_THEME = \"untouched\"\n"
+	for name, block := range map[string]string{
+		"long comment":         "--[[\n" + inactive + "]]\n",
+		"level-1 long comment": "--[=[\n" + inactive + "]] ]=]\n",
+		"nested lookalike":     "--[==[\n]=] ]] " + inactive + "]==]\n",
 		"long string":          "local example = [==[\n" + inactive + "]==]\n",
 		"inline comments":      "config.font_size = 12 -- local sf2_current = \"" + legacy + "\"\n-- dofile(sf2_current) TERM_THEME\n",
-	}
-	for name, block := range cases {
-		existing := builder + block + "return config\n"
-		if _, ok := assignedPointer(existing); ok {
-			t.Errorf("%s: found an assignment", name)
-		}
-		if got := classify(existing, testPointer, []string{legacy}); got != plan.Absent {
+		"escaped quote":        "local note = \"say \\\"config.color_scheme = 1\\\"\"\n",
+		"z continuation":       "local note = \"a\\z\n  config.color_scheme = 'x'\"\n",
+		"backslash line break": "local note = \"a\\\nconfig.color_scheme = 'x'\"\n",
+	} {
+		existing := testBuilder + block + "return config\n"
+		if got := classify(existing, testPointer); got != plan.Absent {
 			t.Errorf("%s: classify = %q, want absent", name, got)
 		}
-		if got, want := integrate(existing, testPointer, []string{legacy}), integrated("config", block); got != want {
-			t.Errorf("%s: integrate =\n%s\nwant\n%s", name, got, want)
-		}
-	}
-
-	// An active integration beside an inactive example moves only the active literal.
-	active := "local sf2_current = '" + legacy + "' -- local sf2_current = \"" + legacy + "\"\n" +
-		"wezterm.add_to_config_reload_watch_list(sf2_current)\nlocal sf2_scheme = dofile(sf2_current)\n" +
-		"config.color_scheme = sf2_scheme\nlocal sf2_env = config.set_environment_variables or {}\n" + termThemeAssign + "\n" +
-		"config.set_environment_variables = sf2_env\n"
-	existing := builder + cases["level-1 long comment"] + active + "return config\n"
-	if named, ok := assignedPointer(existing); !ok || named != legacy {
-		t.Fatalf("assignedPointer = %q, %v", named, ok)
-	}
-	want := strings.Replace(existing, "local sf2_current = '"+legacy+"'", "local sf2_current = \""+testPointer+"\"", 1)
-	if got := integrate(existing, testPointer, []string{legacy}); got != want {
-		t.Errorf("migrated:\n%s\nwant\n%s", got, want)
-	}
-
-	// An assignment the code never loads, or a second one, proves nothing.
-	for name, tail := range map[string]string{
-		"never loaded":     "local sf2_current = \"" + legacy + "\"\n",
-		"reassigned":       active + "sf2_current = \"/elsewhere/wezterm-current.lua\"\n",
-		"part of a string": strings.Replace(active, "' --", "' .. \"x\" --", 1),
-	} {
-		if _, ok := assignedPointer(builder + tail + "return config\n"); ok {
-			t.Errorf("%s: found an assignment", name)
+		if got, err := integrate(existing, testPointer); err != nil || got != integrated("config", block) {
+			t.Errorf("%s: integrate = %v\n%s", name, err, got)
 		}
 	}
 }
 
-func TestBlankInactiveKeepsOffsetsAndLines(t *testing.T) {
-	source := "a = 1 --[[ x\n\ry\vz\f]] b = \"--[[\" -- c\n[=[\n]]\n]=] d"
-	want := "a = 1       \n\r \v \f   b = \"--[[\"     \n   \n  \n    d"
-	if got := blankInactive(source); got != want {
-		t.Errorf("blanked %q\nwant    %q", got, want)
+func TestAFormerPointerMovesByRewritingOnlyItsLiteral(t *testing.T) {
+	const legacy = "/tmp/xdg-legacy/sf2-theme/wezterm-current.lua"
+	for name, existing := range map[string]string{
+		"full block":     testBuilder + "--[=[ " + legacy + " ]=]\n" + integrationSnippet(legacy, "config") + "return config\n",
+		"adapted marker": testBuilder + marker(legacy) + "config.color_scheme = sf2_scheme -- mine\nreturn config\n",
+		"indented block": testBuilder + "do\nend\n  " + strings.ReplaceAll(strings.TrimSuffix(integrationSnippet(legacy, "config"), "\n"), "\n", "\n  ") + "\nreturn config\n",
+	} {
+		if named, ok := assignedPointer(existing, testPointer); !ok || named != legacy {
+			t.Errorf("%s: selector %q, %v", name, named, ok)
+		}
+		want := strings.Replace(existing, `local sf2_current = "`+legacy+`"`, `local sf2_current = "`+testPointer+`"`, 1)
+		if got, err := integrate(existing, testPointer); err != nil || got != want {
+			t.Errorf("%s: integrate = %v\n%s\nwant\n%s", name, err, got, want)
+		}
 	}
-	if len(pycompat.SplitLines(want)) != len(pycompat.SplitLines(source)) {
-		t.Error("lines moved")
+}
+
+func TestAdoptionKeepsNeighbouringTokensOrRefuses(t *testing.T) {
+	// The assignment shares its line with a long comment's closer: only the statement goes.
+	closer := testBuilder + "--[=[\nkeep this note\n]=] config.color_scheme = \"Builtin User Scheme\"\nreturn config\n"
+	got, err := integrate(closer, testPointer)
+	if want := integrated("config", "--[=[\nkeep this note\n]=]\n"); err != nil || got != want {
+		t.Errorf("closer: %v\n%s\nwant\n%s", err, got, want)
+	}
+	trailing := testBuilder + "config.color_scheme = \"Builtin\" -- my favourite\nreturn config\n"
+	if got, err := integrate(trailing, testPointer); err != nil || got != integrated("config", " -- my favourite\n") {
+		t.Errorf("trailing comment: %v\n%s", err, got)
+	}
+	// Assignments sf2 cannot remove without guessing are refused, not half-edited.
+	for name, existing := range map[string]string{
+		"nested":           testBuilder + "if wezterm.gui then\n  config.color_scheme = \"A\"\nend\nreturn config\n",
+		"continued":        testBuilder + "config.color_scheme = a\n  or \"B\"\nreturn config\n",
+		"open expression":  testBuilder + "config.color_scheme = pick(\n  \"A\")\nreturn config\n",
+		"second statement": testBuilder + "config.font_size = 12; config.color_scheme = \"A\"\nreturn config\n",
+		"indexed":          testBuilder + "config[\"color_scheme\"] = \"A\"\nreturn config\n",
+	} {
+		if got := classify(existing, testPointer); got != plan.Foreign {
+			t.Errorf("%s: classify = %q, want foreign", name, got)
+		}
+		if got, err := integrate(existing, testPointer); err == nil {
+			t.Errorf("%s: integrated\n%s", name, got)
+		}
+	}
+	// A single-quoted integration was never generated by sf2: it is the user's own scheme.
+	single := testBuilder + strings.Replace(integrationSnippet("/tmp/x/sf2-theme/wezterm-current.lua", "config"), `"/tmp/x/sf2-theme/wezterm-current.lua"`, `'/tmp/x/sf2-theme/wezterm-current.lua'`, 1) + "return config\n"
+	if got := classify(single, testPointer); got != plan.Foreign {
+		t.Errorf("single quotes: %q", got)
 	}
 }
