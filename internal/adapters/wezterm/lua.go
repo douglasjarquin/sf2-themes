@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/plan"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
@@ -54,21 +55,12 @@ func starterConfig(pointer string) string {
 	}, "\n")
 }
 
-// code drops Lua comment lines so commented-out integration never counts.
-func code(existing string) string {
-	var kept []string
-	for _, line := range pycompat.SplitLines(existing) {
-		if !strings.HasPrefix(pycompat.LStrip(line), "--") {
-			kept = append(kept, line)
-		}
-	}
-	return strings.Join(kept, "\n")
-}
+// code is existing with comments and long-bracket strings blanked, so commented-out or quoted integration never
+// counts. Offsets and line breaks are kept, so a line of code is the same line of existing.
+func code(existing string) string { return blankInactive(existing) }
 
-// pointerAssignment is the `local sf2_current = <string>` line sf2's integration starts with, optionally followed by a
-// comment. Group 1 is a double-quoted body and group 2 a single-quoted one.
-var pointerAssignment = regexp.MustCompile(`^` + pycompat.Space + `*local` + pycompat.Space + `+sf2_current` +
-	pycompat.Space + `*=` + pycompat.Space + `*(?:"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')` + pycompat.Space + `*(?:--.*)?$`)
+// lineBreakBytes are the ASCII bytes Python's splitlines breaks on; blanking keeps them so lines stay aligned.
+const lineBreakBytes = "\n\r\v\f\x1c\x1d\x1e"
 
 // unescapeLua decodes a Lua short string body that uses only the escapes luaPathLiteral writes, plus \'.
 func unescapeLua(body string) (string, bool) {
@@ -87,73 +79,103 @@ func unescapeLua(body string) (string, bool) {
 	return b.String(), true
 }
 
-// assignedPointer returns the pointer path the one sf2_current assignment on a code line names. Comments never
-// count, and a config with no such assignment, more than one, or a string sf2 cannot decode names none.
-func assignedPointer(existing string) (string, bool) {
-	var named []string
-	for _, line := range pycompat.SplitLines(code(existing)) {
-		match := pointerAssignment.FindStringSubmatchIndex(line)
-		if match == nil {
-			continue
-		}
-		var body string
-		if match[2] >= 0 {
-			body = line[match[2]:match[3]]
-		} else {
-			body = line[match[4]:match[5]]
-		}
-		path, ok := unescapeLua(body)
-		if !ok {
-			return "", false
-		}
-		named = append(named, path)
-	}
-	if len(named) != 1 {
-		return "", false
-	}
-	return named[0], true
+// assignment is the one active `local sf2_current = "<path>"` of an integration: the decoded path and the byte range
+// of its string literal.
+type assignment struct {
+	path       string
+	start, end int
 }
 
-// retarget moves an integration from the legacy shared pointer to the target's own pointer by rewriting the one
-// sf2_current assignment that names it; every other line, including comments, is kept byte for byte.
-func retarget(existing, legacy, pointer string) string {
-	if named, ok := assignedPointer(existing); !ok || named != legacy {
+// selectorAssignment returns the integration's pointer assignment. Only code counts: comments and strings never do.
+// A config with no assignment, more than one assignment to sf2_current, a value sf2 cannot decode, or no
+// `dofile(sf2_current)` that loads it has none.
+func selectorAssignment(existing string) (assignment, bool) {
+	tokens := codeTokens(lex(existing))
+	is := func(i int, kind tokenKind, text string) bool {
+		return i >= 0 && i < len(tokens) && tokens[i].kind == kind && (text == "" || tokens[i].text(existing) == text)
+	}
+	var found []assignment
+	loaded := false
+	for i := range tokens {
+		if !is(i, nameToken, "sf2_current") {
+			continue
+		}
+		if is(i-2, nameToken, "dofile") && is(i-1, otherToken, "(") && is(i+1, otherToken, ")") {
+			loaded = true
+		}
+		if !is(i+1, otherToken, "=") {
+			continue
+		}
+		literal := tokens[min(i+2, len(tokens)-1)]
+		if !is(i-1, nameToken, "local") || !is(i+2, stringToken, "") || literal.end-literal.start < 2 ||
+			literal.text(existing)[0] != existing[literal.end-1] {
+			return assignment{}, false
+		}
+		// A literal that is only part of an expression is not the path.
+		for _, operator := range []string{".", ":", "[", "("} {
+			if is(i+3, otherToken, operator) {
+				return assignment{}, false
+			}
+		}
+		path, ok := unescapeLua(existing[literal.start+1 : literal.end-1])
+		if !ok {
+			return assignment{}, false
+		}
+		found = append(found, assignment{path: path, start: literal.start, end: literal.end})
+	}
+	if len(found) != 1 || !loaded {
+		return assignment{}, false
+	}
+	return found[0], true
+}
+
+// assignedPointer returns the pointer path the active integration loads.
+func assignedPointer(existing string) (string, bool) {
+	named, ok := selectorAssignment(existing)
+	return named.path, ok
+}
+
+// namesAny reports whether path is the same location as any of paths.
+func namesAny(path string, paths []string) bool {
+	for _, candidate := range paths {
+		if fsys.SamePath(path, candidate) {
+			return true
+		}
+	}
+	return false
+}
+
+// retarget moves an integration from a former pointer to the target's own pointer by rewriting the string literal of
+// the one active sf2_current assignment that names it; every other byte, including comments, is kept.
+func retarget(existing string, former []string, pointer string) string {
+	named, ok := selectorAssignment(existing)
+	if !ok || !namesAny(named.path, former) {
 		return existing
 	}
-	lines := pycompat.SplitLinesKeepEnds(existing)
-	for i, line := range lines {
-		body := strings.TrimRight(line, "\r\n")
-		if strings.HasPrefix(pycompat.LStrip(body), "--") {
-			continue
-		}
-		match := pointerAssignment.FindStringSubmatchIndex(body)
-		if match == nil {
-			continue
-		}
-		start, end := match[4]-1, match[5]+1
-		if match[2] >= 0 {
-			start, end = match[2]-1, match[3]+1
-		}
-		lines[i] = body[:start] + `"` + luaPathLiteral(pointer) + `"` + body[end:] + line[len(body):]
-	}
-	return strings.Join(lines, "")
+	return existing[:named.start] + `"` + luaPathLiteral(pointer) + `"` + existing[named.end:]
 }
 
-func referencesPointer(code, pointer string) bool {
-	return strings.Contains(code, "wezterm-current") &&
-		(strings.Contains(code, pointer) || strings.Contains(code, "dofile"))
+// referencesPointer reports whether the code, not a comment or long string, refers to an sf2 pointer.
+func referencesPointer(existing string) bool {
+	for _, t := range codeTokens(lex(existing)) {
+		if t.kind == stringToken && strings.Contains(t.text(existing), "wezterm-current") {
+			return true
+		}
+	}
+	return false
 }
 
 // upgradeTermThemeGuard inserts TERM_THEME wiring after the managed color_scheme assignment when possible.
 func upgradeTermThemeGuard(existing string) (string, bool) {
-	builder := builderPattern.FindStringSubmatch(existing)
+	active := code(existing)
+	builder := builderPattern.FindStringSubmatch(active)
 	if builder == nil {
 		return "", false
 	}
 	name := builder[1]
 	lines := pycompat.SplitLinesKeepEnds(existing)
 	schemeIdx := -1
-	for i, line := range lines {
+	for i, line := range pycompat.SplitLinesKeepEnds(active) {
 		if strings.Contains(line, "dofile(sf2_current)") && strings.Contains(line, "color_scheme") {
 			schemeIdx = i
 			break
@@ -184,10 +206,13 @@ func schemeKind(line string) string {
 	return "other"
 }
 
+// stripSchemeLines drops the lines of code whose color_scheme assignment is one of kinds; an assignment in a comment
+// or long string is not code and stays.
 func stripSchemeLines(existing string, kinds map[string]bool) string {
+	active := pycompat.SplitLines(code(existing))
 	var kept []string
-	for _, line := range pycompat.SplitLines(existing) {
-		if !kinds[schemeKind(line)] {
+	for i, line := range pycompat.SplitLines(existing) {
+		if !kinds[schemeKind(active[i])] {
 			kept = append(kept, line)
 		}
 	}
@@ -199,7 +224,7 @@ func stripSchemeLines(existing string, kinds map[string]bool) string {
 }
 
 func hasSchemeKind(existing, kind string) bool {
-	for _, line := range pycompat.SplitLines(existing) {
+	for _, line := range pycompat.SplitLines(code(existing)) {
 		if schemeKind(line) == kind {
 			return true
 		}
@@ -216,18 +241,19 @@ func builderName(code string) (string, bool) {
 	return builder[1], true
 }
 
-// classify reports who owns the color scheme in wezterm.lua.
+// classify reports who owns the color scheme in wezterm.lua. former are the pointers earlier releases used for this
+// target, which an integration may still load until sf2 moves it to pointer.
 //
 // Pointer integration is recognised before the config shape, so a pasted snippet in a config sf2-themes cannot
 // edit still counts as managed.
-func classify(existing, pointer, legacy string) plan.Ownership {
+func classify(existing, pointer string, former []string) plan.Ownership {
 	if pycompat.Strip(existing) == "" {
 		return plan.Absent
 	}
 	code := code(existing)
-	if referencesPointer(code, pointer) {
-		// Only an integration that loads this target's pointer, or the legacy shared one sf2 can migrate, is sf2's.
-		if named, ok := assignedPointer(existing); !ok || (named != pointer && named != legacy) {
+	if referencesPointer(existing) {
+		// Only an integration that loads this target's pointer, or a former one sf2 can migrate, is sf2's.
+		if named, ok := assignedPointer(existing); !ok || !namesAny(named, append([]string{pointer}, former...)) {
 			return plan.UnknownShape
 		}
 		if strings.Contains(code, termThemeGuard) {
@@ -250,19 +276,21 @@ func classify(existing, pointer, legacy string) plan.Ownership {
 	return plan.Absent
 }
 
-// integrate returns wezterm.lua with the managed pointer integration.
+// integrate returns wezterm.lua with the managed pointer integration, moving an integration that loads a former
+// pointer to pointer.
 //
 // The caller has already classified the config and approved replacing any color-scheme assignment; a shape
 // classify rejects is returned unchanged.
-func integrate(existing, pointer, legacy string) string {
+func integrate(existing, pointer string, former []string) string {
 	if pycompat.Strip(existing) == "" {
 		return starterConfig(pointer)
 	}
-	if classify(existing, pointer, legacy) == plan.UnknownShape {
+	if classify(existing, pointer, former) == plan.UnknownShape {
 		return existing
 	}
+	existing = retarget(existing, former, pointer)
 	code := code(existing)
-	if referencesPointer(code, pointer) {
+	if referencesPointer(existing) {
 		if strings.Contains(code, termThemeGuard) {
 			return existing
 		}
@@ -273,7 +301,7 @@ func integrate(existing, pointer, legacy string) string {
 	}
 	name, named := builderName(code)
 	cleaned := stripSchemeLines(existing, schemeKindsToStrip)
-	returned := returnNamePattern.FindStringIndex(cleaned)
+	returned := returnNamePattern.FindStringIndex(blankInactive(cleaned))
 	if !named || returned == nil {
 		return existing
 	}

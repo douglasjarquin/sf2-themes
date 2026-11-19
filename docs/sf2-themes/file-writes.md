@@ -5,8 +5,8 @@ Paths, overrides, symlinks, and backups. Moved out of the README.
 - WezTerm schemes go in `~/.config/wezterm/colors/`.
 - WezTerm scheme files, Herdr managed ids, Neovim colorschemes, and Codex themes use the `sf2-<catalog-id>` installed identity.
 - The active WezTerm scheme is a managed pointer at `~/.config/wezterm/sf2-theme/wezterm-current.lua` that auto-switches the selected character's dark and light siblings from host appearance.
-  Each WezTerm configuration target, including each `--config-dir` and each `WEZTERM_CONFIG_FILE`, has its own pointer and so its own selection; a `wezterm.lua` outside its WezTerm directory gets `sf2-theme/wezterm-current-<digest>.lua` named after its path.
-- A `wezterm.lua` whose `local sf2_current = ...` line still names the shared pointer earlier releases wrote at `~/.config/sf2-theme/wezterm-current.lua` keeps that selection and is moved to its own pointer on the next `setup` or `apply`; the shared file is never written or removed, and a comment that mentions it changes nothing.
+  Each WezTerm configuration file has its own pointer and so its own selection, whether `--config-dir` or `WEZTERM_CONFIG_FILE` names it: a file named `wezterm.lua` gets `sf2-theme/wezterm-current.lua` beside it, and any other file gets `sf2-theme/wezterm-current-<digest>.lua` in the WezTerm directory, named after its path.
+- A `wezterm.lua` whose `local sf2_current = ...` line still names a pointer an earlier release shared, `~/.config/sf2-theme/wezterm-current.lua` or the WezTerm directory's `sf2-theme/wezterm-current.lua` for a differently named config file, keeps that selection and is moved to its own pointer on the next `setup` or `apply`; the shared file is never written or removed, and a comment or string that mentions it changes nothing.
 - An integration that loads any other pointer is left unchanged and `setup` prints the snippet to fix it by hand.
 - Herdr app installs `~/.config/herdr-app/themes/sf2-*.json` and selects a light/dark pair in `~/.config/herdr-app/settings.json`.
 - Herdr TUI updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
@@ -22,6 +22,7 @@ Paths, overrides, symlinks, and backups. Moved out of the README.
 - Every `setup` or `apply` that writes records what it owns in `~/.local/state/sf2/manifest.json` (or under `XDG_STATE_HOME`): per app and configuration target, the selection, each managed file with its SHA-256, and the edited setting file.
 - The first time sf2 changes a setting file you already had, a copy of your original is kept under `~/.local/state/sf2/backups/<app>/`.
 - `--dry-run` writes no state, and an unreadable manifest, or a symlink or wrong kind of file where sf2 keeps its state, stops the command before any file is written.
-- Commands that write take a lock on `manifest.lock`, so concurrent runs record every target; a run that fails part way keeps every earlier record and records only what it wrote.
+- Commands that write take a lock on `manifest.lock` and decide their changes again under it, so concurrent runs record every target and a queued run never undoes one that finished first; a run that fails part way keeps every earlier record and records only what it wrote.
+- The manifest's next save is staged before the first application write, so a state directory sf2 cannot write stops the command with the application unchanged.
 
 Override locations with `--config-dir`, `CODEX_HOME`, `CLAUDE_CONFIG_DIR`, `WEZTERM_CONFIG_FILE`, `WEZTERM_CONFIG_DIR`, `HERDR_CONFIG_PATH`, `NVIM_CONFIG_DIR`, or `XDG_CONFIG_HOME`; the state directory follows `XDG_STATE_HOME`.

@@ -103,3 +103,69 @@ func RequireFile(path string) error {
 	}
 	return nil
 }
+
+// Staged is a temporary file created beside path before a change, so publishing it after the change cannot fail for
+// want of permission to write path's directory.
+type Staged struct {
+	path string
+	file *os.File
+}
+
+// Stage creates path's directory when missing and a temporary file in it. A symlink at path is refused.
+func Stage(path string) (*Staged, error) {
+	if _, err := resolveDestination(path, false); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(pycompat.Parent(path), 0o777); err != nil {
+		return nil, err
+	}
+	file, err := os.CreateTemp(pycompat.Parent(path), "."+pycompat.Name(path)+".*")
+	if err != nil {
+		return nil, err
+	}
+	return &Staged{path: path, file: file}, nil
+}
+
+// Publish atomically replaces the staged path with content, without a backup, and consumes the temporary file. A new
+// file gets mode, an existing file keeps its mode, and an identical file is left untouched.
+func (s *Staged) Publish(content string, mode fs.FileMode) (err error) {
+	name := s.file.Name()
+	defer func() {
+		_ = s.file.Close()
+		if err != nil {
+			_ = os.Remove(name)
+		}
+	}()
+	if _, err = resolveDestination(s.path, false); err != nil {
+		return err
+	}
+	info, statErr := os.Stat(s.path)
+	switch {
+	case statErr == nil:
+		mode = info.Mode().Perm()
+		if existing, readErr := os.ReadFile(s.path); readErr == nil && string(existing) == content {
+			return os.Remove(name)
+		}
+	case !ignorable(statErr):
+		return statErr
+	}
+	if _, err = s.file.WriteString(content); err != nil {
+		return err
+	}
+	if err = s.file.Close(); err != nil {
+		return err
+	}
+	if err = os.Chmod(name, mode|0o600); err != nil {
+		return err
+	}
+	if err = os.Rename(name, s.path); err != nil {
+		return err
+	}
+	return os.Chmod(s.path, mode)
+}
+
+// Discard removes an unpublished temporary file.
+func (s *Staged) Discard() {
+	_ = s.file.Close()
+	_ = os.Remove(s.file.Name())
+}

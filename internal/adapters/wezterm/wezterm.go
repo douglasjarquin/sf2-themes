@@ -94,14 +94,12 @@ func colorsDir(configDir string) (string, error) {
 
 // pointerPath is the target's own selection pointer, so two configuration targets keep independent selections.
 //
-// A target is its wezterm.lua. The common `<wezterm-config>/wezterm.lua` gets `<wezterm-config>/sf2-theme/
-// wezterm-current.lua`; any other wezterm.lua, or a target whose common name would be the legacy shared pointer, gets
-// a name carrying a digest of its wezterm.lua path. No target's pointer is ever the legacy shared pointer.
+// A target is its wezterm.lua, however it was named: `--config-dir X` and `WEZTERM_CONFIG_FILE=X/wezterm.lua` are one
+// target with one pointer. A file named wezterm.lua gets `sf2-theme/wezterm-current.lua` beside it. Any other file,
+// or a wezterm.lua whose common pointer would be the legacy shared one, gets a name carrying a digest of the file's
+// resolved path, in the WezTerm directory for any other file. No target's pointer is ever the legacy shared pointer,
+// by any spelling of its path.
 func pointerPath(configDir string) (string, error) {
-	dir, err := weztermDir(configDir)
-	if err != nil {
-		return "", err
-	}
 	lua, err := luaPath(configDir)
 	if err != nil {
 		return "", err
@@ -110,18 +108,54 @@ func pointerPath(configDir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	common := pycompat.Path(dir, "sf2-theme", pointerFileName)
-	if lua == pycompat.Path(dir, "wezterm.lua") && common != legacy {
-		return common, nil
+	dir := pycompat.Parent(lua)
+	if pycompat.Name(lua) == "wezterm.lua" {
+		if common := pycompat.Path(dir, "sf2-theme", pointerFileName); !fsys.SamePath(common, legacy) {
+			return common, nil
+		}
+	} else if dir, err = weztermDir(configDir); err != nil {
+		return "", err
 	}
-	return pycompat.Path(dir, "sf2-theme", "wezterm-current-"+fsys.Fingerprint(lua)[:12]+".lua"), nil
+	return pycompat.Path(dir, "sf2-theme", "wezterm-current-"+fsys.Fingerprint(fsys.Canonical(lua))[:12]+".lua"), nil
 }
 
-// legacyPointerPath is the single pointer every target shared before selections were per target. A target adopts
-// its selection only when its wezterm.lua names this exact path.
+// legacyPointerPath is the single pointer every target shared before selections were per target.
 func legacyPointerPath() (string, error) {
 	root, err := configRoot()
 	return pycompat.Path(root, "sf2-theme", pointerFileName), err
+}
+
+// formerPointers are the pointers earlier releases wrote for this target and that its wezterm.lua may still load:
+// the legacy shared pointer, and `<WezTerm directory>/sf2-theme/wezterm-current.lua`, which every target in that
+// directory shared before a target's pointer followed its wezterm.lua. sf2 reads the selection from the one the
+// integration names and moves the integration to the target's own pointer; it never writes or removes a former
+// pointer, which another target may still load.
+func formerPointers(configDir, pointer string) ([]string, error) {
+	legacy, err := legacyPointerPath()
+	if err != nil {
+		return nil, err
+	}
+	dir, err := weztermDir(configDir)
+	if err != nil {
+		return nil, err
+	}
+	var former []string
+	for _, candidate := range []string{legacy, pycompat.Path(dir, "sf2-theme", pointerFileName)} {
+		if !namesAny(candidate, append([]string{pointer}, former...)) {
+			former = append(former, candidate)
+		}
+	}
+	return former, nil
+}
+
+// pointers is the target's own pointer and its former ones.
+func pointers(configDir string) (string, []string, error) {
+	pointer, err := pointerPath(configDir)
+	if err != nil {
+		return "", nil, err
+	}
+	former, err := formerPointers(configDir, pointer)
+	return pointer, former, err
 }
 
 func schemeFilename(theme catalog.Theme) string {
@@ -215,13 +249,10 @@ func renderPointer(dark, light catalog.Theme) string {
 }
 
 // Inspect takes ownership from wezterm.lua and the selection from the target's sf2-owned pointer. Before the target
-// has its own pointer, a wezterm.lua that names the legacy shared pointer proves that pointer holds its selection.
+// has its own pointer, a wezterm.lua whose active integration loads a former pointer proves that pointer holds its
+// selection.
 func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) {
-	pointer, err := pointerPath(configDir)
-	if err != nil {
-		return plan.Inspection{}, err
-	}
-	legacy, err := legacyPointerPath()
+	pointer, former, err := pointers(configDir)
 	if err != nil {
 		return plan.Inspection{}, err
 	}
@@ -233,14 +264,14 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	ownership := classify(existing, pointer, legacy)
+	ownership := classify(existing, pointer, former)
 	selection := plan.Inspection{Ownership: ownership}
-	// The selection is the pointer the configuration actually loads: the legacy shared one while an unmigrated
-	// integration names it, otherwise the target's own. An integration sf2 cannot verify selects nothing sf2 knows.
+	// The selection is the pointer the configuration actually loads: a former one while an unmigrated integration
+	// names it, otherwise the target's own. An integration sf2 cannot verify selects nothing sf2 knows.
 	selector := pointer
-	if named, ok := assignedPointer(existing); ok && named == legacy {
-		selector = legacy
-	} else if ownership == plan.UnknownShape && referencesPointer(code(existing), pointer) {
+	if named, ok := assignedPointer(existing); ok && namesAny(named, former) {
+		selector = named
+	} else if ownership == plan.UnknownShape && referencesPointer(existing) {
 		selector = ""
 	}
 	isFile := false
@@ -280,7 +311,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 	if err != nil {
 		return nil, err
 	}
-	pointer, err := pointerPath(configDir)
+	pointer, former, err := pointers(configDir)
 	if err != nil {
 		return nil, err
 	}
@@ -294,11 +325,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		legacy, err := legacyPointerPath()
-		if err != nil {
-			return nil, err
-		}
-		steps = append(steps, plan.Write(lua, integrate(retarget(existing, legacy, pointer), pointer, legacy)))
+		steps = append(steps, plan.Write(lua, integrate(existing, pointer, former)))
 	}
 	return steps, nil
 }

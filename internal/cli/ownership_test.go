@@ -9,11 +9,13 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
+	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/store"
 )
 
-// Regression cases from the independent review of PR #85, each driving the real WezTerm adapter through the CLI in
+// Regression cases from the independent reviews of PRs #85 and #86, each driving the real WezTerm adapter through the CLI in
 // temporary XDG directories. Expected values come from the files on disk, never from the code under test.
 
 // sandbox isolates HOME and every XDG and WezTerm location for one test and returns its root.
@@ -326,4 +328,210 @@ func TestPriorAndFingerprintsAreTheBytesOnDisk(t *testing.T) {
 		t.Errorf("reapply wrote:\n%s", out)
 	}
 	assertOnDisk(t, entryFor(t, root, target+"/wezterm.lua"))
+}
+
+// pointerFor is the selection pointer content apply writes for theme, taken from a scratch target.
+func pointerFor(t *testing.T, root, theme string) string {
+	t.Helper()
+	scratch := root + "/scratch-" + theme
+	mustRun(t, 0, "apply", "wezterm", "--theme", theme, "--config-dir", scratch)
+	return read(t, scratch+"/sf2-theme/wezterm-current.lua")
+}
+
+// PR #86 finding 1: a command that waited for the lock decides again from the configuration it finds under it, so a
+// queued setup never undoes an apply that committed first.
+func TestAQueuedSetupKeepsTheSelectionCommittedWhileItWaited(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	ken := pointerFor(t, root, "ken")
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	unlock, err := fsys.Lock(root + "/state/sf2/manifest.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	done := make(chan string)
+	go func() {
+		stdout, stderr, status := run("setup", "wezterm", "--config-dir", target)
+		done <- fmt.Sprintf("exit %d\n%s%s", status, stdout, stderr)
+	}()
+	// Setup has read Ryu and now waits for the lock; another command commits Ken meanwhile.
+	time.Sleep(500 * time.Millisecond)
+	put(t, target+"/sf2-theme/wezterm-current.lua", ken)
+	unlock()
+	if out := <-done; !strings.HasPrefix(out, "exit 0\n") || !strings.Contains(out, "kept sf2-ken") {
+		t.Errorf("setup:\n%s", out)
+	}
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-ken" {
+		t.Errorf("current %s, want the committed sf2-ken", got)
+	}
+	if got := entryFor(t, root, target+"/wezterm.lua").Selection; got != "sf2-ken" {
+		t.Errorf("recorded %s", got)
+	}
+
+	// The same holds for real commands queued behind the lock in either order.
+	unlock, err = fsys.Lock(root + "/state/sf2/manifest.lock")
+	if err != nil {
+		t.Fatal(err)
+	}
+	statuses := make(chan int, 2)
+	for _, args := range [][]string{
+		{"apply", "wezterm", "--theme", "guile", "--config-dir", target},
+		{"setup", "wezterm", "--config-dir", target},
+	} {
+		go func() {
+			_, _, status := run(args...)
+			statuses <- status
+		}()
+		time.Sleep(250 * time.Millisecond)
+	}
+	unlock()
+	for range 2 {
+		if status := <-statuses; status != 0 {
+			t.Errorf("exit %d", status)
+		}
+	}
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-guile" {
+		t.Errorf("current %s, want the explicit apply's sf2-guile", got)
+	}
+}
+
+// PR #86 finding 2: a state directory sf2 cannot write refuses before the application changes, even when the lock
+// and an earlier record already exist.
+func TestAReadOnlyStateDirectoryRefusesBeforeTheAppIsChanged(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root writes a read-only directory")
+	}
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	manifest := read(t, root+"/state/sf2/manifest.json")
+	lua := read(t, target+"/wezterm.lua")
+	pointer := read(t, target+"/sf2-theme/wezterm-current.lua")
+	if err := os.Chmod(root+"/state/sf2", 0o500); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(root+"/state/sf2", 0o700) })
+	mustRun(t, 1, "apply", "wezterm", "--theme", "ken", "--config-dir", target)
+	if read(t, target+"/sf2-theme/wezterm-current.lua") != pointer || read(t, target+"/wezterm.lua") != lua {
+		t.Error("the application changed before the state refusal")
+	}
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-ryu" {
+		t.Errorf("current %s", got)
+	}
+	if got := read(t, root+"/state/sf2/manifest.json"); got != manifest {
+		t.Errorf("manifest changed:\n%s", got)
+	}
+}
+
+// PR #86 finding 3: no spelling of XDG_CONFIG_HOME, dot-dot or symlinked, writes the legacy shared pointer.
+func TestAnEquivalentSpellingOfXDGConfigHomeNeverWritesTheLegacyPointer(t *testing.T) {
+	root := sandbox(t)
+	legacy := root + "/config/sf2-theme/wezterm-current.lua"
+	const ryu = "-- sf2-themes: sf2-ryu\nreturn \"sf2-ryu\"\n"
+	put(t, legacy, ryu)
+	put(t, root+"/other/wezterm.lua", legacyIntegration(legacy, `"`))
+	if err := os.Symlink(root+"/config", root+"/alias"); err != nil {
+		t.Fatal(err)
+	}
+	for _, spelling := range []string{root + "/config/../config", root + "/alias"} {
+		mustRun(t, 0, "apply", "wezterm", "--theme", "ken", "--config-dir", spelling)
+		if got := read(t, legacy); got != ryu {
+			t.Errorf("%s: legacy pointer rewritten:\n%s", spelling, got)
+		}
+		if got := mustRun(t, 0, "current", "wezterm", "--config-dir", root+"/other"); got != "sf2-ryu" {
+			t.Errorf("%s: unmigrated target now selects %s", spelling, got)
+		}
+		if got := mustRun(t, 0, "current", "wezterm", "--config-dir", spelling); got != "sf2-ken" {
+			t.Errorf("%s: selects %s", spelling, got)
+		}
+	}
+}
+
+// PR #86 finding 4: a WEZTERM_CONFIG_FILE target set up by phase A, whose wezterm.lua loads the WezTerm directory's
+// shared pointer, keeps its selection and moves to its own pointer without changing the shared one.
+func TestAPhaseAAlternateConfigUpgradesWithItsSelection(t *testing.T) {
+	root := sandbox(t)
+	profile := root + "/profile.lua"
+	shared := root + "/config/wezterm/sf2-theme/wezterm-current.lua"
+	ryu := pointerFor(t, root, "ryu")
+	// Phase A's output for `WEZTERM_CONFIG_FILE=profile.lua apply wezterm --theme ryu`.
+	put(t, shared, ryu)
+	put(t, profile, strings.Replace(legacyIntegration(shared, `"`), "config.font_size = 12\n", "", 1))
+	t.Setenv("WEZTERM_CONFIG_FILE", profile)
+	if got := mustRun(t, 0, "current", "wezterm"); got != "sf2-ryu" {
+		t.Errorf("before the upgrade: %s", got)
+	}
+	if out := mustRun(t, 0, "setup", "wezterm"); !strings.Contains(out, "kept sf2-ryu") {
+		t.Errorf("setup:\n%s", out)
+	}
+	lua := read(t, profile)
+	if strings.Contains(lua, shared) || !strings.Contains(lua, root+"/config/wezterm/sf2-theme/wezterm-current-") {
+		t.Errorf("not moved to its own pointer:\n%s", lua)
+	}
+	if got := mustRun(t, 0, "current", "wezterm"); got != "sf2-ryu" {
+		t.Errorf("after the upgrade: %s", got)
+	}
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ken")
+	if got := mustRun(t, 0, "current", "wezterm"); got != "sf2-ken" {
+		t.Errorf("after apply: %s", got)
+	}
+	if got := read(t, shared); got != ryu {
+		t.Errorf("the shared pointer another target may load changed:\n%s", got)
+	}
+}
+
+// PR #86 finding 5: --config-dir X and WEZTERM_CONFIG_FILE=X/wezterm.lua are one target with one selection.
+func TestBothSpellingsOfOneWeztermConfigShareItsSelection(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	t.Setenv("WEZTERM_CONFIG_FILE", target+"/wezterm.lua")
+	if got := mustRun(t, 0, "current", "wezterm"); got != "sf2-ryu" {
+		t.Errorf("through WEZTERM_CONFIG_FILE: %s", got)
+	}
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ken")
+	if out := mustRun(t, 0, "setup", "wezterm"); !strings.Contains(out, "kept sf2-ken") {
+		t.Errorf("setup through WEZTERM_CONFIG_FILE:\n%s", out)
+	}
+	t.Setenv("WEZTERM_CONFIG_FILE", "")
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-ken" {
+		t.Errorf("through --config-dir: %s", got)
+	}
+	if out := mustRun(t, 0, "setup", "wezterm", "--config-dir", target); !strings.Contains(out, "kept sf2-ken") {
+		t.Errorf("setup through --config-dir:\n%s", out)
+	}
+	for _, dir := range []string{target + "/sf2-theme", root + "/config/wezterm/sf2-theme"} {
+		entries, _ := os.ReadDir(dir)
+		for _, entry := range entries {
+			if strings.HasPrefix(entry.Name(), "wezterm-current-") {
+				t.Errorf("unused pointer %s/%s", dir, entry.Name())
+			}
+		}
+	}
+}
+
+// PR #86 finding 6: an integration inside a Lua long comment is not active and is never edited.
+func TestAnIntegrationInALongCommentIsNotTheSelection(t *testing.T) {
+	root := sandbox(t)
+	legacy := root + "/config/sf2-theme/wezterm-current.lua"
+	put(t, legacy, "-- sf2-themes: sf2-ryu\nreturn \"sf2-ryu\"\n")
+	put(t, root+"/b/wezterm.lua", legacyIntegration(legacy, `"`))
+	comment := "--[=[\nlocal sf2_current = \"" + legacy + "\"\nlocal sf2_scheme = dofile(sf2_current)\n" +
+		"config.color_scheme = sf2_scheme\nlocal TERM_THEME = \"untouched\"\n]=]\n"
+	target := root + "/a"
+	put(t, target+"/wezterm.lua", strings.Replace(seedLua, "return config", comment+"return config", 1))
+	mustRun(t, 1, "current", "wezterm", "--config-dir", target)
+	if out := mustRun(t, 0, "setup", "wezterm", "--config-dir", target); !strings.Contains(out, "no selection found, selected sf2-main") {
+		t.Errorf("setup:\n%s", out)
+	}
+	lua := read(t, target+"/wezterm.lua")
+	if !strings.Contains(lua, comment) || !strings.Contains(lua, `local sf2_current = "`+target+`/sf2-theme/wezterm-current.lua"`) {
+		t.Errorf("wezterm.lua:\n%s", lua)
+	}
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-main" {
+		t.Errorf("current %s", got)
+	}
+	if got := mustRun(t, 0, "current", "wezterm", "--config-dir", root+"/b"); got != "sf2-ryu" {
+		t.Errorf("other target %s", got)
+	}
 }

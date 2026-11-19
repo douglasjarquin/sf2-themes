@@ -129,8 +129,8 @@ func (m *Manifest) Record(entry Target) {
 	})
 }
 
-// Save writes the manifest to path atomically, without a backup, and leaves an identical manifest untouched.
-func Save(path string, manifest Manifest) error {
+// encode is the manifest's on-disk form.
+func encode(manifest Manifest) (string, error) {
 	manifest.Version = Version
 	if manifest.Targets == nil {
 		manifest.Targets = []Target{}
@@ -141,10 +141,7 @@ func Save(path string, manifest Manifest) error {
 		}
 	}
 	data, err := json.MarshalIndent(manifest, "", "  ")
-	if err != nil {
-		return err
-	}
-	return fsys.Replace(path, string(data)+"\n", 0o644)
+	return string(data) + "\n", err
 }
 
 // KeepPrior keeps data, the bytes of a user's setting file named name before sf2 first changed it, under
@@ -168,11 +165,12 @@ type Session struct {
 	Path     string
 	Manifest Manifest
 	unlock   func()
+	staged   *fsys.Staged
 }
 
-// Open checks that the state directory can take app's records, takes the store's lock, and loads the manifest. It
-// refuses before any application is touched when a state path is a symlink or the wrong kind of file, or the
-// manifest is unreadable. Close releases the lock.
+// Open checks that the state directory can take app's records, takes the store's lock, loads the manifest, and stages
+// the next save. It refuses before any application is touched when a state path is a symlink or the wrong kind of
+// file, the manifest is unreadable, or the manifest could not be published. Close releases the lock.
 func Open(app string) (*Session, error) {
 	path, err := Path()
 	if err != nil {
@@ -197,11 +195,41 @@ func Open(app string) (*Session, error) {
 		session.Close()
 		return nil, err
 	}
+	if err := session.Stage(); err != nil {
+		session.Close()
+		return nil, err
+	}
 	return session, nil
 }
 
-// Save writes the session's manifest.
-func (s *Session) Save() error { return Save(s.Path, s.Manifest) }
+// Stage creates the temporary file the next Save publishes, so a state directory sf2 cannot write is refused before
+// a change the manifest would have to record. It does nothing when a save is already staged.
+func (s *Session) Stage() (err error) {
+	if s.staged == nil {
+		s.staged, err = fsys.Stage(s.Path)
+	}
+	return err
+}
 
-// Close releases the lock.
-func (s *Session) Close() { s.unlock() }
+// Save atomically publishes the session's manifest through the staged temporary file, staging one when none is.
+func (s *Session) Save() error {
+	data, err := encode(s.Manifest)
+	if err != nil {
+		return err
+	}
+	if err := s.Stage(); err != nil {
+		return err
+	}
+	staged := s.staged
+	s.staged = nil
+	return staged.Publish(data, 0o644)
+}
+
+// Close removes an unused staged save and releases the lock.
+func (s *Session) Close() {
+	if s.staged != nil {
+		s.staged.Discard()
+		s.staged = nil
+	}
+	s.unlock()
+}

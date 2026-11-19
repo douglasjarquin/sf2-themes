@@ -184,28 +184,6 @@ func Fingerprint(content string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-// Replace atomically replaces path with content without a backup, for sf2's own state files. It refuses a symlinked
-// path, gives a new file mode, keeps an existing file's mode, and leaves an identical file untouched.
-func Replace(path, content string, mode fs.FileMode) error {
-	if _, err := resolveDestination(path, false); err != nil {
-		return err
-	}
-	info, err := os.Stat(path)
-	switch {
-	case err == nil:
-		mode = info.Mode().Perm()
-		if text, err := os.ReadFile(path); err == nil && string(text) == content {
-			return nil
-		}
-	case !ignorable(err):
-		return err
-	}
-	if err := os.MkdirAll(pycompat.Parent(path), 0o777); err != nil {
-		return err
-	}
-	return replace(path, content, mode)
-}
-
 // resolveDestination refuses a symlinked destination unless the caller follows symlinks, and then returns its
 // resolved target.
 func resolveDestination(path string, follow bool) (string, error) {

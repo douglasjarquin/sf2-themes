@@ -115,46 +115,36 @@ func mutate(ctx *Context, req Request) (int, error) {
 		return 0, err
 	}
 	selectsTheme := req.Command != "setup" || requested != nil
-	inspection, err := app.Inspect(themes, configDir)
-	if err != nil {
-		return 0, err
-	}
-	decided := gate(inspection.Ownership, app, req.Adopt, selectsTheme)
-	if decided.refuse {
-		return 0, refusal(req.App, app, inspection)
-	}
-	theme, how, err := choose(requested, selectsTheme, inspection, themes)
-	if err != nil {
-		return 0, err
-	}
-	steps, err := app.Plan(theme, themes, configDir, decided.slot)
-	if err != nil {
-		return 0, err
-	}
-	target, err := app.Target(configDir)
-	if err != nil {
-		return 0, err
-	}
 	opts := fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose}
-	// Refuse an unsafe destination before taking the state lock, so a refused run leaves sf2's state untouched too.
-	destinations, err := fsys.Preflight(steps, opts)
+	// A first pass refuses before the state lock is taken, so a refused run leaves sf2's state untouched too.
+	run, err := prepare(req, app, themes, configDir, requested, selectsTheme, opts)
 	if err != nil {
 		return 0, err
 	}
 	var owned *ownership
 	if !req.DryRun {
-		if owned, err = openOwnership(req.App, target); err != nil {
+		if owned, err = openOwnership(req.App, run.target); err != nil {
 			return 0, err
 		}
 		defer owned.session.Close()
-		if err := owned.keepPrior(steps, destinations); err != nil {
+		// Another command may have changed the configuration while this one waited for the lock, so everything the
+		// commit acts on is decided again under it.
+		if run, err = prepare(req, app, themes, configDir, requested, selectsTheme, opts); err != nil {
+			return 0, err
+		}
+		owned.target = run.target
+		if err := owned.keepPrior(run.steps, run.destinations); err != nil {
+			return 0, err
+		}
+		// Prove the record of this run can be published before the first application write.
+		if err := owned.session.Stage(); err != nil {
 			return 0, err
 		}
 	}
-	results, err := fsys.Commit(steps, opts)
+	results, err := fsys.Commit(run.steps, opts)
 	if owned != nil && len(results) > 0 {
 		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
-		if recordErr := owned.record(results, err == nil && !decided.slot, func() (*catalog.Theme, error) {
+		if recordErr := owned.record(results, err == nil && !run.decided.slot, func() (*catalog.Theme, error) {
 			inspected, err := app.Inspect(themes, configDir)
 			return inspected.Current, err
 		}); recordErr != nil && err == nil {
@@ -165,18 +155,55 @@ func mutate(ctx *Context, req Request) (int, error) {
 		return 0, err
 	}
 	report(ctx, results, req.Verbose)
-	label, err := selectionText(app, theme, how, themes)
+	label, err := selectionText(app, run.theme, run.how, themes)
 	if err != nil {
 		return 0, err
 	}
-	summarize(ctx, req.Command, req.App, app, decided, label, target, results)
-	if decided.incomplete {
-		return 0, refusal(req.App, app, inspection)
+	summarize(ctx, req.Command, req.App, app, run.decided, label, run.target, results)
+	if run.decided.incomplete {
+		return 0, refusal(req.App, app, run.inspection)
 	}
-	if app.StderrHint != "" && decided.slot {
+	if app.StderrHint != "" && run.decided.slot {
 		printf(ctx.Stderr, "%s\n", app.StderrHint)
 	}
 	return 0, nil
+}
+
+// prepared is everything one run commits, decided from the configuration as it is on disk.
+type prepared struct {
+	inspection   plan.Inspection
+	decided      decision
+	theme        catalog.Theme
+	how          selection
+	steps        []plan.Step
+	destinations []string
+	target       string
+}
+
+// prepare inspects the app, gates its ownership, chooses the theme, and plans and preflights the writes. It writes
+// nothing.
+func prepare(req Request, app adapters.App, themes []catalog.Theme, configDir string, requested *catalog.Theme,
+	selectsTheme bool, opts fsys.Options) (prepared, error) {
+	var run prepared
+	var err error
+	if run.inspection, err = app.Inspect(themes, configDir); err != nil {
+		return run, err
+	}
+	run.decided = gate(run.inspection.Ownership, app, req.Adopt, selectsTheme)
+	if run.decided.refuse {
+		return run, refusal(req.App, app, run.inspection)
+	}
+	if run.theme, run.how, err = choose(requested, selectsTheme, run.inspection, themes); err != nil {
+		return run, err
+	}
+	if run.steps, err = app.Plan(run.theme, themes, configDir, run.decided.slot); err != nil {
+		return run, err
+	}
+	if run.target, err = app.Target(configDir); err != nil {
+		return run, err
+	}
+	run.destinations, err = fsys.Preflight(run.steps, opts)
+	return run, err
 }
 
 func expandConfigDir(req Request) (string, error) {

@@ -297,10 +297,19 @@ func TestAnExistingFileThatIsNotUTF8IsAnError(t *testing.T) {
 	}
 }
 
-func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
+// replaceState stages and publishes content at path.
+func replaceState(path, content string) error {
+	staged, err := Stage(path)
+	if err != nil {
+		return err
+	}
+	return staged.Publish(content, 0o644)
+}
+
+func TestPublishWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "state", "manifest.json")
-	if err := Replace(path, "one\n", 0o644); err != nil {
+	if err := replaceState(path, "one\n"); err != nil {
 		t.Fatal(err)
 	}
 	if readText(t, path) != "one\n" || mode(t, path) != 0o644 {
@@ -313,13 +322,13 @@ func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := Replace(path, "one\n", 0o644); err != nil {
+	if err := replaceState(path, "one\n"); err != nil {
 		t.Fatal(err)
 	}
 	if after, err := os.Stat(path); err != nil || !os.SameFile(before, after) {
 		t.Errorf("identical content replaced the file: %v", err)
 	}
-	if err := Replace(path, "two\n", 0o644); err != nil {
+	if err := replaceState(path, "two\n"); err != nil {
 		t.Fatal(err)
 	}
 	if readText(t, path) != "two\n" || mode(t, path) != 0o600 {
@@ -330,7 +339,7 @@ func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	}
 }
 
-func TestReplaceRefusesASymlink(t *testing.T) {
+func TestStageRefusesASymlink(t *testing.T) {
 	dir := t.TempDir()
 	real := filepath.Join(dir, "real.json")
 	writeText(t, real, "keep\n", 0o644)
@@ -338,7 +347,7 @@ func TestReplaceRefusesASymlink(t *testing.T) {
 	if err := os.Symlink(real, link); err != nil {
 		t.Fatal(err)
 	}
-	if err := Replace(link, "x\n", 0o644); err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
+	if err := replaceState(link, "x\n"); err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
 		t.Errorf("err %v", err)
 	}
 	if readText(t, real) != "keep\n" {
