@@ -39,23 +39,21 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 
 ## WezTerm
 
-- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the target's pointer, and edits `wezterm.lua` only when the gate allows the setting.
-- A target is the `wezterm.lua` the filesystem opens, however `--config-dir`, `WEZTERM_CONFIG_FILE`, a symlink, `..`, or letter case named it; its pointer is `sf2-theme/wezterm-current-<12 hex of the SHA-256 of fsys.Canonical(lua)>.lua` beside that file, so `WEZTERM_CONFIG_DIR` never moves it.
-- No pointer is ever a plain `wezterm-current.lua`, the name earlier releases shared between targets, so writing one target's pointer never changes another target's selection.
-- `fsys.Canonical` resolves a path component by component (symlinks, `..` after resolution, on-disk letter case) and `fsys.SamePath` compares existing prefixes with `os.SameFile`; never compare pointer or setting paths as strings.
-- Ownership is exact recognition in `lua.go`, on tokens from `lex.go`; a file that does not lex completely (unterminated string or comment, unbalanced blocks) is an unknown shape.
-- Recognized integrations sit at the top level (outside any function, block, bracket, comment, or string) as exact generated lines under one indent: the full block sf2 writes today, the unguarded block earlier releases wrote (`<builder>.color_scheme = dofile(sf2_current)`, upgraded in place), or the marker.
-- The marker is exactly the first three generated lines (`local sf2_current = "<pointer>"`, the reload-watch line, `local sf2_scheme = dofile(sf2_current)`), so a pasted snippet adapted to any shape is managed when top-level code after it reads `sf2_scheme` and nothing reassigns it; otherwise it is not managed and reports no selection.
-- A recognized integration naming another pointer file (`wezterm-current.lua` or a digest name) is migrated: that file is the selection while the integration loads it, setting the theme rewrites only the pointer literal on the first line, the file is never written or removed, and the target's manifest record stops claiming it (`plan.Inspection.Released`).
-- An integration naming a file that is no pointer, more than one integration, or a single-quoted literal sf2 never generated, is not sf2's.
+- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the target's pointer; it writes `wezterm.lua` only as a new file, as a whole replacement of one of its own forms, or, with `--adopt`, by inserting its block into a file it verifies line by line.
+- A target is the `wezterm.lua` the filesystem opens through any symlink (`fsys.Canonical`); inspection, backup, commit, pointer, and manifest key all use that one identity, and setting results are matched with `fsys.SamePath`, never as strings.
+- `fsys.CheckSpelling`, also run by `fsys.Preflight` on every planned path for every adapter, refuses a path with any `..` component or an existing component spelled unlike its directory entry (letter case, Unicode normalization); sf2 never reconciles spellings.
+- The pointer is `sf2-theme/wezterm-current-<12 hex of the SHA-256 of the identity>.lua` beside the file, so `WEZTERM_CONFIG_DIR` never moves it and no pointer is a plain `wezterm-current.lua` that earlier releases shared; a path with a control character is refused before any Lua could carry it.
+- `parse.go` verifies a whole Lua 5.4 chunk (syntax, misplaced `break` and `...`), refusing `goto`, labels, and `<const>`/`<close>` as unverifiable; a file that does not parse is broken and nothing is written.
+- `lua.go` recognizes only sf2's own forms, as exact generated lines under one indent that are whole top-level statements: the full block, the unguarded block (`<builder>.color_scheme = dofile(sf2_current)`), and the first releases' `<builder>.color_scheme = "<sf2 scheme>"` line.
+- A form counts only after a top-level `local wezterm = require("wezterm")` and `local <builder>`, in a chunk that ends `return <builder>`, with no other `color_scheme` and no other `sf2_current`, `sf2_scheme`, or `sf2_env` in code; a hand-adapted snippet, a single-quoted literal, or a form inside a function, comment, or string is not sf2's.
+- The full form is managed and the others are legacy; writing the setting replaces the form as a whole with the full block naming the target's pointer, which also moves an integration off a former pointer without writing that file.
+- `App.Disowns` drops a recorded pointer other than the target's own after any complete run, judged from the path, so a run after an interrupted migration stops the old claim too.
+- A file with no sf2 form is foreign; `--adopt` inserts the full block before the final return only when every line is blank, a line comment, the wezterm require, one `local <builder> = wezterm.config_builder()`, a single-line literal `<builder>.<setting> = ...` other than `color_scheme`, or `return <builder>`, and the result re-verifies as managed.
+- Every other case is refused with nothing written and the exact manual steps (`analysis.manual`): where to paste the block, and to remove other `color_scheme` assignments and any older loader.
+- Without `--adopt`, a valid shape sf2 cannot edit is unknown: `wezterm.lua` stays unchanged, scheme files and pointer are still written, and the run exits nonzero with the steps; with `--adopt` it writes nothing.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
-- A foreign config reports no selection, even beside a readable pointer, because the pointer is not what it loads.
-- Every run that writes anything plans the pointer, including plain setup over a foreign config and an unknown shape.
-- Empty Lua is absent and receives a starter config; a top-level `local <name> = wezterm.config_builder()` that the chunk ends by returning receives the full block before that return.
-- A literal SF2 `color_scheme` on a builder is legacy; any other `color_scheme` is foreign, and adoption removes only whole top-level `<builder>.color_scheme = <value>` statements that start their line and end on it, keeping neighbouring comments and tokens.
-- An adoption that would need any other edit, or whose result sf2 would not recognize as managed, is refused before anything is written.
-- Any other shape is unknown: `wezterm.lua` stays byte-for-byte unchanged, scheme files and pointer are still written, and the run exits nonzero with the snippet.
+- Only a managed or legacy form reports a selection; a foreign or unknown config reports none, even beside a readable pointer.
 - Scheme files include compose_cursor, visual_bell, indexed 16/17, and retro `tab_bar` colors; fancy-tab `window_frame` stays Lua-only.
 
 ## Starship

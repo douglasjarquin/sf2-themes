@@ -45,15 +45,12 @@ const (
 // Inspection is what one read of an app's configuration found.
 //
 // Current is the sf2 theme the app selects when it can be read; Unreadable marks an sf2 selection that exists but
-// does not resolve. Detail explains a broken configuration or carries the manual fix for an unknown shape. Released
-// is a file an earlier run recorded for this target that a complete run writing the setting stops owning, such as a
-// selection pointer an earlier release shared between targets: sf2 never writes or removes it, and stops claiming it.
+// does not resolve. Detail explains a broken configuration or carries the manual fix for a shape sf2 will not edit.
 type Inspection struct {
 	Ownership  Ownership
 	Current    *catalog.Theme
 	Unreadable bool
 	Detail     string
-	Released   string
 }
 
 // ReadExisting returns a config file's text as Path.read_text reads it, or "" when the file does not exist yet.

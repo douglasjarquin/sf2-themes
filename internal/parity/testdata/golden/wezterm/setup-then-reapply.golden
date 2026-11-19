@@ -1,4 +1,4 @@
-step setup wezterm --config-dir {SANDBOX}/config/wezterm
+step setup wezterm --adopt --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | setup wezterm: no selection found, selected sf2-main + sf2-main-light (follows host appearance)

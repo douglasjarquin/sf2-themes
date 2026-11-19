@@ -1,28 +1,81 @@
 package fsys
 
 import (
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
 // maxLinks bounds symlink resolution, as the kernel's ELOOP limit does.
 const maxLinks = 40
 
-// Canonical is the location path opens, as the filesystem resolves it: each existing component is followed through
-// symlinks one at a time and spelled with its name on disk, and `..` steps up from what was actually reached, so
-// `link/..` is the link target's parent. A tail that does not exist yet is appended as written.
-//
-// Two spellings of one location give one result, including different letter case on a case-insensitive volume, and
-// distinct locations give distinct results.
-func Canonical(path string) string {
-	if !filepath.IsAbs(path) {
-		if wd, err := os.Getwd(); err == nil {
-			path = wd + string(filepath.Separator) + path
-		}
+// CheckSpelling refuses a path sf2 would act on unless it is spelled the way the filesystem stores it: no `..`
+// component, and every existing component named exactly as its directory entry, in letter case and Unicode
+// normalization. A path through a missing directory and back out with `..` reaches a file inspection cannot see,
+// and an alternative spelling of an existing file names one target two ways, so both are refused rather than
+// reconciled; the user passes the real path instead.
+func CheckSpelling(path string) error { return checkSpelling(path, map[string][]string{}) }
+
+// checkSpelling is CheckSpelling with directory listings shared through listed, so a plan of many files in one
+// directory reads it once.
+func checkSpelling(path string, listed map[string][]string) error {
+	parts := strings.Split(absolute(path), string(filepath.Separator))
+	if slices.Contains(parts, "..") {
+		return fmt.Errorf("refusing %s: it goes through `..`; pass the real path", path)
 	}
-	resolved, missing := walk(string(filepath.Separator), path, 0)
+	resolved := string(filepath.Separator)
+	for _, part := range parts {
+		if part == "" || part == "." {
+			continue
+		}
+		next := filepath.Join(resolved, part)
+		if _, err := os.Lstat(next); err != nil {
+			if ignorable(err) {
+				return nil
+			}
+			return err
+		}
+		names, ok := listed[resolved]
+		if !ok {
+			var err error
+			if names, err = entryNames(resolved); err != nil {
+				return err
+			}
+			listed[resolved] = names
+		}
+		if !slices.Contains(names, part) {
+			return fmt.Errorf("refusing %s: %q is not spelled as it is on disk; pass the real path", path, part)
+		}
+		real, err := filepath.EvalSymlinks(next)
+		if err != nil {
+			// A dangling symlink reaches nothing further to check; the writer applies its symlink policy.
+			return nil
+		}
+		resolved = real
+	}
+	return nil
+}
+
+func entryNames(dir string) ([]string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+	names := make([]string, len(entries))
+	for i, entry := range entries {
+		names[i] = entry.Name()
+	}
+	return names, nil
+}
+
+// Canonical is the location path opens, as the filesystem resolves it: each existing component is followed through
+// symlinks one at a time, and `..` inside a link target steps up from what was actually reached. A tail that does not
+// exist yet is appended as written. Callers pass paths CheckSpelling accepted.
+func Canonical(path string) string {
+	resolved, missing := walk(string(filepath.Separator), absolute(path), 0)
 	return filepath.Join(append([]string{resolved}, missing...)...)
 }
 
@@ -43,7 +96,6 @@ func walk(resolved, path string, links int) (string, []string) {
 		if err != nil {
 			return resolved, nonEmpty(parts[i:])
 		}
-		next = filepath.Join(resolved, nameOnDisk(resolved, part, info))
 		if info.Mode()&fs.ModeSymlink == 0 {
 			resolved = next
 			continue
@@ -61,29 +113,6 @@ func walk(resolved, path string, links int) (string, []string) {
 		}
 	}
 	return resolved, nil
-}
-
-// nameOnDisk is the directory entry in dir that part opened: part itself when an entry has exactly that name,
-// otherwise the entry a case-insensitive volume matched.
-func nameOnDisk(dir, part string, info fs.FileInfo) string {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return part
-	}
-	for _, entry := range entries {
-		if entry.Name() == part {
-			return part
-		}
-	}
-	for _, entry := range entries {
-		if !strings.EqualFold(entry.Name(), part) {
-			continue
-		}
-		if candidate, err := os.Lstat(filepath.Join(dir, entry.Name())); err == nil && os.SameFile(candidate, info) {
-			return entry.Name()
-		}
-	}
-	return part
 }
 
 func nonEmpty(parts []string) []string {

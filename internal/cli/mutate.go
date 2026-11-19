@@ -55,7 +55,8 @@ type decision struct {
 //	ownership       app keeps files on unknown shape  --adopt  selects a theme  outcome
 //	broken          any                               any      any              refuse
 //	unknown shape   no                                any      any              refuse
-//	unknown shape   yes                               any      any              files only, then refuse (incomplete)
+//	unknown shape   yes                               no       any              files only, then refuse (incomplete)
+//	unknown shape   yes                               yes      any              refuse
 //	foreign         any                               no       yes              refuse
 //	foreign         any                               no       no               files only, keep the user's theme
 //	foreign         any                               yes      any              write the setting
@@ -67,7 +68,8 @@ func gate(ownership plan.Ownership, app adapters.App, adopt, selectsTheme bool) 
 	case plan.Broken:
 		return decision{refuse: true}
 	case plan.UnknownShape:
-		if !app.OwnsFilesOnUnknownShape {
+		// --adopt asks for the setting, which an unknown shape cannot take, so nothing is written.
+		if !app.OwnsFilesOnUnknownShape || adopt {
 			return decision{refuse: true}
 		}
 		return decision{incomplete: true}
@@ -83,6 +85,10 @@ func gate(ownership plan.Ownership, app adapters.App, adopt, selectsTheme bool) 
 func refusal(name string, app adapters.App, inspection plan.Inspection) error {
 	switch inspection.Ownership {
 	case plan.Foreign:
+		if inspection.Detail != "" {
+			return errors.New(app.Label + " already uses a theme sf2-themes does not manage, and sf2-themes will not " +
+				"edit it for you.\n" + pycompat.RStrip(inspection.Detail) + "\n\nThen run the command again.")
+		}
 		return fmt.Errorf("%s already uses a theme sf2-themes does not manage; pass --adopt to replace it, "+
 			"or run `setup %s` without --theme to keep it and install the theme files", app.Label, name)
 	case plan.UnknownShape:
@@ -141,12 +147,12 @@ func mutate(ctx *Context, req Request) (int, error) {
 	results, err := fsys.Commit(run.steps, opts)
 	if owned != nil && len(results) > 0 {
 		complete := err == nil
-		released := ""
-		if complete && run.decided.slot {
-			released = run.inspection.Released
-		}
 		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
-		if recordErr := owned.record(results, complete && !run.decided.slot, released, func() (*catalog.Theme, error) {
+		var disowns func(string) bool
+		if complete && app.Disowns != nil {
+			disowns = func(path string) bool { return app.Disowns(configDir, path) }
+		}
+		if recordErr := owned.record(results, complete && !run.decided.slot, disowns, func() (*catalog.Theme, error) {
 			inspected, err := app.Inspect(themes, configDir)
 			return inspected.Current, err
 		}); recordErr != nil && err == nil {
@@ -419,7 +425,7 @@ func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
 		return nil
 	}
 	for i, step := range steps {
-		if step.Remove || step.Path != o.target {
+		if step.Remove || !fsys.SamePath(destinations[i], o.target) {
 			continue
 		}
 		raw, err := os.ReadFile(destinations[i])
@@ -444,23 +450,26 @@ func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
 // record merges what one commit did into the target's entry and saves it. The file at the target is the user's
 // own configuration, recorded as the setting sf2 edited; every other written file is wholly sf2's. A removed file is
 // no longer owned, and a record the commit did not reach is kept as it was. releasedSetting drops the setting
-// record after a complete run that left the user's own setting in place, and released drops a file the target stopped
-// owning. The selection is what the configuration selects after the commit, read back through inspect, and stays as
-// recorded when it cannot be read.
+// record after a complete run that left the user's own setting in place, and disowns, after a complete run, drops
+// records the app says the target can no longer own, such as a pointer an earlier release shared; it judges the path
+// alone, so a run after an interrupted migration drops the claim too. The selection is what the configuration
+// selects after the commit, read back through inspect, and stays as recorded when it cannot be read.
 //
 // Running a command again after one was interrupted between its application writes and this save records what is on
 // disk, so the manifest catches up.
-func (o *ownership) record(results []fsys.Result, releasedSetting bool, released string, current func() (*catalog.Theme, error)) error {
+func (o *ownership) record(results []fsys.Result, releasedSetting bool, disowns func(string) bool, current func() (*catalog.Theme, error)) error {
 	entry := o.entry()
 	files := map[string]string{}
 	for _, file := range entry.Files {
-		files[file.Path] = file.SHA256
+		if disowns == nil || !disowns(file.Path) {
+			files[file.Path] = file.SHA256
+		}
 	}
 	for _, result := range results {
 		switch {
 		case result.Action == fsys.Removed:
 			delete(files, result.Path)
-		case result.Requested == o.target:
+		case fsys.SamePath(result.Path, o.target):
 			entry.Setting = &store.File{Path: result.Path, SHA256: result.Fingerprint}
 		default:
 			files[result.Path] = result.Fingerprint
@@ -468,11 +477,6 @@ func (o *ownership) record(results []fsys.Result, releasedSetting bool, released
 	}
 	if releasedSetting {
 		entry.Setting = nil
-	}
-	for recorded := range files {
-		if released != "" && fsys.SamePath(recorded, released) {
-			delete(files, recorded)
-		}
 	}
 	entry.Files = entry.Files[:0]
 	for path, sha := range files {

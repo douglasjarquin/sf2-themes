@@ -3,11 +3,13 @@
 package wezterm
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/adapters"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
@@ -16,15 +18,29 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
+// label names WezTerm in summaries and in the multi-line refusals printed for a user to act on.
+const label = "WezTerm"
+
 // App is the WezTerm adapter.
 var App = adapters.App{
-	Label:                   "WezTerm",
+	Label:                   label,
 	Inspect:                 Inspect,
 	Plan:                    Plan,
-	Target:                  luaPath,
+	Target:                  target,
 	Pair:                    true,
 	OwnsFilesOnUnknownShape: true,
 	Reload:                  "restart WezTerm, or let a config reload pick up the managed pointer",
+	Disowns:                 disowns,
+}
+
+// disowns reports whether path is a selection pointer other than the target's own: one an earlier release shared, or
+// one a different target owns. sf2 never writes or removes such a file for this target.
+func disowns(configDir, path string) bool {
+	if !pointerName.MatchString(pycompat.Name(path)) {
+		return false
+	}
+	own, err := pointerPath(configDir)
+	return err == nil && !fsys.SamePath(own, path)
 }
 
 const legacySchemeFilePrefix = "street-fighter-ii"
@@ -55,6 +71,24 @@ func weztermDir(configDir string) (string, error) {
 // XDG_CONFIG_HOME and WEZTERM_CONFIG_FILE pin the write target even when the file does not exist yet, so tests and
 // custom prefixes never fall through to the real home directory.
 func luaPath(configDir string) (string, error) {
+	spelled, err := spelledLuaPath(configDir)
+	if err != nil {
+		return "", err
+	}
+	return spelled, fsys.CheckSpelling(spelled)
+}
+
+// target is the target's one identity: the wezterm.lua the filesystem opens, through any symlink. Inspection reads,
+// the commit writes, the pointer is named after, and the manifest records this one file.
+func target(configDir string) (string, error) {
+	lua, err := luaPath(configDir)
+	if err != nil {
+		return "", err
+	}
+	return fsys.Canonical(lua), nil
+}
+
+func spelledLuaPath(configDir string) (string, error) {
 	if configDir != "" {
 		return pycompat.Path(configDir, "wezterm.lua"), nil
 	}
@@ -87,7 +121,11 @@ func luaPath(configDir string) (string, error) {
 
 func colorsDir(configDir string) (string, error) {
 	dir, err := weztermDir(configDir)
-	return pycompat.Path(dir, "colors"), err
+	if err != nil {
+		return "", err
+	}
+	colors := pycompat.Path(dir, "colors")
+	return colors, fsys.CheckSpelling(colors)
 }
 
 // pointerPath is the target's own selection pointer: `sf2-theme/wezterm-current-<digest>.lua` beside the
@@ -98,13 +136,15 @@ func colorsDir(configDir string) (string, error) {
 // one, and WEZTERM_CONFIG_DIR does not move it. No pointer is ever a `wezterm-current.lua` that earlier releases shared
 // between targets, so writing a target's pointer never changes what another target loads.
 func pointerPath(configDir string) (string, error) {
-	lua, err := luaPath(configDir)
+	resolved, err := target(configDir)
 	if err != nil {
 		return "", err
 	}
-	resolved := fsys.Canonical(lua)
-	return pycompat.Path(pycompat.Parent(resolved), "sf2-theme",
-		"wezterm-current-"+fsys.Fingerprint(resolved)[:12]+".lua"), nil
+	pointer := pycompat.Path(pycompat.Parent(resolved), "sf2-theme", "wezterm-current-"+fsys.Fingerprint(resolved)[:12]+".lua")
+	if strings.IndexFunc(pointer, unicode.IsControl) >= 0 {
+		return "", fmt.Errorf("refusing %s: its path holds a control character sf2-themes will not write into Lua", resolved)
+	}
+	return pointer, nil
 }
 
 func schemeFilename(theme catalog.Theme) string {
@@ -213,37 +253,28 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	analysis := analyze(existing, pointer)
+	analysis := analyze(existing, pointer, lua)
 	selection := plan.Inspection{Ownership: analysis.ownership}
-	selector := analysis.selector
-	if analysis.ownership == plan.Foreign {
-		selector = ""
-	}
 	isFile := false
-	if selector != "" {
-		if isFile, err = fsys.IsFile(selector); err != nil {
+	if analysis.selector != "" {
+		if isFile, err = fsys.IsFile(analysis.selector); err != nil {
 			return plan.Inspection{}, err
 		}
 	}
 	if isFile {
-		text, err := pycompat.ReadText(selector)
+		text, err := pycompat.ReadText(analysis.selector)
 		if err != nil {
 			return plan.Inspection{}, err
 		}
 		id, found := plan.RecordedID(text, idComment)
 		selection = plan.Recorded(analysis.ownership, id, found, themes)
 	}
-	// A pointer an earlier release wrote is no longer this target's once the integration moves off it.
-	if analysis.block != nil && !fsys.SamePath(analysis.block.pointer, pointer) {
-		selection.Released = analysis.block.pointer
-	}
-	if analysis.ownership == plan.UnknownShape {
-		selection.Detail = "Add this integration to " + lua + ":\n\n" + integrationSnippet(pointer, "config")
-	}
+	selection.Detail = analysis.manual
 	return selection, nil
 }
 
-// Plan returns the scheme files and the pointer, and the wezterm.lua integration when slot allows it.
+// Plan returns the scheme files and the pointer, and the wezterm.lua integration when slot allows it. An
+// integration sf2 cannot write safely is refused here, before anything is written.
 func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bool) ([]plan.Step, error) {
 	target, err := colorsDir(configDir)
 	if err != nil {
@@ -274,10 +305,10 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		integrated, err := integrate(existing, pointer)
+		integrated, err := integrate(existing, pointer, lua)
 		if err != nil {
-			return nil, fmt.Errorf("%w; nothing was written.\nAdd this integration to %s by hand:\n\n%s", err, lua,
-				integrationSnippet(pointer, "config"))
+			return nil, errors.New(label + " config was left unchanged and nothing was written.\n" + err.Error() +
+				"\n\nThen run the command again.")
 		}
 		steps = append(steps, plan.Write(lua, integrated))
 	}

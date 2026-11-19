@@ -164,21 +164,38 @@ func (s *Staged) Publish(content string, mode fs.FileMode) (err error) {
 	return os.Chmod(s.path, mode)
 }
 
-// Probe refuses when an existing file at the staged path cannot be replaced, such as one marked immutable or
-// append-only: a file that refuses a second link refuses to be unlinked by the rename that would replace it. It
-// changes nothing it does not undo.
+// Probe refuses when the rename that publishes the staged file could not replace the file already at its path: one
+// marked immutable or append-only, or one in a sticky directory that neither the file nor the directory owner may
+// replace. Staging already proved the directory takes new files. Probe changes nothing.
 func (s *Staged) Probe() error {
-	if _, err := os.Lstat(s.path); err != nil {
+	info, err := os.Lstat(s.path)
+	if err != nil {
 		if ignorable(err) {
 			return nil
 		}
 		return err
 	}
-	probe := s.file.Name() + ".probe"
-	if err := os.Link(s.path, probe); err != nil {
-		return fmt.Errorf("%s cannot be replaced: %w", s.path, err)
+	if protected, err := protectedFile(s.path); err != nil {
+		return err
+	} else if protected {
+		return fmt.Errorf("%s cannot be replaced: it is marked immutable or append-only", s.path)
 	}
-	return os.Remove(probe)
+	dir, err := os.Stat(pycompat.Parent(s.path))
+	if err != nil {
+		return err
+	}
+	uid := uint32(os.Geteuid())
+	if dir.Mode()&fs.ModeSticky != 0 && uid != 0 && owner(info) != uid && owner(dir) != uid {
+		return fmt.Errorf("%s cannot be replaced: another user owns it in a sticky directory", s.path)
+	}
+	return nil
+}
+
+func owner(info fs.FileInfo) uint32 {
+	if stat, ok := info.Sys().(*syscall.Stat_t); ok {
+		return stat.Uid
+	}
+	return 0
 }
 
 // Discard removes an unpublished temporary file.

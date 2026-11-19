@@ -1,124 +1,135 @@
 package wezterm
 
-import "strings"
+import (
+	"fmt"
+	"regexp"
+	"strings"
+)
 
 // tokenKind is the lexical class of one Lua token.
 type tokenKind int
 
 const (
 	nameToken tokenKind = iota
+	keywordToken
 	stringToken
 	longStringToken
 	commentToken
 	numberToken
-	otherToken
+	symbolToken
 )
 
-// token is one Lua token, its byte range in the source, and for code tokens the block and bracket nesting it starts
-// at: depth counts open function/do/if/repeat blocks, nest open parentheses, brackets, and braces.
+// token is one Lua token and its byte range in the source.
 type token struct {
-	kind        tokenKind
-	start, end  int
-	depth, nest int
+	kind       tokenKind
+	start, end int
 }
 
 func (t token) text(source string) string { return source[t.start:t.end] }
 
-// scan is one Lua source split into tokens. complete is false when a string or comment is unterminated or the blocks
-// and brackets do not balance; sf2 recognizes nothing in such a file.
-type scan struct {
-	source   string
-	tokens   []token
-	code     []token
-	complete bool
+var keywords = map[string]bool{
+	"and": true, "break": true, "do": true, "else": true, "elseif": true, "end": true, "false": true, "for": true,
+	"function": true, "goto": true, "if": true, "in": true, "local": true, "nil": true, "not": true, "or": true,
+	"repeat": true, "return": true, "then": true, "true": true, "until": true, "while": true,
 }
 
-var twoCharOperators = map[string]bool{
-	"==": true, "~=": true, "<=": true, ">=": true, "//": true, "..": true, "::": true, "<<": true, ">>": true,
+// symbols are Lua 5.4's operators and punctuation, longest first.
+var symbols = []string{
+	"...", "..", "==", "~=", "<=", ">=", "//", "::", "<<", ">>",
+	"+", "-", "*", "/", "%", "^", "#", "&", "~", "|", "<", ">", "=", "(", ")", "{", "}", "[", "]", ";", ":", ",", ".",
 }
 
-// lexLua tokenizes source as Lua 5.4 does, far enough to tell code from comments and strings and to know which code
-// sits at the top level of the chunk.
-func lexLua(source string) scan {
-	s := scan{source: source, complete: true}
-	for i := 0; i < len(source); {
+var (
+	decimalNumeral = regexp.MustCompile(`^([0-9]+\.?[0-9]*|\.[0-9]+)([eE][+-]?[0-9]+)?$`)
+	hexNumeral     = regexp.MustCompile(`^0[xX]([0-9a-fA-F]+\.?[0-9a-fA-F]*|\.[0-9a-fA-F]+)([pP][+-]?[0-9]+)?$`)
+)
+
+// lexLua splits source into Lua 5.4 tokens. Anything Lua's own lexer would reject, or that sf2 cannot be sure it
+// reads as Lua does, is an error: an unterminated string or comment, an invalid escape or numeral, or a character Lua
+// does not accept outside strings and comments.
+func lexLua(source string) ([]token, error) {
+	var tokens []token
+	i := 0
+	if strings.HasPrefix(source, "#") {
+		// Lua skips a first line starting with '#'.
+		i = lineEnd(source, 0)
+	}
+	for i < len(source) {
 		c := source[i]
 		start := i
-		kind := otherToken
-		closed := true
+		var kind tokenKind
 		switch {
-		case c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == '\f' || c == '\v':
+		case strings.IndexByte(" \t\r\n\f\v", c) >= 0:
 			i++
 			continue
 		case strings.HasPrefix(source[i:], "--"):
 			kind = commentToken
-			if end, ok, isLong := longBracketEnd(source, i+2); isLong {
-				i, closed = end, ok
+			if end, closed, isLong := longBracketEnd(source, i+2); isLong {
+				if !closed {
+					return nil, fmt.Errorf("unfinished long comment at byte %d", start)
+				}
+				i = end
 			} else {
 				i = lineEnd(source, i)
 			}
-		case c == '[':
-			if end, ok, isLong := longBracketEnd(source, i); isLong {
-				kind, i, closed = longStringToken, end, ok
-			} else {
-				i++
+		case c == '[' && isLongOpen(source, i):
+			kind = longStringToken
+			end, closed, _ := longBracketEnd(source, i)
+			if !closed {
+				return nil, fmt.Errorf("unfinished long string at byte %d", start)
 			}
+			i = end
 		case c == '"' || c == '\'':
 			kind = stringToken
-			i, closed = shortStringEnd(source, i)
+			end, err := shortStringEnd(source, i)
+			if err != nil {
+				return nil, err
+			}
+			i = end
 		case isNameStart(c):
-			kind = nameToken
 			for i < len(source) && isNamePart(source[i]) {
 				i++
 			}
+			kind = nameToken
+			if keywords[source[start:i]] {
+				kind = keywordToken
+			}
 		case isDigit(c) || (c == '.' && i+1 < len(source) && isDigit(source[i+1])):
 			kind = numberToken
-			for i < len(source) && (isNamePart(source[i]) || source[i] == '.' ||
-				((source[i] == '+' || source[i] == '-') && strings.ContainsRune("eEpP", rune(source[i-1])))) {
+			for i < len(source) {
+				d := source[i]
+				exponent := (d == '+' || d == '-') && strings.IndexByte("eEpP", source[i-1]) >= 0
+				if !isNamePart(d) && d != '.' && !exponent {
+					break
+				}
 				i++
 			}
-		case strings.HasPrefix(source[i:], "..."):
-			i += 3
+			numeral := source[start:i]
+			if !decimalNumeral.MatchString(numeral) && !hexNumeral.MatchString(numeral) {
+				return nil, fmt.Errorf("malformed number %q at byte %d", numeral, start)
+			}
 		default:
-			i++
-			if i < len(source) && twoCharOperators[source[start:i+1]] {
-				i++
+			kind = symbolToken
+			matched := ""
+			for _, symbol := range symbols {
+				if strings.HasPrefix(source[i:], symbol) {
+					matched = symbol
+					break
+				}
 			}
+			if matched == "" {
+				return nil, fmt.Errorf("unexpected character %q at byte %d", c, start)
+			}
+			i += len(matched)
 		}
-		if !closed {
-			s.complete = false
-		}
-		s.tokens = append(s.tokens, token{kind: kind, start: start, end: i})
+		tokens = append(tokens, token{kind: kind, start: start, end: i})
 	}
-	depth, nest := 0, 0
-	for _, t := range s.tokens {
-		if t.kind == commentToken {
-			continue
-		}
-		text := t.text(source)
-		switch {
-		case t.kind == nameToken && (text == "end" || text == "until"):
-			depth--
-		case t.kind == otherToken && (text == ")" || text == "]" || text == "}"):
-			nest--
-		}
-		if depth < 0 || nest < 0 {
-			s.complete = false
-			depth, nest = max(depth, 0), max(nest, 0)
-		}
-		t.depth, t.nest = depth, nest
-		s.code = append(s.code, t)
-		switch {
-		case t.kind == nameToken && (text == "function" || text == "do" || text == "if" || text == "repeat"):
-			depth++
-		case t.kind == otherToken && (text == "(" || text == "[" || text == "{"):
-			nest++
-		}
-	}
-	if depth != 0 || nest != 0 {
-		s.complete = false
-	}
-	return s
+	return tokens, nil
+}
+
+func isLongOpen(source string, i int) bool {
+	_, _, isLong := longBracketEnd(source, i)
+	return isLong
 }
 
 // longBracketEnd returns the end of the long bracket `[==[ ... ]==]` opening at i, whether it is closed, and whether
@@ -142,28 +153,58 @@ func longBracketEnd(source string, i int) (end int, closed, isLong bool) {
 	return len(source), false, true
 }
 
-// shortStringEnd returns the end of the quoted string opening at i and whether it is closed. A backslash escapes the
-// next character, including a line break, and `\z` skips the whitespace after it, line breaks included.
-func shortStringEnd(source string, i int) (int, bool) {
-	quote := source[i]
+// shortStringEnd returns the end of the quoted string opening at i, validating every escape as Lua 5.4 does.
+func shortStringEnd(source string, i int) (int, error) {
+	start, quote := i, source[i]
 	for i++; i < len(source); i++ {
 		switch source[i] {
+		case quote:
+			return i + 1, nil
+		case '\n', '\r':
+			return 0, fmt.Errorf("unfinished string at byte %d", start)
 		case '\\':
 			i++
-			if i < len(source) && source[i] == 'z' {
+			if i >= len(source) {
+				return 0, fmt.Errorf("unfinished string at byte %d", start)
+			}
+			switch e := source[i]; {
+			case strings.IndexByte("abfnrtv\\\"'", e) >= 0:
+			case e == '\n' || e == '\r':
+				if i+1 < len(source) && (source[i+1] == '\n' || source[i+1] == '\r') && source[i+1] != e {
+					i++
+				}
+			case e == 'z':
 				for i+1 < len(source) && strings.IndexByte(" \t\r\n\f\v", source[i+1]) >= 0 {
 					i++
 				}
-			} else if i+1 < len(source) && source[i] == '\r' && source[i+1] == '\n' {
-				i++
+			case e == 'x':
+				if i+2 >= len(source) || !isHex(source[i+1]) || !isHex(source[i+2]) {
+					return 0, fmt.Errorf("invalid \\x escape at byte %d", i)
+				}
+				i += 2
+			case e == 'u':
+				end := strings.IndexByte(source[i:], '}')
+				if i+1 >= len(source) || source[i+1] != '{' || end < 3 || !allHex(source[i+2:i+end]) || end-2 > 8 {
+					return 0, fmt.Errorf("invalid \\u escape at byte %d", i)
+				}
+				i += end
+			case isDigit(e):
+				value, n := 0, 0
+				for n < 3 && i < len(source) && isDigit(source[i]) {
+					value = value*10 + int(source[i]-'0')
+					i++
+					n++
+				}
+				i--
+				if value > 255 {
+					return 0, fmt.Errorf("decimal escape too large at byte %d", i)
+				}
+			default:
+				return 0, fmt.Errorf("invalid escape at byte %d", i)
 			}
-		case quote:
-			return i + 1, true
-		case '\n', '\r':
-			return i, false
 		}
 	}
-	return len(source), false
+	return 0, fmt.Errorf("unfinished string at byte %d", start)
 }
 
 func lineEnd(source string, i int) int {
@@ -179,33 +220,13 @@ func isNamePart(c byte) bool { return isNameStart(c) || isDigit(c) }
 
 func isDigit(c byte) bool { return c >= '0' && c <= '9' }
 
-// boundary reports whether offset falls between tokens rather than inside one.
-func (s scan) boundary(offset int) bool {
-	for _, t := range s.tokens {
-		if t.start < offset && offset < t.end {
+func isHex(c byte) bool { return isDigit(c) || (c|0x20 >= 'a' && c|0x20 <= 'f') }
+
+func allHex(s string) bool {
+	for i := 0; i < len(s); i++ {
+		if !isHex(s[i]) {
 			return false
 		}
 	}
-	return true
-}
-
-// codeAt returns the index in s.code of the first code token starting at or after offset, or len(s.code).
-func (s scan) codeAt(offset int) int {
-	for i, t := range s.code {
-		if t.start >= offset {
-			return i
-		}
-	}
-	return len(s.code)
-}
-
-// is reports whether code token i exists and has kind and, when text is not "", that text.
-func (s scan) is(i int, kind tokenKind, text string) bool {
-	return i >= 0 && i < len(s.code) && s.code[i].kind == kind && (text == "" || s.code[i].text(s.source) == text)
-}
-
-// lineOf returns the start of the line holding offset and the end of its content, before the line break.
-func lineOf(source string, offset int) (int, int) {
-	start := strings.LastIndexAny(source[:offset], "\r\n") + 1
-	return start, lineEnd(source, offset)
+	return s != ""
 }

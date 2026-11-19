@@ -3,7 +3,7 @@
   "targets": [
     {
       "app": "wezterm",
-      "target": "{SANDBOX}/config/wezterm/wezterm.lua",
+      "target": "{SANDBOX}/elsewhere/wezterm/wezterm.lua",
       "selection": "sf2-main",
       "setting": {
         "path": "{SANDBOX}/elsewhere/wezterm/wezterm.lua",

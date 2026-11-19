@@ -451,7 +451,8 @@ func symlinkCases(app gateApp) []Case {
 	case "nvim":
 		file, content = "sf2-theme/current.lua", lines("-- sf2-themes: sf2-ryu")
 	case "wezterm":
-		content = builderLua("config.font_size = 13")
+		// An empty config, which sf2 may create, so the run reaches the symlink policy.
+		content = ""
 	case "herdr", "codex", "starship":
 		content = lines("# kept")
 	case "herdr-app", "claude":
@@ -518,13 +519,23 @@ func scenarioCases() []Case {
 		`sf2_env.TERM_THEME = "dark"`,
 	}, "\n")
 	pasted := lines(`local wezterm = require("wezterm")`, snippet, "return { color_scheme = sf2_scheme }")
+	// generated is the integration sf2 itself writes, naming the shared pointer earlier releases used.
+	generated := strings.Join([]string{
+		`local sf2_current = "` + pointer + `"`,
+		"wezterm.add_to_config_reload_watch_list(sf2_current)",
+		"local sf2_scheme = dofile(sf2_current)",
+		"config.color_scheme = sf2_scheme",
+		"local sf2_env = config.set_environment_variables or {}",
+		`sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"`,
+		"config.set_environment_variables = sf2_env",
+	}, "\n")
 	cases = append(cases,
 		Case{Name: "wezterm/light-sibling-current-without-config-dir", Groups: wezterm, Env: xdg, Steps: []Step{
 			cmd("apply", "wezterm", "--theme", "ryu-light"),
 			step("current", "wezterm"),
 		}},
 		Case{Name: "wezterm/setup-then-reapply", Groups: wezterm, Seed: []File{seed("wezterm", "wezterm.lua", lines(`local wezterm = require("wezterm")`, "local config = wezterm.config_builder()", "return config"))}, NoChanges: true, Steps: []Step{
-			cmd("setup", "wezterm"),
+			cmd("setup", "wezterm", "--adopt"),
 			cmd("apply", "wezterm"),
 		}},
 		Case{Name: "wezterm/pasted-snippet-apply", Groups: wezterm, Env: xdg, Seed: []File{seed("wezterm", "wezterm.lua", pasted)}, Steps: []Step{cmd("apply", "wezterm")}},
@@ -537,7 +548,7 @@ func scenarioCases() []Case {
 		// The shared pointer earlier releases wrote moves to the one target whose wezterm.lua names it; another
 		// target keeps its own selection, and the shared pointer itself is left in place.
 		Case{Name: "wezterm/legacy-shared-pointer-two-targets", Groups: wezterm, Env: xdg, Seed: []File{
-			seed("wezterm", "wezterm.lua", builderLua(strings.Join([]string{"config.font_size = 13", snippet, "config.color_scheme = sf2_scheme"}, "\n"))),
+			seed("wezterm", "wezterm.lua", builderLua(strings.Join([]string{"config.font_size = 13", generated}, "\n"))),
 			{Path: "xdg/sf2-theme/wezterm-current.lua", Content: lines("-- sf2-themes: sf2-ryu", `return "sf2-ryu"`)},
 		}, Steps: []Step{
 			cmd("current", "wezterm"),

@@ -104,8 +104,12 @@ func Commit(steps []plan.Step, opts Options) ([]Result, error) {
 // destinations Commit would use, so a caller can refuse a run before touching anything else.
 func Preflight(steps []plan.Step, opts Options) ([]string, error) {
 	destinations := make([]string, len(steps))
+	listed := map[string][]string{}
 	for i, step := range steps {
 		destinations[i] = step.Path
+		if err := checkSpelling(step.Path, listed); err != nil {
+			return nil, err
+		}
 		if step.Remove {
 			continue
 		}

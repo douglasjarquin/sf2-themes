@@ -90,7 +90,7 @@ stdout
 |   changes: 37 would create
 stderr
 | error: WezTerm config has a shape sf2-themes cannot edit safely.
-| Add this integration to {SANDBOX}/config/wezterm/wezterm.lua:
+| Add this integration to {SANDBOX}/config/wezterm/wezterm.lua at the top level, after config is created and before the file returns it:
 | 
 | local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua"
 | wezterm.add_to_config_reload_watch_list(sf2_current)

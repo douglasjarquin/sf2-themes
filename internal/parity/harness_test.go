@@ -1,6 +1,8 @@
 package parity
 
 import (
+	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
+
 	"bytes"
 	"errors"
 	"flag"
@@ -175,7 +177,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 			t.Fatalf("seed from %s: %v", c.SeedFrom, err)
 		}
 		for _, entry := range tree {
-			path := ExpandDigests(filepath.Join(root, filepath.FromSlash(entry.Path)))
+			path := filepath.Join(root, filepath.FromSlash(entry.Path))
 			switch entry.Kind {
 			case "dir":
 				must(t, os.MkdirAll(path, entry.Mode))
@@ -184,7 +186,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 				content, err := readBlob(entry.Hash)
 				must(t, err)
 				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
-				must(t, os.WriteFile(path, []byte(ExpandDigests(Expand(string(content), root))), entry.Mode))
+				must(t, os.WriteFile(path, []byte(Expand(string(content), root)), entry.Mode))
 				must(t, os.Chmod(path, entry.Mode))
 			case "link":
 				must(t, os.MkdirAll(filepath.Dir(path), 0o755))
@@ -193,7 +195,7 @@ func seedSandbox(t *testing.T, c Case, root string) {
 		}
 	}
 	for _, file := range c.Seed {
-		path := ExpandDigests(filepath.Join(root, filepath.FromSlash(file.Path)))
+		path := filepath.Join(root, filepath.FromSlash(file.Path))
 		must(t, os.MkdirAll(filepath.Dir(path), 0o755))
 		if file.Link != "" {
 			must(t, os.Symlink(Expand(file.Link, root), path))
@@ -203,8 +205,67 @@ func seedSandbox(t *testing.T, c Case, root string) {
 		if file.Mode != 0 {
 			mode = fs.FileMode(file.Mode)
 		}
-		must(t, os.WriteFile(path, []byte(ExpandDigests(Expand(file.Content, root))), mode))
+		must(t, os.WriteFile(path, []byte(Expand(file.Content, root)), mode))
 		must(t, os.Chmod(path, mode))
+	}
+	rehydrateDigests(t, root)
+}
+
+// maskedPointer is the name Normalize gives every per-target WezTerm pointer.
+const maskedPointer = "wezterm-current-<digest>.lua"
+
+// rehydrateDigests restores the pointer digests Normalize masked in a seeded tree. Each seeded file that names a
+// masked pointer beside it is the pointer's target, so the digest comes from that file's own path, exactly as the
+// adapter derives it; a masked pointer no seeded file names belongs to the wezterm.lua beside its directory. Paths
+// are matched as whole strings, so they may hold spaces or any other character.
+func rehydrateDigests(t *testing.T, root string) {
+	t.Helper()
+	var files, pointers []string
+	must(t, filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+		switch {
+		case err != nil || !entry.Type().IsRegular():
+			return err
+		case strings.HasPrefix(entry.Name(), maskedPointer):
+			pointers = append(pointers, path)
+		default:
+			files = append(files, path)
+		}
+		return nil
+	}))
+	digestOf := func(lua string) string {
+		return "wezterm-current-" + fsys.Fingerprint(fsys.Canonical(lua))[:12] + ".lua"
+	}
+	// Name each masked pointer after the file beside it that loads it, or after the wezterm.lua beside it.
+	named := map[string]string{}
+	contents := map[string]string{}
+	for _, file := range files {
+		data, err := os.ReadFile(file)
+		must(t, err)
+		contents[file] = string(data)
+		masked := filepath.Join(filepath.Dir(file), "sf2-theme", maskedPointer)
+		if _, ok := named[masked]; !ok && strings.Contains(string(data), masked) {
+			named[masked] = digestOf(file)
+		}
+	}
+	for _, path := range pointers {
+		masked := filepath.Join(filepath.Dir(path), maskedPointer)
+		if _, ok := named[masked]; !ok {
+			named[masked] = digestOf(filepath.Join(filepath.Dir(filepath.Dir(path)), "wezterm.lua"))
+		}
+	}
+	for file, content := range contents {
+		updated := content
+		for masked, name := range named {
+			updated = strings.ReplaceAll(updated, masked, filepath.Join(filepath.Dir(masked), name))
+		}
+		if updated != content {
+			must(t, os.WriteFile(file, []byte(updated), 0o644))
+		}
+	}
+	for _, path := range pointers {
+		name := named[filepath.Join(filepath.Dir(path), maskedPointer)]
+		renamed := filepath.Join(filepath.Dir(path), name+strings.TrimPrefix(filepath.Base(path), maskedPointer))
+		must(t, os.Rename(path, renamed))
 	}
 }
 
@@ -621,6 +682,26 @@ func TestSymlinkedSandboxRecordsTheSameGolden(t *testing.T) {
 	must(t, err)
 	if got := Render(result, store.put); got != string(want) {
 		t.Errorf("a symlinked sandbox changed the golden:\n%s", describeDifference(string(want), got))
+	}
+}
+
+// Seeded WezTerm cases rebuild their pointer digests from the files that name them, so a sandbox path holding a
+// space or other characters records the same golden.
+func TestSeededPointerDigestsSurviveAnyPathCharacter(t *testing.T) {
+	bin := underTest(t)
+	for _, name := range []string{"wezterm/unreadable-pointer", "wezterm/managed/apply-same", "wezterm/legacy-shared-pointer-two-targets"} {
+		c := casesByName()[name]
+		if reason := skipReason(c); reason != "" {
+			t.Skip(reason)
+		}
+		dir := filepath.Join(t.TempDir(), "a space's dir")
+		must(t, os.Mkdir(dir, 0o755))
+		result, _, _ := runCase(t, bin, c, dir)
+		want, err := os.ReadFile(goldenPath(c))
+		must(t, err)
+		if got := Render(result, store.put); got != string(want) {
+			t.Errorf("%s under %q changed the golden:\n%s", name, dir, describeDifference(string(want), got))
+		}
 	}
 }
 

@@ -33,4 +33,8 @@ type App struct {
 	Reload string
 	// StderrHint is printed on stderr, as is, after a run that wrote the setting; "" prints none.
 	StderrHint string
+	// Disowns reports whether a file an earlier run recorded for the target can no longer be the target's own, such
+	// as a selection pointer an earlier release shared between targets. It decides from the path alone, so a run
+	// after an interrupted one stops the claim too. nil disowns nothing.
+	Disowns func(configDir, path string) bool
 }

@@ -3,7 +3,6 @@ package wezterm
 import (
 	"errors"
 	"regexp"
-	"slices"
 	"strings"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
@@ -11,8 +10,9 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
-// wezterm.lua ownership is exact recognition of what sf2 generates; anything else is the user's. Guessing is a
-// failure, and sf2 refuses rather than edit code it did not write.
+// wezterm.lua ownership is exact recognition of what sf2 generated, in a file that parses completely. sf2 writes a
+// new file, replaces one of its own forms as a whole, or, with --adopt, inserts its block into a file whose every
+// line it can verify. It never edits a line the user wrote; anything else is left to the user, with exact steps.
 
 const (
 	watchLine  = "wezterm.add_to_config_reload_watch_list(sf2_current)"
@@ -21,20 +21,24 @@ const (
 
 var (
 	termThemeAssign = `sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"`
-	sf2SchemeValue  = regexp.MustCompile(`^"(?:sf2-[^"]*|street-fighter-2|Street Fighter II - [^"]*|street-fighter-ii-[^"]*)"$`)
 	selectorLine    = regexp.MustCompile(`^local sf2_current = "((?:[^"\\]|\\.)*)"$`)
-	builderUse      = regexp.MustCompile(`^(` + pycompat.Word + `+)\.color_scheme = (sf2_scheme|dofile\(sf2_current\))$`)
-	indentPattern   = regexp.MustCompile(`^[ \t]*`)
+	unguardedUse    = regexp.MustCompile(`^(` + pycompat.Word + `+)\.color_scheme = dofile\(sf2_current\)$`)
+	guardedUse      = regexp.MustCompile(`^(` + pycompat.Word + `+)\.color_scheme = sf2_scheme$`)
+	// literalScheme is the line the first releases wrote: a builder's color_scheme set to an sf2 scheme name.
+	literalScheme  = regexp.MustCompile(`^(` + pycompat.Word + `+)\.color_scheme = "(?:sf2-[a-z0-9-]+|street-fighter-2|Street Fighter II - [A-Za-z0-9 .-]+|street-fighter-ii-[a-z0-9-]+)"$`)
+	requireWezterm = regexp.MustCompile(`^local wezterm = require\(?["']wezterm["']\)?$`)
+	indentPattern  = regexp.MustCompile(`^[ \t]*`)
 	// pointerName is every name sf2 has given a selection pointer.
 	pointerName = regexp.MustCompile(`^wezterm-current(-[0-9a-f]{12})?\.lua$`)
 )
 
-// luaPathLiteral escapes a filesystem path for a Lua double-quoted string.
+// luaPathLiteral escapes a filesystem path for a Lua double-quoted string. Callers refuse paths with control
+// characters, so backslash and quote are the only characters that need escaping.
 func luaPathLiteral(path string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(path, `\`, `\\`), `"`, `\"`)
 }
 
-// integrationLines is the block sf2 generates, without line breaks.
+// integrationLines is the block sf2 writes today, without line breaks.
 func integrationLines(pointer, builder string) []string {
 	return []string{
 		`local sf2_current = "` + luaPathLiteral(pointer) + `"`,
@@ -78,437 +82,318 @@ func unescapeLua(body string) (string, bool) {
 	return b.String(), true
 }
 
-// blockKind is a form of sf2 integration.
-type blockKind int
+// formKind is one integration sf2 has generated.
+type formKind int
 
 const (
-	// fullBlock is the integration sf2 writes today.
-	fullBlock blockKind = iota
-	// unguardedBlock is the integration releases before TERM_THEME wrote: the selector, the watch line, and
+	// fullForm is the block sf2 writes today.
+	fullForm formKind = iota
+	// unguardedForm is the block releases before TERM_THEME wrote: the selector, the watch line, and
 	// `<builder>.color_scheme = dofile(sf2_current)`.
-	unguardedBlock
-	// markerBlock is the first three lines of fullBlock, followed by the user's own use of sf2_scheme: the snippet sf2
-	// prints, pasted and adapted by hand.
-	markerBlock
+	unguardedForm
+	// literalForm is the single line the first releases wrote: `<builder>.color_scheme = "<sf2 scheme>"`.
+	literalForm
 )
 
-// block is one recognized integration: its kind, the pointer it loads, the byte range of its lines, the range of the
-// pointer's string literal, its indent, and the builder it assigns.
-type block struct {
-	kind         blockKind
-	pointer      string
-	start, end   int
-	literalStart int
-	literalEnd   int
-	indent       string
-	builder      string
+// form is one recognized integration: its kind, the pointer it loads (none for literalForm), its builder, its indent,
+// and the byte range of its lines without the last line break.
+type form struct {
+	kind       formKind
+	pointer    string
+	builder    string
+	indent     string
+	start, end int
 }
 
-// line is one source line: the range of its content and the end including its line break.
-type line struct{ start, end, next int }
+// line is the byte range of one line's content.
+type line struct{ start, end int }
 
 func lines(source string) []line {
 	var all []line
 	for start := 0; start < len(source); {
 		end := lineEnd(source, start)
-		next := end
-		if strings.HasPrefix(source[end:], "\r\n") {
-			next += 2
-		} else if next < len(source) {
-			next++
+		all = append(all, line{start, end})
+		start = end
+		if strings.HasPrefix(source[start:], "\r\n") {
+			start += 2
+		} else if start < len(source) {
+			start++
 		}
-		all = append(all, line{start, end, next})
-		start = next
 	}
 	return all
 }
 
-// recognize returns every sf2 integration at the top level of a completely lexed file: its lines exactly as sf2
-// generates them under one indent, starting at a token boundary outside any function, block, or bracket.
-func recognize(s scan) []block {
-	var found []block
-	all := lines(s.source)
-	text := func(i int, indent string) (string, bool) {
+// recognize returns each generated form in c: exact generated lines under one indent that are whole statements at
+// the top level of the chunk.
+func recognize(c chunk) []form {
+	all := lines(c.source)
+	text := func(i int, indent string) string {
 		if i >= len(all) {
-			return "", false
+			return ""
 		}
-		content := s.source[all[i].start:all[i].end]
-		return strings.TrimPrefix(content, indent), strings.HasPrefix(content, indent)
+		content := c.source[all[i].start:all[i].end]
+		if !strings.HasPrefix(content, indent) {
+			return ""
+		}
+		return content[len(indent):]
 	}
+	var found []form
 	for i := range all {
-		indent := indentPattern.FindString(s.source[all[i].start:all[i].end])
-		first, _ := text(i, indent)
-		match := selectorLine.FindStringSubmatchIndex(first)
-		if match == nil {
-			continue
-		}
-		body := first[match[2]:match[3]]
-		pointer, ok := unescapeLua(body)
-		if !ok || luaPathLiteral(pointer) != body {
-			continue
-		}
-		if watch, ok := text(i+1, indent); !ok || watch != watchLine {
-			continue
-		}
-		b := block{pointer: pointer, start: all[i].start, indent: indent,
-			literalStart: all[i].start + len(indent) + match[2] - 1, literalEnd: all[i].start + len(indent) + match[3] + 1}
-		third, _ := text(i+2, indent)
-		last := i + 2
-		switch use := builderUse.FindStringSubmatch(third); {
-		case use != nil && use[2] == "dofile(sf2_current)":
-			b.kind, b.builder = unguardedBlock, use[1]
-		case third == schemeLine:
-			b.kind = markerBlock
-			if use, _ := text(i+3, indent); builderUse.MatchString(use) {
-				b.builder = builderUse.FindStringSubmatch(use)[1]
-				full := integrationLines(pointer, b.builder)[3:]
-				matches := true
-				for j, want := range full {
-					if got, ok := text(i+3+j, indent); !ok || got != want {
-						matches = false
+		indent := indentPattern.FindString(c.source[all[i].start:all[i].end])
+		first := text(i, indent)
+		f := form{indent: indent, start: all[i].start}
+		last := i
+		if use := literalScheme.FindStringSubmatch(first); use != nil {
+			f.kind, f.builder = literalForm, use[1]
+		} else if match := selectorLine.FindStringSubmatch(first); match != nil {
+			pointer, ok := unescapeLua(match[1])
+			if !ok || luaPathLiteral(pointer) != match[1] || text(i+1, indent) != watchLine {
+				continue
+			}
+			f.pointer = pointer
+			if use := unguardedUse.FindStringSubmatch(text(i+2, indent)); use != nil {
+				f.kind, f.builder, last = unguardedForm, use[1], i+2
+			} else if use := guardedUse.FindStringSubmatch(text(i+3, indent)); use != nil && text(i+2, indent) == schemeLine {
+				f.kind, f.builder, last = fullForm, use[1], i+6
+				for j, want := range integrationLines(pointer, f.builder) {
+					if text(i+j, indent) != want {
+						f.builder = ""
 					}
 				}
-				if matches {
-					b.kind, last = fullBlock, i+2+len(full)
+				if f.builder == "" {
+					continue
 				}
+			} else {
+				continue
 			}
-		default:
+		} else {
 			continue
 		}
-		b.end = all[last].next
-		at := s.codeAt(b.start)
-		if !s.boundary(b.start) || !s.boundary(b.end) || at == len(s.code) || s.code[at].depth != 0 || s.code[at].nest != 0 {
-			continue
+		f.end = all[last].end
+		if c.wholeStatements(f.start+len(f.indent), f.end) {
+			found = append(found, f)
 		}
-		found = append(found, b)
 	}
 	return found
 }
 
-// assignment is one `color_scheme =` in code: the index of its `color_scheme` name and, when sf2 can remove it, the
-// byte range of the whole statement.
-type assignment struct {
-	at         int
-	removable  bool
-	start, end int
-	sf2        bool
-	usesScheme bool
-}
-
-// assignments returns every color_scheme assignment in code outside skip.
-func assignments(s scan, skip *block, builder string) []assignment {
-	var found []assignment
-	for i, t := range s.code {
-		if skip != nil && t.start >= skip.start && t.start < skip.end {
+// wholeStatements reports whether [start, end) is exactly a run of consecutive top-level statements.
+func (c chunk) wholeStatements(start, end int) bool {
+	for i, s := range c.statements {
+		if s.start != start {
 			continue
 		}
-		field := s.is(i, nameToken, "color_scheme") && s.is(i+1, otherToken, "=")
-		indexed := s.is(i, stringToken, "") && strings.Trim(t.text(s.source), `"'`) == "color_scheme" &&
-			s.is(i+1, otherToken, "]") && s.is(i+2, otherToken, "=")
-		if !field && !indexed {
-			continue
-		}
-		a := assignment{at: i}
-		if field {
-			a.start, a.end, a.removable = removableStatement(s, i, builder)
-			value := s.code[i+2 : min(i+3, len(s.code))]
-			if a.removable && len(value) == 1 && s.codeAt(a.end) == i+3 {
-				a.sf2 = value[0].kind == stringToken && sf2SchemeValue.MatchString(value[0].text(s.source))
-				a.usesScheme = value[0].kind == nameToken && value[0].text(s.source) == "sf2_scheme"
-			} else if s.is(i+2, nameToken, "sf2_scheme") && (s.is(i+3, otherToken, ",") || s.is(i+3, otherToken, "}")) {
-				a.usesScheme = true
+		for _, next := range c.statements[i:] {
+			if next.end == end {
+				return true
+			}
+			if next.end > end {
+				return false
 			}
 		}
-		found = append(found, a)
-	}
-	return found
-}
-
-// removableStatement reports whether the color_scheme name at code index i is the whole top-level statement
-// `<builder>.color_scheme = <value>` that starts its line and ends on it, and returns that statement's range. Its
-// value balances and ends the expression, and the next code begins a new statement, so removing the range leaves
-// valid Lua and every neighbouring token in place.
-func removableStatement(s scan, i int, builder string) (int, int, bool) {
-	if i < 2 || !s.is(i-1, otherToken, ".") || !s.is(i-2, nameToken, builder) {
-		return 0, 0, false
-	}
-	first := s.code[i-2]
-	lineStart, lineStop := lineOf(s.source, first.start)
-	if first.depth != 0 || first.nest != 0 || (i > 2 && s.code[i-3].end > lineStart) {
-		return 0, 0, false
-	}
-	last, open := i+1, 0
-	for j := i + 2; j < len(s.code) && s.code[j].start < lineStop; j++ {
-		if s.code[j].end > lineStop {
-			return 0, 0, false
-		}
-		switch s.code[j].text(s.source) {
-		case "(", "[", "{":
-			open++
-		case ")", "]", "}":
-			open--
-		}
-		last = j
-	}
-	end := s.code[last]
-	if last == i+1 || open != 0 || !endsExpression(s, end) {
-		return 0, 0, false
-	}
-	if last+1 < len(s.code) && continuesExpression(s, s.code[last+1]) {
-		return 0, 0, false
-	}
-	return first.start, end.end, true
-}
-
-var reserved = map[string]bool{
-	"and": true, "break": true, "do": true, "else": true, "elseif": true, "end": true, "for": true, "function": true,
-	"goto": true, "if": true, "in": true, "local": true, "not": true, "or": true, "repeat": true, "return": true,
-	"then": true, "until": true, "while": true,
-}
-
-func endsExpression(s scan, t token) bool {
-	text := t.text(s.source)
-	switch t.kind {
-	case nameToken:
-		return !reserved[text]
-	case stringToken, longStringToken, numberToken:
-		return true
-	}
-	return text == ")" || text == "]" || text == "}"
-}
-
-func continuesExpression(s scan, t token) bool {
-	text := t.text(s.source)
-	switch t.kind {
-	case nameToken:
-		return text == "and" || text == "or"
-	case stringToken, longStringToken:
-		return true
-	case otherToken:
-		return text != ";" && text != "::"
 	}
 	return false
 }
 
-// builderName returns the name of a top-level `local <name> = wezterm.config_builder()` that the chunk ends by
-// returning, and the start of that `return` line.
-func builderName(s scan) (string, int, bool) {
-	n := len(s.code)
-	if n < 2 || !s.is(n-2, nameToken, "return") || !s.is(n-1, nameToken, "") || s.code[n-2].depth != 0 {
-		return "", 0, false
-	}
-	name := s.code[n-1].text(s.source)
-	returnLine, _ := lineOf(s.source, s.code[n-2].start)
-	if i := s.codeAt(returnLine); i != n-2 {
-		return "", 0, false
-	}
-	for i := range s.code {
-		if s.is(i, nameToken, "local") && s.is(i+1, nameToken, name) && s.is(i+2, otherToken, "=") &&
-			s.is(i+3, nameToken, "wezterm") && s.is(i+4, otherToken, ".") && s.is(i+5, nameToken, "config_builder") &&
-			s.is(i+6, otherToken, "(") && s.is(i+7, otherToken, ")") && s.code[i].depth == 0 && s.code[i].nest == 0 {
-			return name, returnLine, true
-		}
-	}
-	return "", 0, false
-}
-
-// mentionsSF2 reports whether code outside skip names an sf2 integration variable or a pointer path.
-func mentionsSF2(s scan, skip *block) bool {
-	for _, t := range s.code {
-		if skip != nil && t.start >= skip.start && t.start < skip.end {
-			continue
-		}
-		text := t.text(s.source)
-		if (t.kind == nameToken && (text == "sf2_current" || text == "sf2_scheme")) ||
-			(t.kind == stringToken && strings.Contains(text, "wezterm-current")) {
+// topLevelBefore reports whether a top-level statement ending before offset matches pattern.
+func (c chunk) topLevelBefore(offset int, pattern *regexp.Regexp) bool {
+	for _, s := range c.statements {
+		if s.end <= offset && pattern.MatchString(c.source[s.start:s.end]) {
 			return true
 		}
 	}
 	return false
 }
 
-// usesMarker reports whether top-level code after a marker block reads sf2_scheme and nothing assigns it again.
-func usesMarker(s scan, b block) bool {
-	used := false
-	for i := s.codeAt(b.end); i < len(s.code); i++ {
-		if !s.is(i, nameToken, "sf2_scheme") {
+// mentions reports whether code outside [start, end) names color_scheme, or names an sf2 integration variable or
+// pointer: something that decides the scheme besides sf2, or an older sf2 loader.
+func (c chunk) mentions(start, end int) (scheme, loader bool) {
+	for _, t := range c.tokens {
+		if t.kind == commentToken || (t.start >= start && t.start < end) {
 			continue
 		}
-		if s.is(i+1, otherToken, "=") || s.is(i-1, nameToken, "local") {
-			return false
+		text := t.text(c.source)
+		switch t.kind {
+		case nameToken:
+			scheme = scheme || text == "color_scheme"
+			loader = loader || text == "sf2_current" || text == "sf2_scheme" || text == "sf2_env"
+		case stringToken, longStringToken:
+			scheme = scheme || strings.Contains(text, "color_scheme")
+			loader = loader || strings.Contains(text, "wezterm-current")
 		}
-		used = used || s.code[i].depth == 0
 	}
-	return used
+	return scheme, loader
+}
+
+// tinyLine is every line a file sf2 adopts may hold, apart from the builder and its return.
+var tinyLine = []*regexp.Regexp{
+	regexp.MustCompile(`^$`),
+	regexp.MustCompile(`^--([^\[].*)?$`),
+	requireWezterm,
+}
+
+var (
+	tinyBuilder = regexp.MustCompile(`^local (` + pycompat.Word + `+) = wezterm\.config_builder\(\)$`)
+	tinyValue   = `(?:-?[0-9]+(?:\.[0-9]+)?|true|false|"[^"\\]*"|'[^'\\]*'|wezterm\.[a-z_]+\((?:"[^"\\]*"|-?[0-9]+(?:\.[0-9]+)?)?\))`
+)
+
+// adoptable returns the builder of a file sf2 can verify line by line and the start of its final `return` line:
+// blank lines, line comments, `local wezterm = require("wezterm")`, one `local <builder> =
+// wezterm.config_builder()`, single-line `<builder>.<setting> = <literal>` assignments other than color_scheme, and
+// a final `return <builder>`.
+func adoptable(source string) (string, int, bool) {
+	builder, returnAt := "", -1
+	var setting, final *regexp.Regexp
+	for _, l := range lines(source) {
+		text := strings.TrimSpace(source[l.start:l.end])
+		switch {
+		case returnAt >= 0 && text != "" && !strings.HasPrefix(text, "--"):
+			return "", 0, false
+		case builder == "" && tinyBuilder.MatchString(text):
+			builder = tinyBuilder.FindStringSubmatch(text)[1]
+			quoted := regexp.QuoteMeta(builder)
+			setting = regexp.MustCompile(`^` + quoted + `\.(` + pycompat.Word + `+) = ` + tinyValue + `$`)
+			final = regexp.MustCompile(`^return ` + quoted + `$`)
+		case final != nil && final.MatchString(text):
+			returnAt = l.start
+		case setting != nil && setting.MatchString(text):
+			if setting.FindStringSubmatch(text)[1] == "color_scheme" {
+				return "", 0, false
+			}
+		case strings.HasPrefix(text, "--[") || !matchesAny(tinyLine, text):
+			return "", 0, false
+		}
+	}
+	return builder, returnAt, builder != "" && returnAt >= 0
+}
+
+func matchesAny(patterns []*regexp.Regexp, text string) bool {
+	for _, pattern := range patterns {
+		if pattern.MatchString(text) {
+			return true
+		}
+	}
+	return false
 }
 
 // analysis is what sf2 knows about one wezterm.lua.
 type analysis struct {
-	scan        scan
-	ownership   plan.Ownership
-	block       *block
-	assignments []assignment
-	builder     string
-	returnLine  int
-	// selector is the pointer the configuration loads, or "" when sf2 cannot tell.
+	ownership plan.Ownership
+	form      *form
+	// selector is the pointer the configuration loads, or "" when it loads none sf2 can vouch for.
 	selector string
+	// builder and returnAt place an adopted block, when the file is adoptable.
+	builder  string
+	returnAt int
+	// manual is the reason sf2 will not write the setting itself, and what the user does instead.
+	manual string
 }
 
 // analyze classifies existing for the target whose own pointer is pointer.
 //
-//	recognized                                     ownership
-//	nothing at all                                 absent
-//	file that does not lex completely              unknown shape
-//	more than one integration                      unknown shape
-//	integration loading a path that is no pointer  unknown shape
-//	full or unguarded block, other color_scheme    foreign
-//	full block                                     managed
-//	unguarded block                                legacy
-//	marker whose sf2_scheme top-level code uses    managed (unless another color_scheme)
-//	builder config with only sf2 literal schemes   legacy
-//	builder config with another color_scheme       foreign
-//	builder config without any                     absent (unknown shape if it mentions sf2's names)
-//	anything else                                  unknown shape
-func analyze(existing, pointer string) analysis {
-	a := analysis{scan: lexLua(existing), ownership: plan.UnknownShape}
+//	missing or blank file                                   absent: sf2 creates it
+//	not a Lua chunk sf2 can verify                          broken: refused before any write
+//	more than one sf2 form                                  unknown shape
+//	full form, at the top level, nothing else sets scheme   managed (moved off a former pointer as a whole)
+//	unguarded or literal form, likewise                     legacy: replaced by the full form as a whole
+//	an sf2 form beside another color_scheme                 foreign: manual
+//	no sf2 form, adoptable                                  foreign: --adopt inserts the full form
+//	no sf2 form, any color_scheme                           foreign: manual
+//	anything else                                           unknown shape: manual
+func analyze(existing, pointer, lua string) analysis {
 	if pycompat.Strip(existing) == "" {
-		a.ownership, a.selector = plan.Absent, pointer
-		return a
+		return analysis{ownership: plan.Absent, selector: pointer}
 	}
-	if !a.scan.complete {
-		return a
+	c, err := parseLua(existing)
+	if err != nil {
+		return analysis{ownership: plan.Broken, manual: lua + " is not Lua sf2-themes can verify: " + err.Error()}
 	}
-	a.builder, a.returnLine, _ = builderName(a.scan)
-	blocks := recognize(a.scan)
-	if len(blocks) > 1 {
-		return a
+	forms := recognize(c)
+	if len(forms) > 1 {
+		return analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, "config", false, false,
+			"It holds more than one sf2-themes integration; keep one.")}
 	}
-	if len(blocks) == 1 {
-		b := blocks[0]
-		a.block = &b
-		if b.builder != "" {
-			a.builder = b.builder
-		}
-		if !fsys.SamePath(b.pointer, pointer) && !pointerName.MatchString(pycompat.Name(b.pointer)) {
-			return a
-		}
-		a.selector = b.pointer
-		a.assignments = assignments(a.scan, &b, a.builder)
-		others := slices.ContainsFunc(a.assignments, func(x assignment) bool { return !x.usesScheme })
+	if len(forms) == 1 {
+		f := forms[0]
+		scheme, loader := c.mentions(f.start, f.end)
+		declares := regexp.MustCompile(`^local ` + regexp.QuoteMeta(f.builder) + `\b`)
+		a := analysis{form: &f, selector: f.pointer}
 		switch {
-		case b.kind == markerBlock && (!usesMarker(a.scan, b) || others):
-			a.selector = ""
-		case others:
-			a.ownership = plan.Foreign
-		case b.kind == unguardedBlock:
-			a.ownership = plan.Legacy
-		default:
+		case f.kind != literalForm && !fsys.SamePath(f.pointer, pointer) && !pointerName.MatchString(pycompat.Name(f.pointer)):
+			a.ownership, a.selector = plan.UnknownShape, ""
+			a.manual = manualSteps(lua, pointer, f.builder, false, true, "Its integration loads a file that is no sf2-themes pointer.")
+		case c.returned != f.builder || !c.topLevelBefore(f.start, requireWezterm) || !c.topLevelBefore(f.start, declares):
+			a.ownership, a.selector = plan.UnknownShape, ""
+			a.manual = manualSteps(lua, pointer, f.builder, false, true, "")
+		case scheme || loader:
+			a.ownership, a.selector = plan.Foreign, ""
+			a.manual = manualSteps(lua, pointer, f.builder, scheme, loader, "")
+		case f.kind == fullForm:
 			a.ownership = plan.Managed
+		default:
+			a.ownership = plan.Legacy
+			if f.kind == literalForm {
+				a.selector = pointer
+			}
 		}
 		return a
 	}
-	a.selector = pointer
-	if a.builder == "" {
-		a.selector = ""
-		return a
+	scheme, loader := c.mentions(0, 0)
+	if builder, returnAt, ok := adoptable(existing); ok && !loader {
+		return analysis{ownership: plan.Foreign, builder: builder, returnAt: returnAt}
 	}
-	a.assignments = assignments(a.scan, nil, a.builder)
-	switch {
-	case slices.ContainsFunc(a.assignments, func(x assignment) bool { return !x.sf2 }):
+	a := analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, "config", scheme, loader, "")}
+	if scheme {
 		a.ownership = plan.Foreign
-	case len(a.assignments) > 0:
-		a.ownership = plan.Legacy
-	case mentionsSF2(a.scan, nil):
-		a.selector = ""
-	default:
-		a.ownership = plan.Absent
 	}
 	return a
 }
 
+// manualSteps is how the user adds sf2's integration by hand when sf2 will not edit their file.
+func manualSteps(lua, pointer, builder string, scheme, loader bool, why string) string {
+	steps := "Add this integration to " + lua + " at the top level, after " + builder + " is created and before the " +
+		"file returns it:\n\n" + integrationSnippet(pointer, builder)
+	if why != "" {
+		steps = why + "\n" + steps
+	}
+	if scheme {
+		steps += "\nRemove the other color_scheme assignments, so this one selects the theme."
+	}
+	if loader {
+		steps += "\nRemove the older sf2-themes loader: the lines that set or use sf2_current, sf2_scheme, or sf2_env."
+	}
+	return steps
+}
+
 // classify reports who owns the color scheme in wezterm.lua.
-func classify(existing, pointer string) plan.Ownership { return analyze(existing, pointer).ownership }
-
-// assignedPointer returns the pointer the recognized integration loads.
-func assignedPointer(existing, pointer string) (string, bool) {
-	a := analyze(existing, pointer)
-	return a.selector, a.block != nil && a.selector != ""
+func classify(existing, pointer string) plan.Ownership {
+	return analyze(existing, pointer, "wezterm.lua").ownership
 }
 
-// edit is a replacement of source[start:end].
-type edit struct {
-	start, end  int
-	replacement string
-}
-
-func applyEdits(source string, edits []edit) string {
-	slices.SortFunc(edits, func(a, b edit) int { return b.start - a.start })
-	for _, e := range edits {
-		source = source[:e.start] + e.replacement + source[e.end:]
-	}
-	return source
-}
-
-// removal drops a statement's range, and the whole line when nothing else is on it.
-func removal(source string, start, end int) edit {
-	lineStart, lineStop := lineOf(source, start)
-	if strings.TrimSpace(source[lineStart:start]) == "" && strings.TrimSpace(source[end:lineStop]) == "" {
-		next := lineStop
-		if strings.HasPrefix(source[next:], "\r\n") {
-			next += 2
-		} else if next < len(source) {
-			next++
-		}
-		return edit{lineStart, next, ""}
-	}
-	return edit{start, end, ""}
-}
-
-var errCannotIntegrate = errors.New("sf2-themes cannot edit this WezTerm config safely")
-
-// integrate returns wezterm.lua selecting pointer: a starter config for an empty file, the target's pointer in a
-// recognized integration, an unguarded block upgraded to the full one, and otherwise the full block inserted before
-// the final `return <builder>` with every removable color_scheme statement removed. It edits nothing else, and
-// refuses when the result is not a config sf2 then recognizes as managed.
-func integrate(existing, pointer string) (string, error) {
-	a := analyze(existing, pointer)
-	if a.ownership == plan.Absent && pycompat.Strip(existing) == "" {
+// integrate returns wezterm.lua selecting pointer: a starter config for a blank file, sf2's own form replaced as a
+// whole by the full form, or, for an adoptable file, the full form inserted before its return. It refuses anything
+// else, and any result sf2 would not then recognize as managed.
+func integrate(existing, pointer, lua string) (string, error) {
+	a := analyze(existing, pointer, lua)
+	var updated string
+	switch {
+	case a.ownership == plan.Absent:
 		return starterConfig(pointer), nil
-	}
-	if a.ownership == plan.UnknownShape {
-		return "", errCannotIntegrate
-	}
-	var edits []edit
-	for _, x := range a.assignments {
-		if x.usesScheme && a.block != nil && a.block.kind == markerBlock {
-			continue
+	case a.ownership == plan.Managed || a.ownership == plan.Legacy:
+		f := a.form
+		block := make([]string, 0, 7)
+		for _, text := range integrationLines(pointer, f.builder) {
+			block = append(block, f.indent+text)
 		}
-		if !x.removable {
-			return "", errCannotIntegrate
-		}
-		edits = append(edits, removal(existing, x.start, x.end))
+		updated = existing[:f.start] + strings.Join(block, "\n") + existing[f.end:]
+	case a.ownership == plan.Foreign && a.manual == "":
+		updated = pycompat.RStrip(existing[:a.returnAt]) + "\n" + integrationSnippet(pointer, a.builder) + existing[a.returnAt:]
+	default:
+		return "", errors.New(a.manual)
 	}
-	if b := a.block; b != nil {
-		edits = append(edits, edit{b.literalStart, b.literalEnd, `"` + luaPathLiteral(pointer) + `"`})
-		if b.kind == unguardedBlock {
-			third := lines(existing[b.start:b.end])[2]
-			var upgraded []string
-			for _, text := range integrationLines(pointer, b.builder)[2:] {
-				upgraded = append(upgraded, b.indent+text)
-			}
-			edits = append(edits, edit{b.start + third.start, b.start + third.end, strings.Join(upgraded, "\n")})
-		}
-	}
-	updated := applyEdits(existing, edits)
-	if a.block == nil {
-		name, returnLine, ok := builderName(lexLua(updated))
-		if !ok {
-			return "", errCannotIntegrate
-		}
-		updated = pycompat.RStrip(updated[:returnLine]) + "\n" + integrationSnippet(pointer, name) + updated[returnLine:]
-	}
-	if check := analyze(updated, pointer); check.ownership != plan.Managed || !fsys.SamePath(check.selector, pointer) {
-		return "", errCannotIntegrate
+	if check := analyze(updated, pointer, lua); check.ownership != plan.Managed || !fsys.SamePath(check.selector, pointer) {
+		return "", errors.New("sf2-themes could not verify its change to " + lua + "; nothing was written.\n" +
+			manualSteps(lua, pointer, "config", false, false, ""))
 	}
 	return updated, nil
 }
