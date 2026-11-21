@@ -26,11 +26,16 @@ type App struct {
 	Target func(configDir string) (string, error)
 	// Pair reports a dark and light sibling pair that follows host appearance in the summary.
 	Pair bool
-	// OwnsFilesOnUnknownShape lets an unknown-shape config still receive the theme files, then exit nonzero
-	// with the manual fix, and adds the `pointer:` summary line when the setting is left alone.
-	OwnsFilesOnUnknownShape bool
+	// Pointer reports a selection pointer beside the theme setting: the `pointer:` summary line names the selection
+	// a run left in it when the setting is left alone, and `current` says only that no theme is applied when the
+	// setting is the user's own.
+	Pointer bool
 	// Reload is the `note:` summary line printed when the setting was written; "" prints none.
 	Reload string
 	// StderrHint is printed on stderr, as is, after a run that wrote the setting; "" prints none.
 	StderrHint string
+	// Disowns reports whether a file an earlier run recorded for the target can no longer be the target's own, such
+	// as a selection pointer an earlier release shared between targets. It decides from the path alone, so a run
+	// after an interrupted one stops the claim too. nil disowns nothing.
+	Disowns func(configDir, path string) bool
 }

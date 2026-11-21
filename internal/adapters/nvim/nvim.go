@@ -25,12 +25,11 @@ var App = adapters.App{
 }
 
 const (
-	legacySchemeFilePrefix = "street-fighter-ii"
-	currentDirName         = "sf2-theme"
-	currentFileName        = "current.lua"
-	pluginFileName         = "sf2-theme.lua"
-	colorsDirName          = "colors"
-	pluginDirName          = "plugin"
+	currentDirName  = "sf2-theme"
+	currentFileName = "current.lua"
+	pluginFileName  = "sf2-theme.lua"
+	colorsDirName   = "colors"
+	pluginDirName   = "plugin"
 )
 
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `+(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
@@ -249,10 +248,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, _ bool)
 		return nil, err
 	}
 	target := pycompat.Path(dir, colorsDirName)
-	steps := make([]plan.Step, 0, 2*len(themes)+2)
-	for _, entry := range themes {
-		steps = append(steps, plan.Remove(pycompat.Path(target, legacySchemeFilePrefix+"-"+entry.Metadata.ID+".lua")))
-	}
+	steps := make([]plan.Step, 0, len(themes)+2)
 	for _, entry := range themes {
 		steps = append(steps, plan.Write(pycompat.Path(target, schemeFilename(entry)), renderScheme(entry)))
 	}

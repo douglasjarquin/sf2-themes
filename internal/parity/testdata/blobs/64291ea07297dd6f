@@ -4,7 +4,11 @@
     {
       "app": "wezterm",
       "target": "{SANDBOX}/config/wezterm/wezterm.lua",
-      "selection": "sf2-ryu",
+      "selection": "sf2-main",
+      "setting": {
+        "path": "{SANDBOX}/config/wezterm/wezterm.lua",
+        "sha256": "<current>"
+      },
       "files": [
         {
           "path": "{SANDBOX}/config/wezterm/colors/sf2-akuma-light.toml",
@@ -151,7 +155,7 @@
           "sha256": "<current>"
         },
         {
-          "path": "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua",
+          "path": "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua",
           "sha256": "<current>"
         }
       ]

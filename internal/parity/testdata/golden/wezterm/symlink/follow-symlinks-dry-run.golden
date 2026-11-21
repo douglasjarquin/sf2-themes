@@ -73,9 +73,9 @@ stdout
 = 01c4167e830f84c0
 | would create: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
 = 528b9ef8421415b0
-| would create: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| would create: {SANDBOX}/elsewhere/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | --- /dev/null
-| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| +++ {SANDBOX}/elsewhere/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | @@ -0,0 +1,7 @@
 | +-- sf2-themes: sf2-main
 | +local wezterm = require("wezterm")
@@ -87,20 +87,19 @@ stdout
 | would update: {SANDBOX}/elsewhere/wezterm/wezterm.lua
 | --- {SANDBOX}/elsewhere/wezterm/wezterm.lua
 | +++ {SANDBOX}/elsewhere/wezterm/wezterm.lua
-| @@ -1,4 +1,11 @@
-|  local wezterm = require("wezterm")
-|  local config = wezterm.config_builder()
-|  config.font_size = 13
-| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua"
+| @@ -0,0 +1,10 @@
+| +local wezterm = require("wezterm")
+| +local config = wezterm.config_builder()
+| +local sf2_current = "{SANDBOX}/elsewhere/wezterm/sf2-theme/wezterm-current-<digest>.lua"
 | +wezterm.add_to_config_reload_watch_list(sf2_current)
 | +local sf2_scheme = dofile(sf2_current)
 | +config.color_scheme = sf2_scheme
 | +local sf2_env = config.set_environment_variables or {}
 | +sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"
 | +config.set_environment_variables = sf2_env
-|  return config
+| +return config
 | apply wezterm: sf2-main + sf2-main-light (follows host appearance)
-|   target: {SANDBOX}/config/wezterm/wezterm.lua
+|   target: {SANDBOX}/elsewhere/wezterm/wezterm.lua
 |   changes: 37 would create, 1 would update
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
@@ -110,5 +109,5 @@ dir 0755 config/wezterm
 link config/wezterm/wezterm.lua -> {SANDBOX}/elsewhere/wezterm/wezterm.lua
 dir 0755 elsewhere
 dir 0755 elsewhere/wezterm
-file 0644 785b9fe39fe7f4d0 elsewhere/wezterm/wezterm.lua
+file 0644 e3b0c44298fc1c14 elsewhere/wezterm/wezterm.lua
 dir 0755 home

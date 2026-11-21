@@ -1,0 +1,15 @@
+step apply nvim --follow-symlinks --config-dir {SANDBOX}/config/nvim
+exit 1
+stdout
+stderr
+| error: refusing to replace {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua: sf2-themes did not write it, or it changed after sf2-themes wrote it. Move it aside and run the command again
+tree
+dir 0755 config
+dir 0755 config/nvim
+dir 0755 config/nvim/sf2-theme
+link config/nvim/sf2-theme/current.lua -> {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua
+dir 0755 elsewhere
+dir 0755 elsewhere/nvim
+dir 0755 elsewhere/nvim/sf2-theme
+file 0644 2c791d5bf75a4b58 elsewhere/nvim/sf2-theme/current.lua
+dir 0755 home

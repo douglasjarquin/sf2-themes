@@ -98,14 +98,11 @@ func TestPlanWritesEverySchemeThePointerAndTheLoader(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(steps) != 2*len(themes)+2 {
+	if len(steps) != len(themes)+2 {
 		t.Fatalf("%d steps", len(steps))
 	}
-	if !steps[0].Remove || steps[0].Path != dir+"/colors/street-fighter-ii-main.lua" {
-		t.Errorf("first step: %+v", steps[0])
-	}
-	if steps[len(themes)].Path != dir+"/colors/sf2-main.lua" {
-		t.Errorf("first scheme: %+v", steps[len(themes)])
+	if steps[0].Path != dir+"/colors/sf2-main.lua" {
+		t.Errorf("first scheme: %+v", steps[0])
 	}
 	pointer, loader := steps[len(steps)-2], steps[len(steps)-1]
 	if pointer.Path != dir+"/sf2-theme/current.lua" || loader.Path != dir+"/plugin/sf2-theme.lua" {

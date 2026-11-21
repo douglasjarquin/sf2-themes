@@ -11,7 +11,7 @@ dir 0755 home
 dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
-file 0644 40723280741286ea home/.local/state/sf2/manifest.json
+file 0644 c195d16a1040fac7 home/.local/state/sf2/manifest.json
 file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
 dir 0755 xdg
 dir 0755 xdg/wezterm
@@ -53,5 +53,5 @@ file 0644 81dd5942f42e5fc8 xdg/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 xdg/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b xdg/wezterm/colors/sf2-zangief.toml
 dir 0755 xdg/wezterm/sf2-theme
-file 0644 f173abe553e31147 xdg/wezterm/sf2-theme/wezterm-current.lua
-file 0644 638c327639073785 xdg/wezterm/wezterm.lua
+file 0644 f173abe553e31147 xdg/wezterm/sf2-theme/wezterm-current-<digest>.lua
+file 0644 930581c6178ef967 xdg/wezterm/wezterm.lua

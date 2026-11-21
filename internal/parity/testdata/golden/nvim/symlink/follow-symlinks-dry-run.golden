@@ -76,15 +76,17 @@ stdout
 | would update: {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua
 | --- {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua
 | +++ {SANDBOX}/elsewhere/nvim/sf2-theme/current.lua
-| @@ -1 +1,7 @@
+| @@ -1,7 +1,7 @@
 | --- sf2-themes: sf2-ryu
 | +-- sf2-themes: sf2-main
-| +local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")
-| +if light_mode then
+|  local light_mode = vim.env.TERM_THEME == "light" or (vim.env.TERM_THEME ~= "dark" and vim.o.background == "light")
+|  if light_mode then
+| -  vim.cmd("colorscheme sf2-ryu-light")
 | +  vim.cmd("colorscheme sf2-main-light")
-| +else
+|  else
+| -  vim.cmd("colorscheme sf2-ryu")
 | +  vim.cmd("colorscheme sf2-main")
-| +end
+|  end
 | would create: {SANDBOX}/config/nvim/plugin/sf2-theme.lua
 = faa519854ea998a3
 | apply nvim: sf2-main + sf2-main-light (follows host appearance)
@@ -100,5 +102,5 @@ link config/nvim/sf2-theme/current.lua -> {SANDBOX}/elsewhere/nvim/sf2-theme/cur
 dir 0755 elsewhere
 dir 0755 elsewhere/nvim
 dir 0755 elsewhere/nvim/sf2-theme
-file 0644 2c791d5bf75a4b58 elsewhere/nvim/sf2-theme/current.lua
+file 0644 65a17e8448b9ca84 elsewhere/nvim/sf2-theme/current.lua
 dir 0755 home

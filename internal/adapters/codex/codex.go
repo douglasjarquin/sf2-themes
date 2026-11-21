@@ -224,17 +224,13 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	return plan.Inspection{Ownership: plan.Foreign}, nil
 }
 
-// Plan removes unprefixed legacy theme files, writes every catalog theme file, and, when slot is set, selects
-// theme in config.toml.
+// Plan writes every catalog theme file and, when slot is set, selects theme in config.toml.
 func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bool) ([]plan.Step, error) {
 	dir, err := home(configDir)
 	if err != nil {
 		return nil, err
 	}
-	steps := make([]plan.Step, 0, 2*len(themes)+1)
-	for _, entry := range themes {
-		steps = append(steps, plan.Remove(pycompat.Path(dir, themeDirName, entry.Metadata.ID+themeSuffix)))
-	}
+	steps := make([]plan.Step, 0, len(themes)+1)
 	for _, entry := range themes {
 		steps = append(steps, plan.Write(pycompat.Path(dir, themeDirName, entry.Metadata.SelectableID()+themeSuffix), RenderTheme(entry)))
 	}

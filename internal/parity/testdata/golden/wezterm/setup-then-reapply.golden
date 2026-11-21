@@ -1,4 +1,4 @@
-step setup wezterm --config-dir {SANDBOX}/config/wezterm
+step setup wezterm --adopt --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
 | setup wezterm: no selection found, selected sf2-main + sf2-main-light (follows host appearance)
@@ -56,8 +56,8 @@ file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
 dir 0755 config/wezterm/sf2-theme
-file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current.lua
-file 0644 d015926a176f1dad config/wezterm/wezterm.lua
+file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current-<digest>.lua
+file 0644 dbbca8892d8aa5c1 config/wezterm/wezterm.lua
 dir 0755 home
 dir 0755 home/.local
 dir 0755 home/.local/state
@@ -65,5 +65,5 @@ dir 0755 home/.local/state/sf2
 dir 0755 home/.local/state/sf2/backups
 dir 0755 home/.local/state/sf2/backups/wezterm
 file 0600 01921d94ce35e7ba home/.local/state/sf2/backups/wezterm/wezterm.lua.1
-file 0644 0aca9ad0023855c6 home/.local/state/sf2/manifest.json
+file 0644 690dfdacbc2c68b7 home/.local/state/sf2/manifest.json
 file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock
