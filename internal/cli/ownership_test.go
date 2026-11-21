@@ -1303,3 +1303,126 @@ func TestARecordedPointerToAMissingThemeIsReset(t *testing.T) {
 		t.Errorf("stdout %q", out)
 	}
 }
+
+// Round 8 item 1: a builder that shadows a name sf2's block uses is never given the block.
+func TestABuilderThatShadowsTheWeztermModuleTakesTheManualPath(t *testing.T) {
+	shadowing := "local wezterm = require(\"wezterm\")\nlocal wezterm = wezterm.config_builder()\n" +
+		"wezterm.font_size = 12\nreturn wezterm\n"
+	for name, c := range map[string]struct {
+		lua  string
+		args []string
+	}{
+		"adopt":          {shadowing, []string{"--adopt"}},
+		"adopt sf2_env":  {strings.NewReplacer("local config", "local sf2_env", "config.font", "sf2_env.font", "return config", "return sf2_env").Replace(seedLua), []string{"--adopt"}},
+		"literal form":   {strings.Replace(shadowing, "return wezterm", "wezterm.color_scheme = \"street-fighter-2\"\nreturn wezterm", 1), nil},
+		"apply no adopt": {shadowing, nil},
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			put(t, target+"/wezterm.lua", c.lua)
+			before := snapshot(t, root)
+			_, stderr, status := run(append([]string{"apply", "wezterm", "--theme", "ryu", "--config-dir", target}, c.args...)...)
+			if status != 1 {
+				t.Fatalf("exit %d\n%s", status, stderr)
+			}
+			if name != "apply no adopt" && !strings.Contains(stderr, "Rename the builder first") {
+				t.Errorf("stderr %q", stderr)
+			}
+			if after := snapshot(t, root); after != before {
+				t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+			}
+		})
+	}
+}
+
+// Round 8 item 2: sf2 never writes a wezterm.lua past Lua's limit of 200 locals in its main chunk.
+func TestTheLocalLimitIsKept(t *testing.T) {
+	for count, want := range map[int]int{195: 0, 196: 1, 197: 1, 198: 1, 199: 1} {
+		t.Run(fmt.Sprint(count), func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			var locals []string
+			for i := range count {
+				locals = append(locals, fmt.Sprintf("local value%d", i))
+			}
+			// The two locals of the builder plus count; the full form adds three more.
+			lua := strings.Replace(seedLua, "return config", strings.Join(locals, "\n")+
+				"\nconfig.color_scheme = \"street-fighter-2\"\nreturn config", 1)
+			put(t, target+"/wezterm.lua", lua)
+			before := snapshot(t, root)
+			_, stderr, status := run("apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+			if status != want {
+				t.Fatalf("exit %d, want %d\n%s", status, want, stderr)
+			}
+			if want == 1 {
+				if !strings.Contains(stderr, "locals") {
+					t.Errorf("stderr %q", stderr)
+				}
+				if after := snapshot(t, root); after != before {
+					t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+				}
+			}
+		})
+	}
+}
+
+// Round 8 item 3: state sf2 could not record in refuses the run before the lock, so nothing at all is written.
+func TestUnusableStateRefusesWithoutCreatingState(t *testing.T) {
+	for name, block := range map[string]func(t *testing.T, root string){
+		"immutable manifest": func(t *testing.T, root string) {
+			setImmutable(t, root+"/state/sf2/manifest.json")
+		},
+		"symlinked manifest": func(t *testing.T, root string) {
+			manifest := root + "/state/sf2/manifest.json"
+			put(t, root+"/elsewhere.json", read(t, manifest))
+			if err := os.Remove(manifest); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(root+"/elsewhere.json", manifest); err != nil {
+				t.Fatal(err)
+			}
+		},
+		"symlinked lock": func(t *testing.T, root string) {
+			lock := root + "/state/sf2/manifest.lock"
+			if err := os.Remove(lock); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(root+"/elsewhere.lock", lock); err != nil {
+				t.Fatal(err)
+			}
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+			block(t, root)
+			before := snapshot(t, root)
+			mustRun(t, 1, "apply", "wezterm", "--theme", "ken", "--config-dir", target)
+			if after := snapshot(t, root); after != before {
+				t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+			}
+		})
+	}
+}
+
+// Round 8 item 6: every file sf2 cannot prove it wrote is named in one refusal.
+func TestEveryUnprovenFileIsNamedAtOnce(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	edited := []string{target + "/colors/sf2-akuma.toml", target + "/colors/sf2-ken.toml", target + "/colors/sf2-vega.toml"}
+	for _, path := range edited {
+		put(t, path, read(t, path)+"# mine\n")
+	}
+	_, stderr, status := run("apply", "wezterm", "--theme", "ken", "--config-dir", target)
+	if status != 1 || !strings.Contains(stderr, "refusing to replace 3 files") {
+		t.Fatalf("exit %d\n%s", status, stderr)
+	}
+	for _, path := range edited {
+		if !strings.Contains(stderr, "\n  "+path) {
+			t.Errorf("%s not named:\n%s", path, stderr)
+		}
+	}
+}

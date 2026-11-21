@@ -27,6 +27,11 @@ type token struct {
 
 func (t token) text(source string) string { return source[t.start:t.end] }
 
+// isKeyword reports whether t is the keyword word.
+func (t token) isKeyword(source, word string) bool {
+	return t.kind == keywordToken && t.text(source) == word
+}
+
 var keywords = map[string]bool{
 	"and": true, "break": true, "do": true, "else": true, "elseif": true, "end": true, "false": true, "for": true,
 	"function": true, "goto": true, "if": true, "in": true, "local": true, "nil": true, "not": true, "or": true,

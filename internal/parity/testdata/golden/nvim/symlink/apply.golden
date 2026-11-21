@@ -11,5 +11,5 @@ link config/nvim/sf2-theme/current.lua -> {SANDBOX}/elsewhere/nvim/sf2-theme/cur
 dir 0755 elsewhere
 dir 0755 elsewhere/nvim
 dir 0755 elsewhere/nvim/sf2-theme
-file 0644 2c791d5bf75a4b58 elsewhere/nvim/sf2-theme/current.lua
+file 0644 65a17e8448b9ca84 elsewhere/nvim/sf2-theme/current.lua
 dir 0755 home

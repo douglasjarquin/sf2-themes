@@ -9,6 +9,7 @@ package parity
 import (
 	"strings"
 
+	"github.com/douglasjarquin/sf2-themes/v2/internal/adapters/nvim"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
 )
 
@@ -449,7 +450,8 @@ func symlinkCases(app gateApp) []Case {
 	content := ""
 	switch app.name {
 	case "nvim":
-		file, content = "sf2-theme/current.lua", lines("-- sf2-themes: sf2-ryu")
+		// sf2's own pointer, which a followed link may lead to and sf2 may replace.
+		file, content = "sf2-theme/current.lua", nvimPointer("ryu")
 	case "wezterm":
 		// An empty config, which sf2 may create, so the run reaches the symlink policy.
 		content = ""
@@ -465,11 +467,40 @@ func symlinkCases(app gateApp) []Case {
 		{Path: target, Content: content},
 		{Path: "config/" + app.name + "/" + file, Link: Sandbox + "/" + target},
 	}
-	return []Case{
+	cases := []Case{
 		{Name: app.name + "/symlink/apply", Groups: groups, Seed: files, Steps: []Step{cmd("apply", app.name)}},
 		{Name: app.name + "/symlink/follow-symlinks", Groups: groups, Seed: files, Steps: []Step{cmd("apply", app.name, "--follow-symlinks")}},
 		{Name: app.name + "/symlink/follow-symlinks-dry-run", Groups: groups, Seed: files, Steps: []Step{cmd("apply", app.name, "--follow-symlinks", "--dry-run")}},
 	}
+	if app.name == "nvim" {
+		// A followed link to a file that is not sf2's pointer is refused, not replaced.
+		foreign := []File{{Path: target, Content: lines("-- sf2-themes: sf2-ryu")}, files[1]}
+		cases = append(cases, Case{Name: "nvim/symlink/follow-symlinks-foreign", Groups: groups, Seed: foreign,
+			Steps: []Step{cmd("apply", "nvim", "--follow-symlinks")}})
+	}
+	return cases
+}
+
+// nvimPointer is the pointer sf2 writes for the catalog theme id.
+func nvimPointer(id string) string {
+	themes, err := catalog.Load()
+	if err != nil {
+		panic(err)
+	}
+	theme, err := catalog.GetTheme(id, themes)
+	if err != nil {
+		panic(err)
+	}
+	steps, err := nvim.Plan(theme, themes, "/", false)
+	if err != nil {
+		panic(err)
+	}
+	for _, step := range steps {
+		if strings.HasSuffix(step.Path, "/sf2-theme/current.lua") {
+			return step.Content
+		}
+	}
+	panic("nvim plans no pointer")
 }
 
 var fileApps = []struct {

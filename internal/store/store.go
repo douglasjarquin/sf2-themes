@@ -173,6 +173,28 @@ func KeepPrior(manifestPath, app, name string, data []byte) (string, error) {
 	}
 }
 
+// Check refuses, writing nothing, the state Open and a staged save would refuse for app: a symlink or the wrong kind
+// of file where sf2 keeps its state or its lock, or a manifest the next save could not replace. A command checks it
+// before taking the lock, so such a refusal leaves no state directory or lock behind.
+func Check(app string) error {
+	path, err := Path()
+	if err != nil {
+		return err
+	}
+	dir := pycompat.Parent(path)
+	for _, required := range []string{dir, pycompat.Path(dir, "backups"), pycompat.Path(dir, "backups", app)} {
+		if err := fsys.RequireDir(required); err != nil {
+			return err
+		}
+	}
+	for _, file := range []string{path, pycompat.Path(dir, "manifest.lock")} {
+		if err := fsys.RequireFile(file); err != nil {
+			return err
+		}
+	}
+	return fsys.CanReplace(path)
+}
+
 // Session is the manifest held under the store's lock for one mutating command, so concurrent commands apply their
 // records one after another instead of saving over each other.
 type Session struct {

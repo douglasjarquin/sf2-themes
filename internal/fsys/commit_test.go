@@ -405,9 +405,16 @@ func TestACommitThatFailsPartWayUndoesItsWrites(t *testing.T) {
 		plan.Write(root+"/made/deep/created.toml", "created\n"),
 		plan.Write(root+"/last.toml", "last\n"),
 	}
+	past := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
+	if err := os.Chtimes(root, past, past); err != nil {
+		t.Fatal(err)
+	}
 	before := listing(t, root)
 	failRename(t, 3)
 	results, err := Commit(steps, Options{})
+	if info, err := os.Stat(root); err != nil || !info.ModTime().Equal(past) {
+		t.Errorf("the directory a removed directory was made in keeps a new time: %v", info.ModTime())
+	}
 	if err == nil {
 		t.Fatal("the failing rename was not reported")
 	}

@@ -320,6 +320,9 @@ func analyze(existing, pointer, lua string) analysis {
 		declares := regexp.MustCompile(`^local ` + regexp.QuoteMeta(f.builder) + `\b`)
 		a := analysis{form: &f, selector: f.pointer}
 		switch {
+		case shadows(f.builder):
+			a.ownership, a.selector = plan.UnknownShape, ""
+			a.manual = manualSteps(lua, pointer, f.builder, false, false, shadowed(f.builder))
 		case f.kind != literalForm && !fsys.SamePath(f.pointer, pointer) && !pointerName.MatchString(pycompat.Name(f.pointer)):
 			a.ownership, a.selector = plan.UnknownShape, ""
 			a.manual = manualSteps(lua, pointer, f.builder, false, true, "Its integration loads a file that is no sf2-themes pointer.")
@@ -340,7 +343,9 @@ func analyze(existing, pointer, lua string) analysis {
 		return a
 	}
 	scheme, loader := c.mentions(0, 0)
-	if builder, returnAt, ok := adoptable(existing); ok && !loader {
+	if builder, returnAt, ok := adoptable(existing); ok && shadows(builder) {
+		return analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, builder, false, false, shadowed(builder))}
+	} else if ok && !loader {
 		return analysis{ownership: plan.Foreign, builder: builder, returnAt: returnAt}
 	}
 	a := analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, "config", scheme, loader, "")}
@@ -348,6 +353,18 @@ func analyze(existing, pointer, lua string) analysis {
 		a.ownership = plan.Foreign
 	}
 	return a
+}
+
+// shadows reports whether a builder named name hides a name sf2's block relies on: the local bound to
+// require("wezterm"), whose functions the block calls, or one of the block's own locals.
+func shadows(name string) bool {
+	return slices.Contains([]string{"wezterm", "sf2_current", "sf2_scheme", "sf2_env"}, name)
+}
+
+// shadowed is why sf2 will not add its block beside a builder that shadows one of the names the block uses.
+func shadowed(builder string) string {
+	return "Its config builder is named " + builder + ", a name the integration also uses, so the integration " +
+		"would call the builder instead. Rename the builder first."
 }
 
 // manualSteps is how the user adds sf2's integration by hand when sf2 will not edit their file.
@@ -446,8 +463,12 @@ func integrate(existing, pointer, lua string) (string, error) {
 		return "", errors.New(a.manual)
 	}
 	if check := analyze(updated, pointer, lua); check.ownership != plan.Managed || !fsys.SamePath(check.selector, pointer) {
-		return "", errors.New("sf2-themes could not verify its change to " + lua + "; nothing was written.\n" +
-			manualSteps(lua, pointer, "config", false, false, ""))
+		why := "sf2-themes could not verify its change to " + lua + "; nothing was written."
+		if check.ownership == plan.Broken {
+			// Adding sf2's block would break the file, such as by passing Lua's limit on locals.
+			why = "With sf2-themes's change, " + check.manual + ". Nothing was written."
+		}
+		return "", errors.New(why + "\n" + manualSteps(lua, pointer, "config", false, false, ""))
 	}
 	return updated, nil
 }

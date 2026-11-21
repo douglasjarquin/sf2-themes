@@ -121,6 +121,16 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	if !req.DryRun {
+		// State that the run could not record in refuses it here, before the lock creates anything.
+		if changing, err := changesFiles(run, opts); err != nil {
+			return 0, err
+		} else if changing {
+			if err := store.Check(req.App); err != nil {
+				return 0, err
+			}
+		}
+	}
 	var owned *ownership
 	if !req.DryRun {
 		awaitingLock()
@@ -222,6 +232,7 @@ func readManifest() (store.Manifest, error) {
 // name, such as an `sf2-` prefix, proves nothing.
 func claim(run prepared, app adapters.App, themes []catalog.Theme, configDir string, recorded store.Manifest) error {
 	var known map[string]map[string]bool
+	var unproven []string
 	for i, step := range run.steps {
 		destination := run.destinations[i]
 		if fsys.SamePath(destination, run.target) {
@@ -250,10 +261,17 @@ func claim(run prepared, app adapters.App, themes []catalog.Theme, configDir str
 		if known[step.Path][sha] {
 			continue
 		}
-		return fmt.Errorf("refusing to replace %s: sf2-themes did not write it, or it changed after sf2-themes wrote "+
-			"it. Move it aside and run the command again", destination)
+		unproven = append(unproven, destination)
 	}
-	return nil
+	switch len(unproven) {
+	case 0:
+		return nil
+	case 1:
+		return fmt.Errorf("refusing to replace %s: sf2-themes did not write it, or it changed after sf2-themes wrote "+
+			"it. Move it aside and run the command again", unproven[0])
+	}
+	return fmt.Errorf("refusing to replace %d files sf2-themes did not write, or that changed after sf2-themes wrote "+
+		"them. Move them aside and run the command again:\n  %s", len(unproven), strings.Join(unproven, "\n  "))
 }
 
 // renderings is the SHA-256 of everything app writes at each path for any catalog selection.
@@ -458,14 +476,8 @@ var awaitingLock = func() {}
 // user's prior setting and proves the manifest can be published afterwards. A commit that changes nothing writes no
 // state, not even a temporary file.
 func (o *ownership) prepareWrites(run prepared, opts fsys.Options) error {
-	preview := opts
-	preview.DryRun, preview.Verbose = true, false
-	predicted, err := fsys.Commit(run.steps, preview)
-	if err != nil {
+	if changing, err := changesFiles(run, opts); err != nil || !changing {
 		return err
-	}
-	if !slices.ContainsFunc(predicted, func(r fsys.Result) bool { return r.Action.Planned() }) {
-		return nil
 	}
 	if err := o.session.Stage(); err != nil {
 		return err
@@ -474,6 +486,17 @@ func (o *ownership) prepareWrites(run prepared, opts fsys.Options) error {
 		return err
 	}
 	return o.session.Stage()
+}
+
+// changesFiles reports whether committing run would change any file.
+func changesFiles(run prepared, opts fsys.Options) (bool, error) {
+	preview := opts
+	preview.DryRun, preview.Verbose = true, false
+	predicted, err := fsys.Commit(run.steps, preview)
+	if err != nil {
+		return false, err
+	}
+	return slices.ContainsFunc(predicted, func(r fsys.Result) bool { return r.Action.Planned() }), nil
 }
 
 // keepPrior keeps the bytes of the user's setting file before sf2 first changes it, and records the copy before the

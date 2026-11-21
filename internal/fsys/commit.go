@@ -160,12 +160,7 @@ func Preflight(steps []plan.Step, opts Options) ([]string, error) {
 // file, the backup, and the rename go. A file that already holds content is not written, so it passes.
 func writable(destination, content string) error {
 	info, err := os.Lstat(destination)
-	switch {
-	case err != nil && !ignorable(err):
-		return err
-	case err == nil && !info.Mode().IsRegular():
-		return fmt.Errorf("cannot write %s: it is not a regular file", destination)
-	case err == nil:
+	if err == nil && info.Mode().IsRegular() {
 		raw, err := os.ReadFile(destination)
 		if err != nil {
 			return err
@@ -176,28 +171,33 @@ func writable(destination, content string) error {
 		if text, err := pycompat.DecodeText(raw); err == nil && text == content {
 			return nil
 		}
-		if protected, err := protectedFile(destination); err != nil {
+	}
+	return CanReplace(destination)
+}
+
+// CanReplace refuses, writing nothing, a path an atomic replacement would fail on: something other than a regular
+// file there, a file marked immutable or append-only or one another user owns in a sticky directory, or a nearest
+// existing directory that is not a directory, is marked immutable or append-only, or the user cannot create files in.
+func CanReplace(path string) error {
+	info, err := os.Lstat(path)
+	switch {
+	case err != nil && !ignorable(err):
+		return err
+	case err == nil && !info.Mode().IsRegular():
+		return fmt.Errorf("cannot write %s: it is not a regular file", path)
+	case err == nil:
+		if protected, err := protectedFile(path); err != nil {
 			return err
 		} else if protected {
-			return fmt.Errorf("cannot write %s: it is marked immutable or append-only", destination)
+			return fmt.Errorf("cannot write %s: it is marked immutable or append-only", path)
 		}
-		if err := replaceableIn(destination, info); err != nil {
+		if err := replaceableIn(path, info); err != nil {
 			return err
 		}
 	}
-	dir := pycompat.Parent(destination)
-	for {
-		info, err := os.Stat(dir)
-		if err == nil {
-			if !info.IsDir() {
-				return fmt.Errorf("cannot write %s: %s is not a directory", destination, dir)
-			}
-			break
-		}
-		if !ignorable(err) || pycompat.Parent(dir) == dir {
-			return err
-		}
-		dir = pycompat.Parent(dir)
+	dir, err := nearestDir(pycompat.Parent(path))
+	if err != nil {
+		return fmt.Errorf("cannot write %s: %w", path, err)
 	}
 	// The directory may be reached through a symlink, such as a --config-dir alias; its flags are the real one's.
 	real, err := filepath.EvalSymlinks(dir)
@@ -207,12 +207,29 @@ func writable(destination, content string) error {
 	if protected, err := protectedFile(real); err != nil {
 		return err
 	} else if protected {
-		return fmt.Errorf("cannot write %s: %s is marked immutable or append-only", destination, dir)
+		return fmt.Errorf("cannot write %s: %s is marked immutable or append-only", path, dir)
 	}
 	if err := syscall.Access(dir, accessWrite|accessSearch); err != nil {
-		return fmt.Errorf("cannot write %s: %s: %w", destination, dir, err)
+		return fmt.Errorf("cannot write %s: %s: %w", path, dir, err)
 	}
 	return nil
+}
+
+// nearestDir returns dir, or its nearest ancestor that exists, refusing one that exists and is not a directory.
+func nearestDir(dir string) (string, error) {
+	for {
+		info, err := os.Stat(dir)
+		if err == nil {
+			if !info.IsDir() {
+				return "", fmt.Errorf("%s is not a directory", dir)
+			}
+			return dir, nil
+		}
+		if !ignorable(err) || pycompat.Parent(dir) == dir {
+			return "", err
+		}
+		dir = pycompat.Parent(dir)
+	}
 }
 
 // The access(2) modes writable checks a directory for.
@@ -286,10 +303,12 @@ func writeFile(destination, content string, opts Options) (Result, func() error,
 		}
 		return Result{}, nil, err
 	}
-	// The directory's times come back last, after everything the write put in it is gone again.
-	if dir, err := os.Stat(pycompat.Parent(destination)); err == nil {
-		modified := dir.ModTime()
-		undo = append(undo, func() error { return os.Chtimes(pycompat.Parent(destination), time.Time{}, modified) })
+	// The nearest existing directory's times come back last, after everything the write put in it is gone again.
+	if dir, err := nearestDir(pycompat.Parent(destination)); err == nil {
+		if info, err := os.Stat(dir); err == nil {
+			modified := info.ModTime()
+			undo = append(undo, func() error { return os.Chtimes(dir, time.Time{}, modified) })
+		}
 	}
 	mode := fs.FileMode(0o644)
 	var saved string

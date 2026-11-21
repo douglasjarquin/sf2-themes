@@ -15,12 +15,17 @@ type chunk struct {
 	returned   string
 }
 
+// maxLocals is MAXVARS in Lua 5.4's lparser.c: the most locals one function may have active at once.
+const maxLocals = 200
+
 // span is a byte range of the source.
 type span struct{ start, end int }
 
-// parseLua verifies that source is a syntactically valid Lua 5.4 chunk. It checks syntax only, plus the compile
-// errors Lua reports for misplaced `break` and `...`. Constructs whose compile-time rules sf2 does not check, goto
-// and labels and the <const> and <close> attributes, are refused as unverifiable rather than guessed.
+// parseLua verifies that source is a syntactically valid Lua 5.4 chunk. It checks syntax, the compile errors Lua
+// reports for misplaced `break` and `...`, and the limit of 200 locals declared at the top level of the chunk, the
+// statements sf2 adds its own locals beside. Other compile-time limits (locals active inside nested blocks or
+// functions, upvalues, nesting depth, constants) are not checked. Constructs whose compile-time rules sf2 does not
+// check, goto and labels and the <const> and <close> attributes, are refused as unverifiable rather than guessed.
 func parseLua(source string) (chunk, error) {
 	tokens, err := lexLua(source)
 	if err != nil {
@@ -40,6 +45,9 @@ func parseLua(source string) (chunk, error) {
 	if p.i != len(p.code) {
 		return chunk{}, p.fail("unexpected " + p.peekText())
 	}
+	if p.locals > maxLocals {
+		return chunk{}, fmt.Errorf("it declares %d locals at its top level; Lua allows %d", p.locals, maxLocals)
+	}
 	c.returned = p.returned
 	return c, nil
 }
@@ -50,6 +58,8 @@ type parser struct {
 	i        int
 	topLevel *[]span
 	returned string
+	// locals counts the locals the main chunk declares at its top level.
+	locals int
 }
 
 var errUnverifiable = errors.New("uses Lua sf2-themes does not verify")
@@ -127,15 +137,36 @@ func (p *parser) blockIn(top, inLoop, vararg bool) error {
 			}
 			return nil
 		}
+		first := p.i
 		if err := p.statement(inLoop, vararg); err != nil {
 			return err
 		}
 		if top {
+			p.locals += p.declared(first)
 			*p.topLevel = append(*p.topLevel, span{start, p.code[p.i-1].end})
 			p.returned = ""
 		}
 	}
 	return nil
+}
+
+// declared is the number of locals the statement starting at token first declares: one for `local function`, one
+// per name for `local a, b`, and none for any other statement.
+func (p *parser) declared(first int) int {
+	if !p.code[first].isKeyword(p.source, "local") {
+		return 0
+	}
+	if p.code[first+1].isKeyword(p.source, "function") {
+		return 1
+	}
+	n := 0
+	for i := first + 1; i < p.i && p.code[i].kind == nameToken; i += 2 {
+		n++
+		if i+1 >= p.i || p.code[i+1].kind != symbolToken || p.code[i+1].text(p.source) != "," {
+			break
+		}
+	}
+	return n
 }
 
 func (p *parser) statement(inLoop, vararg bool) error {

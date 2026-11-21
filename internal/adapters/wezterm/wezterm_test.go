@@ -572,3 +572,28 @@ func TestAdoptionInsertsOnlyIntoAFileSf2CanVerify(t *testing.T) {
 		}
 	}
 }
+
+func TestTheParserCountsTopLevelLocals(t *testing.T) {
+	many := func(n int, form string) string {
+		var b strings.Builder
+		for i := range n {
+			fmt.Fprintf(&b, form+"\n", i)
+		}
+		return b.String()
+	}
+	for name, c := range map[string]struct {
+		source string
+		ok     bool
+	}{
+		"200 names":                 {many(200, "local v%d"), true},
+		"201 names":                 {many(201, "local v%d"), false},
+		"names in one statement":    {many(100, "local a%d, b") + "local c", false},
+		"local functions":           {many(201, "local function f%d() end"), false},
+		"nested locals not counted": {"do\n" + many(150, "local v%d") + "end\n" + many(150, "local w%d"), true},
+		"function body not counted": {"local function f()\n" + many(250, "local v%d") + "end\n", true},
+	} {
+		if _, err := parseLua(c.source); (err == nil) != c.ok {
+			t.Errorf("%s: %v", name, err)
+		}
+	}
+}
