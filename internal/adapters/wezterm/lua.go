@@ -320,9 +320,9 @@ func analyze(existing, pointer, lua string) analysis {
 		declares := regexp.MustCompile(`^local ` + regexp.QuoteMeta(f.builder) + `\b`)
 		a := analysis{form: &f, selector: f.pointer}
 		switch {
-		case shadows(f.builder):
+		case c.rebinds(f.start, f.builder) != "":
 			a.ownership, a.selector = plan.UnknownShape, ""
-			a.manual = manualSteps(lua, pointer, f.builder, false, false, shadowed(f.builder))
+			a.manual = manualSteps(lua, pointer, f.builder, false, false, shadowed(c.rebinds(f.start, f.builder)))
 		case f.kind != literalForm && !fsys.SamePath(f.pointer, pointer) && !pointerName.MatchString(pycompat.Name(f.pointer)):
 			a.ownership, a.selector = plan.UnknownShape, ""
 			a.manual = manualSteps(lua, pointer, f.builder, false, true, "Its integration loads a file that is no sf2-themes pointer.")
@@ -343,8 +343,9 @@ func analyze(existing, pointer, lua string) analysis {
 		return a
 	}
 	scheme, loader := c.mentions(0, 0)
-	if builder, returnAt, ok := adoptable(existing); ok && shadows(builder) {
-		return analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, builder, false, false, shadowed(builder))}
+	if builder, returnAt, ok := adoptable(existing); ok && c.rebinds(returnAt, builder) != "" {
+		why := shadowed(c.rebinds(returnAt, builder))
+		return analysis{ownership: plan.UnknownShape, manual: manualSteps(lua, pointer, builder, false, false, why)}
 	} else if ok && !loader {
 		return analysis{ownership: plan.Foreign, builder: builder, returnAt: returnAt}
 	}
@@ -355,16 +356,78 @@ func analyze(existing, pointer, lua string) analysis {
 	return a
 }
 
-// shadows reports whether a builder named name hides a name sf2's block relies on: the local bound to
-// require("wezterm"), whose functions the block calls, or one of the block's own locals.
-func shadows(name string) bool {
-	return slices.Contains([]string{"wezterm", "sf2_current", "sf2_scheme", "sf2_env"}, name)
+// blockFree and blockLocals are the names sf2's block reads from its surroundings and the locals it declares, read
+// from the block's own text, so the check below cannot drift from what the block does. builderName stands for the
+// builder there.
+var blockFree, blockLocals = blockNames()
+
+const builderName = "sf2_builder"
+
+func blockNames() (free, locals []string) {
+	source := strings.Join(integrationLines("", builderName), "\n")
+	tokens, err := lexLua(source)
+	if err != nil {
+		panic(err)
+	}
+	var code []token
+	for _, t := range tokens {
+		if t.kind != commentToken {
+			code = append(code, t)
+		}
+	}
+	for i, t := range code {
+		if t.kind != nameToken {
+			continue
+		}
+		name := t.text(source)
+		switch {
+		case i > 0 && code[i-1].isKeyword(source, "local"):
+			locals = append(locals, name)
+		case i > 0 && code[i-1].kind == symbolToken && (code[i-1].text(source) == "." || code[i-1].text(source) == ":"):
+			// A field name, not a variable.
+		case name != builderName && !slices.Contains(locals, name) && !slices.Contains(free, name):
+			free = append(free, name)
+		}
+	}
+	return free, locals
 }
 
-// shadowed is why sf2 will not add its block beside a builder that shadows one of the names the block uses.
-func shadowed(builder string) string {
-	return "Its config builder is named " + builder + ", a name the integration also uses, so the integration " +
-		"would call the builder instead. Rename the builder first."
+// rebinds returns a name sf2's block, using builder, would not reach with its standard meaning at offset at, or "".
+// The block reads its free names from its surroundings, so none may be bound before at: not as a local (the builder
+// is one), a parameter, or a loop variable, and not assigned. The one binding allowed is the top-level `local wezterm
+// = require("wezterm")` that gives `wezterm` its meaning, and `require` itself must keep its own. The builder must
+// also not be a name the block declares, or the block would set its own local instead of the builder.
+func (c chunk) rebinds(at int, builder string) string {
+	if slices.Contains(blockLocals, builder) {
+		return builder
+	}
+	watched := append(slices.Clone(blockFree), "require")
+	for _, b := range c.bindings {
+		if b.at >= at || !slices.Contains(watched, b.name) {
+			continue
+		}
+		if b.name == "wezterm" && c.requiresWezterm(b.at) {
+			continue
+		}
+		return b.name
+	}
+	return ""
+}
+
+// requiresWezterm reports whether the binding at offset at is a top-level `local wezterm = require("wezterm")`.
+func (c chunk) requiresWezterm(at int) bool {
+	for _, s := range c.statements {
+		if s.start <= at && at < s.end {
+			return requireWezterm.MatchString(c.source[s.start:s.end])
+		}
+	}
+	return false
+}
+
+// shadowed is why sf2 will not add its block where name no longer has the meaning the block relies on.
+func shadowed(name string) string {
+	return "The integration uses " + name + ", which this file binds before the integration would run, so the " +
+		"integration would not work. Rename that " + name + " first."
 }
 
 // manualSteps is how the user adds sf2's integration by hand when sf2 will not edit their file.

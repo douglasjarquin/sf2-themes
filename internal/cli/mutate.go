@@ -121,14 +121,13 @@ func mutate(ctx *Context, req Request) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if !req.DryRun {
-		// State that the run could not record in refuses it here, before the lock creates anything.
-		if changing, err := changesFiles(run, opts); err != nil {
+	// State that the run could not record in refuses it here, before the lock creates anything. A dry run checks it
+	// too, so it predicts the refusal the real run would make.
+	if changing, err := changesFiles(run, opts); err != nil {
+		return 0, err
+	} else if changing {
+		if err := store.Check(req.App); err != nil {
 			return 0, err
-		} else if changing {
-			if err := store.Check(req.App); err != nil {
-				return 0, err
-			}
 		}
 	}
 	var owned *ownership

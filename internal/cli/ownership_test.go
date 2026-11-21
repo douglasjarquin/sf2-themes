@@ -1304,18 +1304,33 @@ func TestARecordedPointerToAMissingThemeIsReset(t *testing.T) {
 	}
 }
 
-// Round 8 item 1: a builder that shadows a name sf2's block uses is never given the block.
-func TestABuilderThatShadowsTheWeztermModuleTakesTheManualPath(t *testing.T) {
-	shadowing := "local wezterm = require(\"wezterm\")\nlocal wezterm = wezterm.config_builder()\n" +
-		"wezterm.font_size = 12\nreturn wezterm\n"
+// Rounds 8 and 9, item 1: sf2 adds its block only where every name the block reads from its surroundings
+// (`wezterm`, `dofile`, `type`) keeps its standard meaning, and the builder is not one of the block's own locals.
+// The cases are the reviewer's, each of which sf2 turned into a config WezTerm could not load.
+func TestABlockIsNeverAddedWhereItsNamesAreRebound(t *testing.T) {
+	const require = "local wezterm = require(\"wezterm\")\n"
+	legacy := func(before string) string {
+		return require + "local config = wezterm.config_builder()\n" + before +
+			"config.color_scheme = \"street-fighter-2\"\nreturn config\n"
+	}
+	builder := func(name string) string {
+		return require + "local " + name + " = wezterm.config_builder()\n" + name + ".font_size = 12\nreturn " + name + "\n"
+	}
 	for name, c := range map[string]struct {
-		lua  string
-		args []string
+		lua, rebound string
+		args         []string
 	}{
-		"adopt":          {shadowing, []string{"--adopt"}},
-		"adopt sf2_env":  {strings.NewReplacer("local config", "local sf2_env", "config.font", "sf2_env.font", "return config", "return sf2_env").Replace(seedLua), []string{"--adopt"}},
-		"literal form":   {strings.Replace(shadowing, "return wezterm", "wezterm.color_scheme = \"street-fighter-2\"\nreturn wezterm", 1), nil},
-		"apply no adopt": {shadowing, nil},
+		"adopt builder type":     {builder("type"), "type", []string{"--adopt"}},
+		"adopt builder dofile":   {builder("dofile"), "dofile", []string{"--adopt"}},
+		"adopt builder wezterm":  {builder("wezterm"), "wezterm", []string{"--adopt"}},
+		"adopt builder sf2_env":  {builder("sf2_env"), "sf2_env", []string{"--adopt"}},
+		"legacy, wezterm table":  {legacy("local wezterm = { font = 1 }\n"), "wezterm", nil},
+		"legacy, local type":     {legacy("local type = 1\n"), "type", nil},
+		"legacy, wezterm nil":    {legacy("wezterm = nil\n"), "wezterm", nil},
+		"legacy, dofile in loop": {legacy("for _, dofile in ipairs({}) do end\n"), "dofile", nil},
+		"legacy, global type":    {legacy("function type() end\n"), "type", nil},
+		"legacy, param dofile":   {legacy("local function f(dofile) return dofile end\n"), "dofile", nil},
+		"legacy, require":        {"local require = function() return {} end\n" + legacy(""), "require", nil},
 	} {
 		t.Run(name, func(t *testing.T) {
 			root := sandbox(t)
@@ -1323,14 +1338,31 @@ func TestABuilderThatShadowsTheWeztermModuleTakesTheManualPath(t *testing.T) {
 			put(t, target+"/wezterm.lua", c.lua)
 			before := snapshot(t, root)
 			_, stderr, status := run(append([]string{"apply", "wezterm", "--theme", "ryu", "--config-dir", target}, c.args...)...)
-			if status != 1 {
+			if status != 1 || !strings.Contains(stderr, "Rename that "+c.rebound+" first") {
 				t.Fatalf("exit %d\n%s", status, stderr)
-			}
-			if name != "apply no adopt" && !strings.Contains(stderr, "Rename the builder first") {
-				t.Errorf("stderr %q", stderr)
 			}
 			if after := snapshot(t, root); after != before {
 				t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+			}
+		})
+	}
+	// Controls: names bound after the block, fields with those names, and an ordinary builder are fine.
+	for name, c := range map[string]struct {
+		lua  string
+		args []string
+	}{
+		"adopt builder cfg":        {builder("cfg"), []string{"--adopt"}},
+		"legacy, field named type": {legacy("config.type = 1\nlocal t = { dofile = 1 }\n"), nil},
+		"legacy, type bound after": {strings.Replace(legacy(""), "return config", "local type = 1\nreturn config", 1), nil},
+		"legacy, second require":   {require + legacy(""), nil},
+	} {
+		t.Run("control "+name, func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			put(t, target+"/wezterm.lua", c.lua)
+			mustRun(t, 0, append([]string{"apply", "wezterm", "--theme", "ryu", "--config-dir", target}, c.args...)...)
+			if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-ryu" {
+				t.Errorf("current %q", got)
 			}
 		})
 	}
@@ -1424,5 +1456,55 @@ func TestEveryUnprovenFileIsNamedAtOnce(t *testing.T) {
 		if !strings.Contains(stderr, "\n  "+path) {
 			t.Errorf("%s not named:\n%s", path, stderr)
 		}
+	}
+}
+
+// Round 9 item 3: --dry-run predicts the state refusals the real run makes before the lock, and writes nothing.
+func TestADryRunPredictsStateRefusals(t *testing.T) {
+	for name, block := range map[string]func(t *testing.T, root string){
+		"immutable manifest": func(t *testing.T, root string) {
+			setImmutable(t, root+"/state/sf2/manifest.json")
+		},
+		"symlinked manifest": func(t *testing.T, root string) {
+			manifest := root + "/state/sf2/manifest.json"
+			put(t, root+"/elsewhere.json", read(t, manifest))
+			if err := os.Remove(manifest); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Symlink(root+"/elsewhere.json", manifest); err != nil {
+				t.Fatal(err)
+			}
+		},
+		"directory at manifest.lock": func(t *testing.T, root string) {
+			lock := root + "/state/sf2/manifest.lock"
+			if err := os.Remove(lock); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Mkdir(lock, 0o755); err != nil {
+				t.Fatal(err)
+			}
+		},
+		"read-only state directory": func(t *testing.T, root string) {
+			if os.Geteuid() == 0 {
+				t.Skip("root writes a read-only directory")
+			}
+			chmod(t, root+"/state/sf2", 0o555)
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+			block(t, root)
+			before := snapshot(t, root)
+			_, realErr, realStatus := run("apply", "wezterm", "--theme", "ken", "--config-dir", target)
+			_, dryErr, dryStatus := run("apply", "wezterm", "--theme", "ken", "--config-dir", target, "--dry-run")
+			if realStatus != 1 || dryStatus != 1 || dryErr != realErr {
+				t.Errorf("real exit %d %q, dry run exit %d %q", realStatus, realErr, dryStatus, dryErr)
+			}
+			if after := snapshot(t, root); after != before {
+				t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+			}
+		})
 	}
 }

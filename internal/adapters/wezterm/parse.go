@@ -13,6 +13,15 @@ type chunk struct {
 	tokens     []token
 	statements []span
 	returned   string
+	// bindings are the names the chunk binds, in source order, at any depth: locals, parameters, loop variables,
+	// `function <name>` statements, and assignments to a bare name.
+	bindings []binding
+}
+
+// binding is one name bound at byte offset at.
+type binding struct {
+	name string
+	at   int
 }
 
 // maxLocals is MAXVARS in Lua 5.4's lparser.c: the most locals one function may have active at once.
@@ -49,6 +58,7 @@ func parseLua(source string) (chunk, error) {
 		return chunk{}, fmt.Errorf("it declares %d locals at its top level; Lua allows %d", p.locals, maxLocals)
 	}
 	c.returned = p.returned
+	c.bindings = p.bindings
 	return c, nil
 }
 
@@ -60,6 +70,23 @@ type parser struct {
 	returned string
 	// locals counts the locals the main chunk declares at its top level.
 	locals int
+	// bindings collects every name the chunk binds; see chunk.
+	bindings []binding
+}
+
+// bind records the name token just consumed as bound.
+func (p *parser) bind() {
+	t := p.code[p.i-1]
+	p.bindings = append(p.bindings, binding{name: t.text(p.source), at: t.start})
+}
+
+// expectBound consumes a name and records it as bound.
+func (p *parser) expectBound() error {
+	if err := p.expect(nameToken, ""); err != nil {
+		return err
+	}
+	p.bind()
+	return nil
 }
 
 var errUnverifiable = errors.New("uses Lua sf2-themes does not verify")
@@ -225,6 +252,9 @@ func (p *parser) statement(inLoop, vararg bool) error {
 		if err := p.expect(nameToken, ""); err != nil {
 			return err
 		}
+		if !p.sym(".") && !p.sym(":") {
+			p.bind()
+		}
 		for p.accept(symbolToken, ".") {
 			if err := p.expect(nameToken, ""); err != nil {
 				return err
@@ -238,13 +268,13 @@ func (p *parser) statement(inLoop, vararg bool) error {
 		return p.funcBody()
 	case p.accept(keywordToken, "local"):
 		if p.accept(keywordToken, "function") {
-			if err := p.expect(nameToken, ""); err != nil {
+			if err := p.expectBound(); err != nil {
 				return err
 			}
 			return p.funcBody()
 		}
 		for {
-			if err := p.expect(nameToken, ""); err != nil {
+			if err := p.expectBound(); err != nil {
 				return err
 			}
 			if p.sym("<") {
@@ -270,7 +300,7 @@ func (p *parser) closeBlock(inLoop, vararg bool, closer string) error {
 }
 
 func (p *parser) forStatement(vararg bool) error {
-	if err := p.expect(nameToken, ""); err != nil {
+	if err := p.expectBound(); err != nil {
 		return err
 	}
 	if p.accept(symbolToken, "=") {
@@ -287,7 +317,7 @@ func (p *parser) forStatement(vararg bool) error {
 		}
 	} else {
 		for p.accept(symbolToken, ",") {
-			if err := p.expect(nameToken, ""); err != nil {
+			if err := p.expectBound(); err != nil {
 				return err
 			}
 		}
@@ -306,10 +336,13 @@ func (p *parser) forStatement(vararg bool) error {
 
 // exprStatement is an assignment or a function call; any other expression is not a statement.
 func (p *parser) exprStatement(inLoop, vararg bool) error {
+	first := p.i
 	call, assignable, err := p.suffixedExpr(inLoop, vararg)
 	if err != nil {
 		return err
 	}
+	targets := []int{first}
+	last := []int{p.i}
 	if !p.sym("=") && !p.sym(",") {
 		if !call {
 			return p.fail("syntax error: expected a call or an assignment")
@@ -323,12 +356,21 @@ func (p *parser) exprStatement(inLoop, vararg bool) error {
 		if !p.accept(symbolToken, ",") {
 			break
 		}
+		targets = append(targets, p.i)
 		if _, assignable, err = p.suffixedExpr(inLoop, vararg); err != nil {
 			return err
 		}
+		last = append(last, p.i)
 	}
 	if err := p.expect(symbolToken, "="); err != nil {
 		return err
+	}
+	// A target that is one name rebinds that name; a field or index target leaves it as it was.
+	for i, start := range targets {
+		if last[i] == start+1 && p.code[start].kind == nameToken {
+			t := p.code[start]
+			p.bindings = append(p.bindings, binding{name: t.text(p.source), at: t.start})
+		}
 	}
 	return p.explist(inLoop, vararg)
 }
@@ -442,7 +484,7 @@ func (p *parser) funcBody() error {
 				vararg = true
 				break
 			}
-			if err := p.expect(nameToken, ""); err != nil {
+			if err := p.expectBound(); err != nil {
 				return err
 			}
 			if !p.accept(symbolToken, ",") {

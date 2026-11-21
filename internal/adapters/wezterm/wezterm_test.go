@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -594,6 +595,31 @@ func TestTheParserCountsTopLevelLocals(t *testing.T) {
 	} {
 		if _, err := parseLua(c.source); (err == nil) != c.ok {
 			t.Errorf("%s: %v", name, err)
+		}
+	}
+}
+
+// Every name the block reads from its surroundings, as read from the block itself, guards both ways into a file.
+func TestEveryFreeNameOfTheBlockIsGuarded(t *testing.T) {
+	if len(blockFree) == 0 || !slices.Contains(blockFree, "wezterm") {
+		t.Fatalf("free names %v", blockFree)
+	}
+	const pointer = "/p/sf2-theme/wezterm-current-000000000000.lua"
+	for _, name := range append(slices.Clone(blockFree), "require") {
+		legacy := "local wezterm = require(\"wezterm\")\nlocal config = wezterm.config_builder()\nlocal " + name +
+			" = 1\nconfig.color_scheme = \"street-fighter-2\"\nreturn config\n"
+		if name == "require" {
+			legacy = "local require = 1\n" + strings.Replace(legacy, "local require = 1\n", "", 1)
+		}
+		if got := analyze(legacy, pointer, "wezterm.lua"); got.ownership != plan.UnknownShape {
+			t.Errorf("legacy form after `local %s`: %s", name, got.ownership)
+		}
+		if name == "wezterm" || name == "require" {
+			continue
+		}
+		adopt := "local wezterm = require(\"wezterm\")\nlocal " + name + " = wezterm.config_builder()\nreturn " + name + "\n"
+		if got := analyze(adopt, pointer, "wezterm.lua"); got.ownership != plan.UnknownShape {
+			t.Errorf("builder %s: %s", name, got.ownership)
 		}
 	}
 }
