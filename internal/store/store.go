@@ -16,6 +16,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
@@ -108,6 +110,18 @@ func (m *Manifest) Find(app, target string) *Target {
 	return nil
 }
 
+// Wrote reports whether any entry records sf2 writing exactly the bytes with SHA-256 sha at path.
+func (m *Manifest) Wrote(path, sha string) bool {
+	for _, target := range m.Targets {
+		for _, file := range target.Files {
+			if file.SHA256 == sha && (file.Path == path || fsys.SamePath(file.Path, path)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Record replaces the entry for entry's app and target. An entry without a Prior keeps the one already recorded,
 // because only the first change to a setting holds what the user had before sf2.
 func (m *Manifest) Record(entry Target) {
@@ -166,6 +180,12 @@ type Session struct {
 	Manifest Manifest
 	unlock   func()
 	staged   *fsys.Staged
+	// original is the manifest's bytes when the session opened, nil when there was none.
+	original []byte
+	// made are the state directories that did not exist when the session opened, deepest first.
+	made []string
+	// modified is the state directory's modification time once the session held the lock.
+	modified time.Time
 }
 
 // Open checks that the state directory can take app's records, takes the store's lock, loads the manifest, and stages
@@ -177,16 +197,23 @@ func Open(app string) (*Session, error) {
 		return nil, err
 	}
 	dir := pycompat.Parent(path)
-	for _, required := range []string{dir, pycompat.Path(dir, "backups"), pycompat.Path(dir, "backups", app)} {
+	var made []string
+	for _, required := range []string{pycompat.Path(dir, "backups", app), pycompat.Path(dir, "backups")} {
 		if err := fsys.RequireDir(required); err != nil {
 			return nil, err
 		}
+		if _, err := os.Lstat(required); errors.Is(err, fs.ErrNotExist) {
+			made = append(made, required)
+		}
+	}
+	if err := fsys.RequireDir(dir); err != nil {
+		return nil, err
 	}
 	unlock, err := fsys.Lock(pycompat.Path(dir, "manifest.lock"))
 	if err != nil {
 		return nil, err
 	}
-	session := &Session{Path: path, unlock: unlock}
+	session := &Session{Path: path, unlock: unlock, made: made}
 	if err := fsys.RequireFile(path); err != nil {
 		session.Close()
 		return nil, err
@@ -194,6 +221,13 @@ func Open(app string) (*Session, error) {
 	if session.Manifest, err = Load(path); err != nil {
 		session.Close()
 		return nil, err
+	}
+	if session.original, err = os.ReadFile(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		session.Close()
+		return nil, err
+	}
+	if info, err := os.Stat(dir); err == nil {
+		session.modified = info.ModTime()
 	}
 	if err := removeStranded(dir); err != nil {
 		session.Close()
@@ -252,6 +286,47 @@ func (s *Session) Save() error {
 	staged := s.staged
 	s.staged = nil
 	return staged.Publish(data, 0o644)
+}
+
+// Restore puts the manifest back as the session found it and removes the backup directories it created, for a
+// command whose changes were undone. The state directory and its lock stay: another command may be waiting on the
+// lock.
+func (s *Session) Restore() error {
+	if s.staged != nil {
+		s.staged.Discard()
+		s.staged = nil
+	}
+	if s.original == nil {
+		if err := os.Remove(s.Path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	} else {
+		data, err := os.ReadFile(s.Path)
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		if !bytes.Equal(data, s.original) {
+			if err := s.Stage(); err != nil {
+				return err
+			}
+			staged := s.staged
+			s.staged = nil
+			if err := staged.Publish(string(s.original), 0o644); err != nil {
+				return err
+			}
+		}
+	}
+	for _, dir := range s.made {
+		// A directory something else has put a file in since is left alone.
+		if err := os.Remove(dir); err != nil && !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, syscall.ENOTEMPTY) &&
+			!errors.Is(err, syscall.EEXIST) {
+			return err
+		}
+	}
+	if s.modified.IsZero() {
+		return nil
+	}
+	return os.Chtimes(pycompat.Parent(s.Path), time.Time{}, s.modified)
 }
 
 // Close removes an unused staged save and releases the lock.

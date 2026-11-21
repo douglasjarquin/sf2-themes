@@ -3,7 +3,7 @@ exit 0
 stdout
 | apply wezterm: sf2-main + sf2-main-light (follows host appearance)
 |   target: {SANDBOX}/config/wezterm/wezterm.lua
-|   changes: 38 created, 2 removed
+|   changes: 38 created
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
 tree
@@ -46,6 +46,8 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
+file 0644 758470868609d1e5 config/wezterm/colors/street-fighter-ii-main.toml
+file 0644 758470868609d1e5 config/wezterm/colors/street-fighter-ii-ryu.toml
 dir 0755 config/wezterm/sf2-theme
 file 0644 f173abe553e31147 config/wezterm/sf2-theme/wezterm-current-<digest>.lua
 file 0644 dbbca8892d8aa5c1 config/wezterm/wezterm.lua

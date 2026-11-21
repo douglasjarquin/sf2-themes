@@ -201,17 +201,17 @@ func TestPlanLeavesWeztermLuaAloneWithoutTheSlot(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		want := 2*len(themes) + 1
+		want := len(themes) + 1
 		if slot {
 			want++
 		}
 		if len(steps) != want {
 			t.Fatalf("slot %v: %d steps, want %d", slot, len(steps), want)
 		}
-		if !steps[0].Remove || steps[0].Path != dir+"/wezterm/colors/street-fighter-ii-main.toml" {
+		if steps[0].Path != dir+"/wezterm/colors/sf2-main.toml" {
 			t.Errorf("first step: %+v", steps[0])
 		}
-		if pointer := steps[2*len(themes)]; pointer.Path != ownPointer(t, dir+"/wezterm") {
+		if pointer := steps[len(themes)]; pointer.Path != ownPointer(t, dir+"/wezterm") {
 			t.Errorf("pointer step: %+v", pointer)
 		}
 		if slot && steps[len(steps)-1].Path != dir+"/wezterm/wezterm.lua" {
@@ -253,9 +253,7 @@ func TestTwoConfigDirTargetsKeepIndependentSelections(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, step := range steps {
-			if !step.Remove {
-				writeFile(t, step.Path, step.Content)
-			}
+			writeFile(t, step.Path, step.Content)
 		}
 	}
 	for target, want := range map[string]string{"a": "sf2-ryu", "b": "sf2-ken"} {

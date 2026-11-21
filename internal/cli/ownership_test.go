@@ -3,6 +3,8 @@ package cli
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -12,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
+	"github.com/douglasjarquin/sf2-themes/v2/internal/plan"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/store"
 )
 
@@ -119,33 +122,87 @@ func TestARefusedApplyLeavesTheManifestUntouched(t *testing.T) {
 
 // Finding 1: a commit that fails part way keeps every earlier record, updates what it wrote, and records the
 // selection still in effect.
-func TestAPartialFailureKeepsEarlierRecordsAndTheSelectionInEffect(t *testing.T) {
-	root := sandbox(t)
-	target := root + "/target"
-	put(t, target+"/wezterm.lua", seedLua)
-	mustRun(t, 0, "apply", "wezterm", "--theme", "guile", "--config-dir", target, "--adopt")
-	before := entryFor(t, root, target+"/wezterm.lua")
-	put(t, target+"/colors/sf2-akuma-light.toml", "needs repair\n")
-	if err := os.Remove(target + "/colors/sf2-balrog.toml"); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.Mkdir(target+"/colors/sf2-balrog.toml", 0o755); err != nil {
-		t.Fatal(err)
-	}
-	mustRun(t, 1, "apply", "wezterm", "--theme", "vega", "--config-dir", target)
-	after := entryFor(t, root, target+"/wezterm.lua")
-	if len(after.Files) != len(before.Files) || after.Setting == nil || *after.Setting != *before.Setting {
-		t.Errorf("records lost: %d -> %d files, setting %v -> %v", len(before.Files), len(after.Files), before.Setting, after.Setting)
-	}
-	if after.Selection != "sf2-guile" || mustRun(t, 0, "current", "wezterm", "--config-dir", target) != "sf2-guile" {
-		t.Errorf("selection %q", after.Selection)
-	}
-	repaired := target + "/colors/sf2-akuma-light.toml"
-	for _, file := range after.Files {
-		if file.Path == repaired && file.SHA256 != diskSHA(t, repaired) {
-			t.Errorf("repaired file recorded %s", file.SHA256)
+func TestAFailedApplyLeavesEverythingAsItWas(t *testing.T) {
+	for name, block := range map[string]func(t *testing.T, target string){
+		// A directory where a late scheme goes fails that write after the earlier ones would have succeeded.
+		"directory in place of a scheme": func(t *testing.T, target string) {
+			if err := os.RemoveAll(target + "/colors/sf2-zangief.toml"); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.MkdirAll(target+"/colors/sf2-zangief.toml", 0o755); err != nil {
+				t.Fatal(err)
+			}
+		},
+		"read-only colors directory": func(t *testing.T, target string) {
+			if os.Geteuid() == 0 {
+				t.Skip("root writes a read-only directory")
+			}
+			if err := os.MkdirAll(target+"/colors", 0o755); err != nil {
+				t.Fatal(err)
+			}
+			// A missing scheme makes the run create a file there.
+			if err := os.RemoveAll(target + "/colors/sf2-akuma.toml"); err != nil {
+				t.Fatal(err)
+			}
+			chmod(t, target+"/colors", 0o555)
+		},
+		"immutable wezterm.lua": func(t *testing.T, target string) {
+			setImmutable(t, target+"/wezterm.lua")
+		},
+	} {
+		for _, first := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s/first run %v", name, first), func(t *testing.T) {
+				root := sandbox(t)
+				target := root + "/target"
+				put(t, target+"/wezterm.lua", seedLua)
+				if !first {
+					mustRun(t, 0, "apply", "wezterm", "--theme", "guile", "--config-dir", target, "--adopt")
+					// The next apply changes the config, so a failure there would strand the run part way.
+					put(t, target+"/wezterm.lua", seedLua)
+				}
+				block(t, target)
+				before := snapshot(t, root)
+				_, stderr, status := run("apply", "wezterm", "--theme", "vega", "--config-dir", target, "--adopt")
+				if status != 1 {
+					t.Fatalf("exit %d\n%s", status, stderr)
+				}
+				if after := snapshot(t, root); after != before {
+					t.Errorf("a failed apply changed the disk:\n%s", lineDiff(before, after))
+				}
+			})
 		}
 	}
+}
+
+// chmod sets path's mode for one test and restores a writable mode after it, so the temporary directory can go.
+func chmod(t *testing.T, path string, mode os.FileMode) {
+	t.Helper()
+	if err := os.Chmod(path, mode); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(path, 0o755) })
+}
+
+// lineDiff lists the lines of two snapshots that differ.
+func lineDiff(before, after string) string {
+	was := map[string]bool{}
+	for _, line := range strings.Split(before, "\n") {
+		was[line] = true
+	}
+	is := map[string]bool{}
+	var b strings.Builder
+	for _, line := range strings.Split(after, "\n") {
+		is[line] = true
+		if !was[line] {
+			b.WriteString("+ " + line + "\n")
+		}
+	}
+	for _, line := range strings.Split(before, "\n") {
+		if !is[line] {
+			b.WriteString("- " + line + "\n")
+		}
+	}
+	return b.String()
 }
 
 // Finding 2: concurrent commands for distinct targets all keep their records.
@@ -1103,5 +1160,146 @@ func TestAFileOfNonLuaSpaceIsNotBlank(t *testing.T) {
 	before := snapshot(t, root)
 	if _, _, status := run("apply", "wezterm", "--theme", "ryu", "--config-dir", target); status != 1 || snapshot(t, root) != before {
 		t.Errorf("a no-break space config: exit %d, wrote:\n%s", status, snapshot(t, root))
+	}
+}
+
+// Round 7 finding 1: sf2 never deletes or replaces a file it did not write, whatever its name.
+func TestAFileSf2DidNotWriteIsNeverDeletedOrReplaced(t *testing.T) {
+	cases := []struct {
+		app, file string
+		refused   bool
+	}{
+		// Names earlier releases used, which sf2 once deleted by name.
+		{"wezterm", "colors/street-fighter-ii-ryu.toml", false},
+		{"nvim", "colors/street-fighter-ii-ryu.lua", false},
+		{"codex", "themes/ryu.tmTheme", false},
+		// Names sf2 writes today, holding the user's own bytes.
+		{"wezterm", "colors/sf2-ryu.toml", true},
+		{"nvim", "colors/sf2-ryu.lua", true},
+		{"nvim", "sf2-theme/current.lua", true},
+		{"codex", "themes/sf2-ryu.tmTheme", true},
+	}
+	for _, c := range cases {
+		t.Run(c.app+"/"+c.file, func(t *testing.T) {
+			root := sandbox(t)
+			target := root + "/target"
+			const mine = "-- my own file, not sf2's\n"
+			put(t, target+"/"+c.file, mine)
+			before := snapshot(t, root)
+			want := 0
+			if c.refused {
+				want = 1
+			}
+			_, stderr, status := run("apply", c.app, "--theme", "ken", "--config-dir", target)
+			if status != want {
+				t.Fatalf("exit %d, want %d\n%s", status, want, stderr)
+			}
+			if got := read(t, target+"/"+c.file); got != mine {
+				t.Errorf("the user's file now holds %q", got)
+			}
+			if backups, _ := filepath.Glob(target + "/" + c.file + ".bak.*"); len(backups) > 0 {
+				t.Errorf("backed up and replaced: %v", backups)
+			}
+			if c.refused {
+				if !strings.Contains(stderr, "refusing to replace "+target+"/"+c.file) {
+					t.Errorf("stderr %q", stderr)
+				}
+				if after := snapshot(t, root); after != before {
+					t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+				}
+			}
+		})
+	}
+}
+
+// A file sf2 wrote and the user changed afterwards is the user's: sf2 refuses to replace it.
+func TestAnEditedFileSf2WroteIsTheUsers(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	scheme := target + "/colors/sf2-ken.toml"
+	put(t, scheme, read(t, scheme)+"# my tweak\n")
+	before := snapshot(t, root)
+	_, stderr, status := run("apply", "wezterm", "--theme", "ken", "--config-dir", target)
+	if status != 1 || !strings.Contains(stderr, "refusing to replace "+scheme) {
+		t.Fatalf("exit %d\n%s", status, stderr)
+	}
+	if after := snapshot(t, root); after != before {
+		t.Errorf("a refused run wrote:\n%s", lineDiff(before, after))
+	}
+}
+
+// What releases before the manifest wrote is exactly what sf2 writes for some selection, so it is replaced as sf2's.
+func TestAPointerAnEarlierReleaseWroteIsReplaced(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "nvim", "--theme", "ryu", "--config-dir", target)
+	if err := os.Remove(root + "/state/sf2/manifest.json"); err != nil {
+		t.Fatal(err)
+	}
+	mustRun(t, 0, "apply", "nvim", "--theme", "ken", "--config-dir", target)
+	if got := mustRun(t, 0, "current", "nvim", "--config-dir", target); got != "sf2-ken" {
+		t.Errorf("current %q", got)
+	}
+}
+
+// Round 7 finding 2: when sf2 cannot record a commit, it undoes the commit and the state it kept for it.
+func TestARecordThatCannotBeSavedUndoesTheRun(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target/wezterm.lua"
+	put(t, target, seedLua)
+	owned, err := openOwnership("wezterm", target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// The state directory and its lock exist once a run holds the lock; everything after is undone.
+	before := snapshot(t, root)
+	steps := []plan.Step{plan.Write(target, "return {}\n"), plan.Write(root+"/target/colors/sf2-ryu.toml", "scheme\n")}
+	run := prepared{steps: steps, destinations: []string{target, root + "/target/colors/sf2-ryu.toml"}, target: target}
+	if err := owned.prepareWrites(run, fsys.Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if owned.kept == "" {
+		t.Fatal("the run kept no copy of the setting")
+	}
+	transaction, err := fsys.Apply(steps, fsys.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = owned.finish(transaction, nil, func(bool) error { return errors.New("the manifest could not be saved") })
+	owned.session.Close()
+	if err == nil || !strings.Contains(err.Error(), "could not be saved") {
+		t.Fatalf("err %v", err)
+	}
+	if after := snapshot(t, root); after != before {
+		t.Errorf("the undone run left changes:\n%s", lineDiff(before, after))
+	}
+}
+
+// A pointer sf2 recorded that names a theme the catalog no longer has is sf2's, so setup resets it.
+func TestARecordedPointerToAMissingThemeIsReset(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/target"
+	mustRun(t, 0, "apply", "nvim", "--theme", "ryu", "--config-dir", target)
+	pointer := target + "/sf2-theme/current.lua"
+	gone := strings.ReplaceAll(read(t, pointer), "sf2-ryu", "sf2-retired")
+	put(t, pointer, gone)
+	path := root + "/state/sf2/manifest.json"
+	manifest, err := store.Load(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range manifest.Targets[0].Files {
+		if manifest.Targets[0].Files[i].Path == pointer {
+			manifest.Targets[0].Files[i].SHA256 = fsys.Fingerprint(gone)
+		}
+	}
+	data, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	put(t, path, string(data)+"\n")
+	if out := mustRun(t, 0, "setup", "nvim", "--config-dir", target); !strings.Contains(out, "selection unreadable, reset to sf2-main") {
+		t.Errorf("stdout %q", out)
 	}
 }

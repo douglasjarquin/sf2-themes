@@ -51,10 +51,14 @@ type resolver struct {
 func (r resolver) walk(resolved, path string, links int) (string, []string, error) {
 	parts := strings.Split(path, string(filepath.Separator))
 	for i, part := range parts {
-		switch part {
-		case "", ".":
+		if part == "" || part == "." {
 			continue
-		case "..":
+		}
+		// The filesystem looks a name up only inside a directory; `file/..` is refused, not stepped out of.
+		if info, err := os.Stat(resolved); err == nil && !info.IsDir() && !r.lenient {
+			return "", nil, fmt.Errorf("refusing %s: %s is not a directory; pass the real path", r.path, resolved)
+		}
+		if part == ".." {
 			resolved = filepath.Dir(resolved)
 			continue
 		}

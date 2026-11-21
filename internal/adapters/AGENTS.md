@@ -95,7 +95,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Every run also owns `<nvim-config>/plugin/sf2-theme.lua` as the startup loader.
 - Nothing in these files is ever foreign; a pointer whose id does not resolve is an unreadable selection, and a legacy short ID resolves and is rewritten with the `sf2-` identity.
-- Limit legacy cleanup to enumerated `street-fighter-ii-<catalog-id>.lua` files and leave every other `colors/` or `plugin/` entry untouched.
+- Leave every other `colors/` or `plugin/` entry untouched, including `street-fighter-ii-*.lua` files earlier releases wrote.
 
 ## Codex
 
@@ -103,7 +103,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - Preserve every other Codex table, key, comment, and existing `[tui]` setting when selecting a theme.
 - An inline `tui` form is an unknown shape whose manual fix is converting it to a `[tui]` table; never restructure it.
 - A `[tui].theme` equal to a short catalog ID is legacy and is rewritten with the `sf2-` identity; any non-`sf2-` value is foreign.
-- Limit legacy cleanup to unprefixed `<catalog-id>.tmTheme` files represented by the current catalog.
+- Leave unprefixed `<catalog-id>.tmTheme` files earlier releases wrote in place.
 - A `[tui]` header followed by a comment is not recognized, so the config inspects as absent and a second `[tui]` table is appended; this reproduces the reference and is fixed only as a separate behavior change.
 
 ## Lazygit
@@ -135,12 +135,15 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 
 - The CLI, not an adapter, records each committed write in the `internal/store` manifest; the file at the app's `Target` is recorded as the edited setting and every other write as a wholly owned file.
 - The CLI refuses unsafe destinations with `fsys.Preflight` before it locks state, keeps the setting's original bytes before the commit, merges the commit's results into the earlier record, and reads the selection back through `Inspect`.
+- The CLI replaces a file other than the target only when the manifest records its SHA-256 or it holds exactly what the adapter's `Plan` writes there for some catalog theme; an adapter never claims a file by its name.
+- `fsys.Apply` undoes its own writes when one fails, and the CLI rolls the `Transaction` back, then restores the manifest and removes the kept copy, when the record cannot be saved.
 
-- Return every managed text write and legacy-file removal as a plan step so every adapter shares one mutation contract.
+- Return every managed text write as a plan step so every adapter shares one mutation contract; sf2 plans no deletions, because no record proves it wrote a file under an older name.
 - `fsys.Commit` resolves every destination before the first write; it refuses destination symlinks by default, follows only when explicitly requested, writes the resolved target, and retains the symlink itself.
-- Dry-run reports `would_create`, `would_update`, or `would_remove` with a diff and creates no file, directory, backup, or legacy cleanup mutation.
-- A changed existing file receives a UTC-stamped backup (`<name>.bak.<YYYYMMDDTHHMMSSZ>`) before atomic replacement, with its mode preserved, while unchanged content creates no backup.
-- Never broaden cleanup beyond exact managed paths and enumerated legacy names or remove unknown files, stale-looking aliases, unmarked blocks, or user-owned configuration.
+- Dry-run reports `would_create` or `would_update` with a diff and creates no file, directory, or backup.
+- A changed existing file receives a UTC-stamped backup (`<name>.bak.<YYYYMMDDTHHMMSSZ>`, then `.1`, `.2` within one second) before atomic replacement, with its mode preserved, while unchanged content creates no backup.
+- `fsys.Preflight` also refuses a write that would fail part way: a non-regular file in its place, an immutable or append-only file or directory, or a directory the user cannot create files in.
+- Never remove unknown files, stale-looking aliases, unmarked blocks, or user-owned configuration.
 
 ## Focused verification
 

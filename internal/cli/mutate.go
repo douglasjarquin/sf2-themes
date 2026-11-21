@@ -24,13 +24,11 @@ var actionText = map[fsys.Action]string{
 	fsys.Unchanged:   "unchanged",
 	fsys.WouldCreate: "would create",
 	fsys.WouldUpdate: "would update",
-	fsys.Removed:     "removed",
-	fsys.WouldRemove: "would remove",
 }
 
 // changesOrder is the order of the counts on the `changes:` line.
 var changesOrder = []fsys.Action{
-	fsys.Created, fsys.Updated, fsys.Removed, fsys.WouldCreate, fsys.WouldUpdate, fsys.WouldRemove, fsys.Unchanged,
+	fsys.Created, fsys.Updated, fsys.WouldCreate, fsys.WouldUpdate, fsys.Unchanged,
 }
 
 type selection int
@@ -113,8 +111,13 @@ func mutate(ctx *Context, req Request) (int, error) {
 	}
 	selectsTheme := req.Command != "setup" || requested != nil
 	opts := fsys.Options{DryRun: req.DryRun, FollowSymlinks: req.FollowSymlinks, Verbose: req.Verbose}
-	// A first pass refuses before the state lock is taken, so a refused run leaves sf2's state untouched too.
-	run, err := prepare(req, app, themes, configDir, requested, selectsTheme, opts)
+	// A first pass refuses before the state lock is taken, so a refused run leaves sf2's state untouched too. It reads
+	// the manifest without the lock; the pass under the lock decides again from the manifest it holds.
+	recorded, err := readManifest()
+	if err != nil {
+		return 0, err
+	}
+	run, err := prepare(req, app, themes, configDir, requested, selectsTheme, opts, recorded)
 	if err != nil {
 		return 0, err
 	}
@@ -127,7 +130,7 @@ func mutate(ctx *Context, req Request) (int, error) {
 		defer owned.session.Close()
 		// Another command may have changed the configuration while this one waited for the lock, so everything the
 		// commit acts on is decided again under it.
-		if run, err = prepare(req, app, themes, configDir, requested, selectsTheme, opts); err != nil {
+		if run, err = prepare(req, app, themes, configDir, requested, selectsTheme, opts, owned.session.Manifest); err != nil {
 			return 0, err
 		}
 		owned.target = run.target
@@ -135,24 +138,23 @@ func mutate(ctx *Context, req Request) (int, error) {
 			return 0, err
 		}
 	}
-	results, err := fsys.Commit(run.steps, opts)
-	if owned != nil && len(results) > 0 {
-		complete := err == nil
-		// Record whatever was written, even by a commit that failed part way, so ownership is never lost.
-		var disowns func(string) bool
-		if complete && app.Disowns != nil {
-			disowns = func(path string) bool { return app.Disowns(configDir, path) }
-		}
-		if recordErr := owned.record(results, complete && !run.decided.slot, disowns, func() (*catalog.Theme, error) {
-			inspected, err := app.Inspect(themes, configDir)
-			return inspected.Current, err
-		}); recordErr != nil && err == nil {
-			err = recordErr
-		}
+	transaction, err := fsys.Apply(run.steps, opts)
+	if owned != nil {
+		err = owned.finish(transaction, err, func(complete bool) error {
+			var disowns func(string) bool
+			if complete && app.Disowns != nil {
+				disowns = func(path string) bool { return app.Disowns(configDir, path) }
+			}
+			return owned.record(transaction.Results, complete && !run.decided.slot, disowns, func() (*catalog.Theme, error) {
+				inspected, err := app.Inspect(themes, configDir)
+				return inspected.Current, err
+			})
+		})
 	}
 	if err != nil {
 		return 0, err
 	}
+	results := transaction.Results
 	report(ctx, results, req.Verbose)
 	label, err := selectionText(app, run.theme, run.how, themes)
 	if err != nil {
@@ -176,10 +178,10 @@ type prepared struct {
 	target       string
 }
 
-// prepare inspects the app, gates its ownership, chooses the theme, and plans and preflights the writes. It writes
-// nothing.
+// prepare inspects the app, gates its ownership, chooses the theme, plans and preflights the writes, and refuses one
+// that would replace a file sf2 cannot show it wrote. It writes nothing.
 func prepare(req Request, app adapters.App, themes []catalog.Theme, configDir string, requested *catalog.Theme,
-	selectsTheme bool, opts fsys.Options) (prepared, error) {
+	selectsTheme bool, opts fsys.Options, recorded store.Manifest) (prepared, error) {
 	var run prepared
 	var err error
 	if run.inspection, err = app.Inspect(themes, configDir); err != nil {
@@ -198,8 +200,78 @@ func prepare(req Request, app adapters.App, themes []catalog.Theme, configDir st
 	if run.target, err = app.Target(configDir); err != nil {
 		return run, err
 	}
-	run.destinations, err = fsys.Preflight(run.steps, opts)
-	return run, err
+	if run.destinations, err = fsys.Preflight(run.steps, opts); err != nil {
+		return run, err
+	}
+	return run, claim(run, app, themes, configDir, recorded)
+}
+
+// readManifest reads the manifest without taking the lock, for the first decision only.
+func readManifest() (store.Manifest, error) {
+	path, err := store.Path()
+	if err != nil {
+		return store.Manifest{}, err
+	}
+	return store.Load(path)
+}
+
+// claim refuses a write that would replace a file sf2 cannot show it wrote. The configuration file at the target is
+// the user's own and is edited with a backup; every other file sf2 writes must be missing, already hold what sf2
+// writes, or hold bytes sf2 is known to have written there: recorded in the manifest with their SHA-256, or exactly
+// what this sf2 writes at that path for some catalog selection, which is what releases before the manifest wrote. A
+// name, such as an `sf2-` prefix, proves nothing.
+func claim(run prepared, app adapters.App, themes []catalog.Theme, configDir string, recorded store.Manifest) error {
+	var known map[string]map[string]bool
+	for i, step := range run.steps {
+		destination := run.destinations[i]
+		if fsys.SamePath(destination, run.target) {
+			continue
+		}
+		raw, err := os.ReadFile(destination)
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if string(raw) == step.Content {
+			continue
+		}
+		if text, err := pycompat.DecodeText(raw); err == nil && text == step.Content {
+			continue
+		}
+		sha := fsys.Fingerprint(string(raw))
+		if recorded.Wrote(destination, sha) {
+			continue
+		}
+		if known == nil {
+			known = renderings(app, themes, configDir, run.decided.slot)
+		}
+		if known[step.Path][sha] {
+			continue
+		}
+		return fmt.Errorf("refusing to replace %s: sf2-themes did not write it, or it changed after sf2-themes wrote "+
+			"it. Move it aside and run the command again", destination)
+	}
+	return nil
+}
+
+// renderings is the SHA-256 of everything app writes at each path for any catalog selection.
+func renderings(app adapters.App, themes []catalog.Theme, configDir string, slot bool) map[string]map[string]bool {
+	known := map[string]map[string]bool{}
+	for _, theme := range themes {
+		steps, err := app.Plan(theme, themes, configDir, slot)
+		if err != nil {
+			continue
+		}
+		for _, step := range steps {
+			if known[step.Path] == nil {
+				known[step.Path] = map[string]bool{}
+			}
+			known[step.Path][fsys.Fingerprint(step.Content)] = true
+		}
+	}
+	return known
 }
 
 func expandConfigDir(req Request) (string, error) {
@@ -355,6 +427,8 @@ type ownership struct {
 	session *store.Session
 	app     string
 	target  string
+	// kept is the copy of the user's setting this run kept, removed again when the run is undone.
+	kept string
 }
 
 // openOwnership refuses an unusable state directory or an unreadable manifest before anything is written.
@@ -411,7 +485,7 @@ func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
 		return nil
 	}
 	for i, step := range steps {
-		if step.Remove || !fsys.SamePath(destinations[i], o.target) {
+		if !fsys.SamePath(destinations[i], o.target) {
 			continue
 		}
 		raw, err := os.ReadFile(destinations[i])
@@ -427,15 +501,50 @@ func (o *ownership) keepPrior(steps []plan.Step, destinations []string) error {
 		if entry.Prior, err = store.KeepPrior(o.session.Path, o.app, pycompat.Name(o.target), raw); err != nil {
 			return err
 		}
+		o.kept = entry.Prior
 		o.session.Manifest.Record(entry)
 		return o.session.Save()
 	}
 	return nil
 }
 
+// finish settles sf2's state after the commit. A complete commit is recorded; when the record cannot be saved, the
+// commit is undone. A commit that failed has undone itself. Once the application files are as they were, the state
+// is put back as well: the kept setting copy goes and the manifest returns to what the run found, so a failed run
+// leaves nothing behind. Changes that could not be undone are recorded instead, so ownership is never lost.
+func (o *ownership) finish(transaction *fsys.Transaction, err error, record func(complete bool) error) error {
+	if err == nil && len(transaction.Results) > 0 {
+		if err = record(true); err == nil {
+			return nil
+		}
+		if rollbackErr := transaction.Rollback(); rollbackErr != nil {
+			err = errors.Join(err, rollbackErr)
+		}
+	}
+	if err == nil {
+		return nil
+	}
+	if slices.ContainsFunc(transaction.Results, func(r fsys.Result) bool { return !r.Action.Planned() && r.Action != fsys.Unchanged }) {
+		if recordErr := record(false); recordErr != nil {
+			err = errors.Join(err, recordErr)
+		}
+		return err
+	}
+	if o.kept != "" {
+		if removeErr := os.Remove(o.kept); removeErr != nil && !errors.Is(removeErr, fs.ErrNotExist) {
+			return errors.Join(err, removeErr)
+		}
+		o.kept = ""
+	}
+	if restoreErr := o.session.Restore(); restoreErr != nil {
+		err = errors.Join(err, restoreErr)
+	}
+	return err
+}
+
 // record merges what one commit did into the target's entry and saves it. The file at the target is the user's
-// own configuration, recorded as the setting sf2 edited; every other written file is wholly sf2's. A removed file is
-// no longer owned, and a record the commit did not reach is kept as it was. releasedSetting drops the setting
+// own configuration, recorded as the setting sf2 edited; every other written file is wholly sf2's. A record the
+// commit did not reach is kept as it was. releasedSetting drops the setting
 // record after a complete run that left the user's own setting in place, and disowns, after a complete run, drops
 // records the app says the target can no longer own, such as a pointer an earlier release shared; it judges the path
 // alone, so a run after an interrupted migration drops the claim too. The selection is what the configuration
@@ -453,8 +562,6 @@ func (o *ownership) record(results []fsys.Result, releasedSetting bool, disowns 
 	}
 	for _, result := range results {
 		switch {
-		case result.Action == fsys.Removed:
-			delete(files, result.Path)
 		case fsys.SamePath(result.Path, o.target):
 			entry.Setting = &store.File{Path: result.Path, SHA256: result.Fingerprint}
 		default:

@@ -180,15 +180,7 @@ func (s *Staged) Probe() error {
 	} else if protected {
 		return fmt.Errorf("%s cannot be replaced: it is marked immutable or append-only", s.path)
 	}
-	dir, err := os.Stat(pycompat.Parent(s.path))
-	if err != nil {
-		return err
-	}
-	uid := uint32(os.Geteuid())
-	if dir.Mode()&fs.ModeSticky != 0 && uid != 0 && owner(info) != uid && owner(dir) != uid {
-		return fmt.Errorf("%s cannot be replaced: another user owns it in a sticky directory", s.path)
-	}
-	return nil
+	return replaceableIn(s.path, info)
 }
 
 func owner(info fs.FileInfo) uint32 {

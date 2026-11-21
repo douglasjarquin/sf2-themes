@@ -1,7 +1,6 @@
 step apply nvim --theme ken --verbose --config-dir {SANDBOX}/config/nvim
 exit 0
 stdout
-| removed: {SANDBOX}/config/nvim/colors/street-fighter-ii-ryu.lua
 | created: {SANDBOX}/config/nvim/colors/sf2-main.lua
 = 832b5617fb70ae76
 | created: {SANDBOX}/config/nvim/colors/sf2-main-light.lua
@@ -89,7 +88,7 @@ stdout
 = faa519854ea998a3
 | apply nvim: sf2-ken + sf2-ken-light (follows host appearance)
 |   target: {SANDBOX}/config/nvim
-|   changes: 38 created, 1 removed
+|   changes: 38 created
 |   note: restart Neovim to load the new colorscheme
 stderr
 tree
@@ -132,6 +131,7 @@ file 0644 221ed82002447a48 config/nvim/colors/sf2-vega-light.lua
 file 0644 910eb72defbafc59 config/nvim/colors/sf2-vega.lua
 file 0644 f542293d3af5b2c8 config/nvim/colors/sf2-zangief-light.lua
 file 0644 3b6ef14483eb2afa config/nvim/colors/sf2-zangief.lua
+file 0644 758470868609d1e5 config/nvim/colors/street-fighter-ii-ryu.lua
 dir 0755 config/nvim/plugin
 file 0644 beb70a25f49a87b2 config/nvim/plugin/sf2-theme.lua
 dir 0755 config/nvim/sf2-theme

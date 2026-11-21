@@ -11,8 +11,9 @@ Use it to repair integration without changing the active theme.
 ## Who owns the theme setting
 
 Before writing anything, every command reads the app's config and decides who owns its theme setting.
-The whole run is planned first, so a run that refuses writes nothing, removes nothing, and creates no backup.
-`--dry-run` prints exactly the writes and removals the real run would make.
+The whole run is planned and checked first, so a run that refuses writes nothing and creates no backup, and a run that fails part way puts everything back.
+sf2 never deletes a file, and never replaces one it did not write, whatever its name: a scheme or pointer file you made or edited stops the command until you move it aside.
+`--dry-run` prints exactly the writes the real run would make.
 
 | The app's theme setting | `apply`, or `setup --theme` | `setup` |
 |---|---|---|

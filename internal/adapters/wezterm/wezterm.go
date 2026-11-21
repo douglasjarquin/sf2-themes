@@ -45,8 +45,6 @@ func disowns(configDir, path string) bool {
 	return err == nil && !fsys.SamePath(own, path)
 }
 
-const legacySchemeFilePrefix = "street-fighter-ii"
-
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `*(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
 
 func configRoot() (string, error) {
@@ -300,10 +298,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 	if err != nil {
 		return nil, err
 	}
-	steps := make([]plan.Step, 0, 2*len(themes)+2)
-	for _, entry := range themes {
-		steps = append(steps, plan.Remove(pycompat.Path(target, legacySchemeFilePrefix+"-"+entry.Metadata.ID+".toml")))
-	}
+	steps := make([]plan.Step, 0, len(themes)+2)
 	for _, entry := range themes {
 		steps = append(steps, plan.Write(pycompat.Path(target, schemeFilename(entry)), renderScheme(entry)))
 	}

@@ -1,8 +1,6 @@
 step apply wezterm --theme ken --dry-run --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
-| would remove: {SANDBOX}/config/wezterm/colors/street-fighter-ii-main.toml
-| would remove: {SANDBOX}/config/wezterm/colors/street-fighter-ii-ryu.toml
 | would create: {SANDBOX}/config/wezterm/colors/sf2-main.toml
 = 6d2956c21fce986e
 | would create: {SANDBOX}/config/wezterm/colors/sf2-main-light.toml
@@ -102,7 +100,7 @@ stdout
 | +return config
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
 |   target: {SANDBOX}/config/wezterm/wezterm.lua
-|   changes: 38 would create, 2 would remove
+|   changes: 38 would create
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
 tree

@@ -31,6 +31,7 @@ type stubInspection struct {
 // like stubApp below, in a fresh directory seeded with Seed, where {DIR} stands for that directory. The `target:`
 // summary line and the fixed-variant suffix on unpaired selections were added to that recording by hand, and
 // pair-unknown-refused was changed by hand to write nothing: the reference wrote a pair app's files before refusing.
+// verbose-every-outcome and dry-run were changed by hand to keep legacy.txt: the reference deleted it by name.
 // A backup's timestamp suffix is recorded as `.bak`.
 type gateCase struct {
 	Name       string            `json:"name"`
@@ -69,7 +70,7 @@ func stubApp(inspection *stubInspection, base adapters.App) adapters.App {
 		if slot {
 			steps = append(steps, plan.Write(pycompat.Path(configDir, "config.txt"), "keep = 1\ntheme = "+id+"\n"))
 		}
-		return append(steps, plan.Remove(pycompat.Path(configDir, "legacy.txt"))), nil
+		return steps, nil
 	}
 	base.Target = func(configDir string) (string, error) {
 		return pycompat.Path(configDir, "config.txt"), nil
