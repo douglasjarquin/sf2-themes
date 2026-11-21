@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path/filepath"
 	"slices"
 	"syscall"
 	"time"
@@ -198,7 +199,12 @@ func writable(destination, content string) error {
 		}
 		dir = pycompat.Parent(dir)
 	}
-	if protected, err := protectedFile(dir); err != nil {
+	// The directory may be reached through a symlink, such as a --config-dir alias; its flags are the real one's.
+	real, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		return err
+	}
+	if protected, err := protectedFile(real); err != nil {
 		return err
 	} else if protected {
 		return fmt.Errorf("cannot write %s: %s is marked immutable or append-only", destination, dir)

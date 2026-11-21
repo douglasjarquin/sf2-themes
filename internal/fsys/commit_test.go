@@ -526,3 +526,19 @@ func TestResolveRefusesANameLookedUpInAFile(t *testing.T) {
 		t.Errorf("Resolve = %q, %v", got, err)
 	}
 }
+
+func TestAWriteThroughASymlinkedDirectoryIsWritable(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Mkdir(root+"/real", 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(root+"/real", root+"/alias"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Commit([]plan.Step{plan.Write(root+"/alias/new/x.toml", "x\n")}, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, root+"/real/new/x.toml") != "x\n" {
+		t.Error("not written")
+	}
+}
