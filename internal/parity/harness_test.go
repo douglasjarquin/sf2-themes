@@ -233,7 +233,7 @@ func rehydrateDigests(t *testing.T, root string) {
 		return nil
 	}))
 	digestOf := func(lua string) string {
-		return "wezterm-current-" + fsys.Fingerprint(fsys.Canonical(lua))[:12] + ".lua"
+		return "wezterm-current-" + fsys.Fingerprint(resolved(t, lua))[:12] + ".lua"
 	}
 	// Name each masked pointer after the file beside it that loads it, or after the wezterm.lua beside it.
 	named := map[string]string{}
@@ -794,4 +794,12 @@ func TestBackupsAreRecordedPerStep(t *testing.T) {
 	if got, want := render(Backups(afterTwo, snapshot())), stepLines+backupLine("extra\n")+"tree\n"; got != want {
 		t.Errorf("an extra backup recorded\n%s\nwant\n%s", got, want)
 	}
+}
+
+// resolved is the location lua opens, which names its pointer.
+func resolved(t *testing.T, lua string) string {
+	t.Helper()
+	path, err := fsys.Resolve(lua)
+	must(t, err)
+	return path
 }

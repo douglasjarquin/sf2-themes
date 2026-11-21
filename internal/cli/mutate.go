@@ -46,33 +46,24 @@ const (
 type decision struct {
 	refuse bool
 	slot   bool
-	// incomplete writes the theme files, leaves the setting alone, and then exits 1 with the manual fix.
-	incomplete bool
 }
 
 // gate decides a run from the config's ownership:
 //
-//	ownership       app keeps files on unknown shape  --adopt  selects a theme  outcome
-//	broken          any                               any      any              refuse
-//	unknown shape   no                                any      any              refuse
-//	unknown shape   yes                               no       any              files only, then refuse (incomplete)
-//	unknown shape   yes                               yes      any              refuse
-//	foreign         any                               no       yes              refuse
-//	foreign         any                               no       no               files only, keep the user's theme
-//	foreign         any                               yes      any              write the setting
-//	absent, managed, legacy                                                     write the setting
+//	ownership       --adopt  selects a theme  outcome
+//	broken          any      any              refuse
+//	unknown shape   any      any              refuse
+//	foreign         no       yes              refuse
+//	foreign         no       no               files only, keep the user's theme
+//	foreign         yes      any              write the setting
+//	absent, managed, legacy                   write the setting
 //
-// A run selects a theme unless it is `setup` without --theme.
-func gate(ownership plan.Ownership, app adapters.App, adopt, selectsTheme bool) decision {
+// A run selects a theme unless it is `setup` without --theme. Every refusal comes before the first write, so a
+// refused run leaves the disk and sf2's state exactly as they were.
+func gate(ownership plan.Ownership, adopt, selectsTheme bool) decision {
 	switch ownership {
-	case plan.Broken:
+	case plan.Broken, plan.UnknownShape:
 		return decision{refuse: true}
-	case plan.UnknownShape:
-		// --adopt asks for the setting, which an unknown shape cannot take, so nothing is written.
-		if !app.OwnsFilesOnUnknownShape || adopt {
-			return decision{refuse: true}
-		}
-		return decision{incomplete: true}
 	case plan.Foreign:
 		if adopt {
 			return decision{slot: true}
@@ -168,9 +159,6 @@ func mutate(ctx *Context, req Request) (int, error) {
 		return 0, err
 	}
 	summarize(ctx, req.Command, req.App, app, run.decided, label, run.target, results)
-	if run.decided.incomplete {
-		return 0, refusal(req.App, app, run.inspection)
-	}
 	if app.StderrHint != "" && run.decided.slot {
 		printf(ctx.Stderr, "%s\n", app.StderrHint)
 	}
@@ -197,7 +185,7 @@ func prepare(req Request, app adapters.App, themes []catalog.Theme, configDir st
 	if run.inspection, err = app.Inspect(themes, configDir); err != nil {
 		return run, err
 	}
-	run.decided = gate(run.inspection.Ownership, app, req.Adopt, selectsTheme)
+	run.decided = gate(run.inspection.Ownership, req.Adopt, selectsTheme)
 	if run.decided.refuse {
 		return run, refusal(req.App, app, run.inspection)
 	}
@@ -291,15 +279,13 @@ func selectionText(app adapters.App, theme catalog.Theme, how selection, themes 
 
 func summarize(ctx *Context, verb, name string, app adapters.App, decided decision, selection, target string, results []fsys.Result) {
 	switch {
-	case decided.incomplete:
-		printf(ctx.Stdout, "%s %s: incomplete (config left unchanged)\n", verb, name)
 	case !decided.slot:
 		printf(ctx.Stdout, "%s %s: kept your own theme (config left unchanged)\n", verb, name)
 	default:
 		printf(ctx.Stdout, "%s %s: %s\n", verb, name, selection)
 	}
 	printf(ctx.Stdout, "  target: %s\n", target)
-	if !decided.slot && app.OwnsFilesOnUnknownShape {
+	if !decided.slot && app.Pointer {
 		printf(ctx.Stdout, "  pointer: %s\n", selection)
 	}
 	printf(ctx.Stdout, "  changes: %s\n", changes(results))
@@ -355,7 +341,7 @@ func runCurrent(ctx *Context, req Request) (int, error) {
 	switch {
 	case inspection.Ownership == plan.Broken:
 		return 0, errors.New(inspection.Detail)
-	case inspection.Ownership == plan.Foreign && !app.OwnsFilesOnUnknownShape:
+	case inspection.Ownership == plan.Foreign && !app.Pointer:
 		return 0, fmt.Errorf("%s uses a theme sf2-themes does not manage", app.Label)
 	case inspection.Unreadable:
 		return 0, fmt.Errorf("could not read the sf2 theme %s selects", app.Label)

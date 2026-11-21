@@ -3,6 +3,7 @@ package wezterm
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
@@ -301,7 +302,7 @@ type analysis struct {
 //	no sf2 form, any color_scheme                           foreign: manual
 //	anything else                                           unknown shape: manual
 func analyze(existing, pointer, lua string) analysis {
-	if pycompat.Strip(existing) == "" {
+	if strings.Trim(existing, luaSpace) == "" {
 		return analysis{ownership: plan.Absent, selector: pointer}
 	}
 	c, err := parseLua(existing)
@@ -365,6 +366,40 @@ func manualSteps(lua, pointer, builder string, scheme, loader bool, why string) 
 	return steps
 }
 
+// mixedBreaks is why sf2 will not add lines to a file whose lines do not all end alike.
+const mixedBreaks = "Its lines do not all end alike, so sf2-themes cannot add lines that match them."
+
+// lineBreak returns the one line break every line of source ends with, "\n" when it has none, and false when its
+// lines end differently or with a lone carriage return.
+func lineBreak(source string) (string, bool) {
+	found := map[string]bool{}
+	for _, b := range lineBreaks(source) {
+		found[b] = true
+	}
+	switch {
+	case len(found) == 0 || (len(found) == 1 && found["\n"]):
+		return "\n", true
+	case len(found) == 1 && found["\r\n"]:
+		return "\r\n", true
+	}
+	return "", false
+}
+
+// lineBreaks returns each line break in source, in order.
+func lineBreaks(source string) []string {
+	var breaks []string
+	for i := 0; i < len(source); i++ {
+		switch {
+		case strings.HasPrefix(source[i:], "\r\n"):
+			breaks = append(breaks, "\r\n")
+			i++
+		case source[i] == '\n' || source[i] == '\r':
+			breaks = append(breaks, source[i:i+1])
+		}
+	}
+	return breaks
+}
+
 // classify reports who owns the color scheme in wezterm.lua.
 func classify(existing, pointer string) plan.Ownership {
 	return analyze(existing, pointer, "wezterm.lua").ownership
@@ -381,13 +416,32 @@ func integrate(existing, pointer, lua string) (string, error) {
 		return starterConfig(pointer), nil
 	case a.ownership == plan.Managed || a.ownership == plan.Legacy:
 		f := a.form
-		block := make([]string, 0, 7)
-		for _, text := range integrationLines(pointer, f.builder) {
-			block = append(block, f.indent+text)
+		block := integrationLines(pointer, f.builder)
+		// The full form keeps the line breaks it has; a shorter form grows by the file's own line break.
+		breaks := lineBreaks(existing[f.start:f.end])
+		if len(breaks) != len(block)-1 {
+			nl, ok := lineBreak(existing)
+			if !ok {
+				return "", errors.New(manualSteps(lua, pointer, f.builder, false, true, mixedBreaks))
+			}
+			breaks = slices.Repeat([]string{nl}, len(block)-1)
 		}
-		updated = existing[:f.start] + strings.Join(block, "\n") + existing[f.end:]
+		var b strings.Builder
+		for i, text := range block {
+			if i > 0 {
+				b.WriteString(breaks[i-1])
+			}
+			b.WriteString(f.indent + text)
+		}
+		updated = existing[:f.start] + b.String() + existing[f.end:]
 	case a.ownership == plan.Foreign && a.manual == "":
-		updated = pycompat.RStrip(existing[:a.returnAt]) + "\n" + integrationSnippet(pointer, a.builder) + existing[a.returnAt:]
+		// The adopted file is its own bytes with sf2's block inserted whole before its return, ended as its lines are.
+		nl, ok := lineBreak(existing)
+		if !ok {
+			return "", errors.New(manualSteps(lua, pointer, a.builder, false, false, mixedBreaks))
+		}
+		block := strings.Join(integrationLines(pointer, a.builder), nl) + nl
+		updated = existing[:a.returnAt] + block + existing[a.returnAt:]
 	default:
 		return "", errors.New(a.manual)
 	}

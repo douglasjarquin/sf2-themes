@@ -3,6 +3,7 @@ package wezterm
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -402,49 +403,64 @@ func TestPointerIdentityIsTheFileTheFilesystemOpens(t *testing.T) {
 	}
 }
 
-func TestCanonicalFollowsTheFilesystem(t *testing.T) {
+func TestResolveFollowsTheFilesystem(t *testing.T) {
 	dir, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
 	writeFile(t, dir+"/real/file.lua", "")
 	writeFile(t, dir+"/other/nested/x", "")
-	if err := os.Symlink(dir+"/other/nested", dir+"/real/link"); err != nil {
-		t.Fatal(err)
+	link := func(target, at string) {
+		t.Helper()
+		if err := os.Symlink(target, at); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if err := os.Symlink("../../real/file.lua", dir+"/other/nested/relative.lua"); err != nil {
-		t.Fatal(err)
-	}
+	link(dir+"/other/nested", dir+"/real/link")
+	link("../../real/file.lua", dir+"/other/nested/relative.lua")
+	link("absent.lua", dir+"/real/dangling.lua")
 	cases := map[string]string{
 		dir + "/real/file.lua":          dir + "/real/file.lua",
 		dir + "/real/./missing/new.lua": dir + "/real/missing/new.lua",
 		dir + "/real/link/x":            dir + "/other/nested/x",
 		dir + "/real/link/relative.lua": dir + "/real/file.lua",
+		dir + "/real/dangling.lua":      dir + "/real/absent.lua",
 	}
 	for in, want := range cases {
-		if got := fsys.Canonical(in); got != want {
-			t.Errorf("Canonical(%s) = %s, want %s", in, got, want)
-		}
-		if err := fsys.CheckSpelling(in); err != nil {
-			t.Errorf("CheckSpelling(%s): %v", in, err)
+		if got, err := fsys.Resolve(in); err != nil || got != want {
+			t.Errorf("Resolve(%s) = %s, %v; want %s", in, got, err, want)
 		}
 	}
 	if !fsys.SamePath(dir+"/real/link/x", dir+"/other/nested/x") {
 		t.Error("a symlinked spelling compared distinct")
 	}
-	for _, refused := range []string{dir + "/real/link/../file.lua", dir + "/absent/../real/file.lua", dir + "/real/../real/file.lua"} {
-		if err := fsys.CheckSpelling(refused); err == nil {
-			t.Errorf("CheckSpelling(%s) accepted", refused)
+	// A symlink whose target leaves a missing directory with `..` opens nothing; a lexical join would name file.lua.
+	link("missing/../file.lua", dir+"/real/escape.lua")
+	link(dir+"/real/escape.lua", dir+"/real/escape-again.lua")
+	link(dir+"/real/missing/../link", dir+"/real/escape-dir")
+	refused := []string{
+		dir + "/real/link/../file.lua", dir + "/absent/../real/file.lua", dir + "/real/../real/file.lua",
+		dir + "/real/escape.lua", dir + "/real/escape-again.lua", dir + "/real/escape-dir/x",
+	}
+	for _, path := range refused {
+		if got, err := fsys.Resolve(path); err == nil {
+			t.Errorf("Resolve(%s) accepted as %s", path, got)
 		}
 	}
-	// Another letter case or Unicode normalization of an existing name is refused, where the volume would open it.
+	// Another letter case or Unicode normalization of an existing name is refused where the volume would open it,
+	// whether the path names it or a symlink it follows does.
 	writeFile(t, dir+"/caf\u00e9.lua", "")
-	for _, alias := range []string{dir + "/REAL/file.lua", dir + "/real/FILE.LUA", dir + "/cafe\u0301.lua"} {
+	for i, alias := range []string{dir + "/REAL/file.lua", dir + "/real/FILE.LUA", dir + "/cafe\u0301.lua"} {
 		if _, err := os.Stat(alias); err != nil {
 			continue
 		}
-		if err := fsys.CheckSpelling(alias); err == nil {
-			t.Errorf("CheckSpelling(%q) accepted another spelling of an existing file", alias)
+		if _, err := fsys.Resolve(alias); err == nil {
+			t.Errorf("Resolve(%q) accepted another spelling of an existing file", alias)
+		}
+		through := fmt.Sprintf("%s/alias-%d.lua", dir, i)
+		link(alias, through)
+		if _, err := fsys.Resolve(through); err == nil {
+			t.Errorf("Resolve(%q) accepted a symlink to another spelling, %q", through, alias)
 		}
 	}
 }
@@ -488,18 +504,20 @@ func TestOnlySF2sOwnFormsAtTheTopLevelAreRecognized(t *testing.T) {
 
 func TestMalformedLuaIsNeverRecognizedOrEdited(t *testing.T) {
 	for name, block := range map[string]string{
-		"incomplete local":        "local invalid =\n",
-		"unterminated string":     "config.font = \"Monaspace\n",
-		"unterminated comment":    "--[[ never closed\n",
-		"unbalanced block":        "if true then\n",
-		"bad escape":              "local s = \"\\q\"\n",
-		"bad number":              "local n = 3..2\n",
-		"stray character":         "local n = 1 $\n",
-		"expression statement":    "config.font_size\n",
-		"break outside a loop":    "break\n",
-		"vararg in a function":    "local function f() return ... end\n",
-		"goto is unverified":      "goto done\n::done::\n",
-		"attribute is unverified": "local x <const> = 1\n",
+		"incomplete local":         "local invalid =\n",
+		"escape above 2^31-1":      "local s = \"\\u{80000000}\"\n",
+		"long escape above 2^31-1": "local s = \"\\u{00FFFFFFFF}\"\n",
+		"unterminated string":      "config.font = \"Monaspace\n",
+		"unterminated comment":     "--[[ never closed\n",
+		"unbalanced block":         "if true then\n",
+		"bad escape":               "local s = \"\\q\"\n",
+		"bad number":               "local n = 3..2\n",
+		"stray character":          "local n = 1 $\n",
+		"expression statement":     "config.font_size\n",
+		"break outside a loop":     "break\n",
+		"vararg in a function":     "local function f() return ... end\n",
+		"goto is unverified":       "goto done\n::done::\n",
+		"attribute is unverified":  "local x <const> = 1\n",
 	} {
 		existing := testBuilder + block + integrationSnippet(testPointer, "config") + "return config\n"
 		if got := classify(existing, testPointer); got != plan.Broken {
@@ -511,7 +529,7 @@ func TestMalformedLuaIsNeverRecognizedOrEdited(t *testing.T) {
 		"escaped quote":         "local note = \"say \\\"config.color_scheme = 1\\\"\"\n",
 		"z continuation":        "local note = \"a\\z\n  config.color_scheme = 'x'\"\n",
 		"nested lookalike":      "--[==[\n]=] ]] local sf2_current = 1\n]==]\n",
-		"escapes":               "local s = \"\\65\\x41\\u{41}\\255\"\n",
+		"escapes":               "local s = \"\\65\\x41\\u{41}\\255\\u{000000041}\\u{7FFFFFFF}\"\n",
 		"numbers":               "local n = 0x1p4 + 1e-3 + .5 + 3 // 2 + (1 << 2) ~ 1\n",
 		"method and call forms": "local s = (\"x\"):rep(2) .. tostring{1} .. ('y'):upper()\n",
 		"control flow":          "for i = 1, 3 do if i == 2 then break end end\nwhile false do end\nrepeat local x = 1 until x\n",

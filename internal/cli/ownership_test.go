@@ -343,7 +343,9 @@ func TestPriorAndFingerprintsAreTheBytesOnDisk(t *testing.T) {
 		t.Errorf("prior %q, want %q", got, original)
 	}
 	lua := target + "/wezterm.lua"
-	put(t, lua, strings.ReplaceAll(read(t, lua), "\n", "\r\n"))
+	if adopted := read(t, lua); strings.Count(adopted, "\r\n") != strings.Count(adopted, "\n") {
+		t.Errorf("adoption changed the file's CRLF line breaks:\n%q", adopted)
+	}
 	if out := mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target); !strings.Contains(out, "no changes") {
 		t.Errorf("reapply wrote:\n%s", out)
 	}
@@ -353,7 +355,10 @@ func TestPriorAndFingerprintsAreTheBytesOnDisk(t *testing.T) {
 // ownPointer is the selection pointer of the wezterm.lua at lua: beside the file the filesystem opens, named after
 // its canonical path.
 func ownPointer(lua string) string {
-	resolved := fsys.Canonical(lua)
+	resolved, err := fsys.Resolve(lua)
+	if err != nil {
+		panic(err)
+	}
 	return filepath.Dir(resolved) + "/sf2-theme/wezterm-current-" + fsys.Fingerprint(resolved)[:12] + ".lua"
 }
 
@@ -966,5 +971,137 @@ func TestAControlCharacterInTheConfigPathWritesNothing(t *testing.T) {
 	mustRun(t, 1, "apply", "wezterm", "--theme", "ryu")
 	if after := snapshot(t, root); after != before {
 		t.Error("wrote")
+	}
+}
+
+// Round 6, finding 1: a followed symlink is held to the rules the path itself is. A link through a missing directory
+// and back out with `..` opens nothing, and a link to another spelling of an existing file names it a second way;
+// neither may reach a file and overwrite it.
+func TestAFollowedSymlinkCannotReachAnotherFile(t *testing.T) {
+	root := sandbox(t)
+	foreign := strings.Replace(seedLua, "return config", "config.color_scheme = \"User Scheme\"\nreturn config", 1)
+	put(t, root+"/dots/profile.lua", foreign)
+	if err := os.Symlink("missing/../profile.lua", root+"/dots/alias.lua"); err != nil {
+		t.Fatal(err)
+	}
+	before := snapshot(t, root)
+	t.Setenv("WEZTERM_CONFIG_FILE", root+"/dots/alias.lua")
+	_, stderr, status := run("apply", "wezterm", "--theme", "ken", "--follow-symlinks")
+	if status != 1 || !strings.Contains(stderr, "`..`") || snapshot(t, root) != before {
+		t.Errorf("a link through a missing directory: exit %d, stderr %q, wrote:\n%s", status, stderr, snapshot(t, root))
+	}
+
+	put(t, root+"/case/wezterm.lua", "")
+	t.Setenv("WEZTERM_CONFIG_FILE", root+"/case/wezterm.lua")
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu")
+	if _, err := os.Stat(root + "/case/WEZTERM.LUA"); err != nil {
+		t.Skip("the volume is case-sensitive, so another case names another file")
+	}
+	if err := os.Symlink("WEZTERM.LUA", root+"/case/alias.lua"); err != nil {
+		t.Fatal(err)
+	}
+	before = snapshot(t, root)
+	t.Setenv("WEZTERM_CONFIG_FILE", root+"/case/alias.lua")
+	_, stderr, status = run("apply", "wezterm", "--theme", "ken", "--follow-symlinks")
+	if status != 1 || !strings.Contains(stderr, "not spelled as it is on disk") || snapshot(t, root) != before {
+		t.Errorf("a link to another spelling: exit %d, stderr %q, wrote:\n%s", status, stderr, snapshot(t, root))
+	}
+}
+
+// Round 6, finding 2: every refusal writes nothing, a valid shape sf2 cannot edit included: no scheme files, pointer,
+// backup, manifest, or state.
+func TestARefusedValidShapeWritesNothing(t *testing.T) {
+	for _, verb := range []string{"apply", "setup"} {
+		for _, adopt := range []bool{false, true} {
+			root := sandbox(t)
+			target := root + "/t"
+			put(t, target+"/wezterm.lua", "return { font_size = 12 }\n")
+			before := snapshot(t, root)
+			args := []string{verb, "wezterm", "--config-dir", target}
+			if adopt {
+				args = append(args, "--adopt")
+			}
+			stdout, stderr, status := run(args...)
+			if status != 1 || stdout != "" || !strings.Contains(stderr, "Add this integration") {
+				t.Errorf("%v: exit %d\nstdout %q\nstderr %q", args, status, stdout, stderr)
+			}
+			if after := snapshot(t, root); after != before {
+				t.Errorf("%v wrote:\n%s", args, after)
+			}
+		}
+	}
+}
+
+// Round 6, finding 3: an adopted file is its own bytes with sf2's block inserted before its return, nothing else
+// changed: line breaks, blank lines, trailing white space, comments, and a missing final line break all stay.
+func TestAdoptionKeepsEveryByteOfTheFile(t *testing.T) {
+	for name, nl := range map[string]string{"LF": "\n", "CRLF": "\r\n"} {
+		root := sandbox(t)
+		target := root + "/t"
+		original := strings.Join([]string{
+			`local wezterm = require("wezterm")`, "local config = wezterm.config_builder()", "",
+			"-- maintain spacing  ", "config.font_size = 12\t", "", "", "return config",
+		}, nl)
+		put(t, target+"/wezterm.lua", original)
+		mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--adopt", "--config-dir", target)
+		at := strings.Index(original, "return config")
+		block := strings.Join([]string{
+			`local sf2_current = "` + ownPointer(target+"/wezterm.lua") + `"`,
+			"wezterm.add_to_config_reload_watch_list(sf2_current)",
+			"local sf2_scheme = dofile(sf2_current)",
+			"config.color_scheme = sf2_scheme",
+			"local sf2_env = config.set_environment_variables or {}",
+			`sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"`,
+			"config.set_environment_variables = sf2_env",
+		}, nl) + nl
+		if got, want := read(t, target+"/wezterm.lua"), original[:at]+block+original[at:]; got != want {
+			t.Errorf("%s: adopted\n%q\nwant\n%q", name, got, want)
+		}
+		if got := mustRun(t, 0, "current", "wezterm", "--config-dir", target); got != "sf2-ryu" {
+			t.Errorf("%s: current %q", name, got)
+		}
+		if out := mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target); !strings.Contains(out, "no changes") {
+			t.Errorf("%s: reapply wrote:\n%s", name, out)
+		}
+	}
+
+	// Lines that end differently cannot take lines that match them, so sf2 prints the steps and writes nothing.
+	root := sandbox(t)
+	target := root + "/t"
+	put(t, target+"/wezterm.lua", strings.Replace(seedLua, "\n", "\r\n", 1))
+	before := snapshot(t, root)
+	_, stderr, status := run("apply", "wezterm", "--theme", "ryu", "--adopt", "--config-dir", target)
+	if status != 1 || !strings.Contains(stderr, "do not all end alike") || !strings.Contains(stderr, "Add this integration") {
+		t.Errorf("mixed line breaks: exit %d, stderr %q", status, stderr)
+	}
+	if snapshot(t, root) != before {
+		t.Error("mixed line breaks: adoption wrote")
+	}
+}
+
+// A replaced sf2 form keeps the file's CRLF line breaks, the ones between its own lines included.
+func TestALegacyFormInACRLFFileKeepsItsLineBreaks(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/t"
+	original := strings.ReplaceAll(strings.Replace(seedLua, "return config", "config.color_scheme = \"street-fighter-2\"\nreturn config", 1), "\n", "\r\n")
+	put(t, target+"/wezterm.lua", original)
+	mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target)
+	got := read(t, target+"/wezterm.lua")
+	if strings.Count(got, "\r\n") != strings.Count(got, "\n") || !strings.Contains(got, "config.color_scheme = sf2_scheme\r\n") {
+		t.Errorf("replaced form changed the line breaks:\n%q", got)
+	}
+	if out := mustRun(t, 0, "apply", "wezterm", "--theme", "ryu", "--config-dir", target); !strings.Contains(out, "no changes") {
+		t.Errorf("reapply wrote:\n%s", out)
+	}
+}
+
+// Only Lua's own white space makes a config blank; a file of other characters is not Lua sf2 may replace.
+func TestAFileOfNonLuaSpaceIsNotBlank(t *testing.T) {
+	root := sandbox(t)
+	target := root + "/t"
+	put(t, target+"/wezterm.lua", " ")
+	before := snapshot(t, root)
+	if _, _, status := run("apply", "wezterm", "--theme", "ryu", "--config-dir", target); status != 1 || snapshot(t, root) != before {
+		t.Errorf("a no-break space config: exit %d, wrote:\n%s", status, snapshot(t, root))
 	}
 }

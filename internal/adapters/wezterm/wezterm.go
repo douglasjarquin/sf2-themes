@@ -5,11 +5,13 @@ package wezterm
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"regexp"
 	"slices"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/adapters"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
@@ -23,14 +25,14 @@ const label = "WezTerm"
 
 // App is the WezTerm adapter.
 var App = adapters.App{
-	Label:                   label,
-	Inspect:                 Inspect,
-	Plan:                    Plan,
-	Target:                  target,
-	Pair:                    true,
-	OwnsFilesOnUnknownShape: true,
-	Reload:                  "restart WezTerm, or let a config reload pick up the managed pointer",
-	Disowns:                 disowns,
+	Label:   label,
+	Inspect: Inspect,
+	Plan:    Plan,
+	Target:  target,
+	Pair:    true,
+	Pointer: true,
+	Reload:  "restart WezTerm, or let a config reload pick up the managed pointer",
+	Disowns: disowns,
 }
 
 // disowns reports whether path is a selection pointer other than the target's own: one an earlier release shared, or
@@ -75,17 +77,18 @@ func luaPath(configDir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return spelled, fsys.CheckSpelling(spelled)
+	_, err = fsys.Resolve(spelled)
+	return spelled, err
 }
 
 // target is the target's one identity: the wezterm.lua the filesystem opens, through any symlink. Inspection reads,
 // the commit writes, the pointer is named after, and the manifest records this one file.
 func target(configDir string) (string, error) {
-	lua, err := luaPath(configDir)
+	spelled, err := spelledLuaPath(configDir)
 	if err != nil {
 		return "", err
 	}
-	return fsys.Canonical(lua), nil
+	return fsys.Resolve(spelled)
 }
 
 func spelledLuaPath(configDir string) (string, error) {
@@ -119,13 +122,30 @@ func spelledLuaPath(configDir string) (string, error) {
 	return homeLua, nil
 }
 
+// readLua returns wezterm.lua as written, line breaks included, so an edit changes only the lines sf2 writes; or ""
+// when it does not exist yet.
+func readLua(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if !utf8.Valid(data) {
+		return "", fmt.Errorf("%s: %w", path, pycompat.ErrInvalidUTF8)
+	}
+	return string(data), nil
+}
+
 func colorsDir(configDir string) (string, error) {
 	dir, err := weztermDir(configDir)
 	if err != nil {
 		return "", err
 	}
 	colors := pycompat.Path(dir, "colors")
-	return colors, fsys.CheckSpelling(colors)
+	_, err = fsys.Resolve(colors)
+	return colors, err
 }
 
 // pointerPath is the target's own selection pointer: `sf2-theme/wezterm-current-<digest>.lua` beside the
@@ -249,7 +269,7 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	existing, err := plan.ReadExisting(lua)
+	existing, err := readLua(lua)
 	if err != nil {
 		return plan.Inspection{}, err
 	}
@@ -301,7 +321,7 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		existing, err := plan.ReadExisting(lua)
+		existing, err := readLua(lua)
 		if err != nil {
 			return nil, err
 		}

@@ -23,9 +23,8 @@ The whole run is planned first, so a run that refuses writes nothing, removes no
 | A shape sf2-themes cannot edit | refuses and prints the manual fix | same |
 | Broken (invalid file or incomplete sf2-themes markers) | refuses | refuses |
 
-Every refusal exits nonzero with one message on stderr.
+Every refusal exits nonzero with one message on stderr, and writes nothing: no theme files, pointer, backup, or state.
 For a shape it cannot edit, the message is the manual fix, then an instruction to run the command again.
-WezTerm is the one exception: it still writes its scheme files and pointer, prints the snippet, and exits nonzero, because a config that loads the pointer from your own Lua module keeps switching themes.
 
 `--adopt` works for every app except Slack, and does nothing where no theme of your own is in the way.
 
@@ -87,9 +86,9 @@ An empty or missing `wezterm.lua` gets a starter config.
 An integration sf2-themes wrote, including the older forms and the `config.color_scheme = "street-fighter-2"` line from early releases, is replaced as a whole by the current one.
 sf2-themes never edits a line you wrote.
 `--adopt` adds its integration to your `wezterm.lua` only when every line is something it can verify: comments, `local wezterm = require("wezterm")`, `local config = wezterm.config_builder()`, single-line `config.<setting> = <value>` settings other than `color_scheme`, and `return config`.
+The adopted file is your file's exact bytes with the integration inserted before `return config`, its lines ending as yours do; a file whose lines end differently (LF and CRLF mixed) gets the manual steps instead.
 Anything else, including a `color_scheme` of your own, is left to you: the run writes nothing and prints the integration with where to paste it and what to remove.
-Without `--adopt`, a valid `wezterm.lua` sf2-themes cannot edit is left byte-for-byte unchanged while the scheme files and pointer are still written, and the run prints the steps and exits nonzero.
-A `wezterm.lua` that is not valid Lua, or goes through `..` or a spelling that differs from the disk, is refused with nothing written.
+A `wezterm.lua` that is not valid Lua, or whose path, or a symlink it follows, goes through `..` or a spelling that differs from the disk, is refused with nothing written.
 Comments and strings never count as integration.
 The pointer is the selection only while sf2-themes' integration loads it; with your own color scheme, `current wezterm` reports none.
 

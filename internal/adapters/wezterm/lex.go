@@ -44,6 +44,9 @@ var (
 	hexNumeral     = regexp.MustCompile(`^0[xX]([0-9a-fA-F]+\.?[0-9a-fA-F]*|\.[0-9a-fA-F]+)([pP][+-]?[0-9]+)?$`)
 )
 
+// luaSpace is every byte Lua reads as white space.
+const luaSpace = " \t\r\n\f\v"
+
 // lexLua splits source into Lua 5.4 tokens. Anything Lua's own lexer would reject, or that sf2 cannot be sure it
 // reads as Lua does, is an error: an unterminated string or comment, an invalid escape or numeral, or a character Lua
 // does not accept outside strings and comments.
@@ -59,7 +62,7 @@ func lexLua(source string) ([]token, error) {
 		start := i
 		var kind tokenKind
 		switch {
-		case strings.IndexByte(" \t\r\n\f\v", c) >= 0:
+		case strings.IndexByte(luaSpace, c) >= 0:
 			i++
 			continue
 		case strings.HasPrefix(source[i:], "--"):
@@ -174,7 +177,7 @@ func shortStringEnd(source string, i int) (int, error) {
 					i++
 				}
 			case e == 'z':
-				for i+1 < len(source) && strings.IndexByte(" \t\r\n\f\v", source[i+1]) >= 0 {
+				for i+1 < len(source) && strings.IndexByte(luaSpace, source[i+1]) >= 0 {
 					i++
 				}
 			case e == 'x':
@@ -184,8 +187,12 @@ func shortStringEnd(source string, i int) (int, error) {
 				i += 2
 			case e == 'u':
 				end := strings.IndexByte(source[i:], '}')
-				if i+1 >= len(source) || source[i+1] != '{' || end < 3 || !allHex(source[i+2:i+end]) || end-2 > 8 {
+				if i+1 >= len(source) || source[i+1] != '{' || end < 3 || !allHex(source[i+2:i+end]) {
 					return 0, fmt.Errorf("invalid \\u escape at byte %d", i)
+				}
+				// Lua accepts any number of leading zeros, and a value up to 2^31-1.
+				if digits := strings.TrimLeft(source[i+2:i+end], "0"); len(digits) > 8 || (len(digits) == 8 && digits[0] > '7') {
+					return 0, fmt.Errorf("\\u escape too large at byte %d", i)
 				}
 				i += end
 			case isDigit(e):

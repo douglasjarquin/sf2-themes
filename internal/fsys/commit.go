@@ -107,7 +107,8 @@ func Preflight(steps []plan.Step, opts Options) ([]string, error) {
 	listed := map[string][]string{}
 	for i, step := range steps {
 		destinations[i] = step.Path
-		if err := checkSpelling(step.Path, listed); err != nil {
+		resolved, err := resolve(step.Path, listed)
+		if err != nil {
 			return nil, err
 		}
 		if step.Remove {
@@ -116,6 +117,11 @@ func Preflight(steps []plan.Step, opts Options) ([]string, error) {
 		destination, err := resolveDestination(step.Path, opts.FollowSymlinks)
 		if err != nil {
 			return nil, err
+		}
+		if destination != step.Path {
+			// A symlink the writer follows lands on the file Resolve names, the one inspection read and the manifest
+			// keys, never on a lexical reading of its target.
+			destination = resolved
 		}
 		destinations[i] = destination
 	}
@@ -142,7 +148,7 @@ func writeFile(destination, content string, opts Options) (Result, error) {
 		existing = &text
 	}
 	fingerprint := Fingerprint(content)
-	if existing != nil && *existing == content {
+	if existing != nil && (*existing == content || string(raw) == content) {
 		// Equal text is a no-op, but the file may differ in bytes, such as CRLF line ends; ownership records the bytes.
 		return Result{Path: destination, Action: Unchanged, Fingerprint: Fingerprint(string(raw))}, nil
 	}

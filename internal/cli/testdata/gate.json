@@ -346,7 +346,7 @@
   }
  },
  {
-  "name": "pair-unknown-incomplete",
+  "name": "pair-unknown-refused",
   "args": [
    "apply",
    "wezterm",
@@ -364,11 +364,10 @@
   },
   "want": {
    "exit": 1,
-   "stdout": "apply wezterm: incomplete (config left unchanged)\n  target: {DIR}/config.txt\n  pointer: sf2-ryu + sf2-ryu-light (follows host appearance)\n  changes: 1 created\n",
+   "stdout": "",
    "stderr": "error: Pair Stub config has a shape sf2-themes cannot edit safely.\nAdd this:\n  dofile(x)\n\nThen run the command again.\n",
    "files": {
-    "config.txt": "return {}\n",
-    "themes/sf2-ryu.txt": "palette sf2-ryu\n"
+    "config.txt": "return {}\n"
    }
   }
  },

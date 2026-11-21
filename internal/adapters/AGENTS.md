@@ -15,7 +15,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - `App.Plan(theme, themes, configDir, slot)` returns `plan.Write` and `plan.Remove` steps and never writes.
 - `configDir` is the expanded `--config-dir`, or `""` when the flag is absent and the adapter resolves its default location.
 - An `error` from either function is an I/O or decode failure the CLI prints as one `error:` line with exit 1; an ownership problem is never an error.
-- `Label`, `Pair`, `OwnsFilesOnUnknownShape`, `Reload`, and `StderrHint` carry the app's labels, pairing, reload hint, and stderr hint; change them only with the goldens that print them.
+- `Label`, `Pair`, `Pointer`, `Reload`, and `StderrHint` carry the app's labels, pairing, reload hint, and stderr hint; change them only with the goldens that print them.
 - Register the app with one line in its own file, `internal/cli/app_<name>.go`: `func init() { register("<name>", <name>.App) }`.
 - Only `fsys.Commit` touches disk, and it owns dry-run and the symlink policy.
 - The inspection holds the ownership class (absent, managed, legacy, foreign, unknown shape, broken) and the current sf2 theme when it resolves through `catalog.InstalledTheme`.
@@ -40,8 +40,8 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 ## WezTerm
 
 - The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the target's pointer; it writes `wezterm.lua` only as a new file, as a whole replacement of one of its own forms, or, with `--adopt`, by inserting its block into a file it verifies line by line.
-- A target is the `wezterm.lua` the filesystem opens through any symlink (`fsys.Canonical`); inspection, backup, commit, pointer, and manifest key all use that one identity, and setting results are matched with `fsys.SamePath`, never as strings.
-- `fsys.CheckSpelling`, also run by `fsys.Preflight` on every planned path for every adapter, refuses a path with any `..` component or an existing component spelled unlike its directory entry (letter case, Unicode normalization); sf2 never reconciles spellings.
+- A target is the `wezterm.lua` the filesystem opens through any symlink (`fsys.Resolve`); inspection, backup, commit, pointer, and manifest key all use that one identity, and setting results are matched with `fsys.SamePath`, never as strings.
+- `fsys.Resolve`, also run by `fsys.Preflight` on every planned path for every adapter, refuses a path with any `..` component, any name it or a symlink it follows reaches that is spelled unlike its directory entry (letter case, Unicode normalization), and `..` after a missing directory in a link target; sf2 never reconciles spellings, and a followed link writes to the file `Resolve` names.
 - The pointer is `sf2-theme/wezterm-current-<12 hex of the SHA-256 of the identity>.lua` beside the file, so `WEZTERM_CONFIG_DIR` never moves it and no pointer is a plain `wezterm-current.lua` that earlier releases shared; a path with a control character is refused before any Lua could carry it.
 - `parse.go` verifies a whole Lua 5.4 chunk (syntax, misplaced `break` and `...`), refusing `goto`, labels, and `<const>`/`<close>` as unverifiable; a file that does not parse is broken and nothing is written.
 - `lua.go` recognizes only sf2's own forms, as exact generated lines under one indent that are whole top-level statements: the full block, the unguarded block (`<builder>.color_scheme = dofile(sf2_current)`), and the first releases' `<builder>.color_scheme = "<sf2 scheme>"` line.
@@ -49,8 +49,9 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - The full form is managed and the others are legacy; writing the setting replaces the form as a whole with the full block naming the target's pointer, which also moves an integration off a former pointer without writing that file.
 - `App.Disowns` drops a recorded pointer other than the target's own after any complete run, judged from the path, so a run after an interrupted migration stops the old claim too.
 - A file with no sf2 form is foreign; `--adopt` inserts the full block before the final return only when every line is blank, a line comment, the wezterm require, one `local <builder> = wezterm.config_builder()`, a single-line literal `<builder>.<setting> = ...` other than `color_scheme`, or `return <builder>`, and the result re-verifies as managed.
+- `wezterm.lua` is read as written (`readLua`, no newline translation): an adopted file is the original bytes plus the block, ended with the file's one line break, and a replaced form keeps its own breaks; mixed line breaks get the manual steps.
 - Every other case is refused with nothing written and the exact manual steps (`analysis.manual`): where to paste the block, and to remove other `color_scheme` assignments and any older loader.
-- Without `--adopt`, a valid shape sf2 cannot edit is unknown: `wezterm.lua` stays unchanged, scheme files and pointer are still written, and the run exits nonzero with the steps; with `--adopt` it writes nothing.
+- A valid shape sf2 cannot edit is unknown and refused like any other, with or without `--adopt`: nothing is written, not even scheme files or the pointer.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Only a managed or legacy form reports a selection; a foreign or unknown config reports none, even beside a readable pointer.

@@ -9,6 +9,7 @@ Paths, overrides, symlinks, and backups. Moved out of the README.
 - A `wezterm.lua` whose sf2-themes integration still loads a pointer an earlier release wrote, such as the shared `~/.config/sf2-theme/wezterm-current.lua`, keeps that selection and is moved to its own pointer on the next `setup` or `apply`; the older file is never written or removed, since another config may still load it.
 - sf2-themes writes `wezterm.lua` only as a new file, by replacing its own integration as a whole, or, with `--adopt`, by adding its integration to a file whose every line it can verify; everything else is left to you with the exact steps.
 - A config path that goes through `..`, or spells an existing directory or file differently from the disk (letter case or Unicode normalization), is refused for every app; pass the real path.
+  The same holds for every symlink the path follows: a link to another spelling of a file, or through a missing directory and back out with `..`, is refused rather than resolved to whatever file a lexical reading names.
 - Herdr app installs `~/.config/herdr-app/themes/sf2-*.json` and selects a light/dark pair in `~/.config/herdr-app/settings.json`.
 - Herdr TUI updates only a marked block in `~/.config/herdr/config.toml`, including `auto_switch` and per-mode `[theme.custom.dark]`/`[theme.custom.light]` overlays for the selected character.
 - Neovim colorschemes go in `~/.config/nvim/colors/`, with the active character pair at `~/.config/nvim/sf2-theme/current.lua`.
