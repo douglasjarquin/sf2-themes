@@ -395,13 +395,14 @@ func blockNames() (free, locals []string) {
 // rebinds returns a name sf2's block, using builder, would not reach with its standard meaning at offset at, or "".
 // The block reads its free names from its surroundings, so none may be bound before at: not as a local (the builder
 // is one), a parameter, or a loop variable, and not assigned. The one binding allowed is the top-level `local wezterm
-// = require("wezterm")` that gives `wezterm` its meaning, and `require` itself must keep its own. The builder must
-// also not be a name the block declares, or the block would set its own local instead of the builder.
+// = require("wezterm")` that gives `wezterm` its meaning; `require` must keep its own, and `_ENV`, through which
+// every free name but `wezterm` is read, must stay the standard environment. The builder must also not be a name the
+// block declares, or the block would set its own local instead of the builder.
 func (c chunk) rebinds(at int, builder string) string {
 	if slices.Contains(blockLocals, builder) {
 		return builder
 	}
-	watched := append(slices.Clone(blockFree), "require")
+	watched := append(slices.Clone(blockFree), "require", "_ENV")
 	for _, b := range c.bindings {
 		if b.at >= at || !slices.Contains(watched, b.name) {
 			continue

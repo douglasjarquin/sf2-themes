@@ -1331,6 +1331,8 @@ func TestABlockIsNeverAddedWhereItsNamesAreRebound(t *testing.T) {
 		"legacy, global type":    {legacy("function type() end\n"), "type", nil},
 		"legacy, param dofile":   {legacy("local function f(dofile) return dofile end\n"), "dofile", nil},
 		"legacy, require":        {"local require = function() return {} end\n" + legacy(""), "require", nil},
+		"legacy, local _ENV":     {legacy("local _ENV = {}\n"), "_ENV", nil},
+		"legacy, _ENV assigned":  {legacy("_ENV = {}\n"), "_ENV", nil},
 	} {
 		t.Run(name, func(t *testing.T) {
 			root := sandbox(t)
