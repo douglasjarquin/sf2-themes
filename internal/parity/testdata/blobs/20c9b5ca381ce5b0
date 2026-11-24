@@ -3,13 +3,12 @@
   "targets": [
     {
       "app": "wezterm",
-      "target": "{SANDBOX}/home/.wezterm.lua",
+      "target": "{SANDBOX}/lua/custom.lua",
       "selection": "sf2-main",
       "setting": {
-        "path": "{SANDBOX}/home/.wezterm.lua",
+        "path": "{SANDBOX}/lua/custom.lua",
         "sha256": "<current>"
       },
-      "prior": "{SANDBOX}/home/.local/state/sf2/backups/wezterm/.wezterm.lua.1",
       "files": [
         {
           "path": "{SANDBOX}/home/.config/wezterm/colors/sf2-akuma-light.toml",
@@ -156,7 +155,7 @@
           "sha256": "<current>"
         },
         {
-          "path": "{SANDBOX}/home/.config/wezterm/sf2-theme/wezterm-current-<digest>.lua",
+          "path": "{SANDBOX}/lua/sf2-theme/wezterm-current-<digest>.lua",
           "sha256": "<current>"
         }
       ]

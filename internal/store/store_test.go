@@ -72,13 +72,20 @@ func TestRecordReplacesATargetKeepsItsFirstPriorAndSorts(t *testing.T) {
 }
 
 func TestSaveWritesTheDocumentedShapeAndRoundTrips(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "sf2", "manifest.json")
-	var m Manifest
+	root := t.TempDir()
+	t.Setenv("XDG_STATE_HOME", root)
+	path := filepath.Join(root, "sf2", "manifest.json")
+	session, err := Open("codex")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer session.Close()
+	m := &session.Manifest
 	m.Record(Target{App: "codex", Target: "/c/config.toml", Selection: "sf2-ryu",
 		Setting: &File{Path: "/c/config.toml", SHA256: "aa"}, Prior: "/c/config.toml.bak.1",
 		Files: []File{{Path: "/c/themes/sf2-ryu.tmTheme", SHA256: "bb"}}})
 	m.Record(Target{App: "herdr", Target: "/h/config.toml"})
-	if err := Save(path, m); err != nil {
+	if err := session.Save(); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(path)

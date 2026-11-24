@@ -11,8 +11,9 @@ Use it to repair integration without changing the active theme.
 ## Who owns the theme setting
 
 Before writing anything, every command reads the app's config and decides who owns its theme setting.
-The whole run is planned first, so a run that refuses writes nothing, removes nothing, and creates no backup.
-`--dry-run` prints exactly the writes and removals the real run would make.
+The whole run is planned and checked first, so a run that refuses writes nothing and creates no backup, and a run that fails part way puts everything back.
+sf2 never deletes a file, and never replaces one it did not write, whatever its name: a scheme or pointer file you made or edited stops the command until you move it aside.
+`--dry-run` prints exactly the writes the real run would make.
 
 | The app's theme setting | `apply`, or `setup --theme` | `setup` |
 |---|---|---|
@@ -23,9 +24,8 @@ The whole run is planned first, so a run that refuses writes nothing, removes no
 | A shape sf2-themes cannot edit | refuses and prints the manual fix | same |
 | Broken (invalid file or incomplete sf2-themes markers) | refuses | refuses |
 
-Every refusal exits nonzero with one message on stderr.
+Every refusal exits nonzero with one message on stderr, and writes nothing: no theme files, pointer, backup, or state.
 For a shape it cannot edit, the message is the manual fix, then an instruction to run the command again.
-WezTerm is the one exception: it still writes its scheme files and pointer, prints the snippet, and exits nonzero, because a config that loads the pointer from your own Lua module keeps switching themes.
 
 `--adopt` works for every app except Slack, and does nothing where no theme of your own is in the way.
 
@@ -83,13 +83,17 @@ Slack writes no file, ignores `--config-dir`, `--follow-symlinks`, and `--adopt`
 
 WezTerm apply writes every catalog scheme, a pointer that returns the selected character's dark or light sibling from `wezterm.gui.get_appearance()`, and a Lua integration in `wezterm.lua` that loads the pointer.
 Applying `ryu` or `ryu-light` selects the same pair.
-An empty or missing `wezterm.lua` gets a starter config, and a recognized `wezterm.config_builder()` shape gets the integration inserted before its return.
-If `wezterm.lua` already selects `street-fighter-2` from an older install, the assignment is upgraded to the managed pointer.
-A different `color_scheme` on a recognized builder shape is your own theme; `--adopt` replaces it and keeps every other line.
-Any other shape is left byte-for-byte unchanged while the scheme files and pointer are still written, and the run prints a pasteable snippet and exits nonzero.
-An integration that already loads the pointer counts as managed in any shape, so pasting the snippet makes the next run succeed.
-Commented-out Lua never counts as integration.
-The pointer is the selection: plain `setup` keeps a readable pointer even when `wezterm.lua` keeps your own color scheme.
+An empty or missing `wezterm.lua` gets a starter config.
+An integration sf2-themes wrote, including the older forms and the `config.color_scheme = "street-fighter-2"` line from early releases, is replaced as a whole by the current one.
+sf2-themes never edits a line you wrote.
+`--adopt` adds its integration to your `wezterm.lua` only when every line is something it can verify: comments, `local wezterm = require("wezterm")`, `local config = wezterm.config_builder()`, single-line `config.<setting> = <value>` settings other than `color_scheme`, and `return config`.
+The adopted file is your file's exact bytes with the integration inserted before `return config`, its lines ending as yours do; a file whose lines end differently (LF and CRLF mixed) gets the manual steps instead.
+Anything else, including a `color_scheme` of your own, is left to you: the run writes nothing and prints the integration with where to paste it and what to remove.
+The same happens when a name the integration uses (`wezterm`, `dofile`, `type`, `require`, `_ENV`) is bound before it.
+That check reads the file, not what it does when it runs: code that clears or replaces those names at run time, such as `_G.type = nil`, can still break the integration, and the backup or kept prior file holds your original.
+A `wezterm.lua` that is not valid Lua, or whose path, or a symlink it follows, goes through `..` or a spelling that differs from the disk, is refused with nothing written.
+Comments and strings never count as integration.
+The pointer is the selection only while sf2-themes' integration loads it; with your own color scheme, `current wezterm` reports none.
 
 Neovim apply installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua` so the pointer is read on every startup.
 The pointer selects the matching dark or light colorscheme from `TERM_THEME` (set by the WezTerm integration) or `'background'`. Applying `ryu` or `ryu-light` selects the same pair.

@@ -49,7 +49,8 @@ const (
 // inlineLimit is the most lines a diff keeps inline before it moves to the blob store.
 const inlineLimit = 30
 
-var backupName = regexp.MustCompile(`\.bak\.(\d{8}T\d{6}Z)$`)
+// backupName matches a backup's stamp, and the counter a backup taken in the same second as another gets.
+var backupName = regexp.MustCompile(`\.bak\.(\d{8}T\d{6}Z)(\.\d+)?$`)
 
 // StepResult is one normalized, masked step.
 type StepResult struct {
@@ -251,7 +252,7 @@ func Backups(before, after []Entry) []Entry {
 			continue
 		}
 		match := backupName.FindStringSubmatchIndex(e.Path)
-		e.Path = e.Path[:match[2]] + backupStamp
+		e.Path = e.Path[:match[2]] + backupStamp + e.Path[match[3]:]
 		written = append(written, e)
 	}
 	sort.Slice(written, func(i, j int) bool {

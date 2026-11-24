@@ -3,10 +3,15 @@
 package wezterm
 
 import (
+	"errors"
+	"fmt"
+	"io/fs"
 	"os"
 	"regexp"
 	"slices"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/adapters"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/catalog"
@@ -15,21 +20,30 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
+// label names WezTerm in summaries and in the multi-line refusals printed for a user to act on.
+const label = "WezTerm"
+
 // App is the WezTerm adapter.
 var App = adapters.App{
-	Label:                   "WezTerm",
-	Inspect:                 Inspect,
-	Plan:                    Plan,
-	Target:                  luaPath,
-	Pair:                    true,
-	OwnsFilesOnUnknownShape: true,
-	Reload:                  "restart WezTerm, or let a config reload pick up the managed pointer",
+	Label:   label,
+	Inspect: Inspect,
+	Plan:    Plan,
+	Target:  target,
+	Pair:    true,
+	Pointer: true,
+	Reload:  "restart WezTerm, or let a config reload pick up the managed pointer",
+	Disowns: disowns,
 }
 
-const (
-	legacySchemeFilePrefix = "street-fighter-ii"
-	pointerFileName        = "wezterm-current.lua"
-)
+// disowns reports whether path is a selection pointer other than the target's own: one an earlier release shared, or
+// one a different target owns. sf2 never writes or removes such a file for this target.
+func disowns(configDir, path string) bool {
+	if !pointerName.MatchString(pycompat.Name(path)) {
+		return false
+	}
+	own, err := pointerPath(configDir)
+	return err == nil && !fsys.SamePath(own, path)
+}
 
 var idComment = regexp.MustCompile(`^-- sf2-themes:` + pycompat.Space + `*(` + pycompat.NotSpace + `+)` + pycompat.Space + `*$`)
 
@@ -57,6 +71,25 @@ func weztermDir(configDir string) (string, error) {
 // XDG_CONFIG_HOME and WEZTERM_CONFIG_FILE pin the write target even when the file does not exist yet, so tests and
 // custom prefixes never fall through to the real home directory.
 func luaPath(configDir string) (string, error) {
+	spelled, err := spelledLuaPath(configDir)
+	if err != nil {
+		return "", err
+	}
+	_, err = fsys.Resolve(spelled)
+	return spelled, err
+}
+
+// target is the target's one identity: the wezterm.lua the filesystem opens, through any symlink. Inspection reads,
+// the commit writes, the pointer is named after, and the manifest records this one file.
+func target(configDir string) (string, error) {
+	spelled, err := spelledLuaPath(configDir)
+	if err != nil {
+		return "", err
+	}
+	return fsys.Resolve(spelled)
+}
+
+func spelledLuaPath(configDir string) (string, error) {
 	if configDir != "" {
 		return pycompat.Path(configDir, "wezterm.lua"), nil
 	}
@@ -87,41 +120,49 @@ func luaPath(configDir string) (string, error) {
 	return homeLua, nil
 }
 
+// readLua returns wezterm.lua as written, line breaks included, so an edit changes only the lines sf2 writes; or ""
+// when it does not exist yet.
+func readLua(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if errors.Is(err, fs.ErrNotExist) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if !utf8.Valid(data) {
+		return "", fmt.Errorf("%s: %w", path, pycompat.ErrInvalidUTF8)
+	}
+	return string(data), nil
+}
+
 func colorsDir(configDir string) (string, error) {
 	dir, err := weztermDir(configDir)
-	return pycompat.Path(dir, "colors"), err
+	if err != nil {
+		return "", err
+	}
+	colors := pycompat.Path(dir, "colors")
+	_, err = fsys.Resolve(colors)
+	return colors, err
 }
 
-// pointerPath is the target's own selection pointer, so two configuration targets keep independent selections.
+// pointerPath is the target's own selection pointer: `sf2-theme/wezterm-current-<digest>.lua` beside the
+// wezterm.lua the filesystem opens, named after that file's canonical path.
 //
-// A target is its wezterm.lua. The common `<wezterm-config>/wezterm.lua` gets `<wezterm-config>/sf2-theme/
-// wezterm-current.lua`; any other wezterm.lua, or a target whose common name would be the legacy shared pointer, gets
-// a name carrying a digest of its wezterm.lua path. No target's pointer is ever the legacy shared pointer.
+// A target is the file itself, however --config-dir, WEZTERM_CONFIG_FILE, a symlink, `..`, or letter case on a
+// case-insensitive volume spelled it, so each spelling of one file shares one pointer, distinct files never share
+// one, and WEZTERM_CONFIG_DIR does not move it. No pointer is ever a `wezterm-current.lua` that earlier releases shared
+// between targets, so writing a target's pointer never changes what another target loads.
 func pointerPath(configDir string) (string, error) {
-	dir, err := weztermDir(configDir)
+	resolved, err := target(configDir)
 	if err != nil {
 		return "", err
 	}
-	lua, err := luaPath(configDir)
-	if err != nil {
-		return "", err
+	pointer := pycompat.Path(pycompat.Parent(resolved), "sf2-theme", "wezterm-current-"+fsys.Fingerprint(resolved)[:12]+".lua")
+	if strings.IndexFunc(pointer, unicode.IsControl) >= 0 {
+		return "", fmt.Errorf("refusing %s: its path holds a control character sf2-themes will not write into Lua", resolved)
 	}
-	legacy, err := legacyPointerPath()
-	if err != nil {
-		return "", err
-	}
-	common := pycompat.Path(dir, "sf2-theme", pointerFileName)
-	if lua == pycompat.Path(dir, "wezterm.lua") && common != legacy {
-		return common, nil
-	}
-	return pycompat.Path(dir, "sf2-theme", "wezterm-current-"+fsys.Fingerprint(lua)[:12]+".lua"), nil
-}
-
-// legacyPointerPath is the single pointer every target shared before selections were per target. A target adopts
-// its selection only when its wezterm.lua names this exact path.
-func legacyPointerPath() (string, error) {
-	root, err := configRoot()
-	return pycompat.Path(root, "sf2-theme", pointerFileName), err
+	return pointer, nil
 }
 
 func schemeFilename(theme catalog.Theme) string {
@@ -214,14 +255,11 @@ func renderPointer(dark, light catalog.Theme) string {
 	}, "\n")
 }
 
-// Inspect takes ownership from wezterm.lua and the selection from the target's sf2-owned pointer. Before the target
-// has its own pointer, a wezterm.lua that names the legacy shared pointer proves that pointer holds its selection.
+// Inspect takes ownership from wezterm.lua and the selection from the pointer its recognized integration loads: the
+// target's own, or one an earlier release wrote, until sf2 moves the integration to the target's own. A config whose
+// scheme sf2 does not set selects nothing sf2 reports.
 func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) {
 	pointer, err := pointerPath(configDir)
-	if err != nil {
-		return plan.Inspection{}, err
-	}
-	legacy, err := legacyPointerPath()
 	if err != nil {
 		return plan.Inspection{}, err
 	}
@@ -229,50 +267,38 @@ func Inspect(themes []catalog.Theme, configDir string) (plan.Inspection, error) 
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	existing, err := plan.ReadExisting(lua)
+	existing, err := readLua(lua)
 	if err != nil {
 		return plan.Inspection{}, err
 	}
-	ownership := classify(existing, pointer, legacy)
-	selection := plan.Inspection{Ownership: ownership}
-	// The selection is the pointer the configuration actually loads: the legacy shared one while an unmigrated
-	// integration names it, otherwise the target's own. An integration sf2 cannot verify selects nothing sf2 knows.
-	selector := pointer
-	if named, ok := assignedPointer(existing); ok && named == legacy {
-		selector = legacy
-	} else if ownership == plan.UnknownShape && referencesPointer(code(existing), pointer) {
-		selector = ""
-	}
+	analysis := analyze(existing, pointer, lua)
+	selection := plan.Inspection{Ownership: analysis.ownership}
 	isFile := false
-	if selector != "" {
-		if isFile, err = fsys.IsFile(selector); err != nil {
+	if analysis.selector != "" {
+		if isFile, err = fsys.IsFile(analysis.selector); err != nil {
 			return plan.Inspection{}, err
 		}
 	}
 	if isFile {
-		text, err := pycompat.ReadText(selector)
+		text, err := pycompat.ReadText(analysis.selector)
 		if err != nil {
 			return plan.Inspection{}, err
 		}
 		id, found := plan.RecordedID(text, idComment)
-		selection = plan.Recorded(ownership, id, found, themes)
+		selection = plan.Recorded(analysis.ownership, id, found, themes)
 	}
-	if ownership == plan.UnknownShape {
-		selection.Detail = "Add this integration to " + lua + ":\n\n" + integrationSnippet(pointer, "config")
-	}
+	selection.Detail = analysis.manual
 	return selection, nil
 }
 
-// Plan returns the scheme files and the pointer, and the wezterm.lua integration when slot allows it.
+// Plan returns the scheme files and the pointer, and the wezterm.lua integration when slot allows it. An
+// integration sf2 cannot write safely is refused here, before anything is written.
 func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bool) ([]plan.Step, error) {
 	target, err := colorsDir(configDir)
 	if err != nil {
 		return nil, err
 	}
-	steps := make([]plan.Step, 0, 2*len(themes)+2)
-	for _, entry := range themes {
-		steps = append(steps, plan.Remove(pycompat.Path(target, legacySchemeFilePrefix+"-"+entry.Metadata.ID+".toml")))
-	}
+	steps := make([]plan.Step, 0, len(themes)+2)
 	for _, entry := range themes {
 		steps = append(steps, plan.Write(pycompat.Path(target, schemeFilename(entry)), renderScheme(entry)))
 	}
@@ -290,15 +316,16 @@ func Plan(theme catalog.Theme, themes []catalog.Theme, configDir string, slot bo
 		if err != nil {
 			return nil, err
 		}
-		existing, err := plan.ReadExisting(lua)
+		existing, err := readLua(lua)
 		if err != nil {
 			return nil, err
 		}
-		legacy, err := legacyPointerPath()
+		integrated, err := integrate(existing, pointer, lua)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(label + " config was left unchanged and nothing was written.\n" + err.Error() +
+				"\n\nThen run the command again.")
 		}
-		steps = append(steps, plan.Write(lua, integrate(retarget(existing, legacy, pointer), pointer, legacy)))
+		steps = append(steps, plan.Write(lua, integrated))
 	}
 	return steps, nil
 }

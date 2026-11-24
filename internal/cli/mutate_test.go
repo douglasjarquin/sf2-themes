@@ -29,7 +29,9 @@ type stubInspection struct {
 // gateCase is one entry of testdata/gate.json. Its want block was recorded by running the reference's
 // sf2_theme.cli.dispatch under Python 3.11 with APPS["codex"] and APPS["wezterm"] replaced by stubs that behave
 // like stubApp below, in a fresh directory seeded with Seed, where {DIR} stands for that directory. The `target:`
-// summary line and the fixed-variant suffix on unpaired selections were added to that recording by hand.
+// summary line and the fixed-variant suffix on unpaired selections were added to that recording by hand, and
+// pair-unknown-refused was changed by hand to write nothing: the reference wrote a pair app's files before refusing.
+// verbose-every-outcome and dry-run were changed by hand to keep legacy.txt: the reference deleted it by name.
 // A backup's timestamp suffix is recorded as `.bak`.
 type gateCase struct {
 	Name       string            `json:"name"`
@@ -68,7 +70,7 @@ func stubApp(inspection *stubInspection, base adapters.App) adapters.App {
 		if slot {
 			steps = append(steps, plan.Write(pycompat.Path(configDir, "config.txt"), "keep = 1\ntheme = "+id+"\n"))
 		}
-		return append(steps, plan.Remove(pycompat.Path(configDir, "legacy.txt"))), nil
+		return steps, nil
 	}
 	base.Target = func(configDir string) (string, error) {
 		return pycompat.Path(configDir, "config.txt"), nil
@@ -133,7 +135,7 @@ func TestOwnershipGateSelectionAndSummariesMatchTheReference(t *testing.T) {
 				Label: "Stub", Reload: "restart the stub", StderrHint: "hint line\n",
 			}))
 			useApp(t, "wezterm", stubApp(&inspection, adapters.App{
-				Label: "Pair Stub", Pair: true, OwnsFilesOnUnknownShape: true, Reload: "reload the pair",
+				Label: "Pair Stub", Pair: true, Pointer: true, Reload: "reload the pair",
 			}))
 			root, err := filepath.EvalSymlinks(t.TempDir())
 			if err != nil {

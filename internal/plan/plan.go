@@ -12,21 +12,16 @@ import (
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
 )
 
-// Step is one planned change: replace Path with Content, or, when Remove is set, delete Path when it exists.
+// Step is one planned change: replace Path with Content. sf2 plans no deletions: a file it might once have written
+// under an older name is the user's unless sf2's records prove otherwise, and no record names one.
 type Step struct {
 	Path    string
 	Content string
-	Remove  bool
 }
 
 // Write plans replacing path with content.
 func Write(path, content string) Step {
 	return Step{Path: path, Content: content}
-}
-
-// Remove plans deleting path when it exists.
-func Remove(path string) Step {
-	return Step{Path: path, Remove: true}
 }
 
 // Ownership is who owns the theme setting in an app's configuration.
@@ -45,7 +40,7 @@ const (
 // Inspection is what one read of an app's configuration found.
 //
 // Current is the sf2 theme the app selects when it can be read; Unreadable marks an sf2 selection that exists but
-// does not resolve. Detail explains a broken configuration or carries the manual fix for an unknown shape.
+// does not resolve. Detail explains a broken configuration or carries the manual fix for a shape sf2 will not edit.
 type Inspection struct {
 	Ownership  Ownership
 	Current    *catalog.Theme

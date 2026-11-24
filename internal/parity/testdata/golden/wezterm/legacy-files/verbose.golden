@@ -1,8 +1,6 @@
 step apply wezterm --theme ken --verbose --config-dir {SANDBOX}/config/wezterm
 exit 0
 stdout
-| removed: {SANDBOX}/config/wezterm/colors/street-fighter-ii-main.toml
-| removed: {SANDBOX}/config/wezterm/colors/street-fighter-ii-ryu.toml
 | created: {SANDBOX}/config/wezterm/colors/sf2-main.toml
 = 6d2956c21fce986e
 | created: {SANDBOX}/config/wezterm/colors/sf2-main-light.toml
@@ -75,9 +73,9 @@ stdout
 = 01c4167e830f84c0
 | created: {SANDBOX}/config/wezterm/colors/sf2-zangief.toml
 = 528b9ef8421415b0
-| created: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| created: {SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | --- /dev/null
-| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua
+| +++ {SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua
 | @@ -0,0 +1,7 @@
 | +-- sf2-themes: sf2-ken
 | +local wezterm = require("wezterm")
@@ -92,7 +90,7 @@ stdout
 | @@ -0,0 +1,10 @@
 | +local wezterm = require("wezterm")
 | +local config = wezterm.config_builder()
-| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current.lua"
+| +local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua"
 | +wezterm.add_to_config_reload_watch_list(sf2_current)
 | +local sf2_scheme = dofile(sf2_current)
 | +config.color_scheme = sf2_scheme
@@ -102,7 +100,7 @@ stdout
 | +return config
 | apply wezterm: sf2-ken + sf2-ken-light (follows host appearance)
 |   target: {SANDBOX}/config/wezterm/wezterm.lua
-|   changes: 38 created, 2 removed
+|   changes: 38 created
 |   note: restart WezTerm, or let a config reload pick up the managed pointer
 stderr
 tree
@@ -145,12 +143,14 @@ file 0644 2614769d73b1ef95 config/wezterm/colors/sf2-vega-light.toml
 file 0644 81dd5942f42e5fc8 config/wezterm/colors/sf2-vega.toml
 file 0644 88f3ddc7e6a71e22 config/wezterm/colors/sf2-zangief-light.toml
 file 0644 ff97499dde20665b config/wezterm/colors/sf2-zangief.toml
+file 0644 758470868609d1e5 config/wezterm/colors/street-fighter-ii-main.toml
+file 0644 758470868609d1e5 config/wezterm/colors/street-fighter-ii-ryu.toml
 dir 0755 config/wezterm/sf2-theme
-file 0644 f5d29221086e7845 config/wezterm/sf2-theme/wezterm-current.lua
-file 0644 d015926a176f1dad config/wezterm/wezterm.lua
+file 0644 f5d29221086e7845 config/wezterm/sf2-theme/wezterm-current-<digest>.lua
+file 0644 dbbca8892d8aa5c1 config/wezterm/wezterm.lua
 dir 0755 home
 dir 0755 home/.local
 dir 0755 home/.local/state
 dir 0755 home/.local/state/sf2
-file 0644 fbee0b79ab64baee home/.local/state/sf2/manifest.json
+file 0644 0e2d911629d8bdb3 home/.local/state/sf2/manifest.json
 file 0600 e3b0c44298fc1c14 home/.local/state/sf2/manifest.lock

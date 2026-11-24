@@ -149,12 +149,10 @@ func TestDryRunReportsEveryOutcomeWithDiffsAndTouchesNothing(t *testing.T) {
 	}
 	writeText(t, "r/changed.toml", "keep\nold\n", 0o644)
 	writeText(t, "r/unchanged.toml", "same\n", 0o644)
-	writeText(t, "r/legacy.toml", "legacy\n", 0o644)
 	results, err := Commit([]plan.Step{
 		plan.Write("r/new/created.toml", "new\n"),
 		plan.Write("r/changed.toml", "keep\nnew\n"),
 		plan.Write("r/unchanged.toml", "same\n"),
-		plan.Remove("r/legacy.toml"),
 	}, Options{DryRun: true})
 	if err != nil {
 		t.Fatal(err)
@@ -163,38 +161,15 @@ func TestDryRunReportsEveryOutcomeWithDiffsAndTouchesNothing(t *testing.T) {
 		{Requested: "r/new/created.toml", Path: "r/new/created.toml", Action: WouldCreate, Diff: "--- /dev/null\n+++ r/new/created.toml\n@@ -0,0 +1 @@\n+new\n", Fingerprint: newSHA},
 		{Requested: "r/changed.toml", Path: "r/changed.toml", Action: WouldUpdate, Diff: "--- r/changed.toml\n+++ r/changed.toml\n@@ -1,2 +1,2 @@\n keep\n-old\n+new\n", Fingerprint: "eb073290fa115c022d5fb4d5c11f71219c3f0d3a6af409fba606c6067ce292a6"},
 		{Requested: "r/unchanged.toml", Path: "r/unchanged.toml", Action: Unchanged, Fingerprint: "a6328afc76e9db71da297ebff4b0d3e7a7eb3b01d917c05a6573fef121b6ecb6"},
-		{Requested: "r/legacy.toml", Path: "r/legacy.toml", Action: WouldRemove},
 	}
 	if !slices.Equal(results, want) {
 		t.Errorf("results\n%#v\nwant\n%#v", results, want)
 	}
-	if got := entries(t, "r"); !slices.Equal(got, []string{"changed.toml", "legacy.toml", "unchanged.toml"}) {
+	if got := entries(t, "r"); !slices.Equal(got, []string{"changed.toml", "unchanged.toml"}) {
 		t.Errorf("entries %v", got)
 	}
-	if readText(t, "r/changed.toml") != "keep\nold\n" || readText(t, "r/legacy.toml") != "legacy\n" {
+	if readText(t, "r/changed.toml") != "keep\nold\n" {
 		t.Error("dry-run changed a file")
-	}
-}
-
-func TestRemovingAMissingFileReportsNothing(t *testing.T) {
-	results, err := Commit([]plan.Step{plan.Remove(filepath.Join(t.TempDir(), "gone.toml"))}, Options{})
-	if err != nil || len(results) != 0 {
-		t.Errorf("results %v, err %v", results, err)
-	}
-}
-
-func TestCommitRemovesAnExistingFile(t *testing.T) {
-	legacy := filepath.Join(t.TempDir(), "legacy.toml")
-	writeText(t, legacy, "legacy\n", 0o644)
-	results, err := Commit([]plan.Step{plan.Remove(legacy)}, Options{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !slices.Equal(results, []Result{{Requested: legacy, Path: legacy, Action: Removed}}) {
-		t.Errorf("results %v", results)
-	}
-	if _, err := os.Stat(legacy); !os.IsNotExist(err) {
-		t.Error("file still exists")
 	}
 }
 
@@ -297,10 +272,19 @@ func TestAnExistingFileThatIsNotUTF8IsAnError(t *testing.T) {
 	}
 }
 
-func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
+// replaceState stages and publishes content at path.
+func replaceState(path, content string) error {
+	staged, err := Stage(path)
+	if err != nil {
+		return err
+	}
+	return staged.Publish(content, 0o644)
+}
+
+func TestPublishWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "state", "manifest.json")
-	if err := Replace(path, "one\n", 0o644); err != nil {
+	if err := replaceState(path, "one\n"); err != nil {
 		t.Fatal(err)
 	}
 	if readText(t, path) != "one\n" || mode(t, path) != 0o644 {
@@ -313,13 +297,13 @@ func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := Replace(path, "one\n", 0o644); err != nil {
+	if err := replaceState(path, "one\n"); err != nil {
 		t.Fatal(err)
 	}
 	if after, err := os.Stat(path); err != nil || !os.SameFile(before, after) {
 		t.Errorf("identical content replaced the file: %v", err)
 	}
-	if err := Replace(path, "two\n", 0o644); err != nil {
+	if err := replaceState(path, "two\n"); err != nil {
 		t.Fatal(err)
 	}
 	if readText(t, path) != "two\n" || mode(t, path) != 0o600 {
@@ -330,7 +314,7 @@ func TestReplaceWritesStateWithoutABackupAndKeepsIdenticalFiles(t *testing.T) {
 	}
 }
 
-func TestReplaceRefusesASymlink(t *testing.T) {
+func TestStageRefusesASymlink(t *testing.T) {
 	dir := t.TempDir()
 	real := filepath.Join(dir, "real.json")
 	writeText(t, real, "keep\n", 0o644)
@@ -338,7 +322,7 @@ func TestReplaceRefusesASymlink(t *testing.T) {
 	if err := os.Symlink(real, link); err != nil {
 		t.Fatal(err)
 	}
-	if err := Replace(link, "x\n", 0o644); err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
+	if err := replaceState(link, "x\n"); err == nil || !strings.Contains(err.Error(), "refusing to replace symlink") {
 		t.Errorf("err %v", err)
 	}
 	if readText(t, real) != "keep\n" {
@@ -372,5 +356,196 @@ func TestPreflightRefusesWithoutWriting(t *testing.T) {
 	}
 	if got := entries(t, dir); !slices.Equal(got, []string{"link.toml", "real.toml"}) {
 		t.Errorf("entries %v", got)
+	}
+}
+
+// failRename makes the nth publishing rename of a commit fail, as a full disk or a vanished directory would after
+// earlier writes succeeded.
+func failRename(t *testing.T, n int) {
+	t.Helper()
+	calls := 0
+	rename = func(from, to string) error {
+		calls++
+		if calls == n {
+			return &os.LinkError{Op: "rename", Old: from, New: to, Err: os.ErrPermission}
+		}
+		return os.Rename(from, to)
+	}
+	t.Cleanup(func() { rename = os.Rename })
+}
+
+// listing records every path under root with its mode and content.
+func listing(t *testing.T, root string) []string {
+	t.Helper()
+	var entries []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		content := ""
+		if info.Mode().IsRegular() {
+			content = readText(t, path)
+		}
+		entries = append(entries, path+" "+info.Mode().String()+" "+content)
+		return nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return entries
+}
+
+func TestACommitThatFailsPartWayUndoesItsWrites(t *testing.T) {
+	root := t.TempDir()
+	writeText(t, root+"/changed.toml", "old\r\n", 0o640)
+	writeText(t, root+"/same.toml", "same\n", 0o644)
+	steps := []plan.Step{
+		plan.Write(root+"/changed.toml", "new\n"),
+		plan.Write(root+"/same.toml", "same\n"),
+		plan.Write(root+"/made/deep/created.toml", "created\n"),
+		plan.Write(root+"/last.toml", "last\n"),
+	}
+	past := time.Date(2020, 1, 2, 3, 4, 5, 0, time.UTC)
+	if err := os.Chtimes(root, past, past); err != nil {
+		t.Fatal(err)
+	}
+	before := listing(t, root)
+	failRename(t, 3)
+	results, err := Commit(steps, Options{})
+	if info, err := os.Stat(root); err != nil || !info.ModTime().Equal(past) {
+		t.Errorf("the directory a removed directory was made in keeps a new time: %v", info.ModTime())
+	}
+	if err == nil {
+		t.Fatal("the failing rename was not reported")
+	}
+	if len(results) != 0 {
+		t.Errorf("undone changes still reported: %v", results)
+	}
+	if after := listing(t, root); !slices.Equal(after, before) {
+		t.Errorf("disk changed:\n%s\nwant\n%s", strings.Join(after, "\n"), strings.Join(before, "\n"))
+	}
+}
+
+func TestRollingBackACompleteCommitRestoresEveryFile(t *testing.T) {
+	root := t.TempDir()
+	writeText(t, root+"/changed.toml", "old\n", 0o600)
+	before := listing(t, root)
+	transaction, err := Apply([]plan.Step{
+		plan.Write(root+"/changed.toml", "new\n"),
+		plan.Write(root+"/made/created.toml", "created\n"),
+	}, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, root+"/changed.toml") != "new\n" {
+		t.Fatal("not written")
+	}
+	if err := transaction.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	if after := listing(t, root); !slices.Equal(after, before) {
+		t.Errorf("disk changed:\n%s\nwant\n%s", strings.Join(after, "\n"), strings.Join(before, "\n"))
+	}
+	if len(transaction.Results) != 0 {
+		t.Errorf("results after a rollback: %v", transaction.Results)
+	}
+}
+
+func TestPreflightRefusesAWriteThatWouldFail(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Mkdir(root+"/dir.toml", 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeText(t, root+"/file", "not a directory\n", 0o644)
+	cases := map[string]string{
+		root + "/dir.toml":         "is not a regular file",
+		root + "/file/inside.toml": "is not a directory",
+	}
+	if os.Geteuid() != 0 {
+		if err := os.Mkdir(root+"/locked", 0o555); err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = os.Chmod(root+"/locked", 0o755) })
+		cases[root+"/locked/new/inside.toml"] = "permission denied"
+	}
+	for path, want := range cases {
+		before := listing(t, root)
+		_, err := Commit([]plan.Step{plan.Write(root+"/first.toml", "x\n"), plan.Write(path, "x\n")}, Options{})
+		if err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s: %v, want %q", path, err, want)
+		}
+		if after := listing(t, root); !slices.Equal(after, before) {
+			t.Errorf("%s: a refused commit wrote", path)
+		}
+	}
+}
+
+func TestAFileAlreadyHoldingItsContentNeedsNoWriteAccess(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("root writes a read-only directory")
+	}
+	root := t.TempDir()
+	writeText(t, root+"/same.toml", "same\n", 0o644)
+	if err := os.Chmod(root, 0o555); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chmod(root, 0o755) })
+	results, err := Commit([]plan.Step{plan.Write(root+"/same.toml", "same\n")}, Options{})
+	if err != nil || len(results) != 1 || results[0].Action != Unchanged {
+		t.Errorf("results %v, err %v", results, err)
+	}
+}
+
+func TestABackupNeverReplacesAnotherFile(t *testing.T) {
+	root := t.TempDir()
+	stamp := time.Date(2026, 11, 21, 6, 0, 0, 0, time.UTC)
+	now = func() time.Time { return stamp }
+	t.Cleanup(func() { now = time.Now })
+	writeText(t, root+"/a.toml", "first\n", 0o644)
+	taken := root + "/a.toml.bak.20261121T060000Z"
+	writeText(t, taken, "an earlier backup\n", 0o644)
+	results, err := Commit([]plan.Step{plan.Write(root+"/a.toml", "second\n")}, Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, taken) != "an earlier backup\n" {
+		t.Error("the earlier backup was replaced")
+	}
+	if results[0].Backup != taken+".1" || readText(t, taken+".1") != "first\n" {
+		t.Errorf("backup %s", results[0].Backup)
+	}
+}
+
+func TestResolveRefusesANameLookedUpInAFile(t *testing.T) {
+	root, err := filepath.EvalSymlinks(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeText(t, root+"/file", "not a directory\n", 0o644)
+	writeText(t, root+"/user.lua", "mine\n", 0o644)
+	if err := os.Symlink(root+"/file/../user.lua", root+"/link.lua"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.ReadFile(root + "/link.lua"); err == nil {
+		t.Fatal("the kernel opened the link; the case no longer tests anything")
+	}
+	if got, err := Resolve(root + "/link.lua"); err == nil || !strings.Contains(err.Error(), "is not a directory") {
+		t.Errorf("Resolve = %q, %v", got, err)
+	}
+}
+
+func TestAWriteThroughASymlinkedDirectoryIsWritable(t *testing.T) {
+	root := t.TempDir()
+	if err := os.Mkdir(root+"/real", 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(root+"/real", root+"/alias"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Commit([]plan.Step{plan.Write(root+"/alias/new/x.toml", "x\n")}, Options{}); err != nil {
+		t.Fatal(err)
+	}
+	if readText(t, root+"/real/new/x.toml") != "x\n" {
+		t.Error("not written")
 	}
 }

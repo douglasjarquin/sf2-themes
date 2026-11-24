@@ -9,5 +9,5 @@ dir 0755 config/wezterm
 link config/wezterm/wezterm.lua -> {SANDBOX}/elsewhere/wezterm/wezterm.lua
 dir 0755 elsewhere
 dir 0755 elsewhere/wezterm
-file 0644 785b9fe39fe7f4d0 elsewhere/wezterm/wezterm.lua
+file 0644 e3b0c44298fc1c14 elsewhere/wezterm/wezterm.lua
 dir 0755 home

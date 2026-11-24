@@ -15,7 +15,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - `App.Plan(theme, themes, configDir, slot)` returns `plan.Write` and `plan.Remove` steps and never writes.
 - `configDir` is the expanded `--config-dir`, or `""` when the flag is absent and the adapter resolves its default location.
 - An `error` from either function is an I/O or decode failure the CLI prints as one `error:` line with exit 1; an ownership problem is never an error.
-- `Label`, `Pair`, `OwnsFilesOnUnknownShape`, `Reload`, and `StderrHint` carry the app's labels, pairing, reload hint, and stderr hint; change them only with the goldens that print them.
+- `Label`, `Pair`, `Pointer`, `Reload`, and `StderrHint` carry the app's labels, pairing, reload hint, and stderr hint; change them only with the goldens that print them.
 - Register the app with one line in its own file, `internal/cli/app_<name>.go`: `func init() { register("<name>", <name>.App) }`.
 - Only `fsys.Commit` touches disk, and it owns dry-run and the symlink policy.
 - The inspection holds the ownership class (absent, managed, legacy, foreign, unknown shape, broken) and the current sf2 theme when it resolves through `catalog.InstalledTheme`.
@@ -39,20 +39,25 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 
 ## WezTerm
 
-- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the per-target pointer `<wezterm-config>/sf2-theme/wezterm-current.lua`, and edits `wezterm.lua` only when the gate allows the setting.
-- Selection belongs to the target, which is its `wezterm.lua`: a `wezterm.lua` that is not `<wezterm-config>/wezterm.lua`, or whose common pointer would be the legacy shared one, gets `wezterm-current-<12 hex of the SHA-256 of its path>.lua`, so no two targets share a pointer and none is ever the legacy file.
-- Ownership of an integration is its one `local sf2_current = "<path>"` (or single-quoted) assignment on a code line; comments never count.
-- An assignment naming the legacy shared pointer `<XDG_CONFIG_HOME>/sf2-theme/wezterm-current.lua` makes that file the selection while it stays, and writing the setting retargets only that assignment; the legacy file is never written or removed.
-- An integration naming any other pointer, several, or an undecodable string is an unknown shape: `wezterm.lua` stays unchanged and inspection reports no selection.
+- The adapter owns catalog scheme files under `<wezterm-config>/colors/` and the target's pointer; it writes `wezterm.lua` only as a new file, as a whole replacement of one of its own forms, or, with `--adopt`, by inserting its block into a file it verifies line by line.
+- A target is the `wezterm.lua` the filesystem opens through any symlink (`fsys.Resolve`); inspection, backup, commit, pointer, and manifest key all use that one identity, and setting results are matched with `fsys.SamePath`, never as strings.
+- `fsys.Resolve`, also run by `fsys.Preflight` on every planned path for every adapter, refuses a path with any `..` component, any name it or a symlink it follows reaches that is spelled unlike its directory entry (letter case, Unicode normalization), and `..` after a missing directory in a link target; sf2 never reconciles spellings, and a followed link writes to the file `Resolve` names.
+- The pointer is `sf2-theme/wezterm-current-<12 hex of the SHA-256 of the identity>.lua` beside the file, so `WEZTERM_CONFIG_DIR` never moves it and no pointer is a plain `wezterm-current.lua` that earlier releases shared; a path with a control character is refused before any Lua could carry it.
+- `parse.go` verifies a whole Lua 5.4 chunk (syntax, misplaced `break` and `...`, and at most 200 locals declared at the top level of the chunk), refusing `goto`, labels, and `<const>`/`<close>` as unverifiable; a file that does not parse is broken and nothing is written.
+- Other compile-time limits are not checked: locals active inside nested blocks or function bodies, upvalues, nesting depth, and constants. A result that sf2's block would push past the top-level limit fails re-verification and takes the manual path.
+- `lua.go` recognizes only sf2's own forms, as exact generated lines under one indent that are whole top-level statements: the full block, the unguarded block (`<builder>.color_scheme = dofile(sf2_current)`), and the first releases' `<builder>.color_scheme = "<sf2 scheme>"` line.
+- A form counts only after a top-level `local wezterm = require("wezterm")` and `local <builder>`, in a chunk that ends `return <builder>`, with no other `color_scheme` and no other `sf2_current`, `sf2_scheme`, or `sf2_env` in code; a hand-adapted snippet, a single-quoted literal, or a form inside a function, comment, or string is not sf2's.
+- The full form is managed and the others are legacy; writing the setting replaces the form as a whole with the full block naming the target's pointer, which also moves an integration off a former pointer without writing that file.
+- `App.Disowns` drops a recorded pointer other than the target's own after any complete run, judged from the path, so a run after an interrupted migration stops the old claim too.
+- A file with no sf2 form is foreign; `--adopt` inserts the full block before the final return only when every line is blank, a line comment, the wezterm require, one `local <builder> = wezterm.config_builder()`, a single-line literal `<builder>.<setting> = ...` other than `color_scheme`, or `return <builder>`, and the result re-verifies as managed.
+- sf2 inserts or replaces its block only where every name the block reads from its surroundings keeps its standard meaning. `blockNames` reads those names (today `wezterm`, `dofile`, `type`) and the block's own locals from the block's text, so the check cannot drift from the block. Before the insertion point, none of them, nor `require` or `_ENV`, may be bound anywhere: as a local (the builder counts), a parameter, a loop variable, a `function <name>`, or an assignment. The one exception is the top-level `local wezterm = require("wezterm")`. The builder also must not be one of the block's locals. Anything else takes the manual path, which names the binding to rename.
+- That check sees bindings only, not run-time rebinding: `_G.type = nil`, `rawset`, `load(...)`, or replacing a field of `string` or `wezterm` before the block still breaks it, and the `.bak` and the kept prior file recover the original.
+- `wezterm.lua` is read as written (`readLua`, no newline translation): an adopted file is the original bytes plus the block, ended with the file's one line break, and a replaced form keeps its own breaks; mixed line breaks get the manual steps.
+- Every other case is refused with nothing written and the exact manual steps (`analysis.manual`): where to paste the block, and to remove other `color_scheme` assignments and any older loader.
+- A valid shape sf2 cannot edit is unknown and refused like any other, with or without `--adopt`: nothing is written, not even scheme files or the pointer.
 - The pointer returns the dark or light sibling from `wezterm.gui.get_appearance()` so a selected character follows host light/dark instead of pinning one scheme.
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
-- Ownership comes from `wezterm.lua` and the selection from the pointer, so a foreign Lua config with a readable pointer is foreign for the gate and kept for the selection.
-- Every run that writes anything plans the pointer, including plain setup over a foreign config and an unknown shape.
-- Classification ignores Lua comment lines and recognizes pointer integration before the config shape, so a pasted snippet in any shape is managed.
-- Empty Lua is absent and receives a starter config; a recognized `wezterm.config_builder()` shape receives pointer integration before its matching return.
-- Integration without the `TERM_THEME` guard, or a literal SF2 `color_scheme` on a builder, is legacy and is upgraded while preserving unrelated Lua.
-- A non-SF2 `color_scheme` on a builder is foreign; adoption removes recognized color-scheme assignments and preserves every other Lua line.
-- Any other shape is unknown: `wezterm.lua` stays byte-for-byte unchanged, scheme files and pointer are still written, and the run exits nonzero with the snippet.
+- Only a managed or legacy form reports a selection; a foreign or unknown config reports none, even beside a readable pointer.
 - Scheme files include compose_cursor, visual_bell, indexed 16/17, and retro `tab_bar` colors; fancy-tab `window_frame` stays Lua-only.
 
 ## Starship
@@ -93,7 +98,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - Selecting either sibling writes the same pair; the managed identity is the dark `sf2-<catalog-id>`.
 - Every run also owns `<nvim-config>/plugin/sf2-theme.lua` as the startup loader.
 - Nothing in these files is ever foreign; a pointer whose id does not resolve is an unreadable selection, and a legacy short ID resolves and is rewritten with the `sf2-` identity.
-- Limit legacy cleanup to enumerated `street-fighter-ii-<catalog-id>.lua` files and leave every other `colors/` or `plugin/` entry untouched.
+- Leave every other `colors/` or `plugin/` entry untouched, including `street-fighter-ii-*.lua` files earlier releases wrote.
 
 ## Codex
 
@@ -101,7 +106,7 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 - Preserve every other Codex table, key, comment, and existing `[tui]` setting when selecting a theme.
 - An inline `tui` form is an unknown shape whose manual fix is converting it to a `[tui]` table; never restructure it.
 - A `[tui].theme` equal to a short catalog ID is legacy and is rewritten with the `sf2-` identity; any non-`sf2-` value is foreign.
-- Limit legacy cleanup to unprefixed `<catalog-id>.tmTheme` files represented by the current catalog.
+- Leave unprefixed `<catalog-id>.tmTheme` files earlier releases wrote in place.
 - A `[tui]` header followed by a comment is not recognized, so the config inspects as absent and a second `[tui]` table is appended; this reproduces the reference and is fixed only as a separate behavior change.
 
 ## Lazygit
@@ -133,12 +138,15 @@ The parity goldens for the app are the behavior contract, byte for byte; they we
 
 - The CLI, not an adapter, records each committed write in the `internal/store` manifest; the file at the app's `Target` is recorded as the edited setting and every other write as a wholly owned file.
 - The CLI refuses unsafe destinations with `fsys.Preflight` before it locks state, keeps the setting's original bytes before the commit, merges the commit's results into the earlier record, and reads the selection back through `Inspect`.
+- The CLI replaces a file other than the target only when the manifest records its SHA-256 or it holds exactly what the adapter's `Plan` writes there for some catalog theme; an adapter never claims a file by its name.
+- `fsys.Apply` undoes its own writes when one fails, and the CLI rolls the `Transaction` back, then restores the manifest and removes the kept copy, when the record cannot be saved.
 
-- Return every managed text write and legacy-file removal as a plan step so every adapter shares one mutation contract.
+- Return every managed text write as a plan step so every adapter shares one mutation contract; sf2 plans no deletions, because no record proves it wrote a file under an older name.
 - `fsys.Commit` resolves every destination before the first write; it refuses destination symlinks by default, follows only when explicitly requested, writes the resolved target, and retains the symlink itself.
-- Dry-run reports `would_create`, `would_update`, or `would_remove` with a diff and creates no file, directory, backup, or legacy cleanup mutation.
-- A changed existing file receives a UTC-stamped backup (`<name>.bak.<YYYYMMDDTHHMMSSZ>`) before atomic replacement, with its mode preserved, while unchanged content creates no backup.
-- Never broaden cleanup beyond exact managed paths and enumerated legacy names or remove unknown files, stale-looking aliases, unmarked blocks, or user-owned configuration.
+- Dry-run reports `would_create` or `would_update` with a diff and creates no file, directory, or backup.
+- A changed existing file receives a UTC-stamped backup (`<name>.bak.<YYYYMMDDTHHMMSSZ>`, then `.1`, `.2` within one second) before atomic replacement, with its mode preserved, while unchanged content creates no backup.
+- `fsys.Preflight` also refuses a write that would fail part way: a non-regular file in its place, an immutable or append-only file or directory, or a directory the user cannot create files in.
+- Never remove unknown files, stale-looking aliases, unmarked blocks, or user-owned configuration.
 
 ## Focused verification
 

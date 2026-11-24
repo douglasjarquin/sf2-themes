@@ -2,7 +2,20 @@ step apply wezterm --theme ken --config-dir {SANDBOX}/config/wezterm
 exit 1
 stdout
 stderr
-| error: WezTerm already uses a theme sf2-themes does not manage; pass --adopt to replace it, or run `setup wezterm` without --theme to keep it and install the theme files
+| error: WezTerm already uses a theme sf2-themes does not manage, and sf2-themes will not edit it for you.
+| Add this integration to {SANDBOX}/config/wezterm/wezterm.lua at the top level, after config is created and before the file returns it:
+| 
+| local sf2_current = "{SANDBOX}/config/wezterm/sf2-theme/wezterm-current-<digest>.lua"
+| wezterm.add_to_config_reload_watch_list(sf2_current)
+| local sf2_scheme = dofile(sf2_current)
+| config.color_scheme = sf2_scheme
+| local sf2_env = config.set_environment_variables or {}
+| sf2_env.TERM_THEME = (type(sf2_scheme) == "string" and sf2_scheme:find("-light", 1, true)) and "light" or "dark"
+| config.set_environment_variables = sf2_env
+| 
+| Remove the other color_scheme assignments, so this one selects the theme.
+| 
+| Then run the command again.
 tree
 dir 0755 config
 dir 0755 config/wezterm

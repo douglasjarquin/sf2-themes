@@ -16,6 +16,8 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"syscall"
+	"time"
 
 	"github.com/douglasjarquin/sf2-themes/v2/internal/fsys"
 	"github.com/douglasjarquin/sf2-themes/v2/internal/pycompat"
@@ -108,6 +110,18 @@ func (m *Manifest) Find(app, target string) *Target {
 	return nil
 }
 
+// Wrote reports whether any entry records sf2 writing exactly the bytes with SHA-256 sha at path.
+func (m *Manifest) Wrote(path, sha string) bool {
+	for _, target := range m.Targets {
+		for _, file := range target.Files {
+			if file.SHA256 == sha && (file.Path == path || fsys.SamePath(file.Path, path)) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // Record replaces the entry for entry's app and target. An entry without a Prior keeps the one already recorded,
 // because only the first change to a setting holds what the user had before sf2.
 func (m *Manifest) Record(entry Target) {
@@ -129,8 +143,8 @@ func (m *Manifest) Record(entry Target) {
 	})
 }
 
-// Save writes the manifest to path atomically, without a backup, and leaves an identical manifest untouched.
-func Save(path string, manifest Manifest) error {
+// encode is the manifest's on-disk form.
+func encode(manifest Manifest) (string, error) {
 	manifest.Version = Version
 	if manifest.Targets == nil {
 		manifest.Targets = []Target{}
@@ -141,10 +155,7 @@ func Save(path string, manifest Manifest) error {
 		}
 	}
 	data, err := json.MarshalIndent(manifest, "", "  ")
-	if err != nil {
-		return err
-	}
-	return fsys.Replace(path, string(data)+"\n", 0o644)
+	return string(data) + "\n", err
 }
 
 // KeepPrior keeps data, the bytes of a user's setting file named name before sf2 first changed it, under
@@ -162,33 +173,69 @@ func KeepPrior(manifestPath, app, name string, data []byte) (string, error) {
 	}
 }
 
+// Check refuses, writing nothing, the state Open and a staged save would refuse for app: a symlink or the wrong kind
+// of file where sf2 keeps its state or its lock, or a manifest the next save could not replace. A command checks it
+// before taking the lock, so such a refusal leaves no state directory or lock behind.
+func Check(app string) error {
+	path, err := Path()
+	if err != nil {
+		return err
+	}
+	dir := pycompat.Parent(path)
+	for _, required := range []string{dir, pycompat.Path(dir, "backups"), pycompat.Path(dir, "backups", app)} {
+		if err := fsys.RequireDir(required); err != nil {
+			return err
+		}
+	}
+	for _, file := range []string{path, pycompat.Path(dir, "manifest.lock")} {
+		if err := fsys.RequireFile(file); err != nil {
+			return err
+		}
+	}
+	return fsys.CanReplace(path)
+}
+
 // Session is the manifest held under the store's lock for one mutating command, so concurrent commands apply their
 // records one after another instead of saving over each other.
 type Session struct {
 	Path     string
 	Manifest Manifest
 	unlock   func()
+	staged   *fsys.Staged
+	// original is the manifest's bytes when the session opened, nil when there was none.
+	original []byte
+	// made are the state directories that did not exist when the session opened, deepest first.
+	made []string
+	// modified is the state directory's modification time once the session held the lock.
+	modified time.Time
 }
 
-// Open checks that the state directory can take app's records, takes the store's lock, and loads the manifest. It
-// refuses before any application is touched when a state path is a symlink or the wrong kind of file, or the
-// manifest is unreadable. Close releases the lock.
+// Open checks that the state directory can take app's records, takes the store's lock, loads the manifest, and stages
+// the next save. It refuses before any application is touched when a state path is a symlink or the wrong kind of
+// file, the manifest is unreadable, or the manifest could not be published. Close releases the lock.
 func Open(app string) (*Session, error) {
 	path, err := Path()
 	if err != nil {
 		return nil, err
 	}
 	dir := pycompat.Parent(path)
-	for _, required := range []string{dir, pycompat.Path(dir, "backups"), pycompat.Path(dir, "backups", app)} {
+	var made []string
+	for _, required := range []string{pycompat.Path(dir, "backups", app), pycompat.Path(dir, "backups")} {
 		if err := fsys.RequireDir(required); err != nil {
 			return nil, err
 		}
+		if _, err := os.Lstat(required); errors.Is(err, fs.ErrNotExist) {
+			made = append(made, required)
+		}
+	}
+	if err := fsys.RequireDir(dir); err != nil {
+		return nil, err
 	}
 	unlock, err := fsys.Lock(pycompat.Path(dir, "manifest.lock"))
 	if err != nil {
 		return nil, err
 	}
-	session := &Session{Path: path, unlock: unlock}
+	session := &Session{Path: path, unlock: unlock, made: made}
 	if err := fsys.RequireFile(path); err != nil {
 		session.Close()
 		return nil, err
@@ -197,11 +244,118 @@ func Open(app string) (*Session, error) {
 		session.Close()
 		return nil, err
 	}
+	if session.original, err = os.ReadFile(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		session.Close()
+		return nil, err
+	}
+	if info, err := os.Stat(dir); err == nil {
+		session.modified = info.ModTime()
+	}
+	if err := removeStranded(dir); err != nil {
+		session.Close()
+		return nil, err
+	}
 	return session, nil
 }
 
-// Save writes the session's manifest.
-func (s *Session) Save() error { return Save(s.Path, s.Manifest) }
+// removeStranded deletes temporary manifests a command left behind when it was killed. Only the holder of the lock
+// stages one, so under the lock every one found is stranded.
+func removeStranded(dir string) error {
+	stranded, err := filepath.Glob(filepath.Join(dir, ".manifest.json.*"))
+	if err != nil {
+		return err
+	}
+	for _, path := range stranded {
+		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	}
+	return nil
+}
 
-// Close releases the lock.
-func (s *Session) Close() { s.unlock() }
+// Stage proves the next Save can publish before a change the manifest must record: it creates the temporary file
+// Save publishes, which refuses a state directory sf2 cannot write, and probes that the existing manifest can be
+// replaced. It does nothing when a save is already staged.
+func (s *Session) Stage() error {
+	if s.staged != nil {
+		return nil
+	}
+	staged, err := fsys.Stage(s.Path)
+	if err != nil {
+		return err
+	}
+	if err := staged.Probe(); err != nil {
+		staged.Discard()
+		return err
+	}
+	s.staged = staged
+	return nil
+}
+
+// Save atomically publishes the session's manifest through the staged temporary file, staging one when none is. A
+// manifest identical to the one on disk writes nothing.
+func (s *Session) Save() error {
+	data, err := encode(s.Manifest)
+	if err != nil {
+		return err
+	}
+	if existing, err := os.ReadFile(s.Path); err == nil && string(existing) == data {
+		return nil
+	}
+	if err := s.Stage(); err != nil {
+		return err
+	}
+	staged := s.staged
+	s.staged = nil
+	return staged.Publish(data, 0o644)
+}
+
+// Restore puts the manifest back as the session found it and removes the backup directories it created, for a
+// command whose changes were undone. The state directory and its lock stay: another command may be waiting on the
+// lock.
+func (s *Session) Restore() error {
+	if s.staged != nil {
+		s.staged.Discard()
+		s.staged = nil
+	}
+	if s.original == nil {
+		if err := os.Remove(s.Path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+	} else {
+		data, err := os.ReadFile(s.Path)
+		if err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		if !bytes.Equal(data, s.original) {
+			if err := s.Stage(); err != nil {
+				return err
+			}
+			staged := s.staged
+			s.staged = nil
+			if err := staged.Publish(string(s.original), 0o644); err != nil {
+				return err
+			}
+		}
+	}
+	for _, dir := range s.made {
+		// A directory something else has put a file in since is left alone.
+		if err := os.Remove(dir); err != nil && !errors.Is(err, fs.ErrNotExist) && !errors.Is(err, syscall.ENOTEMPTY) &&
+			!errors.Is(err, syscall.EEXIST) {
+			return err
+		}
+	}
+	if s.modified.IsZero() {
+		return nil
+	}
+	return os.Chtimes(pycompat.Parent(s.Path), time.Time{}, s.modified)
+}
+
+// Close removes an unused staged save and releases the lock.
+func (s *Session) Close() {
+	if s.staged != nil {
+		s.staged.Discard()
+		s.staged = nil
+	}
+	s.unlock()
+}
