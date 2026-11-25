@@ -86,14 +86,14 @@ Applying `ryu` or `ryu-light` selects the same pair.
 An empty or missing `wezterm.lua` gets a starter config.
 An integration sf2-themes wrote, including the older forms and the `config.color_scheme = "street-fighter-2"` line from early releases, is replaced as a whole by the current one.
 sf2-themes never edits a line you wrote.
-`--adopt` adds its integration to your `wezterm.lua` only when every line is something it can verify: comments, `local wezterm = require("wezterm")`, `local config = wezterm.config_builder()`, single-line `config.<setting> = <value>` settings other than `color_scheme`, and `return config`.
-The adopted file is your file's exact bytes with the integration inserted before `return config`, its lines ending as yours do; a file whose lines end differently (LF and CRLF mixed) gets the manual steps instead.
-Anything else, including a `color_scheme` of your own, is left to you: the run writes nothing and prints the integration with where to paste it and what to remove.
-The same happens when a name the integration uses (`wezterm`, `dofile`, `type`, `require`, `_ENV`) is bound before it.
+`--adopt` adds its integration to your `wezterm.lua` only when every line is something it can verify: a blank line, a `--` line comment, `local wezterm = require("wezterm")` (either quote; parentheses optional), one `local <name> = wezterm.config_builder()`, a single-line `<name>.<setting> = <literal>` other than `color_scheme`, and `return <name>`. A literal is an integer or a simple decimal (`12`, `-1.5`), `true`, `false`, a quoted string with no escapes, or `wezterm.<fn>()` with no argument, one double-quoted string, or a number. `<fn>` is a lowercase name.
+The adopted file is your file's exact bytes with the integration inserted before `return <name>`, its lines ending as yours do; a file whose lines end differently (LF and CRLF mixed) gets the manual steps instead.
+Anything else is left unchanged in `wezterm.lua`. A shape sf2-themes cannot edit is refused by every command, which writes nothing and prints where to paste the integration. A `color_scheme` of your own is your theme, so `--adopt` leaves that assignment in place: `apply`, `setup --theme`, and `--adopt` write nothing and print where to paste the integration and which assignment to remove. Plain `setup` installs the scheme files and the pointer and leaves `wezterm.lua` unchanged, as it does for any theme of your own.
+Every command writes nothing, and names the binding, when a name the integration uses (`wezterm`, `dofile`, `type`, `require`, `_ENV`) is bound before the integration.
 That check reads the file, not what it does when it runs: code that clears or replaces those names at run time, such as `_G.type = nil`, can still break the integration, and the backup or kept prior file holds your original.
 A `wezterm.lua` that is not valid Lua, or whose path, or a symlink it follows, goes through `..` or a spelling that differs from the disk, is refused with nothing written.
 Comments and strings never count as integration.
-The pointer is the selection only while sf2-themes' integration loads it; with your own color scheme, `current wezterm` reports none.
+The pointer is the selection only while sf2-themes' integration loads it. With your own color scheme, `current wezterm` exits with `error: no WezTerm theme applied yet`.
 
 Neovim apply installs every catalog colorscheme as `sf2-<catalog-id>.lua` under `~/.config/nvim/colors/`, a managed current-theme pointer under `~/.config/nvim/sf2-theme/current.lua`, and a plugin loader under `~/.config/nvim/plugin/sf2-theme.lua` so the pointer is read on every startup.
 The pointer selects the matching dark or light colorscheme from `TERM_THEME` (set by the WezTerm integration) or `'background'`. Applying `ryu` or `ryu-light` selects the same pair.
